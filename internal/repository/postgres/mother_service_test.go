@@ -4,12 +4,14 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository/postgres/mocks"
+	"control-panel-service/pkg"
 	"errors"
 	"regexp"
 	"testing"
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -127,6 +129,70 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to create mother service record")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("duplicate name error case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewMotherServiceRepository(db)
+		now := time.Now()
+
+		motherService := &entity.MotherService{
+			Model:               gorm.Model{CreatedAt: now, UpdatedAt: now},
+			Name:                "mother1",
+			ExceptionRate:       0.0,
+			ResponseDelayRate:   0.0,
+			ProvisioningStatus:  entity.ProvisioningStatusPending,
+			DatabaseName:        "test_db",
+			DatabaseTableName:   "test_table",
+			KafkaLiveFeedTopic:  "live_feed",
+			KafkaFactorialTopic: "factorial",
+		}
+
+		duplicateError := &pgconn.PgError{
+			Code:           "23505",
+			Message:        "duplicate key value violates unique constraint",
+			ConstraintName: "mother_services_name_key",
+			Detail:         `Key (name)=(mother1) already exists.`,
+		}
+
+		mock.ExpectBegin()
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name","kafka_livefeed_topic","kafka_factorial_topic","stopped_at","restarted_at","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING "id"`)).
+			WithArgs(
+				now, now, nil,
+				motherService.Name,
+				motherService.ExceptionRate,
+				motherService.ResponseDelayRate,
+				motherService.ResponseDelayDuration,
+				motherService.RandomResponseDelayMin,
+				motherService.RandomResponseDelayMax,
+				motherService.ProvisioningStatus,
+				motherService.ServiceDeploymentAddress,
+				motherService.DatabaseName,
+				motherService.DatabaseTableName,
+				motherService.KafkaLiveFeedTopic,
+				motherService.KafkaFactorialTopic,
+				motherService.StoppedAt,
+				motherService.RestartedAt,
+				motherService.StartedAt,
+			).
+			WillReturnError(duplicateError)
+		mock.ExpectRollback()
+
+		err = repo.Create(context.Background(), motherService)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrMotherServiceAlreadyExist)
+
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			assert.Equal(t, "23505", pgErr.Code)
+			assert.Contains(t, pgErr.Detail, "mother1")
+		}
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }

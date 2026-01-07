@@ -13,4 +13,5 @@ var (
 	ErrFailedToCreateMotherService = errors.New("failed to create mother service item")
 	ErrMotherServiceNotFound       = errors.New("mother service not found")
 	ErrFailedToGetMotherService    = errors.New("failed to get mother service instance")
+	ErrMotherServiceAlreadyExist   = errors.New("mother service already exist")
 )

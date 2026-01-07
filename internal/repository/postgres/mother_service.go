@@ -4,9 +4,11 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
+	"control-panel-service/pkg"
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
 
@@ -23,6 +25,11 @@ func NewMotherServiceRepository(db *gorm.DB) repository.MotherServiceRepository 
 func (m *motherServiceRepository) Create(ctx context.Context, motherService *entity.MotherService) error {
 	err := m.db.WithContext(ctx).Create(motherService).Error
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateMotherService, pkg.ErrMotherServiceAlreadyExist)
+		}
+
 		return fmt.Errorf("failed to create mother service record: %w", err)
 	}
 
