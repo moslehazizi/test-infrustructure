@@ -14,13 +14,18 @@ type MockMotherService struct {
 func (m *MockMotherService) Create(ctx context.Context, motherService *entity.MotherService) error {
 	args := m.Called(ctx, motherService)
 
-	return args.Error(1)
+	return args.Error(0)
 }
 
 func (m *MockMotherService) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {
 	args := m.Called(ctx, id)
 
-	return args.Get(0).(*entity.MotherService), args.Error(1)
+	var result *entity.MotherService
+	if args.Get(0) != nil {
+		result = args.Get(0).(*entity.MotherService)
+	}
+
+	return result, args.Error(1)
 }
 
 func (m *MockMotherService) GetAll(ctx context.Context) ([]*entity.MotherService, error) {
