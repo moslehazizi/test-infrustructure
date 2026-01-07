@@ -45,7 +45,7 @@ func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*enti
 
 func (m *motherServiceRepository) GetAll(ctx context.Context) ([]*entity.MotherService, error) {
 	var motherServices []*entity.MotherService
-	err := m.db.WithContext(ctx).Find(&motherServices).Error
+	err := m.db.WithContext(ctx).Find(&motherServices).Order("id DESC").Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mother service records: %w", err)
 	}
