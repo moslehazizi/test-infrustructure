@@ -1,0 +1,13 @@
+tools:
+	go install github.com/securego/gosec/v2/cmd/gosec@latest
+	go install golang.org/x/vuln/cmd/govulncheck@latest
+
+check:
+	govulncheck ./...
+	gosec ./...
+
+lint:
+	golangci-lint -c=.golangci.yml run ./...
+
+test:
+	go test -cover -v ./...

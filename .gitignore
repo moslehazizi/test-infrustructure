@@ -1,0 +1,146 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# Environment variables
+.env
+.env.local
+.env.development
+env
+.env.test
+.env.production
+
+# IDE files
+.idea/
+/.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+log/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.cover
+*.coverprofile
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Build artifacts
+build/
+dist/
+bin/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+# .dockerignore (we want to track this file)
+
+# Kubernetes
+*.kubeconfig
+
+# Vault
+vault-data/
+
+# Redis dump
+dump.rdb
+
+# Node modules (if any frontend tools)
+node_modules/
+
+# Generated files
+*.pb.go
+*.pb.gw.go
+*.gen.go
+
+# Swagger generated files (keep docs but ignore generated)
+# docs/swagger.json
+# docs/swagger.yaml
+
+# Test coverage
+coverage.html
+coverage.out
+
+# Profiling files
+*.prof
+*.pprof
+
+# Air (live reload) files
+.air.toml
+tmp/
+
+# Go build cache
+.cache/
+
+# Local development
+local/
+dev/
+
+# Secrets and keys
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+secrets/
+keys/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Compressed files
+*.zip
+*.tar.gz
+*.rar
+
+# Application specific
+uploads/
+downloads/
+user-auth
+main
+tasks/
+
+__debug_*

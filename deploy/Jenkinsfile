@@ -1,0 +1,124 @@
+@Library('farbodan')_
+
+pipeline {
+  agent any
+  environment {
+    APP_NAME = 'challenge-control-panel-service'
+    MASTER_BRANCH_NAME = 'main'
+    TAG_PREFIX_REGEX = '^\\d+\\.\\d+\\.\\d+-'
+    BUILD_DESTINATION_PREFIX = '/opt'
+    DOCKER_COMPOSE_PATH = 'deploy/docker-compose.yaml'
+    DOCKER_FILE_PATH = 'deploy/Dockerfile'
+    TEST_DOCKER_FILE_PATH = 'deploy/test.Dockerfile'
+  }
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Set Deploy Target') {
+      steps {
+        script {
+          def tagName = ''
+          try {
+            tagName = sh(script: "git describe --tags --exact-match", returnStdout: true).trim() ?: ''
+          } catch (Exception e) {
+            echo 'tag not found.'
+          }
+          def branch = ''
+          if (tagName) {
+            if (tagName =~ /${MASTER_BRANCH_NAME}/) {
+              branch = MASTER_BRANCH_NAME
+            } else {
+              error "Invalid tag: ${tagName}. Expected ${ALPHA_BRANCH_NAME}, ${BETA_BRANCH_NAME}, or ${MASTER_BRANCH_NAME}."
+            }
+          } else {
+            branch = env.BRANCH_NAME
+          }
+          if (!branch) {
+            error "Branch not detected"
+          }
+
+          env.DEPLOY_DIR  = "${BUILD_DESTINATION_PREFIX}/${APP_NAME}"
+          env.DEPLOY_CREDENTIALS_CREDENTIAL_ID = "target-server-credentials-${branch}"
+          env.DEPLOY_IP_CREDENTIAL_ID = "target-server-ip-${branch}"
+          env.DEPLOY_PORT_CREDENTIAL_ID = "target-server-port-${branch}"
+          env.IMAGE_TAG = tagName ?: branch
+          env.IMAGE_FILE = "${APP_NAME}.tar"
+          env.BRANCH = branch
+
+          sh """
+            sed -i 's/TAG_NAME/${IMAGE_TAG}/g' ${DOCKER_COMPOSE_PATH}
+            cp .env.example .env
+            echo "\n" >> .env
+          """
+
+          withCredentials([file(
+            credentialsId: "env-${branch}", 
+            variable: 'ENV_SECRET',
+          )]) {
+            sh 'cat ${ENV_SECRET} >> .env'
+          }
+
+          echo "Deploying branch ${branch}"
+        }
+      }
+    }
+
+    stage('Testing') {
+      steps {
+        sh "docker build -f ${TEST_DOCKER_FILE_PATH} -t ${APP_NAME}_test:${IMAGE_TAG} ."
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        sh "docker build -f ${DOCKER_FILE_PATH} -t ${APP_NAME}:${IMAGE_TAG} ."
+      }
+    }
+
+    stage('Save Docker Image to File') {
+      steps {
+        sh "docker save ${APP_NAME}:${IMAGE_TAG} -o ${IMAGE_FILE}"
+      }
+    }
+
+    stage('Transfer Image & Compose File') {
+      steps {
+        script {
+        tradePrepareDeploy(
+          "${DEPLOY_IP_CREDENTIAL_ID}", 
+          "${DEPLOY_PORT_CREDENTIAL_ID}", 
+          "${DEPLOY_CREDENTIALS_CREDENTIAL_ID}",
+          "${DEPLOY_DIR}",
+          "${IMAGE_FILE}"
+          )
+        }
+      }
+    }
+
+    stage('Load & Run on Deploy Server') {
+      steps {
+        script {
+          tradeRunDeploy(
+            "${DEPLOY_IP_CREDENTIAL_ID}", 
+            "${DEPLOY_PORT_CREDENTIAL_ID}", 
+            "${DEPLOY_CREDENTIALS_CREDENTIAL_ID}",
+            "${DEPLOY_DIR}",
+            "${IMAGE_FILE}",
+            "${DOCKER_COMPOSE_PATH}"
+          )
+        }
+      }
+    }
+  }
+  post {
+    always {
+      script {
+        cleanupDockerImage("${APP_NAME}","${IMAGE_FILE}", "${IMAGE_TAG}")
+      }
+    }
+  }
+}
