@@ -50,7 +50,7 @@ func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*enti
 	return &motherService, nil
 }
 
-func (m *motherServiceRepository) GetAll(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, error) {
+func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, error) {
 	var motherServices []*entity.MotherService
 	if paginationRequest.Page < 0 || paginationRequest.PerPage < 0 {
 		return nil, fmt.Errorf("failed to get mother service records: %w", pkg.ErrNegativePageOrPerPageNotAllowed)

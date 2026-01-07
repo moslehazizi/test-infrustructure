@@ -50,7 +50,7 @@ func (service *motherService) GetByID(ctx context.Context, id uint64) (*entity.M
 }
 
 func (service *motherService) GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, error) {
-	result, err := service.motherServiceRepo.GetAll(ctx, paginationRequest)
+	result, err := service.motherServiceRepo.GetPaginated(ctx, paginationRequest)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetMotherServices, err)
 	}

@@ -133,7 +133,7 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 	})
 }
 
-func TestMotherServiceUsecase_GetAll(t *testing.T) {
+func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
@@ -177,14 +177,14 @@ func TestMotherServiceUsecase_GetAll(t *testing.T) {
 			},
 		}
 
-		mockRepo.On("GetAll", ctx, paginationRequest).Return(expectedMotherServices, nil)
+		mockRepo.On("GetPaginated", ctx, paginationRequest).Return(expectedMotherServices, nil)
 
 		result, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, expectedMotherServices, result)
-		mockRepo.AssertCalled(t, "GetAll", ctx, paginationRequest)
+		mockRepo.AssertCalled(t, "GetPaginated", ctx, paginationRequest)
 	})
 
 	t.Run("failed case", func(t *testing.T) {
@@ -197,14 +197,14 @@ func TestMotherServiceUsecase_GetAll(t *testing.T) {
 			PerPage: 2,
 		}
 
-		mockRepo.On("GetAll", ctx, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+		mockRepo.On("GetPaginated", ctx, paginationRequest).Return(nil, errors.New("failed to get mother services"))
 
 		result, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
-		mockRepo.AssertCalled(t, "GetAll", ctx, paginationRequest)
+		mockRepo.AssertCalled(t, "GetPaginated", ctx, paginationRequest)
 	})
 
 	t.Run("failed case - negative page", func(t *testing.T) {
@@ -217,13 +217,13 @@ func TestMotherServiceUsecase_GetAll(t *testing.T) {
 			PerPage: 2,
 		}
 
-		mockRepo.On("GetAll", ctx, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+		mockRepo.On("GetPaginated", ctx, paginationRequest).Return(nil, errors.New("failed to get mother services"))
 
 		result, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
-		mockRepo.AssertCalled(t, "GetAll", ctx, paginationRequest)
+		mockRepo.AssertCalled(t, "GetPaginated", ctx, paginationRequest)
 	})
 }

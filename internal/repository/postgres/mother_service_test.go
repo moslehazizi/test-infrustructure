@@ -319,7 +319,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 	})
 }
 
-func TestMotherServiceRepository_GetAll(t *testing.T) {
+func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 	t.Run("success case with pagination - page 1", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
@@ -420,7 +420,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 					expectedMotherServices[1].StartedAt,
 				))
 
-		result, err := repo.GetAll(context.Background(), paginationRequest)
+		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 2)
@@ -533,7 +533,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 					expectedMotherServices[1].StartedAt,
 				))
 
-		result, err := repo.GetAll(context.Background(), paginationRequest)
+		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 2)
@@ -606,7 +606,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 					expectedMotherService.StartedAt,
 				))
 
-		result, err := repo.GetAll(context.Background(), paginationRequest)
+		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 1)
@@ -749,7 +749,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 					expectedMotherServices[2].StartedAt,
 				))
 
-		result, err := repo.GetAll(context.Background(), paginationRequest)
+		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 3)
@@ -782,7 +782,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 				"stopped_at", "restarted_at", "started_at",
 			}))
 
-		result, err := repo.GetAll(context.Background(), paginationRequest)
+		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 0)
@@ -805,7 +805,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 			WithArgs(10, 10).
 			WillReturnError(errors.New("database connection failed"))
 
-		result, err := repo.GetAll(context.Background(), paginationRequest)
+		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.Contains(t, err.Error(), "failed to get mother service records")
@@ -823,7 +823,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 			PerPage: 10,
 		}
 
-		result, err := repo.GetAll(context.Background(), paginationRequest)
+		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)
@@ -841,7 +841,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 			PerPage: -10,
 		}
 
-		result, err := repo.GetAll(context.Background(), paginationRequest)
+		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)
