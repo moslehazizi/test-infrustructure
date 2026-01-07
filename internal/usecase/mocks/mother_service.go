@@ -27,3 +27,14 @@ func (m *MockMotherService) GetByID(ctx context.Context, id uint64) (*entity.Mot
 
 	return result, args.Error(1)
 }
+
+func (m *MockMotherService) GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, error) {
+	args := m.Called(ctx, paginationRequest)
+
+	var result []*entity.MotherService
+	if args.Get(0) != nil {
+		result = args.Get(0).([]*entity.MotherService)
+	}
+
+	return result, args.Error(1)
+}

@@ -17,8 +17,10 @@ const (
 )
 
 type MotherService struct {
-	gorm.Model
-	ID                       uint64             `gorm:"primaryKey;autoIncrement"`
+	ID                       uint64             `gorm:"primaryKey;autoIncrement;column:id"`
+	CreatedAt                time.Time          `gorm:"column:created_at"`
+	UpdatedAt                time.Time          `gorm:"column:updated_at"`
+	DeletedAt                *gorm.DeletedAt    `gorm:"index;column:deleted_at"`
 	Name                     string             `gorm:"column:name"`
 	ExceptionRate            float64            `gorm:"column:exception_rate"`
 	ResponseDelayRate        float64            `gorm:"column:response_delay_rate"`
@@ -34,6 +36,11 @@ type MotherService struct {
 	StoppedAt                *time.Time         `gorm:"column:stopped_at"`
 	RestartedAt              *time.Time         `gorm:"column:restarted_at"`
 	StartedAt                *time.Time         `gorm:"column:started_at"`
+}
+
+type PaginationRequest struct {
+	Page    int
+	PerPage int
 }
 
 func (MotherService) TableName() string {

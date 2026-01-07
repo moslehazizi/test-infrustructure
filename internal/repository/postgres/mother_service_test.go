@@ -32,7 +32,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		serviceAddress := "http://service.example.com"
 
 		motherService := &entity.MotherService{
-			Model:                    gorm.Model{CreatedAt: now, UpdatedAt: now},
+			CreatedAt:                now,
+			UpdatedAt:                now,
 			Name:                     "mother1",
 			ExceptionRate:            0.1,
 			ResponseDelayRate:        0.2,
@@ -90,7 +91,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		now := time.Now()
 
 		motherService := &entity.MotherService{
-			Model:               gorm.Model{CreatedAt: now, UpdatedAt: now},
+			CreatedAt:           now,
+			UpdatedAt:           now,
 			Name:                "mother1",
 			ExceptionRate:       0.0,
 			ResponseDelayRate:   0.0,
@@ -141,7 +143,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		now := time.Now()
 
 		motherService := &entity.MotherService{
-			Model:               gorm.Model{CreatedAt: now, UpdatedAt: now},
+			CreatedAt:           now,
+			UpdatedAt:           now,
 			Name:                "mother1",
 			ExceptionRate:       0.0,
 			ResponseDelayRate:   0.0,
@@ -211,11 +214,9 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 		serviceAddress := "http://service.example.com"
 
 		expectedMotherService := &entity.MotherService{
-			Model: gorm.Model{
-				ID:        1,
-				CreatedAt: now,
-				UpdatedAt: now,
-			},
+			ID:                       uint64(1),
+			CreatedAt:                now,
+			UpdatedAt:                now,
 			Name:                     "mother1",
 			ExceptionRate:            0.1,
 			ResponseDelayRate:        0.2,
@@ -295,7 +296,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 		result, err := repo.GetByID(context.Background(), uint64(999))
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Equal(t, gorm.ErrRecordNotFound, err)
+		assert.Equal(t, pkg.ErrMotherServiceNotFound, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -319,48 +320,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 }
 
 func TestMotherServiceRepository_GetAll(t *testing.T) {
-	t.Run("success case with empty result", func(t *testing.T) {
-		conn := new(mocks.Connection)
-		db, mock, err := conn.OpenConnection()
-		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
-
-		mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC`)).
-			WillReturnRows(sqlmock.NewRows([]string{
-				"id", "created_at", "updated_at", "deleted_at", "name",
-				"exception_rate", "response_delay_rate", "response_delay_duration",
-				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
-				"database_name", "database_table_name", "kafka_livefeed_topic", "kafka_factorial_topic",
-				"stopped_at", "restarted_at", "started_at",
-			}))
-
-		result, err := repo.GetAll(context.Background())
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Len(t, result, 0)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("error case", func(t *testing.T) {
-		conn := new(mocks.Connection)
-		db, mock, err := conn.OpenConnection()
-		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
-
-		mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC`)).
-			WillReturnError(errors.New("database connection failed"))
-
-		result, err := repo.GetAll(context.Background())
-		assert.Error(t, err)
-		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "failed to get mother service records")
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("success case with order by id desc", func(t *testing.T) {
+	t.Run("success case with pagination - page 1", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -372,41 +332,156 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 
 		expectedMotherServices := []*entity.MotherService{
 			{
-				Model: gorm.Model{
-					ID:        2,
-					CreatedAt: now,
-					UpdatedAt: now,
-				},
-				Name:                     "mother2",
+				ID:                       uint64(5),
+				CreatedAt:                now,
+				UpdatedAt:                now,
+				Name:                     "mother5",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
 				ProvisioningStatus:       entity.ProvisioningStatusPending,
 				ServiceDeploymentAddress: &serviceAddress2,
-				DatabaseName:             "test_db2",
-				DatabaseTableName:        "test_table2",
+				DatabaseName:             "test_db5",
+				DatabaseTableName:        "test_table5",
 				KafkaLiveFeedTopic:       "live_feed",
 				KafkaFactorialTopic:      "factorial",
 			},
 			{
-				Model: gorm.Model{
-					ID:        1,
-					CreatedAt: now,
-					UpdatedAt: now,
-				},
-				Name:                     "mother1",
+				ID:                       uint64(4),
+				CreatedAt:                now,
+				UpdatedAt:                now,
+				Name:                     "mother4",
 				ExceptionRate:            0.1,
 				ResponseDelayRate:        0.2,
 				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
 				ServiceDeploymentAddress: &serviceAddress1,
-				DatabaseName:             "test_db1",
-				DatabaseTableName:        "test_table1",
+				DatabaseName:             "test_db4",
+				DatabaseTableName:        "test_table4",
 				KafkaLiveFeedTopic:       "live_feed",
 				KafkaFactorialTopic:      "factorial",
 			},
 		}
 
+		paginationRequest := entity.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		} // LIMIT 2 (no OFFSET because offset=0)
+
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC`)).
+			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1`)).
+			WithArgs(2).
+			WillReturnRows(sqlmock.NewRows([]string{
+				"id", "created_at", "updated_at", "deleted_at", "name",
+				"exception_rate", "response_delay_rate", "response_delay_duration",
+				"random_response_delay_min", "random_response_delay_max",
+				"provisioning_status", "service_deployment_address",
+				"database_name", "database_table_name", "kafka_livefeed_topic", "kafka_factorial_topic",
+				"stopped_at", "restarted_at", "started_at",
+			}).
+				AddRow(
+					expectedMotherServices[0].ID,
+					expectedMotherServices[0].CreatedAt,
+					expectedMotherServices[0].UpdatedAt,
+					nil,
+					expectedMotherServices[0].Name,
+					expectedMotherServices[0].ExceptionRate,
+					expectedMotherServices[0].ResponseDelayRate,
+					expectedMotherServices[0].ResponseDelayDuration,
+					expectedMotherServices[0].RandomResponseDelayMin,
+					expectedMotherServices[0].RandomResponseDelayMax,
+					expectedMotherServices[0].ProvisioningStatus,
+					expectedMotherServices[0].ServiceDeploymentAddress,
+					expectedMotherServices[0].DatabaseName,
+					expectedMotherServices[0].DatabaseTableName,
+					expectedMotherServices[0].KafkaLiveFeedTopic,
+					expectedMotherServices[0].KafkaFactorialTopic,
+					expectedMotherServices[0].StoppedAt,
+					expectedMotherServices[0].RestartedAt,
+					expectedMotherServices[0].StartedAt,
+				).
+				AddRow(
+					expectedMotherServices[1].ID,
+					expectedMotherServices[1].CreatedAt,
+					expectedMotherServices[1].UpdatedAt,
+					nil,
+					expectedMotherServices[1].Name,
+					expectedMotherServices[1].ExceptionRate,
+					expectedMotherServices[1].ResponseDelayRate,
+					expectedMotherServices[1].ResponseDelayDuration,
+					expectedMotherServices[1].RandomResponseDelayMin,
+					expectedMotherServices[1].RandomResponseDelayMax,
+					expectedMotherServices[1].ProvisioningStatus,
+					expectedMotherServices[1].ServiceDeploymentAddress,
+					expectedMotherServices[1].DatabaseName,
+					expectedMotherServices[1].DatabaseTableName,
+					expectedMotherServices[1].KafkaLiveFeedTopic,
+					expectedMotherServices[1].KafkaFactorialTopic,
+					expectedMotherServices[1].StoppedAt,
+					expectedMotherServices[1].RestartedAt,
+					expectedMotherServices[1].StartedAt,
+				))
+
+		result, err := repo.GetAll(context.Background(), paginationRequest)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Len(t, result, 2)
+
+		assert.Equal(t, uint64(5), result[0].ID)
+		assert.Equal(t, "mother5", result[0].Name)
+		assert.Equal(t, uint64(4), result[1].ID)
+		assert.Equal(t, "mother4", result[1].Name)
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("success case with pagination - page 2", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		now := time.Now()
+		serviceAddress1 := "http://service1.example.com"
+		serviceAddress2 := "http://service2.example.com"
+
+		expectedMotherServices := []*entity.MotherService{
+			{
+				ID:                       uint64(3),
+				CreatedAt:                now,
+				UpdatedAt:                now,
+				Name:                     "mother3",
+				ExceptionRate:            0.0,
+				ResponseDelayRate:        0.0,
+				ProvisioningStatus:       entity.ProvisioningStatusPending,
+				ServiceDeploymentAddress: &serviceAddress2,
+				DatabaseName:             "test_db3",
+				DatabaseTableName:        "test_table3",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
+			},
+			{
+				ID:                       uint64(2),
+				CreatedAt:                now,
+				UpdatedAt:                now,
+				Name:                     "mother2",
+				ExceptionRate:            0.1,
+				ResponseDelayRate:        0.2,
+				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
+				ServiceDeploymentAddress: &serviceAddress1,
+				DatabaseName:             "test_db2",
+				DatabaseTableName:        "test_table2",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
+			},
+		}
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    2,
+			PerPage: 2,
+		} // LIMIT 2 OFFSET 2
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
+			WithArgs(2, 2).
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
@@ -452,22 +527,324 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 					expectedMotherServices[1].DatabaseName,
 					expectedMotherServices[1].DatabaseTableName,
 					expectedMotherServices[1].KafkaLiveFeedTopic,
-					expectedMotherServices[1].KafkaLiveFeedTopic,
+					expectedMotherServices[1].KafkaFactorialTopic,
 					expectedMotherServices[1].StoppedAt,
 					expectedMotherServices[1].RestartedAt,
 					expectedMotherServices[1].StartedAt,
 				))
 
-		result, err := repo.GetAll(context.Background())
+		result, err := repo.GetAll(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 2)
-		assert.Equal(t, expectedMotherServices[0].ID, result[0].ID)
-		assert.Equal(t, expectedMotherServices[0].Name, result[0].Name)
-		assert.Equal(t, expectedMotherServices[0].DatabaseName, result[0].DatabaseName)
-		assert.Equal(t, expectedMotherServices[1].ID, result[1].ID)
-		assert.Equal(t, expectedMotherServices[1].Name, result[1].Name)
-		assert.Equal(t, expectedMotherServices[1].DatabaseName, result[1].DatabaseName)
+
+		assert.Equal(t, uint64(3), result[0].ID)
+		assert.Equal(t, "mother3", result[0].Name)
+		assert.Equal(t, uint64(2), result[1].ID)
+		assert.Equal(t, "mother2", result[1].Name)
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("success case with pagination - page 3 with 10 per page", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		now := time.Now()
+		serviceAddress := "http://service.example.com"
+
+		expectedMotherService := &entity.MotherService{
+			ID:                       uint64(25),
+			CreatedAt:                now,
+			UpdatedAt:                now,
+			Name:                     "mother25",
+			ExceptionRate:            0.0,
+			ResponseDelayRate:        0.0,
+			ProvisioningStatus:       entity.ProvisioningStatusPending,
+			ServiceDeploymentAddress: &serviceAddress,
+			DatabaseName:             "test_db25",
+			DatabaseTableName:        "test_table25",
+		}
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    3,
+			PerPage: 10,
+		} // Page 3, perPage 10: LIMIT 10 OFFSET 20
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
+			WithArgs(10, 20).
+			WillReturnRows(sqlmock.NewRows([]string{
+				"id", "created_at", "updated_at", "deleted_at", "name",
+				"exception_rate", "response_delay_rate", "response_delay_duration",
+				"random_response_delay_min", "random_response_delay_max",
+				"provisioning_status", "service_deployment_address",
+				"database_name", "database_table_name", "kafka_livefeed_topic", "kafka_factorial_topic",
+				"stopped_at", "restarted_at", "started_at",
+			}).
+				AddRow(
+					expectedMotherService.ID,
+					expectedMotherService.CreatedAt,
+					expectedMotherService.UpdatedAt,
+					nil,
+					expectedMotherService.Name,
+					expectedMotherService.ExceptionRate,
+					expectedMotherService.ResponseDelayRate,
+					expectedMotherService.ResponseDelayDuration,
+					expectedMotherService.RandomResponseDelayMin,
+					expectedMotherService.RandomResponseDelayMax,
+					expectedMotherService.ProvisioningStatus,
+					expectedMotherService.ServiceDeploymentAddress,
+					expectedMotherService.DatabaseName,
+					expectedMotherService.DatabaseTableName,
+					expectedMotherService.KafkaLiveFeedTopic,
+					expectedMotherService.KafkaFactorialTopic,
+					expectedMotherService.StoppedAt,
+					expectedMotherService.RestartedAt,
+					expectedMotherService.StartedAt,
+				))
+
+		result, err := repo.GetAll(context.Background(), paginationRequest)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Len(t, result, 1)
+		assert.Equal(t, uint64(25), result[0].ID)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("success case without pagination - return all items (page=0, perPage=0)", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		now := time.Now()
+		serviceAddress1 := "http://service1.example.com"
+		serviceAddress2 := "http://service2.example.com"
+		serviceAddress3 := "http://service3.example.com"
+
+		expectedMotherServices := []*entity.MotherService{
+			{
+				ID:                       uint64(3),
+				CreatedAt:                now,
+				UpdatedAt:                now,
+				Name:                     "mother3",
+				ExceptionRate:            0.0,
+				ResponseDelayRate:        0.0,
+				ProvisioningStatus:       entity.ProvisioningStatusPending,
+				ServiceDeploymentAddress: &serviceAddress3,
+				DatabaseName:             "test_db3",
+				DatabaseTableName:        "test_table3",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
+			},
+			{
+				ID:                       uint64(2),
+				CreatedAt:                now,
+				UpdatedAt:                now,
+				Name:                     "mother2",
+				ExceptionRate:            0.0,
+				ResponseDelayRate:        0.0,
+				ProvisioningStatus:       entity.ProvisioningStatusPending,
+				ServiceDeploymentAddress: &serviceAddress2,
+				DatabaseName:             "test_db2",
+				DatabaseTableName:        "test_table2",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
+			},
+			{
+				ID:                       uint64(1),
+				CreatedAt:                now,
+				UpdatedAt:                now,
+				Name:                     "mother1",
+				ExceptionRate:            0.1,
+				ResponseDelayRate:        0.2,
+				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
+				ServiceDeploymentAddress: &serviceAddress1,
+				DatabaseName:             "test_db1",
+				DatabaseTableName:        "test_table1",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
+			},
+		}
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    0,
+			PerPage: 0,
+		} // No LIMIT or OFFSET
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC`)).
+			WillReturnRows(sqlmock.NewRows([]string{
+				"id", "created_at", "updated_at", "deleted_at", "name",
+				"exception_rate", "response_delay_rate", "response_delay_duration",
+				"random_response_delay_min", "random_response_delay_max",
+				"provisioning_status", "service_deployment_address",
+				"database_name", "database_table_name", "kafka_livefeed_topic", "kafka_factorial_topic",
+				"stopped_at", "restarted_at", "started_at",
+			}).
+				AddRow(
+					expectedMotherServices[0].ID,
+					expectedMotherServices[0].CreatedAt,
+					expectedMotherServices[0].UpdatedAt,
+					nil,
+					expectedMotherServices[0].Name,
+					expectedMotherServices[0].ExceptionRate,
+					expectedMotherServices[0].ResponseDelayRate,
+					expectedMotherServices[0].ResponseDelayDuration,
+					expectedMotherServices[0].RandomResponseDelayMin,
+					expectedMotherServices[0].RandomResponseDelayMax,
+					expectedMotherServices[0].ProvisioningStatus,
+					expectedMotherServices[0].ServiceDeploymentAddress,
+					expectedMotherServices[0].DatabaseName,
+					expectedMotherServices[0].DatabaseTableName,
+					expectedMotherServices[0].KafkaLiveFeedTopic,
+					expectedMotherServices[0].KafkaFactorialTopic,
+					expectedMotherServices[0].StoppedAt,
+					expectedMotherServices[0].RestartedAt,
+					expectedMotherServices[0].StartedAt,
+				).
+				AddRow(
+					expectedMotherServices[1].ID,
+					expectedMotherServices[1].CreatedAt,
+					expectedMotherServices[1].UpdatedAt,
+					nil,
+					expectedMotherServices[1].Name,
+					expectedMotherServices[1].ExceptionRate,
+					expectedMotherServices[1].ResponseDelayRate,
+					expectedMotherServices[1].ResponseDelayDuration,
+					expectedMotherServices[1].RandomResponseDelayMin,
+					expectedMotherServices[1].RandomResponseDelayMax,
+					expectedMotherServices[1].ProvisioningStatus,
+					expectedMotherServices[1].ServiceDeploymentAddress,
+					expectedMotherServices[1].DatabaseName,
+					expectedMotherServices[1].DatabaseTableName,
+					expectedMotherServices[1].KafkaLiveFeedTopic,
+					expectedMotherServices[1].KafkaFactorialTopic,
+					expectedMotherServices[1].StoppedAt,
+					expectedMotherServices[1].RestartedAt,
+					expectedMotherServices[1].StartedAt,
+				).
+				AddRow(
+					expectedMotherServices[2].ID,
+					expectedMotherServices[2].CreatedAt,
+					expectedMotherServices[2].UpdatedAt,
+					nil,
+					expectedMotherServices[2].Name,
+					expectedMotherServices[2].ExceptionRate,
+					expectedMotherServices[2].ResponseDelayRate,
+					expectedMotherServices[2].ResponseDelayDuration,
+					expectedMotherServices[2].RandomResponseDelayMin,
+					expectedMotherServices[2].RandomResponseDelayMax,
+					expectedMotherServices[2].ProvisioningStatus,
+					expectedMotherServices[2].ServiceDeploymentAddress,
+					expectedMotherServices[2].DatabaseName,
+					expectedMotherServices[2].DatabaseTableName,
+					expectedMotherServices[2].KafkaLiveFeedTopic,
+					expectedMotherServices[2].KafkaFactorialTopic,
+					expectedMotherServices[2].StoppedAt,
+					expectedMotherServices[2].RestartedAt,
+					expectedMotherServices[2].StartedAt,
+				))
+
+		result, err := repo.GetAll(context.Background(), paginationRequest)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Len(t, result, 3)
+		assert.Equal(t, uint64(3), result[0].ID)
+		assert.Equal(t, uint64(2), result[1].ID)
+		assert.Equal(t, uint64(1), result[2].ID)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("success case with empty result - page beyond available data", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    100,
+			PerPage: 10,
+		} // LIMIT 10 OFFSET 990
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
+			WithArgs(10, 990).
+			WillReturnRows(sqlmock.NewRows([]string{
+				"id", "created_at", "updated_at", "deleted_at", "name",
+				"exception_rate", "response_delay_rate", "response_delay_duration",
+				"random_response_delay_min", "random_response_delay_max",
+				"provisioning_status", "service_deployment_address",
+				"database_name", "database_table_name", "kafka_livefeed_topic", "kafka_factorial_topic",
+				"stopped_at", "restarted_at", "started_at",
+			}))
+
+		result, err := repo.GetAll(context.Background(), paginationRequest)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Len(t, result, 0)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("error case with pagination", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    2,
+			PerPage: 10,
+		}
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
+			WithArgs(10, 10).
+			WillReturnError(errors.New("database connection failed"))
+
+		result, err := repo.GetAll(context.Background(), paginationRequest)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "failed to get mother service records")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("error case if page is negative", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    -2,
+			PerPage: 10,
+		}
+
+		result, err := repo.GetAll(context.Background(), paginationRequest)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("error case if perPage is negative", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    2,
+			PerPage: -10,
+		}
+
+		result, err := repo.GetAll(context.Background(), paginationRequest)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }

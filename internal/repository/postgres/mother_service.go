@@ -27,7 +27,7 @@ func (m *motherServiceRepository) Create(ctx context.Context, motherService *ent
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateMotherService, pkg.ErrMotherServiceAlreadyExist)
+			return pkg.ErrMotherServiceAlreadyExist
 		}
 
 		return fmt.Errorf("failed to create mother service record: %w", err)
@@ -41,7 +41,7 @@ func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*enti
 	err := m.db.WithContext(ctx).First(&motherService, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, gorm.ErrRecordNotFound
+			return nil, pkg.ErrMotherServiceNotFound
 		}
 
 		return nil, fmt.Errorf("failed to get mother service record: %w", err)
@@ -50,9 +50,23 @@ func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*enti
 	return &motherService, nil
 }
 
-func (m *motherServiceRepository) GetAll(ctx context.Context) ([]*entity.MotherService, error) {
+func (m *motherServiceRepository) GetAll(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, error) {
 	var motherServices []*entity.MotherService
-	err := m.db.WithContext(ctx).Order("id DESC").Find(&motherServices).Error
+	if paginationRequest.Page < 0 || paginationRequest.PerPage < 0 {
+		return nil, fmt.Errorf("failed to get mother service records: %w", pkg.ErrNegativePageOrPerPageNotAllowed)
+	}
+
+	query := m.db.WithContext(ctx).Order("id DESC")
+
+	if paginationRequest.Page > 0 && paginationRequest.PerPage > 0 {
+		offset := (paginationRequest.Page - 1) * paginationRequest.PerPage
+		query = query.Limit(paginationRequest.PerPage)
+		if offset > 0 {
+			query = query.Offset(offset)
+		}
+	}
+
+	err := query.Find(&motherServices).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mother service records: %w", err)
 	}

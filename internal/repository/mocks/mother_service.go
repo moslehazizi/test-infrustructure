@@ -28,8 +28,13 @@ func (m *MockMotherService) GetByID(ctx context.Context, id uint64) (*entity.Mot
 	return result, args.Error(1)
 }
 
-func (m *MockMotherService) GetAll(ctx context.Context) ([]*entity.MotherService, error) {
-	args := m.Called(ctx)
+func (m *MockMotherService) GetAll(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, error) {
+	args := m.Called(ctx, paginationRequest)
 
-	return args.Get(0).([]*entity.MotherService), args.Error(1)
+	var result []*entity.MotherService
+	if args.Get(0) != nil {
+		result = args.Get(0).([]*entity.MotherService)
+	}
+
+	return result, args.Error(1)
 }

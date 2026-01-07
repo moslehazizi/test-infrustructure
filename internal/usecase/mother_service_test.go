@@ -7,6 +7,7 @@ import (
 	"control-panel-service/pkg"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -129,5 +130,100 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherService)
 		mockRepo.AssertCalled(t, "GetByID", ctx, inputID)
+	})
+}
+
+func TestMotherServiceUsecase_GetAll(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		service := NewMotherService(mockRepo)
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		serviceAddress1 := "http://service1.example.com"
+		serviceAddress2 := "http://service2.example.com"
+
+		expectedMotherServices := []*entity.MotherService{
+			{
+				ID:                       uint64(5),
+				CreatedAt:                time.Now(),
+				UpdatedAt:                time.Now(),
+				Name:                     "mother5",
+				ExceptionRate:            0.0,
+				ResponseDelayRate:        0.0,
+				ProvisioningStatus:       entity.ProvisioningStatusPending,
+				ServiceDeploymentAddress: &serviceAddress2,
+				DatabaseName:             "test_db5",
+				DatabaseTableName:        "test_table5",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
+			},
+			{
+				ID:                       uint64(4),
+				CreatedAt:                time.Now(),
+				UpdatedAt:                time.Now(),
+				Name:                     "mother4",
+				ExceptionRate:            0.1,
+				ResponseDelayRate:        0.2,
+				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
+				ServiceDeploymentAddress: &serviceAddress1,
+				DatabaseName:             "test_db4",
+				DatabaseTableName:        "test_table4",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
+			},
+		}
+
+		mockRepo.On("GetAll", ctx, paginationRequest).Return(expectedMotherServices, nil)
+
+		result, err := service.GetPaginated(ctx, paginationRequest)
+
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, expectedMotherServices, result)
+		mockRepo.AssertCalled(t, "GetAll", ctx, paginationRequest)
+	})
+
+	t.Run("failed case", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		service := NewMotherService(mockRepo)
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+
+		mockRepo.On("GetAll", ctx, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+
+		result, err := service.GetPaginated(ctx, paginationRequest)
+
+		assert.NotNil(t, err)
+		assert.Nil(t, result)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
+		mockRepo.AssertCalled(t, "GetAll", ctx, paginationRequest)
+	})
+
+	t.Run("failed case - negative page", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		service := NewMotherService(mockRepo)
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    -1,
+			PerPage: 2,
+		}
+
+		mockRepo.On("GetAll", ctx, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+
+		result, err := service.GetPaginated(ctx, paginationRequest)
+
+		assert.NotNil(t, err)
+		assert.Nil(t, result)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
+		mockRepo.AssertCalled(t, "GetAll", ctx, paginationRequest)
 	})
 }
