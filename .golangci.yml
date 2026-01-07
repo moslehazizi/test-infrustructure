@@ -112,6 +112,7 @@ linters:
       - examples$
       - .*_mock\.go
       - mock/.*\.go
+      - mocks/.*\.go
 formatters:
   enable:
     # - gci
