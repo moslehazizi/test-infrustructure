@@ -41,6 +41,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			ServiceDeploymentAddress: &serviceAddress,
 			DatabaseName:             "test_db",
 			DatabaseTableName:        "test_table",
+			KafkaFactorialTopic:      "factorial",
+			KafkaLiveFeedTopic:       "live_feed",
 			StoppedAt:                &now,
 			RestartedAt:              &now,
 			StartedAt:                &now,
@@ -48,7 +50,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name","stopped_at","restarted_at","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name","kafka_livefeed_topic","kafka_factorial_topic","stopped_at","restarted_at","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -61,6 +63,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 				motherService.ServiceDeploymentAddress,
 				motherService.DatabaseName,
 				motherService.DatabaseTableName,
+				motherService.KafkaLiveFeedTopic,
+				motherService.KafkaFactorialTopic,
 				motherService.StoppedAt,
 				motherService.RestartedAt,
 				motherService.StartedAt,
@@ -84,18 +88,20 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		now := time.Now()
 
 		motherService := &entity.MotherService{
-			Model:              gorm.Model{CreatedAt: now, UpdatedAt: now},
-			Name:               "mother1",
-			ExceptionRate:      0.0,
-			ResponseDelayRate:  0.0,
-			ProvisioningStatus: entity.ProvisioningStatusPending,
-			DatabaseName:       "test_db",
-			DatabaseTableName:  "test_table",
+			Model:               gorm.Model{CreatedAt: now, UpdatedAt: now},
+			Name:                "mother1",
+			ExceptionRate:       0.0,
+			ResponseDelayRate:   0.0,
+			ProvisioningStatus:  entity.ProvisioningStatusPending,
+			DatabaseName:        "test_db",
+			DatabaseTableName:   "test_table",
+			KafkaLiveFeedTopic:  "live_feed",
+			KafkaFactorialTopic: "factorial",
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name","stopped_at","restarted_at","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name","kafka_livefeed_topic","kafka_factorial_topic","stopped_at","restarted_at","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -108,6 +114,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 				motherService.ServiceDeploymentAddress,
 				motherService.DatabaseName,
 				motherService.DatabaseTableName,
+				motherService.KafkaLiveFeedTopic,
+				motherService.KafkaFactorialTopic,
 				motherService.StoppedAt,
 				motherService.RestartedAt,
 				motherService.StartedAt,
@@ -152,6 +160,8 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 			ServiceDeploymentAddress: &serviceAddress,
 			DatabaseName:             "test_db",
 			DatabaseTableName:        "test_table",
+			KafkaLiveFeedTopic:       "live_feed",
+			KafkaFactorialTopic:      "factorial",
 			StoppedAt:                &now,
 			RestartedAt:              &now,
 			StartedAt:                &now,
@@ -165,7 +175,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
 				"provisioning_status", "service_deployment_address",
-				"database_name", "database_table_name",
+				"database_name", "database_table_name", "kafka_livefeed_topic", "kafka_factorial_topic",
 				"stopped_at", "restarted_at", "started_at",
 			}).
 				AddRow(
@@ -183,6 +193,8 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 					expectedMotherService.ServiceDeploymentAddress,
 					expectedMotherService.DatabaseName,
 					expectedMotherService.DatabaseTableName,
+					expectedMotherService.KafkaLiveFeedTopic,
+					expectedMotherService.KafkaFactorialTopic,
 					expectedMotherService.StoppedAt,
 					expectedMotherService.RestartedAt,
 					expectedMotherService.StartedAt,
@@ -198,6 +210,8 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 		assert.Equal(t, expectedMotherService.ProvisioningStatus, result.ProvisioningStatus)
 		assert.Equal(t, expectedMotherService.DatabaseName, result.DatabaseName)
 		assert.Equal(t, expectedMotherService.DatabaseTableName, result.DatabaseTableName)
+		assert.Equal(t, expectedMotherService.KafkaLiveFeedTopic, result.KafkaLiveFeedTopic)
+		assert.Equal(t, expectedMotherService.KafkaFactorialTopic, result.KafkaFactorialTopic)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -252,7 +266,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
 				"provisioning_status", "service_deployment_address",
-				"database_name", "database_table_name",
+				"database_name", "database_table_name", "kafka_livefeed_topic", "kafka_factorial_topic",
 				"stopped_at", "restarted_at", "started_at",
 			}))
 
@@ -304,6 +318,8 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db2",
 				DatabaseTableName:        "test_table2",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
 			},
 			{
 				Model: gorm.Model{
@@ -318,6 +334,8 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db1",
 				DatabaseTableName:        "test_table1",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
 			},
 		}
 
@@ -328,7 +346,7 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
 				"provisioning_status", "service_deployment_address",
-				"database_name", "database_table_name",
+				"database_name", "database_table_name", "kafka_livefeed_topic", "kafka_factorial_topic",
 				"stopped_at", "restarted_at", "started_at",
 			}).
 				AddRow(
@@ -346,6 +364,8 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 					expectedMotherServices[0].ServiceDeploymentAddress,
 					expectedMotherServices[0].DatabaseName,
 					expectedMotherServices[0].DatabaseTableName,
+					expectedMotherServices[0].KafkaLiveFeedTopic,
+					expectedMotherServices[0].KafkaLiveFeedTopic,
 					expectedMotherServices[0].StoppedAt,
 					expectedMotherServices[0].RestartedAt,
 					expectedMotherServices[0].StartedAt,
@@ -365,6 +385,8 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 					expectedMotherServices[1].ServiceDeploymentAddress,
 					expectedMotherServices[1].DatabaseName,
 					expectedMotherServices[1].DatabaseTableName,
+					expectedMotherServices[1].KafkaLiveFeedTopic,
+					expectedMotherServices[1].KafkaLiveFeedTopic,
 					expectedMotherServices[1].StoppedAt,
 					expectedMotherServices[1].RestartedAt,
 					expectedMotherServices[1].StartedAt,
