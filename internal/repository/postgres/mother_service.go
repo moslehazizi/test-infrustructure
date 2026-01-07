@@ -4,8 +4,8 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
+	"errors"
 	"fmt"
-	"log"
 
 	"gorm.io/gorm"
 )
@@ -15,24 +15,40 @@ type motherServiceRepository struct {
 }
 
 func NewMotherServiceRepository(db *gorm.DB) repository.MotherServiceRepository {
-	log.Println("initializing mother service repository")
-
 	return &motherServiceRepository{
 		db: db,
 	}
 }
 
 func (m *motherServiceRepository) Create(ctx context.Context, motherService *entity.MotherService) error {
-	log.Printf("creating mother service record with input: %s", motherService.Name)
-
 	err := m.db.WithContext(ctx).Create(motherService).Error
 	if err != nil {
-		log.Printf("failed to create mother service record with input '%s': %v", motherService.Name, err)
-
 		return fmt.Errorf("failed to create mother service record: %w", err)
 	}
 
-	log.Printf("successfully created mother service record with ID: %d, input: %s", motherService.ID, motherService.Name)
-
 	return nil
+}
+
+func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {
+	var motherService entity.MotherService
+	err := m.db.WithContext(ctx).First(&motherService, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
+
+		return nil, fmt.Errorf("failed to get mother service record: %w", err)
+	}
+
+	return &motherService, nil
+}
+
+func (m *motherServiceRepository) GetAll(ctx context.Context) ([]*entity.MotherService, error) {
+	var motherServices []*entity.MotherService
+	err := m.db.WithContext(ctx).Find(&motherServices).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get mother service records: %w", err)
+	}
+
+	return motherServices, nil
 }
