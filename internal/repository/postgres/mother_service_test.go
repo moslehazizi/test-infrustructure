@@ -23,27 +23,27 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		repo := NewMotherServiceRepository(db)
 		now := time.Now()
-		
+
 		responseDelayDuration := 100
 		randomDelayMin := 50
 		randomDelayMax := 150
 		serviceAddress := "http://service.example.com"
 
 		motherService := &entity.MotherService{
-			Model:                     gorm.Model{CreatedAt: now, UpdatedAt: now},
-			Name:                      "mother1",
-			ExceptionRate:             0.1,
-			ResponseDelayRate:         0.2,
-			ResponseDelayDuration:     &responseDelayDuration,
-			RandomResponseDelayMin:    &randomDelayMin,
-			RandomResponseDelayMax:    &randomDelayMax,
-			ProvisioningStatus:        entity.ProvisioningStatusPending,
-			ServiceDeploymentAddress:  &serviceAddress,
-			DatabaseName:              "test_db",
-			DatabaseTableName:         "test_table",
-			StoppedAt:                 &now,
-			RestartedAt:               &now,
-			StartedAt:                 &now,
+			Model:                    gorm.Model{CreatedAt: now, UpdatedAt: now},
+			Name:                     "mother1",
+			ExceptionRate:            0.1,
+			ResponseDelayRate:        0.2,
+			ResponseDelayDuration:    &responseDelayDuration,
+			RandomResponseDelayMin:   &randomDelayMin,
+			RandomResponseDelayMax:   &randomDelayMax,
+			ProvisioningStatus:       entity.ProvisioningStatusPending,
+			ServiceDeploymentAddress: &serviceAddress,
+			DatabaseName:             "test_db",
+			DatabaseTableName:        "test_table",
+			StoppedAt:                &now,
+			RestartedAt:              &now,
+			StartedAt:                &now,
 		}
 
 		mock.ExpectBegin()
@@ -84,13 +84,13 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		now := time.Now()
 
 		motherService := &entity.MotherService{
-			Model:                     gorm.Model{CreatedAt: now, UpdatedAt: now},
-			Name:                      "mother1",
-			ExceptionRate:             0.0,
-			ResponseDelayRate:         0.0,
-			ProvisioningStatus:        entity.ProvisioningStatusPending,
-			DatabaseName:              "test_db",
-			DatabaseTableName:         "test_table",
+			Model:              gorm.Model{CreatedAt: now, UpdatedAt: now},
+			Name:               "mother1",
+			ExceptionRate:      0.0,
+			ResponseDelayRate:  0.0,
+			ProvisioningStatus: entity.ProvisioningStatusPending,
+			DatabaseName:       "test_db",
+			DatabaseTableName:  "test_table",
 		}
 
 		mock.ExpectBegin()
@@ -239,7 +239,48 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 }
 
 func TestMotherServiceRepository_GetAll(t *testing.T) {
-	t.Run("success case with multiple records", func(t *testing.T) {
+	t.Run("success case with empty result", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC`)).
+			WillReturnRows(sqlmock.NewRows([]string{
+				"id", "created_at", "updated_at", "deleted_at", "name",
+				"exception_rate", "response_delay_rate", "response_delay_duration",
+				"random_response_delay_min", "random_response_delay_max",
+				"provisioning_status", "service_deployment_address",
+				"database_name", "database_table_name",
+				"stopped_at", "restarted_at", "started_at",
+			}))
+
+		result, err := repo.GetAll(context.Background())
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Len(t, result, 0)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("error case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC`)).
+			WillReturnError(errors.New("database connection failed"))
+
+		result, err := repo.GetAll(context.Background())
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "failed to get mother service records")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("success case with order by id desc", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -250,20 +291,6 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 		serviceAddress2 := "http://service2.example.com"
 
 		expectedMotherServices := []*entity.MotherService{
-			{
-				Model: gorm.Model{
-					ID:        1,
-					CreatedAt: now,
-					UpdatedAt: now,
-				},
-				Name:                     "mother1",
-				ExceptionRate:            0.1,
-				ResponseDelayRate:        0.2,
-				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
-				ServiceDeploymentAddress: &serviceAddress1,
-				DatabaseName:             "test_db1",
-				DatabaseTableName:        "test_table1",
-			},
 			{
 				Model: gorm.Model{
 					ID:        2,
@@ -278,10 +305,24 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 				DatabaseName:             "test_db2",
 				DatabaseTableName:        "test_table2",
 			},
+			{
+				Model: gorm.Model{
+					ID:        1,
+					CreatedAt: now,
+					UpdatedAt: now,
+				},
+				Name:                     "mother1",
+				ExceptionRate:            0.1,
+				ResponseDelayRate:        0.2,
+				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
+				ServiceDeploymentAddress: &serviceAddress1,
+				DatabaseName:             "test_db1",
+				DatabaseTableName:        "test_table1",
+			},
 		}
 
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`)).
+			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC`)).
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
@@ -339,47 +380,6 @@ func TestMotherServiceRepository_GetAll(t *testing.T) {
 		assert.Equal(t, expectedMotherServices[1].ID, result[1].ID)
 		assert.Equal(t, expectedMotherServices[1].Name, result[1].Name)
 		assert.Equal(t, expectedMotherServices[1].DatabaseName, result[1].DatabaseName)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("success case with empty result", func(t *testing.T) {
-		conn := new(mocks.Connection)
-		db, mock, err := conn.OpenConnection()
-		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
-
-		mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`)).
-			WillReturnRows(sqlmock.NewRows([]string{
-				"id", "created_at", "updated_at", "deleted_at", "name",
-				"exception_rate", "response_delay_rate", "response_delay_duration",
-				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
-				"database_name", "database_table_name",
-				"stopped_at", "restarted_at", "started_at",
-			}))
-
-		result, err := repo.GetAll(context.Background())
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Len(t, result, 0)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("error case", func(t *testing.T) {
-		conn := new(mocks.Connection)
-		db, mock, err := conn.OpenConnection()
-		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
-
-		mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`)).
-			WillReturnError(errors.New("database connection failed"))
-
-		result, err := repo.GetAll(context.Background())
-		assert.Error(t, err)
-		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "failed to get mother service records")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
