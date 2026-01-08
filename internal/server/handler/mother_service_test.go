@@ -39,8 +39,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		reqBody := `{
         "name": "my-service",
-        "exception_rate": 0.0,
-        "response_delay_rate": 0.0,
+        "exception_rate": 10,
+        "response_delay_rate": 20,
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -49,8 +49,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
 			return svc.Name == "my-service" &&
-				svc.ExceptionRate == 0.0 &&
-				svc.ResponseDelayRate == 0.0 &&
+				svc.ExceptionRate == 10 &&
+				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data" &&
@@ -110,7 +110,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		app.Post("/mother-service", handler.Create())
 
 		reqBody := `{
-        "response_delay_rate": 0.0,
+        "response_delay_rate": 10,
         "database_name": "service_db",
         "database_table_name": "data",
     }`
@@ -140,8 +140,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		reqBody := `{
         "name": "my-service",
-        "exception_rate": 0.0,
-        "response_delay_rate": 0.0,
+        "exception_rate": 10,
+        "response_delay_rate": 20,
 		"response_delay_duration": 1,
 		"random_response_delay_min": 2,
 		"random_response_delay_max": 3,
@@ -157,8 +157,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
 			return svc.Name == "my-service" &&
-				svc.ExceptionRate == 0.0 &&
-				svc.ResponseDelayRate == 0.0 &&
+				svc.ExceptionRate == 10 &&
+				svc.ResponseDelayRate == 20 &&
 				svc.ResponseDelayDuration != nil && *svc.ResponseDelayDuration == sampleOne &&
 				svc.RandomResponseDelayMin != nil && *svc.RandomResponseDelayMin == sampleTwo &&
 				svc.RandomResponseDelayMax != nil && *svc.RandomResponseDelayMax == sampleThree &&
@@ -196,8 +196,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		reqBody := `{
         "name": "my-service",
-        "exception_rate": 0.0,
-        "response_delay_rate": 0.0,
+        "exception_rate": 10,
+        "response_delay_rate": 20,
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -206,8 +206,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
 			return svc.Name == "my-service" &&
-				svc.ExceptionRate == 0.0 &&
-				svc.ResponseDelayRate == 0.0 &&
+				svc.ExceptionRate == 10 &&
+				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data" &&
@@ -242,8 +242,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		reqBody := `{
         "name": "my-service",
-        "exception_rate": 0.0,
-        "response_delay_rate": 0.0,
+        "exception_rate": 10,
+        "response_delay_rate": 20,
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -252,8 +252,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
 			return svc.Name == "my-service" &&
-				svc.ExceptionRate == 0.0 &&
-				svc.ResponseDelayRate == 0.0 &&
+				svc.ExceptionRate == 10 &&
+				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data" &&
@@ -288,8 +288,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		reqBody := `{
         "name": "my-service",
-        "exception_rate": 0.0,
-        "response_delay_rate": 0.0,
+        "exception_rate": 10,
+        "response_delay_rate": 20,
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -298,8 +298,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
 			return svc.Name == "my-service" &&
-				svc.ExceptionRate == 0.0 &&
-				svc.ResponseDelayRate == 0.0 &&
+				svc.ExceptionRate == 10 &&
+				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data" &&
@@ -333,8 +333,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		reqBody := `{
         "name": "my-service",
-        "exception_rate": 0.0,
-        "response_delay_rate": 0.0,
+        "exception_rate": 10,
+        "response_delay_rate": 20,
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -343,8 +343,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
 			return svc.Name == "my-service" &&
-				svc.ExceptionRate == 0.0 &&
-				svc.ResponseDelayRate == 0.0 &&
+				svc.ExceptionRate == 10 &&
+				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data" &&
@@ -379,8 +379,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		reqBody := `{
         "name": "my-service",
-        "exception_rate": 0.0,
-        "response_delay_rate": 0.0,
+        "exception_rate": 10,
+        "response_delay_rate": 20,
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -389,8 +389,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
 			return svc.Name == "my-service" &&
-				svc.ExceptionRate == 0.0 &&
-				svc.ResponseDelayRate == 0.0 &&
+				svc.ExceptionRate == 10 &&
+				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data" &&
@@ -424,8 +424,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		reqBody := `{
         "name": "my-service",
-        "exception_rate": 0.0,
-        "response_delay_rate": 0.0,
+        "exception_rate": 10,
+        "response_delay_rate": 20,
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -434,8 +434,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
 			return svc.Name == "my-service" &&
-				svc.ExceptionRate == 0.0 &&
-				svc.ResponseDelayRate == 0.0 &&
+				svc.ExceptionRate == 10 &&
+				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data" &&

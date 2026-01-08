@@ -1,8 +1,9 @@
 package pkg
 
+// nolint
 const (
 	CreateMotherServiceSuccessfully = "سرویس مادر مورد نظر با موفقیت ایجاد گردید"
-	InvalidReqBody                  = "درخواست نامعتبر است"
+	InvalidReqBody                  = "درخواست نامعتبر است یا موارد الزامی را تکمیل کنید"
 	MotherServiceAlreadyExist       = "سرویس مادر مورد نظر از قبل موجود است"
 	InternalServerErrorMessage      = "خطای داخلی سرورو اتفاق افتاده است."
 	InvalidIDInParams               = "شناسه سرویس مادر معتبر نیست"

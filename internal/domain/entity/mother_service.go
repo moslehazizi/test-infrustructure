@@ -23,8 +23,8 @@ type MotherService struct {
 	UpdatedAt                time.Time          `gorm:"column:updated_at"`
 	DeletedAt                *gorm.DeletedAt    `gorm:"column:deleted_at"`
 	Name                     string             `gorm:"column:name"`
-	ExceptionRate            float64            `gorm:"column:exception_rate"`
-	ResponseDelayRate        float64            `gorm:"column:response_delay_rate"`
+	ExceptionRate            int                `gorm:"column:exception_rate"`
+	ResponseDelayRate        int                `gorm:"column:response_delay_rate"`
 	ResponseDelayDuration    *int               `gorm:"column:response_delay_duration"`
 	RandomResponseDelayMin   *int               `gorm:"column:random_response_delay_min"`
 	RandomResponseDelayMax   *int               `gorm:"column:random_response_delay_max"`
@@ -49,6 +49,7 @@ func (MotherService) TableName() string {
 	return "mother_services"
 }
 
+// nolint
 func (m *MotherService) Validate() error {
 	if m.Name == "" {
 		return pkg.ErrInvalidName

@@ -119,7 +119,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName:   "factorial",
 			KafkaLiveFeedTopic:  "live_feed",
 			KafkaFactorialTopic: "factorial",
-			ExceptionRate:       0.5,
+			ExceptionRate:       10,
 			ResponseDelayRate:   -1,
 		}
 
@@ -140,7 +140,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName:   "factorial",
 			KafkaLiveFeedTopic:  "live_feed",
 			KafkaFactorialTopic: "factorial",
-			ExceptionRate:       -0.5,
+			ExceptionRate:       -10,
 		}
 
 		err := service.Create(ctx, sampleMS)
@@ -162,7 +162,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName:     "factorial",
 			KafkaLiveFeedTopic:    "live_feed",
 			KafkaFactorialTopic:   "factorial",
-			ExceptionRate:         0.5,
+			ExceptionRate:         10,
 			ResponseDelayRate:     0,
 			ResponseDelayDuration: &duration,
 		}
@@ -274,8 +274,8 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 				CreatedAt:                time.Now(),
 				UpdatedAt:                time.Now(),
 				Name:                     "mother4",
-				ExceptionRate:            0.1,
-				ResponseDelayRate:        0.2,
+				ExceptionRate:            10,
+				ResponseDelayRate:        20,
 				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db4",

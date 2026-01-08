@@ -91,7 +91,6 @@ func (handler *MotherService) Create() fiber.Handler {
 				return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{
 					"error": pkg.InvalidRandomDelayRange,
 				})
-
 			}
 
 			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{

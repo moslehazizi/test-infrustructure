@@ -15,7 +15,7 @@ func TestMotherService_Validate(t *testing.T) {
 			DatabaseTableName:   "table",
 			KafkaLiveFeedTopic:  "live_feed",
 			KafkaFactorialTopic: "factorial",
-			ExceptionRate:       0.1,
+			ExceptionRate:       10,
 			ResponseDelayRate:   0,
 		}
 
@@ -32,7 +32,7 @@ func TestMotherService_Validate(t *testing.T) {
 			DatabaseTableName:     "table",
 			KafkaLiveFeedTopic:    "live_feed",
 			KafkaFactorialTopic:   "factorial",
-			ResponseDelayRate:     0.5,
+			ResponseDelayRate:     10,
 			ResponseDelayDuration: &duration,
 		}
 
@@ -50,7 +50,7 @@ func TestMotherService_Validate(t *testing.T) {
 			DatabaseTableName:      "table",
 			KafkaLiveFeedTopic:     "live_feed",
 			KafkaFactorialTopic:    "factorial",
-			ResponseDelayRate:      0.5,
+			ResponseDelayRate:      10,
 			RandomResponseDelayMin: &minDelay,
 			RandomResponseDelayMax: &maxDelay,
 		}
@@ -142,7 +142,7 @@ func TestMotherService_Validate(t *testing.T) {
 			DatabaseTableName:      "table",
 			KafkaLiveFeedTopic:     "live_feed",
 			KafkaFactorialTopic:    "factorial",
-			ResponseDelayRate:      0.5,
+			ResponseDelayRate:      10,
 			ResponseDelayDuration:  &duration,
 			RandomResponseDelayMin: &minDelay,
 		}
@@ -162,7 +162,7 @@ func TestMotherService_Validate(t *testing.T) {
 			DatabaseTableName:      "table",
 			KafkaLiveFeedTopic:     "live_feed",
 			KafkaFactorialTopic:    "factorial",
-			ResponseDelayRate:      0.5,
+			ResponseDelayRate:      10,
 			RandomResponseDelayMin: &min,
 			RandomResponseDelayMax: &max,
 		}
@@ -181,7 +181,7 @@ func TestMotherService_Validate(t *testing.T) {
 			DatabaseTableName:      "table",
 			KafkaLiveFeedTopic:     "live_feed",
 			KafkaFactorialTopic:    "factorial",
-			ResponseDelayRate:      0.5,
+			ResponseDelayRate:      10,
 			RandomResponseDelayMin: &min,
 		}
 
@@ -199,7 +199,7 @@ func TestMotherService_Validate(t *testing.T) {
 			DatabaseTableName:      "table",
 			KafkaLiveFeedTopic:     "live_feed",
 			KafkaFactorialTopic:    "factorial",
-			ResponseDelayRate:      0.5,
+			ResponseDelayRate:      10,
 			RandomResponseDelayMax: &max,
 		}
 
