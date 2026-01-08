@@ -2,11 +2,13 @@ package handler
 
 import (
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -466,6 +468,284 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		assert.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 		assert.Equal(t, response.Error, pkg.InternalServerErrorMessage)
 
+		mockSvc.AssertExpectations(t)
+	})
+}
+
+func TestMotherServiceHandler_GetPaginated(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service/paginated", handler.GetPaginated())
+
+		sampleTime := time.Now()
+		sampleString := "sample"
+		sampleNum := 1
+		sampleReq := request.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		sampleSvcReq := entity.PaginationRequest{
+			Page:    sampleReq.Page,
+			PerPage: sampleReq.PerPage,
+		}
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
+		expectedMotherServices := []*entity.MotherService{
+			{
+				ID:                       uint64(5),
+				Name:                     "mother1",
+				ProvisioningStatus:       entity.ProvisioningStatusFailed,
+				DatabaseName:             "db1",
+				DatabaseTableName:        "factorial",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
+				StartedAt:                &sampleTime,
+				RestartedAt:              &sampleTime,
+				StoppedAt:                &sampleTime,
+				ServiceDeploymentAddress: &sampleString,
+				ResponseDelayDuration:    &sampleNum,
+				RandomResponseDelayMin:   &sampleNum,
+				RandomResponseDelayMax:   &sampleNum,
+			},
+			{
+				ID:                       uint64(4),
+				Name:                     "mother2",
+				ProvisioningStatus:       entity.ProvisioningStatusFailed,
+				DatabaseName:             "db1",
+				DatabaseTableName:        "factorial",
+				KafkaLiveFeedTopic:       "live_feed",
+				KafkaFactorialTopic:      "factorial",
+				StartedAt:                &sampleTime,
+				RestartedAt:              &sampleTime,
+				StoppedAt:                &sampleTime,
+				ServiceDeploymentAddress: &sampleString,
+				ResponseDelayDuration:    &sampleNum,
+				RandomResponseDelayMin:   &sampleNum,
+				RandomResponseDelayMax:   &sampleNum,
+			},
+		}
+
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result struct {
+			Data    []response.MotherService `json:"data"`
+			Page    int                      `json:"page"`
+			PerPage int                      `json:"per_page"`
+		}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, result.Data[0].Name, expectedMotherServices[0].Name)
+		assert.Equal(t, result.Data[1].Name, expectedMotherServices[1].Name)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("success case - with nil values", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service/paginated", handler.GetPaginated())
+
+		sampleReq := request.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		sampleSvcReq := entity.PaginationRequest{
+			Page:    sampleReq.Page,
+			PerPage: sampleReq.PerPage,
+		}
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
+		expectedMotherServices := []*entity.MotherService{
+			{
+				ID:                  uint64(5),
+				Name:                "mother1",
+				ProvisioningStatus:  entity.ProvisioningStatusFailed,
+				DatabaseName:        "db1",
+				DatabaseTableName:   "factorial",
+				KafkaLiveFeedTopic:  "live_feed",
+				KafkaFactorialTopic: "factorial",
+			},
+			{
+				ID:                  uint64(4),
+				Name:                "mother2",
+				ProvisioningStatus:  entity.ProvisioningStatusFailed,
+				DatabaseName:        "db1",
+				DatabaseTableName:   "factorial",
+				KafkaLiveFeedTopic:  "live_feed",
+				KafkaFactorialTopic: "factorial",
+			},
+		}
+
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result struct {
+			Data    []response.MotherService `json:"data"`
+			Page    int                      `json:"page"`
+			PerPage int                      `json:"per_page"`
+		}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, result.Data[0].Name, expectedMotherServices[0].Name)
+		assert.Equal(t, result.Data[1].Name, expectedMotherServices[1].Name)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("failed case - invalid request", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service/paginated", handler.GetPaginated())
+
+		reqBody := `{"page": ewy,"per_page": erw}`
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result struct {
+			Error string `json:"error"`
+		}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("failed case - invalid request negative page or per page", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service/paginated", handler.GetPaginated())
+
+		reqBody := `{"page": -1,"per_page": 3}`
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result struct {
+			Error string `json:"error"`
+		}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("failed case - internal server error", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service/paginated", handler.GetPaginated())
+
+		sampleReq := request.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		sampleSvcReq := entity.PaginationRequest{
+			Page:    sampleReq.Page,
+			PerPage: sampleReq.PerPage,
+		}
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
+
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(nil, errors.New("error happened"))
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result struct {
+			Error string `json:"error"`
+		}
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("success case - empty result", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service/paginated", handler.GetPaginated())
+
+		sampleReq := request.PaginationRequest{
+			Page:    0,
+			PerPage: 0,
+		}
+		sampleSvcReq := entity.PaginationRequest{
+			Page:    sampleReq.Page,
+			PerPage: sampleReq.PerPage,
+		}
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
+
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return([]*entity.MotherService{}, nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result struct {
+			Data    []response.MotherService `json:"data"`
+			Page    int                      `json:"page"`
+			PerPage int                      `json:"per_page"`
+		}
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, result.Data, []response.MotherService(nil))
 		mockSvc.AssertExpectations(t)
 	})
 }

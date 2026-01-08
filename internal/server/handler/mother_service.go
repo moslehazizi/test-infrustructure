@@ -97,14 +97,14 @@ func (handler *MotherService) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		strID := strings.TrimSpace(ctx.Params("id"))
 
-		id, err := strconv.Atoi(strID)
+		id, err := strconv.ParseUint(strID, 10, 64)
 		if err != nil {
 			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
 				"error": pkg.InvalidIDInParams,
 			})
 		}
 
-		svcResult, err := handler.motherService.GetByID(ctx.Context(), uint64(id))
+		svcResult, err := handler.motherService.GetByID(ctx.Context(), id)
 		if err != nil {
 			if errors.Is(err, pkg.ErrMotherServiceNotFound) {
 				return ctx.Status(http.StatusNotFound).JSON(&fiber.Map{
@@ -118,9 +118,9 @@ func (handler *MotherService) GetByID() fiber.Handler {
 		}
 
 		response := response.MotherService{
-			ID:        svcResult.ID,
-			CreatedAt: svcResult.CreatedAt,
-			UpdatedAt: svcResult.UpdatedAt,
+			ID:                svcResult.ID,
+			CreatedAt:         svcResult.CreatedAt,
+			UpdatedAt:         svcResult.UpdatedAt,
 			Name:              svcResult.Name,
 			ExceptionRate:     svcResult.ExceptionRate,
 			ResponseDelayRate: svcResult.ResponseDelayRate,
@@ -182,6 +182,108 @@ func (handler *MotherService) GetByID() fiber.Handler {
 
 		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
 			"data": response,
+		})
+	}
+}
+
+func (handler *MotherService) GetPaginated() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		req := new(request.PaginationRequest)
+
+		if err := ctx.BodyParser(req); err != nil {
+			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
+				"error": pkg.InvalidReqBody,
+			})
+		}
+
+		if req.Page < 0 || req.PerPage < 0 {
+			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
+				"error": pkg.InvalidReqBody,
+			})
+		}
+
+		reqSvc := entity.PaginationRequest{
+			Page:    req.Page,
+			PerPage: req.PerPage,
+		}
+
+		svcResults, err := handler.motherService.GetPaginated(ctx.Context(), reqSvc)
+		if err != nil {
+			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
+				"error": pkg.InternalServerErrorMessage,
+			})
+		}
+
+		var responses []response.MotherService
+		for _, svcResult := range svcResults {
+			responses = append(responses, response.MotherService{
+				ID:                svcResult.ID,
+				CreatedAt:         svcResult.CreatedAt,
+				UpdatedAt:         svcResult.UpdatedAt,
+				Name:              svcResult.Name,
+				ExceptionRate:     svcResult.ExceptionRate,
+				ResponseDelayRate: svcResult.ResponseDelayRate,
+				ResponseDelayDuration: func() *int {
+					if svcResult.ResponseDelayDuration != nil {
+						return svcResult.ResponseDelayDuration
+					}
+
+					return nil
+				}(),
+				RandomResponseDelayMin: func() *int {
+					if svcResult.RandomResponseDelayMin != nil {
+						return svcResult.RandomResponseDelayMin
+					}
+
+					return nil
+				}(),
+				RandomResponseDelayMax: func() *int {
+					if svcResult.RandomResponseDelayMax != nil {
+						return svcResult.RandomResponseDelayMax
+					}
+
+					return nil
+				}(),
+				ProvisioningStatus: string(svcResult.ProvisioningStatus),
+				ServiceDeploymentAddress: func() *string {
+					if svcResult.ServiceDeploymentAddress != nil {
+						return svcResult.ServiceDeploymentAddress
+					}
+
+					return nil
+				}(),
+				DatabaseName:        svcResult.DatabaseName,
+				DatabaseTableName:   svcResult.DatabaseTableName,
+				KafkaLiveFeedTopic:  svcResult.KafkaLiveFeedTopic,
+				KafkaFactorialTopic: svcResult.KafkaFactorialTopic,
+				StoppedAt: func() *time.Time {
+					if svcResult.StoppedAt != nil {
+						return svcResult.StoppedAt
+					}
+
+					return nil
+				}(),
+				RestartedAt: func() *time.Time {
+					if svcResult.RestartedAt != nil {
+						return svcResult.RestartedAt
+					}
+
+					return nil
+				}(),
+				StartedAt: func() *time.Time {
+					if svcResult.StartedAt != nil {
+						return svcResult.StartedAt
+					}
+
+					return nil
+				}(),
+			})
+		}
+
+		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
+			"data":     responses,
+			"page":     req.Page,
+			"per_page": req.PerPage,
 		})
 	}
 }

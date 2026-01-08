@@ -19,3 +19,8 @@ type MotherService struct {
 	KafkaLiveFeedTopic       string    `json:"kafka_livefeed_topic"`
 	KafkaFactorialTopic      string    `json:"kafka_factorial_topic"`
 }
+
+type PaginationRequest struct {
+	Page    int `json:"page"`
+	PerPage int `json:"per_page"`
+}
