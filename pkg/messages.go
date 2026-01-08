@@ -8,8 +8,8 @@ const (
 	InternalServerErrorMessage      = "خطای داخلی سرورو اتفاق افتاده است."
 	InvalidIDInParams               = "شناسه سرویس مادر معتبر نیست"
 	MotherServiceNotFound           = "سرویس مادر مورد نظر یافت نشد"
-	InvalidResponseDelayRate        = "ریت تاخیر در پاسخ نباید عدد منفی باشد"
-	InvalidExceptionRate            = "مقدار درصد پاسخ با مقدار قابل پیشبینی نباید منفی باشد"
+	InvalidResponseDelayRate        = "درصد تاخیر در پاسخ باید عددی بین ۰ تا ۱۰۰ باشد"
+	InvalidExceptionRate            = "مقدار درصد پاسخ با مقدار قابل پیشبینی باید عددی بین ۰ تا ۱۰۰ باشد"
 	InvalidDelayConfiguration       = "تنظیمات تاخیر صحیح نیست؛ لطفاً یکی از گزینه‌های بدون تاخیر، تاخیر ثابت و یا تاخیر تصادفی را انتخاب کنید"
 	InvalidRandomDelayRange         = "بازه تاخیر تصادفی نامعتبر است؛ مقدار حداقل باید کوچکتر از حداکثر باشد"
 )

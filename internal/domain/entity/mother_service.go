@@ -55,11 +55,11 @@ func (m *MotherService) Validate() error {
 		return pkg.ErrInvalidName
 	}
 
-	if m.ExceptionRate < 0 {
+	if m.ExceptionRate < 0 || m.ExceptionRate > 100 {
 		return pkg.ErrInvalidExceptionRate
 	}
 
-	if m.ResponseDelayRate < 0 {
+	if m.ResponseDelayRate < 0 || m.ResponseDelayRate > 100 {
 		return pkg.ErrInvalidResponseDelayRate
 	}
 

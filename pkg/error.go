@@ -19,8 +19,8 @@ var (
 
 	// Validation errors.
 	ErrInvalidName                = errors.New("mother service name is required")
-	ErrInvalidExceptionRate       = errors.New("exception rate must be greater than or equal to 0")
-	ErrInvalidResponseDelayRate   = errors.New("response delay rate must be greater than or equal to 0")
+	ErrInvalidExceptionRate       = errors.New("exception rate must be between 0 and 100")
+	ErrInvalidResponseDelayRate   = errors.New("response delay rate must be between 0 and 100")
 	ErrInvalidDelayConfiguration  = errors.New("invalid delay configuration: must be either no delay, fixed delay, or random delay")
 	ErrInvalidRandomDelayRange    = errors.New("random delay min must be less than max")
 	ErrInvalidDatabaseName        = errors.New("database name is required")

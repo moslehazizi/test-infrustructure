@@ -83,10 +83,34 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidResponseDelayRate)
 	})
 
+	t.Run("failed case - delay rate is bigger than 100", func(t *testing.T) {
+		service := MotherService{
+			Name:              "test",
+			ResponseDelayRate: 101,
+		}
+
+		err := service.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidResponseDelayRate)
+	})
+
 	t.Run("failed case - exception rate is negative", func(t *testing.T) {
 		service := MotherService{
 			Name:          "test",
 			ExceptionRate: -1,
+		}
+
+		err := service.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidExceptionRate)
+	})
+
+	t.Run("failed case - exception rate is bigger than 100", func(t *testing.T) {
+		service := MotherService{
+			Name:          "test",
+			ExceptionRate: 101,
 		}
 
 		err := service.Validate()
