@@ -1,8 +1,9 @@
 package pkg
 
 import (
-	"fmt"
+	"net"
 	"net/url"
+	"strconv"
 )
 
 type DatabaseConfig struct {
@@ -20,7 +21,7 @@ func GetConnectionString(cfg DatabaseConfig) string {
 	conURL := url.URL{
 		Scheme: "postgres",
 		User:   userpass,
-		Host:   fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+		Host:   net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)),
 		Path:   cfg.Database,
 	}
 
