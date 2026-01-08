@@ -35,8 +35,6 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateMotherService, err)
 	}
 
-	// TODO: create instance in k8s
-
 	return nil
 }
 
