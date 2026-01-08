@@ -2,6 +2,7 @@ package handler
 
 import (
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
 	"encoding/json"
@@ -11,6 +12,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
@@ -272,6 +274,198 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 		assert.Equal(t, pkg.InternalServerErrorMessage, result["error"])
+		mockSvc.AssertExpectations(t)
+	})
+}
+
+func TestMotherServiceHandler_GetByID(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		expectedSvcResp := &entity.MotherService{
+			Name:                "mother1",
+			ProvisioningStatus:  entity.ProvisioningStatusFailed,
+			DatabaseName:        "db1",
+			DatabaseTableName:   "factorial",
+			KafkaLiveFeedTopic:  "live_feed",
+			KafkaFactorialTopic: "factorial",
+		}
+
+		app := fiber.New()
+		app.Get("mother-service/:id", handler.GetByID())
+
+		mockSvc.On("GetByID", mock.Anything, uint64(1)).Return(expectedSvcResp, nil)
+
+		req := httptest.NewRequest(http.MethodGet, "/mother-service/1", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req)
+		assert.Nil(t, err)
+
+		var response struct {
+			Data response.MotherService `json:"data"`
+		}
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusOK)
+		assert.NotNil(t, response)
+		assert.Equal(t, expectedSvcResp.Name, response.Data.Name)
+		assert.Equal(t, string(expectedSvcResp.ProvisioningStatus), response.Data.ProvisioningStatus)
+		assert.Equal(t, expectedSvcResp.DatabaseName, response.Data.DatabaseName)
+		assert.Equal(t, expectedSvcResp.DatabaseTableName, response.Data.DatabaseTableName)
+		assert.Equal(t, expectedSvcResp.KafkaFactorialTopic, response.Data.KafkaFactorialTopic)
+		assert.Equal(t, expectedSvcResp.KafkaLiveFeedTopic, response.Data.KafkaLiveFeedTopic)
+		assert.Nil(t, response.Data.ServiceDeploymentAddress)
+
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("success case - with pointer values", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+		sampleTime := time.Now()
+		sampleString := "service-address"
+		sampleNum := 1
+
+		expectedSvcResp := &entity.MotherService{
+			Name:                     "mother1",
+			ProvisioningStatus:       entity.ProvisioningStatusFailed,
+			DatabaseName:             "db1",
+			DatabaseTableName:        "factorial",
+			KafkaLiveFeedTopic:       "live_feed",
+			KafkaFactorialTopic:      "factorial",
+			StartedAt:                &sampleTime,
+			RestartedAt:              &sampleTime,
+			StoppedAt:                &sampleTime,
+			ServiceDeploymentAddress: &sampleString,
+			ResponseDelayDuration:    &sampleNum,
+			RandomResponseDelayMin:   &sampleNum,
+			RandomResponseDelayMax:   &sampleNum,
+		}
+
+		app := fiber.New()
+		app.Get("mother-service/:id", handler.GetByID())
+
+		mockSvc.On("GetByID", mock.Anything, uint64(1)).Return(expectedSvcResp, nil)
+
+		req := httptest.NewRequest(http.MethodGet, "/mother-service/1", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req)
+		assert.Nil(t, err)
+
+		var response struct {
+			Data response.MotherService `json:"data"`
+		}
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusOK)
+		assert.NotNil(t, response)
+		assert.Equal(t, expectedSvcResp.ServiceDeploymentAddress, response.Data.ServiceDeploymentAddress)
+		assert.Equal(t, expectedSvcResp.StartedAt.Unix(), response.Data.StartedAt.Unix())
+		assert.Equal(t, expectedSvcResp.StoppedAt.Unix(), response.Data.StoppedAt.Unix())
+		assert.Equal(t, expectedSvcResp.RestartedAt.Unix(), response.Data.RestartedAt.Unix())
+
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("failed case - invalid id", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New()
+		app.Get("mother-service/:id", handler.GetByID())
+
+		req := httptest.NewRequest(http.MethodGet, "/mother-service/sd12", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req)
+		assert.Nil(t, err)
+
+		var response struct {
+			Error string `json:"error"`
+		}
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
+	})
+
+	t.Run("failed case - not found", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New()
+		app.Get("mother-service/:id", handler.GetByID())
+
+		mockSvc.On("GetByID", mock.Anything, uint64(1)).Return(nil, pkg.ErrMotherServiceNotFound)
+
+		req := httptest.NewRequest(http.MethodGet, "/mother-service/1", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req)
+		assert.Nil(t, err)
+
+		var response struct {
+			Error string `json:"error"`
+		}
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusNotFound)
+		assert.Equal(t, response.Error, pkg.MotherServiceNotFound)
+
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("failed case - internal server error", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New()
+		app.Get("mother-service/:id", handler.GetByID())
+
+		mockSvc.On("GetByID", mock.Anything, uint64(1)).Return(nil, errors.New("error happened"))
+
+		req := httptest.NewRequest(http.MethodGet, "/mother-service/1", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req)
+		assert.Nil(t, err)
+
+		var response struct {
+			Error string `json:"error"`
+		}
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusInternalServerError)
+		assert.Equal(t, response.Error, pkg.InternalServerErrorMessage)
+
 		mockSvc.AssertExpectations(t)
 	})
 }

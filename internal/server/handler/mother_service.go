@@ -3,10 +3,13 @@ package handler
 import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/server/dto/request"
+	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
 	"errors"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -86,6 +89,99 @@ func (handler *MotherService) Create() fiber.Handler {
 
 		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
 			"message": pkg.CreateMotherServiceSuccessfully,
+		})
+	}
+}
+
+func (handler *MotherService) GetByID() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		strID := strings.TrimSpace(ctx.Params("id"))
+
+		id, err := strconv.Atoi(strID)
+		if err != nil {
+			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
+				"error": pkg.InvalidIDInParams,
+			})
+		}
+
+		svcResult, err := handler.motherService.GetByID(ctx.Context(), uint64(id))
+		if err != nil {
+			if errors.Is(err, pkg.ErrMotherServiceNotFound) {
+				return ctx.Status(http.StatusNotFound).JSON(&fiber.Map{
+					"error": pkg.MotherServiceNotFound,
+				})
+			}
+
+			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
+				"error": pkg.InternalServerErrorMessage,
+			})
+		}
+
+		response := response.MotherService{
+			ID:        svcResult.ID,
+			CreatedAt: svcResult.CreatedAt,
+			UpdatedAt: svcResult.UpdatedAt,
+			Name:              svcResult.Name,
+			ExceptionRate:     svcResult.ExceptionRate,
+			ResponseDelayRate: svcResult.ResponseDelayRate,
+			ResponseDelayDuration: func() *int {
+				if svcResult.ResponseDelayDuration != nil {
+					return svcResult.ResponseDelayDuration
+				}
+
+				return nil
+			}(),
+			RandomResponseDelayMin: func() *int {
+				if svcResult.RandomResponseDelayMin != nil {
+					return svcResult.RandomResponseDelayMin
+				}
+
+				return nil
+			}(),
+			RandomResponseDelayMax: func() *int {
+				if svcResult.RandomResponseDelayMax != nil {
+					return svcResult.RandomResponseDelayMax
+				}
+
+				return nil
+			}(),
+			ProvisioningStatus: string(svcResult.ProvisioningStatus),
+			ServiceDeploymentAddress: func() *string {
+				if svcResult.ServiceDeploymentAddress != nil {
+					return svcResult.ServiceDeploymentAddress
+				}
+
+				return nil
+			}(),
+			DatabaseName:        svcResult.DatabaseName,
+			DatabaseTableName:   svcResult.DatabaseTableName,
+			KafkaLiveFeedTopic:  svcResult.KafkaLiveFeedTopic,
+			KafkaFactorialTopic: svcResult.KafkaFactorialTopic,
+			StoppedAt: func() *time.Time {
+				if svcResult.StoppedAt != nil {
+					return svcResult.StoppedAt
+				}
+
+				return nil
+			}(),
+			RestartedAt: func() *time.Time {
+				if svcResult.RestartedAt != nil {
+					return svcResult.RestartedAt
+				}
+
+				return nil
+			}(),
+			StartedAt: func() *time.Time {
+				if svcResult.StartedAt != nil {
+					return svcResult.StartedAt
+				}
+
+				return nil
+			}(),
+		}
+
+		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
+			"data": response,
 		})
 	}
 }
