@@ -87,6 +87,91 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrMotherServiceAlreadyExist)
 		mockRepo.AssertCalled(t, "Create", ctx, sampleMS)
 	})
+
+	t.Run("failed case - validation error service name is missing", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		service := NewMotherService(mockRepo)
+
+		sampleMS := &entity.MotherService{
+			ProvisioningStatus:  entity.ProvisioningStatusFailed,
+			DatabaseName:        "db1",
+			DatabaseTableName:   "factorial",
+			KafkaLiveFeedTopic:  "live_feed",
+			KafkaFactorialTopic: "factorial",
+		}
+
+		err := service.Create(ctx, sampleMS)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidName)
+	})
+
+	t.Run("failed case - validation error response delay rete not be negative", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		service := NewMotherService(mockRepo)
+
+		sampleMS := &entity.MotherService{
+			ProvisioningStatus:  entity.ProvisioningStatusFailed,
+			Name:                "mother",
+			DatabaseName:        "db1",
+			DatabaseTableName:   "factorial",
+			KafkaLiveFeedTopic:  "live_feed",
+			KafkaFactorialTopic: "factorial",
+			ExceptionRate:       0.5,
+			ResponseDelayRate:   -1,
+		}
+
+		err := service.Create(ctx, sampleMS)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidResponseDelayRate)
+	})
+	t.Run("failed case - validation error exception rate is negative", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		service := NewMotherService(mockRepo)
+
+		sampleMS := &entity.MotherService{
+			ProvisioningStatus:  entity.ProvisioningStatusFailed,
+			Name:                "mother",
+			DatabaseName:        "db1",
+			DatabaseTableName:   "factorial",
+			KafkaLiveFeedTopic:  "live_feed",
+			KafkaFactorialTopic: "factorial",
+			ExceptionRate:       -0.5,
+		}
+
+		err := service.Create(ctx, sampleMS)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidExceptionRate)
+	})
+
+	t.Run("failed case - validation error fixed delay is set but rate is 0", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		service := NewMotherService(mockRepo)
+		duration := 100
+
+		sampleMS := &entity.MotherService{
+			ProvisioningStatus:    entity.ProvisioningStatusFailed,
+			Name:                  "mother",
+			DatabaseName:          "db1",
+			DatabaseTableName:     "factorial",
+			KafkaLiveFeedTopic:    "live_feed",
+			KafkaFactorialTopic:   "factorial",
+			ExceptionRate:         0.5,
+			ResponseDelayRate:     0,
+			ResponseDelayDuration: &duration,
+		}
+
+		err := service.Create(ctx, sampleMS)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidDelayConfiguration)
+	})
 }
 
 func TestMotherServiceUsecase_GetByID(t *testing.T) {

@@ -26,7 +26,12 @@ type motherService struct {
 }
 
 func (service *motherService) Create(ctx context.Context, motherService *entity.MotherService) error {
-	err := service.motherServiceRepo.Create(ctx, motherService)
+	err := motherService.Validate()
+	if err != nil {
+		return fmt.Errorf("failed to validate request: %w", err)
+	}
+
+	err = service.motherServiceRepo.Create(ctx, motherService)
 	if err != nil {
 		if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
 			return pkg.ErrMotherServiceAlreadyExist

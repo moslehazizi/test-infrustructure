@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"control-panel-service/pkg"
 	"time"
 
 	"gorm.io/gorm"
@@ -46,4 +47,48 @@ type PaginationRequest struct {
 
 func (MotherService) TableName() string {
 	return "mother_services"
+}
+
+func (m *MotherService) Validate() error {
+	if m.Name == "" {
+		return pkg.ErrInvalidName
+	}
+
+	if m.ExceptionRate < 0 {
+		return pkg.ErrInvalidExceptionRate
+	}
+
+	if m.ResponseDelayRate < 0 {
+		return pkg.ErrInvalidResponseDelayRate
+	}
+
+	isNoDelay := m.ResponseDelayRate == 0 &&
+		m.ResponseDelayDuration == nil &&
+		m.RandomResponseDelayMin == nil &&
+		m.RandomResponseDelayMax == nil
+
+	isFixedDelay := m.ResponseDelayRate > 0 &&
+		m.ResponseDelayDuration != nil && *m.ResponseDelayDuration > 0 &&
+		m.RandomResponseDelayMin == nil &&
+		m.RandomResponseDelayMax == nil
+
+	isRandomDelay := m.ResponseDelayRate > 0 &&
+		m.ResponseDelayDuration == nil &&
+		m.RandomResponseDelayMin != nil && *m.RandomResponseDelayMin >= 0 &&
+		m.RandomResponseDelayMax != nil && *m.RandomResponseDelayMax > 0
+
+	if !(isNoDelay || isFixedDelay || isRandomDelay) {
+		return pkg.ErrInvalidDelayConfiguration
+	}
+
+	if m.RandomResponseDelayMin != nil || m.RandomResponseDelayMax != nil {
+		if m.RandomResponseDelayMin == nil || m.RandomResponseDelayMax == nil {
+			return pkg.ErrInvalidDelayConfiguration
+		}
+		if *m.RandomResponseDelayMin >= *m.RandomResponseDelayMax {
+			return pkg.ErrInvalidRandomDelayRange
+		}
+	}
+
+	return nil
 }

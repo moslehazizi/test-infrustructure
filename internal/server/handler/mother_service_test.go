@@ -278,6 +278,188 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.InternalServerErrorMessage, result["error"])
 		mockSvc.AssertExpectations(t)
 	})
+
+	t.Run("failed case - request validation error delay rate is negative", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service", handler.Create())
+
+		reqBody := `{
+        "name": "my-service",
+        "exception_rate": 0.0,
+        "response_delay_rate": 0.0,
+        "database_name": "service_db",
+        "database_table_name": "data",
+        "kafka_livefeed_topic": "livefeed",
+        "kafka_factorial_topic": "factorial"
+    }`
+
+		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+			return svc.Name == "my-service" &&
+				svc.ExceptionRate == 0.0 &&
+				svc.ResponseDelayRate == 0.0 &&
+				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
+				svc.DatabaseName == "service_db" &&
+				svc.DatabaseTableName == "data" &&
+				svc.KafkaLiveFeedTopic == "livefeed" &&
+				svc.KafkaFactorialTopic == "factorial"
+		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidResponseDelayRate))
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result map[string]interface{}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+		assert.Equal(t, pkg.InvalidResponseDelayRate, result["error"])
+		mockSvc.AssertExpectations(t)
+	})
+	t.Run("failed case - request validation error exception rate is negative", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service", handler.Create())
+
+		reqBody := `{
+        "name": "my-service",
+        "exception_rate": 0.0,
+        "response_delay_rate": 0.0,
+        "database_name": "service_db",
+        "database_table_name": "data",
+        "kafka_livefeed_topic": "livefeed",
+        "kafka_factorial_topic": "factorial"
+    }`
+
+		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+			return svc.Name == "my-service" &&
+				svc.ExceptionRate == 0.0 &&
+				svc.ResponseDelayRate == 0.0 &&
+				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
+				svc.DatabaseName == "service_db" &&
+				svc.DatabaseTableName == "data" &&
+				svc.KafkaLiveFeedTopic == "livefeed" &&
+				svc.KafkaFactorialTopic == "factorial"
+		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidExceptionRate))
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result map[string]interface{}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+		assert.Equal(t, pkg.InvalidExceptionRate, result["error"])
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("failed case - request validation error fixed delay is set but rate is 0", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service", handler.Create())
+
+		reqBody := `{
+        "name": "my-service",
+        "exception_rate": 0.0,
+        "response_delay_rate": 0.0,
+        "database_name": "service_db",
+        "database_table_name": "data",
+        "kafka_livefeed_topic": "livefeed",
+        "kafka_factorial_topic": "factorial"
+    }`
+
+		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+			return svc.Name == "my-service" &&
+				svc.ExceptionRate == 0.0 &&
+				svc.ResponseDelayRate == 0.0 &&
+				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
+				svc.DatabaseName == "service_db" &&
+				svc.DatabaseTableName == "data" &&
+				svc.KafkaLiveFeedTopic == "livefeed" &&
+				svc.KafkaFactorialTopic == "factorial"
+		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidDelayConfiguration))
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result map[string]interface{}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+		assert.Equal(t, pkg.InvalidDelayConfiguration, result["error"])
+		mockSvc.AssertExpectations(t)
+	})
+	t.Run("failed case - request validation error min is greater than max", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		handler := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-service", handler.Create())
+
+		reqBody := `{
+        "name": "my-service",
+        "exception_rate": 0.0,
+        "response_delay_rate": 0.0,
+        "database_name": "service_db",
+        "database_table_name": "data",
+        "kafka_livefeed_topic": "livefeed",
+        "kafka_factorial_topic": "factorial"
+    }`
+
+		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+			return svc.Name == "my-service" &&
+				svc.ExceptionRate == 0.0 &&
+				svc.ResponseDelayRate == 0.0 &&
+				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
+				svc.DatabaseName == "service_db" &&
+				svc.DatabaseTableName == "data" &&
+				svc.KafkaLiveFeedTopic == "livefeed" &&
+				svc.KafkaFactorialTopic == "factorial"
+		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidRandomDelayRange))
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result map[string]interface{}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+		assert.Equal(t, pkg.InvalidRandomDelayRange, result["error"])
+		mockSvc.AssertExpectations(t)
+	})
 }
 
 func TestMotherServiceHandler_GetByID(t *testing.T) {

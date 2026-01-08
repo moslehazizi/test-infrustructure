@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -38,32 +37,27 @@ func (handler *MotherService) Create() fiber.Handler {
 		reqService := &entity.MotherService{
 			Name:              req.Name,
 			ExceptionRate:     req.ExceptionRate,
-			CreatedAt:         time.Now(),
-			UpdatedAt:         time.Now(),
 			ResponseDelayRate: req.ResponseDelayRate,
 			ResponseDelayDuration: func() *int {
 				if req.ResponseDelayDuration != nil {
 					return req.ResponseDelayDuration
 				}
-				zero := 0
 
-				return &zero
+				return nil
 			}(),
 			RandomResponseDelayMin: func() *int {
 				if req.RandomResponseDelayMin != nil {
 					return req.RandomResponseDelayMin
 				}
-				zero := 0
 
-				return &zero
+				return nil
 			}(),
 			RandomResponseDelayMax: func() *int {
 				if req.RandomResponseDelayMax != nil {
 					return req.RandomResponseDelayMax
 				}
-				zero := 0
 
-				return &zero
+				return nil
 			}(),
 			ServiceDeploymentAddress: req.ServiceDeploymentAddress,
 			DatabaseName:             req.DatabaseName,
@@ -76,10 +70,28 @@ func (handler *MotherService) Create() fiber.Handler {
 		err := handler.motherService.Create(ctx.Context(), reqService)
 
 		if err != nil {
-			if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
+			switch {
+			case errors.Is(err, pkg.ErrMotherServiceAlreadyExist):
 				return ctx.Status(http.StatusConflict).JSON(&fiber.Map{
 					"error": pkg.MotherServiceAlreadyExist,
 				})
+			case errors.Is(err, pkg.ErrInvalidResponseDelayRate):
+				return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{
+					"error": pkg.InvalidResponseDelayRate,
+				})
+			case errors.Is(err, pkg.ErrInvalidExceptionRate):
+				return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{
+					"error": pkg.InvalidExceptionRate,
+				})
+			case errors.Is(err, pkg.ErrInvalidDelayConfiguration):
+				return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{
+					"error": pkg.InvalidDelayConfiguration,
+				})
+			case errors.Is(err, pkg.ErrInvalidRandomDelayRange):
+				return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{
+					"error": pkg.InvalidRandomDelayRange,
+				})
+
 			}
 
 			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
@@ -118,66 +130,24 @@ func (handler *MotherService) GetByID() fiber.Handler {
 		}
 
 		response := response.MotherService{
-			ID:                svcResult.ID,
-			CreatedAt:         svcResult.CreatedAt,
-			UpdatedAt:         svcResult.UpdatedAt,
-			Name:              svcResult.Name,
-			ExceptionRate:     svcResult.ExceptionRate,
-			ResponseDelayRate: svcResult.ResponseDelayRate,
-			ResponseDelayDuration: func() *int {
-				if svcResult.ResponseDelayDuration != nil {
-					return svcResult.ResponseDelayDuration
-				}
-
-				return nil
-			}(),
-			RandomResponseDelayMin: func() *int {
-				if svcResult.RandomResponseDelayMin != nil {
-					return svcResult.RandomResponseDelayMin
-				}
-
-				return nil
-			}(),
-			RandomResponseDelayMax: func() *int {
-				if svcResult.RandomResponseDelayMax != nil {
-					return svcResult.RandomResponseDelayMax
-				}
-
-				return nil
-			}(),
-			ProvisioningStatus: string(svcResult.ProvisioningStatus),
-			ServiceDeploymentAddress: func() *string {
-				if svcResult.ServiceDeploymentAddress != nil {
-					return svcResult.ServiceDeploymentAddress
-				}
-
-				return nil
-			}(),
-			DatabaseName:        svcResult.DatabaseName,
-			DatabaseTableName:   svcResult.DatabaseTableName,
-			KafkaLiveFeedTopic:  svcResult.KafkaLiveFeedTopic,
-			KafkaFactorialTopic: svcResult.KafkaFactorialTopic,
-			StoppedAt: func() *time.Time {
-				if svcResult.StoppedAt != nil {
-					return svcResult.StoppedAt
-				}
-
-				return nil
-			}(),
-			RestartedAt: func() *time.Time {
-				if svcResult.RestartedAt != nil {
-					return svcResult.RestartedAt
-				}
-
-				return nil
-			}(),
-			StartedAt: func() *time.Time {
-				if svcResult.StartedAt != nil {
-					return svcResult.StartedAt
-				}
-
-				return nil
-			}(),
+			ID:                       svcResult.ID,
+			CreatedAt:                svcResult.CreatedAt,
+			UpdatedAt:                svcResult.UpdatedAt,
+			Name:                     svcResult.Name,
+			ExceptionRate:            svcResult.ExceptionRate,
+			ResponseDelayRate:        svcResult.ResponseDelayRate,
+			ResponseDelayDuration:    svcResult.ResponseDelayDuration,
+			RandomResponseDelayMin:   svcResult.RandomResponseDelayMin,
+			RandomResponseDelayMax:   svcResult.RandomResponseDelayMax,
+			ProvisioningStatus:       string(svcResult.ProvisioningStatus),
+			ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
+			DatabaseName:             svcResult.DatabaseName,
+			DatabaseTableName:        svcResult.DatabaseTableName,
+			KafkaLiveFeedTopic:       svcResult.KafkaLiveFeedTopic,
+			KafkaFactorialTopic:      svcResult.KafkaFactorialTopic,
+			StoppedAt:                svcResult.StoppedAt,
+			RestartedAt:              svcResult.RestartedAt,
+			StartedAt:                svcResult.StartedAt,
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
@@ -217,66 +187,24 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 		var responses []response.MotherService
 		for _, svcResult := range svcResults {
 			responses = append(responses, response.MotherService{
-				ID:                svcResult.ID,
-				CreatedAt:         svcResult.CreatedAt,
-				UpdatedAt:         svcResult.UpdatedAt,
-				Name:              svcResult.Name,
-				ExceptionRate:     svcResult.ExceptionRate,
-				ResponseDelayRate: svcResult.ResponseDelayRate,
-				ResponseDelayDuration: func() *int {
-					if svcResult.ResponseDelayDuration != nil {
-						return svcResult.ResponseDelayDuration
-					}
-
-					return nil
-				}(),
-				RandomResponseDelayMin: func() *int {
-					if svcResult.RandomResponseDelayMin != nil {
-						return svcResult.RandomResponseDelayMin
-					}
-
-					return nil
-				}(),
-				RandomResponseDelayMax: func() *int {
-					if svcResult.RandomResponseDelayMax != nil {
-						return svcResult.RandomResponseDelayMax
-					}
-
-					return nil
-				}(),
-				ProvisioningStatus: string(svcResult.ProvisioningStatus),
-				ServiceDeploymentAddress: func() *string {
-					if svcResult.ServiceDeploymentAddress != nil {
-						return svcResult.ServiceDeploymentAddress
-					}
-
-					return nil
-				}(),
-				DatabaseName:        svcResult.DatabaseName,
-				DatabaseTableName:   svcResult.DatabaseTableName,
-				KafkaLiveFeedTopic:  svcResult.KafkaLiveFeedTopic,
-				KafkaFactorialTopic: svcResult.KafkaFactorialTopic,
-				StoppedAt: func() *time.Time {
-					if svcResult.StoppedAt != nil {
-						return svcResult.StoppedAt
-					}
-
-					return nil
-				}(),
-				RestartedAt: func() *time.Time {
-					if svcResult.RestartedAt != nil {
-						return svcResult.RestartedAt
-					}
-
-					return nil
-				}(),
-				StartedAt: func() *time.Time {
-					if svcResult.StartedAt != nil {
-						return svcResult.StartedAt
-					}
-
-					return nil
-				}(),
+				ID:                       svcResult.ID,
+				CreatedAt:                svcResult.CreatedAt,
+				UpdatedAt:                svcResult.UpdatedAt,
+				Name:                     svcResult.Name,
+				ExceptionRate:            svcResult.ExceptionRate,
+				ResponseDelayRate:        svcResult.ResponseDelayRate,
+				ResponseDelayDuration:    svcResult.ResponseDelayDuration,
+				RandomResponseDelayMin:   svcResult.RandomResponseDelayMin,
+				RandomResponseDelayMax:   svcResult.RandomResponseDelayMax,
+				ProvisioningStatus:       string(svcResult.ProvisioningStatus),
+				ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
+				DatabaseName:             svcResult.DatabaseName,
+				DatabaseTableName:        svcResult.DatabaseTableName,
+				KafkaLiveFeedTopic:       svcResult.KafkaLiveFeedTopic,
+				KafkaFactorialTopic:      svcResult.KafkaFactorialTopic,
+				StoppedAt:                svcResult.StoppedAt,
+				RestartedAt:              svcResult.RestartedAt,
+				StartedAt:                svcResult.StartedAt,
 			})
 		}
 
