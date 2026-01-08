@@ -67,7 +67,7 @@ func (handler *MotherService) Create() fiber.Handler {
 			DatabaseTableName:        req.DatabaseTableName,
 			KafkaLiveFeedTopic:       req.KafkaLiveFeedTopic,
 			KafkaFactorialTopic:      req.KafkaFactorialTopic,
-			ProvisioningStatus:       entity.ProvisioningStatus(req.ProvisioningStatus),
+			ProvisioningStatus:       entity.ProvisioningStatusPending,
 		}
 
 		err := handler.motherService.Create(ctx.Context(), reqService)

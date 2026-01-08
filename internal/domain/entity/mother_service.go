@@ -38,7 +38,7 @@ type MotherService struct {
 	StartedAt                *time.Time         `gorm:"column:started_at"`
 }
 
-// if both values of page and per page be zero then all items will be returned
+// If both values of page and per page be zero then all items will be returned.
 type PaginationRequest struct {
 	Page    int
 	PerPage int

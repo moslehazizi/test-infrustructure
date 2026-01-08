@@ -37,7 +37,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "name": "my-service",
         "exception_rate": 0.0,
         "response_delay_rate": 0.0,
-        "provisioning_status": "pending",
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -108,7 +107,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 		reqBody := `{
         "response_delay_rate": 0.0,
-        "provisioning_status": "pending",
         "database_name": "service_db",
         "database_table_name": "data",
     }`
@@ -143,7 +141,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		"response_delay_duration": 1,
 		"random_response_delay_min": 2,
 		"random_response_delay_max": 3,
-        "provisioning_status": "pending",
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -197,7 +194,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "name": "my-service",
         "exception_rate": 0.0,
         "response_delay_rate": 0.0,
-        "provisioning_status": "pending",
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
@@ -244,7 +240,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "name": "my-service",
         "exception_rate": 0.0,
         "response_delay_rate": 0.0,
-        "provisioning_status": "pending",
         "database_name": "service_db",
         "database_table_name": "data",
         "kafka_livefeed_topic": "livefeed",
