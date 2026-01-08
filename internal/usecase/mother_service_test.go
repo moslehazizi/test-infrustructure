@@ -64,6 +64,29 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToCreateMotherService)
 		mockRepo.AssertCalled(t, "Create", ctx, sampleMS)
 	})
+
+	t.Run("failed case - duplicate", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		service := NewMotherService(mockRepo)
+
+		sampleMS := &entity.MotherService{
+			Name:                "mother1",
+			ProvisioningStatus:  entity.ProvisioningStatusFailed,
+			DatabaseName:        "db1",
+			DatabaseTableName:   "factorial",
+			KafkaLiveFeedTopic:  "live_feed",
+			KafkaFactorialTopic: "factorial",
+		}
+
+		mockRepo.On("Create", ctx, sampleMS).Return(pkg.ErrMotherServiceAlreadyExist)
+
+		err := service.Create(ctx, sampleMS)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrMotherServiceAlreadyExist)
+		mockRepo.AssertCalled(t, "Create", ctx, sampleMS)
+	})
 }
 
 func TestMotherServiceUsecase_GetByID(t *testing.T) {

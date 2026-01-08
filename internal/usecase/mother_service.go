@@ -28,6 +28,10 @@ type motherService struct {
 func (service *motherService) Create(ctx context.Context, motherService *entity.MotherService) error {
 	err := service.motherServiceRepo.Create(ctx, motherService)
 	if err != nil {
+		if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
+			return pkg.ErrMotherServiceAlreadyExist
+		}
+
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateMotherService, err)
 	}
 
