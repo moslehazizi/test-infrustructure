@@ -24,9 +24,9 @@ create table if not exists test_scenarios (
         auto_step_increase_rate IS NULL OR auto_step_increase_rate >= 1
     ),
     
-    stopped_at timestamptz default CURRENT_TIMESTAMP,
-    restarted_at timestamptz default CURRENT_TIMESTAMP,
-    started_at timestamptz default CURRENT_TIMESTAMP,
+    stopped_at timestamptz,
+    restarted_at timestamptz,
+    started_at timestamptz,
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP,
     deleted_at timestamptz

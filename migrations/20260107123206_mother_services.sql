@@ -28,9 +28,9 @@ create table if not exists mother_services (
     kafka_livefeed_topic varchar(128) NOT NULL DEFAULT 'livefeed',
     kafka_factorial_topic varchar(128) NOT NULL DEFAULT 'factorial',
     
-    stopped_at timestamptz default CURRENT_TIMESTAMP,
-    restarted_at timestamptz default CURRENT_TIMESTAMP,
-    started_at timestamptz default CURRENT_TIMESTAMP,
+    stopped_at timestamptz,
+    restarted_at timestamptz,
+    started_at timestamptz,
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP,
 
