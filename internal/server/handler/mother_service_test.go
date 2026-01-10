@@ -14,7 +14,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
@@ -477,7 +476,6 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 	t.Run("success case - with pointer values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		handler := NewMotherServiceHandler(mockSvc)
-		sampleTime := time.Now()
 		sampleString := "service-address"
 		sampleNum := 1
 
@@ -486,9 +484,6 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 			ProvisioningStatus:       entity.ProvisioningStatusFailed,
 			DatabaseName:             "db1",
 			DatabaseTableName:        "factorial",
-			StartedAt:                &sampleTime,
-			RestartedAt:              &sampleTime,
-			StoppedAt:                &sampleTime,
 			ServiceDeploymentAddress: &sampleString,
 			ResponseDelayDuration:    &sampleNum,
 			RandomResponseDelayMin:   &sampleNum,
@@ -519,9 +514,6 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		assert.Equal(t, resp.StatusCode, http.StatusOK)
 		assert.NotNil(t, response)
 		assert.Equal(t, expectedSvcResp.ServiceDeploymentAddress, response.Data.ServiceDeploymentAddress)
-		assert.Equal(t, expectedSvcResp.StartedAt.Unix(), response.Data.StartedAt.Unix())
-		assert.Equal(t, expectedSvcResp.StoppedAt.Unix(), response.Data.StoppedAt.Unix())
-		assert.Equal(t, expectedSvcResp.RestartedAt.Unix(), response.Data.RestartedAt.Unix())
 
 		mockSvc.AssertExpectations(t)
 	})
@@ -624,7 +616,6 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/paginated", handler.GetPaginated())
 
-		sampleTime := time.Now()
 		sampleString := "sample"
 		sampleNum := 1
 		sampleReq := request.PaginationRequest{
@@ -643,9 +634,6 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 				ProvisioningStatus:       entity.ProvisioningStatusFailed,
 				DatabaseName:             "db1",
 				DatabaseTableName:        "factorial",
-				StartedAt:                &sampleTime,
-				RestartedAt:              &sampleTime,
-				StoppedAt:                &sampleTime,
 				ServiceDeploymentAddress: &sampleString,
 				ResponseDelayDuration:    &sampleNum,
 				RandomResponseDelayMin:   &sampleNum,
@@ -657,9 +645,6 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 				ProvisioningStatus:       entity.ProvisioningStatusFailed,
 				DatabaseName:             "db1",
 				DatabaseTableName:        "factorial",
-				StartedAt:                &sampleTime,
-				RestartedAt:              &sampleTime,
-				StoppedAt:                &sampleTime,
 				ServiceDeploymentAddress: &sampleString,
 				ResponseDelayDuration:    &sampleNum,
 				RandomResponseDelayMin:   &sampleNum,

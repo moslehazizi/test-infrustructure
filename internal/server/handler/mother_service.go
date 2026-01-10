@@ -140,9 +140,6 @@ func (handler *MotherService) GetByID() fiber.Handler {
 			ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
 			DatabaseName:             svcResult.DatabaseName,
 			DatabaseTableName:        svcResult.DatabaseTableName,
-			StoppedAt:                svcResult.StoppedAt,
-			RestartedAt:              svcResult.RestartedAt,
-			StartedAt:                svcResult.StartedAt,
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
@@ -195,9 +192,6 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 				ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
 				DatabaseName:             svcResult.DatabaseName,
 				DatabaseTableName:        svcResult.DatabaseTableName,
-				StoppedAt:                svcResult.StoppedAt,
-				RestartedAt:              svcResult.RestartedAt,
-				StartedAt:                svcResult.StartedAt,
 			})
 		}
 

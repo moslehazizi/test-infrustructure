@@ -32,9 +32,6 @@ type MotherService struct {
 	ServiceDeploymentAddress *string            `gorm:"column:service_deployment_address"`
 	DatabaseName             string             `gorm:"column:database_name"`
 	DatabaseTableName        string             `gorm:"column:database_table_name"`
-	StoppedAt                *time.Time         `gorm:"column:stopped_at"`
-	RestartedAt              *time.Time         `gorm:"column:restarted_at"`
-	StartedAt                *time.Time         `gorm:"column:started_at"`
 }
 
 // If both values of page and per page be zero then all items will be returned.

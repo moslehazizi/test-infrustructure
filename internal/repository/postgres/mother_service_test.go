@@ -44,14 +44,11 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			ServiceDeploymentAddress: &serviceAddress,
 			DatabaseName:             "test_db",
 			DatabaseTableName:        "test_table",
-			StoppedAt:                &now,
-			RestartedAt:              &now,
-			StartedAt:                &now,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name","stopped_at","restarted_at","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -64,9 +61,6 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 				motherService.ServiceDeploymentAddress,
 				motherService.DatabaseName,
 				motherService.DatabaseTableName,
-				motherService.StoppedAt,
-				motherService.RestartedAt,
-				motherService.StartedAt,
 			).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 		mock.ExpectCommit()
@@ -99,7 +93,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name","stopped_at","restarted_at","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -112,9 +106,6 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 				motherService.ServiceDeploymentAddress,
 				motherService.DatabaseName,
 				motherService.DatabaseTableName,
-				motherService.StoppedAt,
-				motherService.RestartedAt,
-				motherService.StartedAt,
 			).
 			WillReturnError(errors.New("insert failed"))
 		mock.ExpectRollback()
@@ -154,7 +145,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name","stopped_at","restarted_at","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -167,9 +158,6 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 				motherService.ServiceDeploymentAddress,
 				motherService.DatabaseName,
 				motherService.DatabaseTableName,
-				motherService.StoppedAt,
-				motherService.RestartedAt,
-				motherService.StartedAt,
 			).
 			WillReturnError(duplicateError)
 		mock.ExpectRollback()
@@ -215,9 +203,6 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 			ServiceDeploymentAddress: &serviceAddress,
 			DatabaseName:             "test_db",
 			DatabaseTableName:        "test_table",
-			StoppedAt:                &now,
-			RestartedAt:              &now,
-			StartedAt:                &now,
 		}
 
 		mock.ExpectQuery(regexp.QuoteMeta(
@@ -229,7 +214,6 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 				"random_response_delay_min", "random_response_delay_max",
 				"provisioning_status", "service_deployment_address",
 				"database_name", "database_table_name",
-				"stopped_at", "restarted_at", "started_at",
 			}).
 				AddRow(
 					expectedMotherService.ID,
@@ -246,9 +230,6 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 					expectedMotherService.ServiceDeploymentAddress,
 					expectedMotherService.DatabaseName,
 					expectedMotherService.DatabaseTableName,
-					expectedMotherService.StoppedAt,
-					expectedMotherService.RestartedAt,
-					expectedMotherService.StartedAt,
 				))
 
 		result, err := repo.GetByID(context.Background(), uint64(1))
@@ -353,7 +334,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"random_response_delay_min", "random_response_delay_max",
 				"provisioning_status", "service_deployment_address",
 				"database_name", "database_table_name",
-				"stopped_at", "restarted_at", "started_at",
 			}).
 				AddRow(
 					expectedMotherServices[0].ID,
@@ -370,9 +350,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[0].ServiceDeploymentAddress,
 					expectedMotherServices[0].DatabaseName,
 					expectedMotherServices[0].DatabaseTableName,
-					expectedMotherServices[0].StoppedAt,
-					expectedMotherServices[0].RestartedAt,
-					expectedMotherServices[0].StartedAt,
 				).
 				AddRow(
 					expectedMotherServices[1].ID,
@@ -389,9 +366,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[1].ServiceDeploymentAddress,
 					expectedMotherServices[1].DatabaseName,
 					expectedMotherServices[1].DatabaseTableName,
-					expectedMotherServices[1].StoppedAt,
-					expectedMotherServices[1].RestartedAt,
-					expectedMotherServices[1].StartedAt,
 				))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -458,7 +432,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"random_response_delay_min", "random_response_delay_max",
 				"provisioning_status", "service_deployment_address",
 				"database_name", "database_table_name",
-				"stopped_at", "restarted_at", "started_at",
 			}).
 				AddRow(
 					expectedMotherServices[0].ID,
@@ -475,9 +448,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[0].ServiceDeploymentAddress,
 					expectedMotherServices[0].DatabaseName,
 					expectedMotherServices[0].DatabaseTableName,
-					expectedMotherServices[0].StoppedAt,
-					expectedMotherServices[0].RestartedAt,
-					expectedMotherServices[0].StartedAt,
 				).
 				AddRow(
 					expectedMotherServices[1].ID,
@@ -494,9 +464,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[1].ServiceDeploymentAddress,
 					expectedMotherServices[1].DatabaseName,
 					expectedMotherServices[1].DatabaseTableName,
-					expectedMotherServices[1].StoppedAt,
-					expectedMotherServices[1].RestartedAt,
-					expectedMotherServices[1].StartedAt,
 				))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -548,7 +515,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"random_response_delay_min", "random_response_delay_max",
 				"provisioning_status", "service_deployment_address",
 				"database_name", "database_table_name",
-				"stopped_at", "restarted_at", "started_at",
 			}).
 				AddRow(
 					expectedMotherService.ID,
@@ -565,9 +531,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherService.ServiceDeploymentAddress,
 					expectedMotherService.DatabaseName,
 					expectedMotherService.DatabaseTableName,
-					expectedMotherService.StoppedAt,
-					expectedMotherService.RestartedAt,
-					expectedMotherService.StartedAt,
 				))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -641,7 +604,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"random_response_delay_min", "random_response_delay_max",
 				"provisioning_status", "service_deployment_address",
 				"database_name", "database_table_name",
-				"stopped_at", "restarted_at", "started_at",
 			}).
 				AddRow(
 					expectedMotherServices[0].ID,
@@ -658,9 +620,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[0].ServiceDeploymentAddress,
 					expectedMotherServices[0].DatabaseName,
 					expectedMotherServices[0].DatabaseTableName,
-					expectedMotherServices[0].StoppedAt,
-					expectedMotherServices[0].RestartedAt,
-					expectedMotherServices[0].StartedAt,
 				).
 				AddRow(
 					expectedMotherServices[1].ID,
@@ -677,9 +636,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[1].ServiceDeploymentAddress,
 					expectedMotherServices[1].DatabaseName,
 					expectedMotherServices[1].DatabaseTableName,
-					expectedMotherServices[1].StoppedAt,
-					expectedMotherServices[1].RestartedAt,
-					expectedMotherServices[1].StartedAt,
 				).
 				AddRow(
 					expectedMotherServices[2].ID,
@@ -696,9 +652,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[2].ServiceDeploymentAddress,
 					expectedMotherServices[2].DatabaseName,
 					expectedMotherServices[2].DatabaseTableName,
-					expectedMotherServices[2].StoppedAt,
-					expectedMotherServices[2].RestartedAt,
-					expectedMotherServices[2].StartedAt,
 				))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -731,7 +684,6 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"random_response_delay_min", "random_response_delay_max",
 				"provisioning_status", "service_deployment_address",
 				"database_name", "database_table_name",
-				"stopped_at", "restarted_at", "started_at",
 			}))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
