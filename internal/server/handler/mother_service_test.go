@@ -35,7 +35,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `{
         "name": "my-service",
@@ -58,7 +58,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.KafkaFactorialTopic == "factorial"
 		})).Return(nil)
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -81,11 +81,11 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `sample`
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -107,14 +107,14 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `{
         "response_delay_rate": 10,
         "database_name": "service_db",
         "database_table_name": "data",
     }`
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -136,7 +136,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `{
         "name": "my-service",
@@ -169,7 +169,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.KafkaFactorialTopic == "factorial"
 		})).Return(nil)
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -192,7 +192,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `{
         "name": "my-service",
@@ -215,7 +215,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.KafkaFactorialTopic == "factorial"
 		})).Return(pkg.ErrMotherServiceAlreadyExist)
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -238,7 +238,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `{
         "name": "my-service",
@@ -261,7 +261,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.KafkaFactorialTopic == "factorial"
 		})).Return(errors.New("internal error"))
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -284,7 +284,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `{
         "name": "my-service",
@@ -307,7 +307,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.KafkaFactorialTopic == "factorial"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidResponseDelayRate))
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -329,7 +329,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `{
         "name": "my-service",
@@ -352,7 +352,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.KafkaFactorialTopic == "factorial"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidExceptionRate))
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -375,7 +375,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `{
         "name": "my-service",
@@ -398,7 +398,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.KafkaFactorialTopic == "factorial"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidDelayConfiguration))
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -420,7 +420,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service", handler.Create())
+		app.Post("/mother-services", handler.Create())
 
 		reqBody := `{
         "name": "my-service",
@@ -443,7 +443,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.KafkaFactorialTopic == "factorial"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidRandomDelayRange))
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -477,11 +477,11 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		}
 
 		app := fiber.New()
-		app.Get("mother-service/:id", handler.GetByID())
+		app.Get("/mother-services/:id", handler.GetByID())
 
 		mockSvc.On("GetByID", mock.Anything, uint64(1)).Return(expectedSvcResp, nil)
 
-		req := httptest.NewRequest(http.MethodGet, "/mother-service/1", nil)
+		req := httptest.NewRequest(http.MethodGet, "/mother-services/1", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req)
@@ -534,11 +534,11 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		}
 
 		app := fiber.New()
-		app.Get("mother-service/:id", handler.GetByID())
+		app.Get("/mother-services/:id", handler.GetByID())
 
 		mockSvc.On("GetByID", mock.Anything, uint64(1)).Return(expectedSvcResp, nil)
 
-		req := httptest.NewRequest(http.MethodGet, "/mother-service/1", nil)
+		req := httptest.NewRequest(http.MethodGet, "/mother-services/1", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req)
@@ -569,9 +569,9 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New()
-		app.Get("mother-service/:id", handler.GetByID())
+		app.Get("/mother-services/:id", handler.GetByID())
 
-		req := httptest.NewRequest(http.MethodGet, "/mother-service/sd12", nil)
+		req := httptest.NewRequest(http.MethodGet, "/mother-services/sd12", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req)
@@ -596,11 +596,11 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New()
-		app.Get("mother-service/:id", handler.GetByID())
+		app.Get("/mother-services/:id", handler.GetByID())
 
 		mockSvc.On("GetByID", mock.Anything, uint64(1)).Return(nil, pkg.ErrMotherServiceNotFound)
 
-		req := httptest.NewRequest(http.MethodGet, "/mother-service/1", nil)
+		req := httptest.NewRequest(http.MethodGet, "/mother-services/1", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req)
@@ -627,11 +627,11 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New()
-		app.Get("mother-service/:id", handler.GetByID())
+		app.Get("/mother-services/:id", handler.GetByID())
 
 		mockSvc.On("GetByID", mock.Anything, uint64(1)).Return(nil, errors.New("error happened"))
 
-		req := httptest.NewRequest(http.MethodGet, "/mother-service/1", nil)
+		req := httptest.NewRequest(http.MethodGet, "/mother-services/1", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req)
@@ -660,7 +660,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service/paginated", handler.GetPaginated())
+		app.Post("/mother-services/paginated", handler.GetPaginated())
 
 		sampleTime := time.Now()
 		sampleString := "sample"
@@ -711,7 +711,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, nil)
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -739,7 +739,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service/paginated", handler.GetPaginated())
+		app.Post("/mother-services/paginated", handler.GetPaginated())
 
 		sampleReq := request.PaginationRequest{
 			Page:    1,
@@ -773,7 +773,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, nil)
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -801,11 +801,11 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service/paginated", handler.GetPaginated())
+		app.Post("/mother-services/paginated", handler.GetPaginated())
 
 		reqBody := `{"page": ewy,"per_page": erw}`
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -828,11 +828,11 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service/paginated", handler.GetPaginated())
+		app.Post("/mother-services/paginated", handler.GetPaginated())
 
 		reqBody := `{"page": -1,"per_page": 3}`
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -855,7 +855,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service/paginated", handler.GetPaginated())
+		app.Post("/mother-services/paginated", handler.GetPaginated())
 
 		sampleReq := request.PaginationRequest{
 			Page:    1,
@@ -869,7 +869,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(nil, errors.New("error happened"))
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -894,7 +894,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-service/paginated", handler.GetPaginated())
+		app.Post("/mother-services/paginated", handler.GetPaginated())
 
 		sampleReq := request.PaginationRequest{
 			Page:    0,
@@ -908,7 +908,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return([]*entity.MotherService{}, nil)
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-service/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
