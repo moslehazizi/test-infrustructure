@@ -61,9 +61,9 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1 := app.Group("/api/v1")
 
 	// Register APIs
-	apiV1.Options("/mother-service", handler.Create())
-	apiV1.Options("/mother-service/:id", handler.GetByID())
-	apiV1.Options("/mother-service/paginated", handler.GetPaginated())
+	apiV1.Post("/mother-service", handler.Create())
+	apiV1.Get("/mother-service/:id", handler.GetByID())
+	apiV1.Post("/mother-service/paginated", handler.GetPaginated())
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
 
