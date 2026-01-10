@@ -32,8 +32,6 @@ type MotherService struct {
 	ServiceDeploymentAddress *string            `gorm:"column:service_deployment_address"`
 	DatabaseName             string             `gorm:"column:database_name"`
 	DatabaseTableName        string             `gorm:"column:database_table_name"`
-	KafkaLiveFeedTopic       string             `gorm:"column:kafka_livefeed_topic"`
-	KafkaFactorialTopic      string             `gorm:"column:kafka_factorial_topic"`
 	StoppedAt                *time.Time         `gorm:"column:stopped_at"`
 	RestartedAt              *time.Time         `gorm:"column:restarted_at"`
 	StartedAt                *time.Time         `gorm:"column:started_at"`

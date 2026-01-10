@@ -31,8 +31,6 @@ create table if not exists mother_services (
     service_deployment_address varchar(512) NULL,
     database_name varchar(256) NOT NULL DEFAULT 'mother_service',
     database_table_name varchar(128) NOT NULL DEFAULT 'factorials',
-    kafka_livefeed_topic varchar(128) NOT NULL DEFAULT 'livefeed',
-    kafka_factorial_topic varchar(128) NOT NULL DEFAULT 'factorial',
     
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP,

@@ -10,13 +10,11 @@ import (
 func TestMotherService_Validate(t *testing.T) {
 	t.Run("success case - no delay", func(t *testing.T) {
 		service := MotherService{
-			Name:                "mother",
-			DatabaseName:        "mother1",
-			DatabaseTableName:   "table",
-			KafkaLiveFeedTopic:  "live_feed",
-			KafkaFactorialTopic: "factorial",
-			ExceptionRate:       10,
-			ResponseDelayRate:   0,
+			Name:              "mother",
+			DatabaseName:      "mother1",
+			DatabaseTableName: "table",
+			ExceptionRate:     10,
+			ResponseDelayRate: 0,
 		}
 
 		err := service.Validate()
@@ -30,8 +28,6 @@ func TestMotherService_Validate(t *testing.T) {
 			Name:                  "mother",
 			DatabaseName:          "mother1",
 			DatabaseTableName:     "table",
-			KafkaLiveFeedTopic:    "live_feed",
-			KafkaFactorialTopic:   "factorial",
 			ResponseDelayRate:     10,
 			ResponseDelayDuration: &duration,
 		}
@@ -48,8 +44,6 @@ func TestMotherService_Validate(t *testing.T) {
 			Name:                   "mother",
 			DatabaseName:           "mother1",
 			DatabaseTableName:      "table",
-			KafkaLiveFeedTopic:     "live_feed",
-			KafkaFactorialTopic:    "factorial",
 			ResponseDelayRate:      10,
 			RandomResponseDelayMin: &minDelay,
 			RandomResponseDelayMax: &maxDelay,
@@ -125,8 +119,6 @@ func TestMotherService_Validate(t *testing.T) {
 			Name:                  "mother",
 			DatabaseName:          "mother1",
 			DatabaseTableName:     "table",
-			KafkaLiveFeedTopic:    "live_feed",
-			KafkaFactorialTopic:   "factorial",
 			ResponseDelayRate:     0,
 			ResponseDelayDuration: &duration,
 		}
@@ -144,8 +136,6 @@ func TestMotherService_Validate(t *testing.T) {
 			Name:                   "mother",
 			DatabaseName:           "mother1",
 			DatabaseTableName:      "table",
-			KafkaLiveFeedTopic:     "live_feed",
-			KafkaFactorialTopic:    "factorial",
 			ResponseDelayRate:      0,
 			RandomResponseDelayMin: &minDelay,
 			RandomResponseDelayMax: &maxDelay,
@@ -164,8 +154,6 @@ func TestMotherService_Validate(t *testing.T) {
 			Name:                   "mother",
 			DatabaseName:           "mother1",
 			DatabaseTableName:      "table",
-			KafkaLiveFeedTopic:     "live_feed",
-			KafkaFactorialTopic:    "factorial",
 			ResponseDelayRate:      10,
 			ResponseDelayDuration:  &duration,
 			RandomResponseDelayMin: &minDelay,
@@ -184,8 +172,6 @@ func TestMotherService_Validate(t *testing.T) {
 			Name:                   "mother",
 			DatabaseName:           "mother1",
 			DatabaseTableName:      "table",
-			KafkaLiveFeedTopic:     "live_feed",
-			KafkaFactorialTopic:    "factorial",
 			ResponseDelayRate:      10,
 			RandomResponseDelayMin: &min,
 			RandomResponseDelayMax: &max,
@@ -203,8 +189,6 @@ func TestMotherService_Validate(t *testing.T) {
 			Name:                   "mother",
 			DatabaseName:           "mother1",
 			DatabaseTableName:      "table",
-			KafkaLiveFeedTopic:     "live_feed",
-			KafkaFactorialTopic:    "factorial",
 			ResponseDelayRate:      10,
 			RandomResponseDelayMin: &min,
 		}
@@ -221,8 +205,6 @@ func TestMotherService_Validate(t *testing.T) {
 			Name:                   "mother",
 			DatabaseName:           "mother1",
 			DatabaseTableName:      "table",
-			KafkaLiveFeedTopic:     "live_feed",
-			KafkaFactorialTopic:    "factorial",
 			ResponseDelayRate:      10,
 			RandomResponseDelayMax: &max,
 		}

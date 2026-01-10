@@ -62,8 +62,6 @@ func (handler *MotherService) Create() fiber.Handler {
 			ServiceDeploymentAddress: req.ServiceDeploymentAddress,
 			DatabaseName:             req.DatabaseName,
 			DatabaseTableName:        req.DatabaseTableName,
-			KafkaLiveFeedTopic:       req.KafkaLiveFeedTopic,
-			KafkaFactorialTopic:      req.KafkaFactorialTopic,
 			ProvisioningStatus:       entity.ProvisioningStatusPending,
 		}
 
@@ -142,8 +140,6 @@ func (handler *MotherService) GetByID() fiber.Handler {
 			ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
 			DatabaseName:             svcResult.DatabaseName,
 			DatabaseTableName:        svcResult.DatabaseTableName,
-			KafkaLiveFeedTopic:       svcResult.KafkaLiveFeedTopic,
-			KafkaFactorialTopic:      svcResult.KafkaFactorialTopic,
 			StoppedAt:                svcResult.StoppedAt,
 			RestartedAt:              svcResult.RestartedAt,
 			StartedAt:                svcResult.StartedAt,
@@ -199,8 +195,6 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 				ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
 				DatabaseName:             svcResult.DatabaseName,
 				DatabaseTableName:        svcResult.DatabaseTableName,
-				KafkaLiveFeedTopic:       svcResult.KafkaLiveFeedTopic,
-				KafkaFactorialTopic:      svcResult.KafkaFactorialTopic,
 				StoppedAt:                svcResult.StoppedAt,
 				RestartedAt:              svcResult.RestartedAt,
 				StartedAt:                svcResult.StartedAt,

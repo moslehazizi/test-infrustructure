@@ -42,9 +42,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "exception_rate": 10,
         "response_delay_rate": 20,
         "database_name": "service_db",
-        "database_table_name": "data",
-        "kafka_livefeed_topic": "livefeed",
-        "kafka_factorial_topic": "factorial"
+        "database_table_name": "data"
     }`
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
@@ -53,9 +51,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
-				svc.DatabaseTableName == "data" &&
-				svc.KafkaLiveFeedTopic == "livefeed" &&
-				svc.KafkaFactorialTopic == "factorial"
+				svc.DatabaseTableName == "data"
 		})).Return(nil)
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
@@ -146,9 +142,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		"random_response_delay_min": 2,
 		"random_response_delay_max": 3,
         "database_name": "service_db",
-        "database_table_name": "data",
-        "kafka_livefeed_topic": "livefeed",
-        "kafka_factorial_topic": "factorial"
+        "database_table_name": "data"
     }`
 
 		sampleOne := 1
@@ -164,9 +158,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.RandomResponseDelayMax != nil && *svc.RandomResponseDelayMax == sampleThree &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
-				svc.DatabaseTableName == "data" &&
-				svc.KafkaLiveFeedTopic == "livefeed" &&
-				svc.KafkaFactorialTopic == "factorial"
+				svc.DatabaseTableName == "data"
 		})).Return(nil)
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
@@ -199,9 +191,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "exception_rate": 10,
         "response_delay_rate": 20,
         "database_name": "service_db",
-        "database_table_name": "data",
-        "kafka_livefeed_topic": "livefeed",
-        "kafka_factorial_topic": "factorial"
+        "database_table_name": "data"
     }`
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
@@ -210,9 +200,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
-				svc.DatabaseTableName == "data" &&
-				svc.KafkaLiveFeedTopic == "livefeed" &&
-				svc.KafkaFactorialTopic == "factorial"
+				svc.DatabaseTableName == "data"
 		})).Return(pkg.ErrMotherServiceAlreadyExist)
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
@@ -245,9 +233,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "exception_rate": 10,
         "response_delay_rate": 20,
         "database_name": "service_db",
-        "database_table_name": "data",
-        "kafka_livefeed_topic": "livefeed",
-        "kafka_factorial_topic": "factorial"
+        "database_table_name": "data"
     }`
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
@@ -256,9 +242,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
-				svc.DatabaseTableName == "data" &&
-				svc.KafkaLiveFeedTopic == "livefeed" &&
-				svc.KafkaFactorialTopic == "factorial"
+				svc.DatabaseTableName == "data"
 		})).Return(errors.New("internal error"))
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
@@ -291,9 +275,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "exception_rate": 10,
         "response_delay_rate": 20,
         "database_name": "service_db",
-        "database_table_name": "data",
-        "kafka_livefeed_topic": "livefeed",
-        "kafka_factorial_topic": "factorial"
+        "database_table_name": "data"
     }`
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
@@ -302,9 +284,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
-				svc.DatabaseTableName == "data" &&
-				svc.KafkaLiveFeedTopic == "livefeed" &&
-				svc.KafkaFactorialTopic == "factorial"
+				svc.DatabaseTableName == "data"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidResponseDelayRate))
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
@@ -336,9 +316,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "exception_rate": 10,
         "response_delay_rate": 20,
         "database_name": "service_db",
-        "database_table_name": "data",
-        "kafka_livefeed_topic": "livefeed",
-        "kafka_factorial_topic": "factorial"
+        "database_table_name": "data"
     }`
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
@@ -347,9 +325,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
-				svc.DatabaseTableName == "data" &&
-				svc.KafkaLiveFeedTopic == "livefeed" &&
-				svc.KafkaFactorialTopic == "factorial"
+				svc.DatabaseTableName == "data"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidExceptionRate))
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
@@ -382,9 +358,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "exception_rate": 10,
         "response_delay_rate": 20,
         "database_name": "service_db",
-        "database_table_name": "data",
-        "kafka_livefeed_topic": "livefeed",
-        "kafka_factorial_topic": "factorial"
+        "database_table_name": "data"
     }`
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
@@ -393,9 +367,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
-				svc.DatabaseTableName == "data" &&
-				svc.KafkaLiveFeedTopic == "livefeed" &&
-				svc.KafkaFactorialTopic == "factorial"
+				svc.DatabaseTableName == "data"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidDelayConfiguration))
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
@@ -427,9 +399,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
         "exception_rate": 10,
         "response_delay_rate": 20,
         "database_name": "service_db",
-        "database_table_name": "data",
-        "kafka_livefeed_topic": "livefeed",
-        "kafka_factorial_topic": "factorial"
+        "database_table_name": "data"
     }`
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
@@ -438,9 +408,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.ResponseDelayRate == 20 &&
 				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
-				svc.DatabaseTableName == "data" &&
-				svc.KafkaLiveFeedTopic == "livefeed" &&
-				svc.KafkaFactorialTopic == "factorial"
+				svc.DatabaseTableName == "data"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidRandomDelayRange))
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
@@ -468,12 +436,10 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		expectedSvcResp := &entity.MotherService{
-			Name:                "mother1",
-			ProvisioningStatus:  entity.ProvisioningStatusFailed,
-			DatabaseName:        "db1",
-			DatabaseTableName:   "factorial",
-			KafkaLiveFeedTopic:  "live_feed",
-			KafkaFactorialTopic: "factorial",
+			Name:               "mother1",
+			ProvisioningStatus: entity.ProvisioningStatusFailed,
+			DatabaseName:       "db1",
+			DatabaseTableName:  "factorial",
 		}
 
 		app := fiber.New()
@@ -503,8 +469,6 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		assert.Equal(t, string(expectedSvcResp.ProvisioningStatus), response.Data.ProvisioningStatus)
 		assert.Equal(t, expectedSvcResp.DatabaseName, response.Data.DatabaseName)
 		assert.Equal(t, expectedSvcResp.DatabaseTableName, response.Data.DatabaseTableName)
-		assert.Equal(t, expectedSvcResp.KafkaFactorialTopic, response.Data.KafkaFactorialTopic)
-		assert.Equal(t, expectedSvcResp.KafkaLiveFeedTopic, response.Data.KafkaLiveFeedTopic)
 		assert.Nil(t, response.Data.ServiceDeploymentAddress)
 
 		mockSvc.AssertExpectations(t)
@@ -522,8 +486,6 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 			ProvisioningStatus:       entity.ProvisioningStatusFailed,
 			DatabaseName:             "db1",
 			DatabaseTableName:        "factorial",
-			KafkaLiveFeedTopic:       "live_feed",
-			KafkaFactorialTopic:      "factorial",
 			StartedAt:                &sampleTime,
 			RestartedAt:              &sampleTime,
 			StoppedAt:                &sampleTime,
@@ -681,8 +643,6 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 				ProvisioningStatus:       entity.ProvisioningStatusFailed,
 				DatabaseName:             "db1",
 				DatabaseTableName:        "factorial",
-				KafkaLiveFeedTopic:       "live_feed",
-				KafkaFactorialTopic:      "factorial",
 				StartedAt:                &sampleTime,
 				RestartedAt:              &sampleTime,
 				StoppedAt:                &sampleTime,
@@ -697,8 +657,6 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 				ProvisioningStatus:       entity.ProvisioningStatusFailed,
 				DatabaseName:             "db1",
 				DatabaseTableName:        "factorial",
-				KafkaLiveFeedTopic:       "live_feed",
-				KafkaFactorialTopic:      "factorial",
 				StartedAt:                &sampleTime,
 				RestartedAt:              &sampleTime,
 				StoppedAt:                &sampleTime,
@@ -752,22 +710,18 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
 		expectedMotherServices := []*entity.MotherService{
 			{
-				ID:                  uint64(5),
-				Name:                "mother1",
-				ProvisioningStatus:  entity.ProvisioningStatusFailed,
-				DatabaseName:        "db1",
-				DatabaseTableName:   "factorial",
-				KafkaLiveFeedTopic:  "live_feed",
-				KafkaFactorialTopic: "factorial",
+				ID:                 uint64(5),
+				Name:               "mother1",
+				ProvisioningStatus: entity.ProvisioningStatusFailed,
+				DatabaseName:       "db1",
+				DatabaseTableName:  "factorial",
 			},
 			{
-				ID:                  uint64(4),
-				Name:                "mother2",
-				ProvisioningStatus:  entity.ProvisioningStatusFailed,
-				DatabaseName:        "db1",
-				DatabaseTableName:   "factorial",
-				KafkaLiveFeedTopic:  "live_feed",
-				KafkaFactorialTopic: "factorial",
+				ID:                 uint64(4),
+				Name:               "mother2",
+				ProvisioningStatus: entity.ProvisioningStatusFailed,
+				DatabaseName:       "db1",
+				DatabaseTableName:  "factorial",
 			},
 		}
 

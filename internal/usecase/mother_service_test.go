@@ -26,12 +26,10 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		service := NewMotherService(mockRepo)
 
 		sampleMS := &entity.MotherService{
-			Name:                "mother1",
-			ProvisioningStatus:  entity.ProvisioningStatusFailed,
-			DatabaseName:        "db1",
-			DatabaseTableName:   "factorial",
-			KafkaLiveFeedTopic:  "live_feed",
-			KafkaFactorialTopic: "factorial",
+			Name:               "mother1",
+			ProvisioningStatus: entity.ProvisioningStatusFailed,
+			DatabaseName:       "db1",
+			DatabaseTableName:  "factorial",
 		}
 
 		mockRepo.On("Create", ctx, sampleMS).Return(nil)
@@ -48,12 +46,10 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		service := NewMotherService(mockRepo)
 
 		sampleMS := &entity.MotherService{
-			Name:                "mother1",
-			ProvisioningStatus:  entity.ProvisioningStatusFailed,
-			DatabaseName:        "db1",
-			DatabaseTableName:   "factorial",
-			KafkaLiveFeedTopic:  "live_feed",
-			KafkaFactorialTopic: "factorial",
+			Name:               "mother1",
+			ProvisioningStatus: entity.ProvisioningStatusFailed,
+			DatabaseName:       "db1",
+			DatabaseTableName:  "factorial",
 		}
 
 		mockRepo.On("Create", ctx, sampleMS).Return(pkg.ErrFailedToCreateMotherService)
@@ -71,12 +67,10 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		service := NewMotherService(mockRepo)
 
 		sampleMS := &entity.MotherService{
-			Name:                "mother1",
-			ProvisioningStatus:  entity.ProvisioningStatusFailed,
-			DatabaseName:        "db1",
-			DatabaseTableName:   "factorial",
-			KafkaLiveFeedTopic:  "live_feed",
-			KafkaFactorialTopic: "factorial",
+			Name:               "mother1",
+			ProvisioningStatus: entity.ProvisioningStatusFailed,
+			DatabaseName:       "db1",
+			DatabaseTableName:  "factorial",
 		}
 
 		mockRepo.On("Create", ctx, sampleMS).Return(pkg.ErrMotherServiceAlreadyExist)
@@ -94,11 +88,9 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		service := NewMotherService(mockRepo)
 
 		sampleMS := &entity.MotherService{
-			ProvisioningStatus:  entity.ProvisioningStatusFailed,
-			DatabaseName:        "db1",
-			DatabaseTableName:   "factorial",
-			KafkaLiveFeedTopic:  "live_feed",
-			KafkaFactorialTopic: "factorial",
+			ProvisioningStatus: entity.ProvisioningStatusFailed,
+			DatabaseName:       "db1",
+			DatabaseTableName:  "factorial",
 		}
 
 		err := service.Create(ctx, sampleMS)
@@ -113,14 +105,12 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		service := NewMotherService(mockRepo)
 
 		sampleMS := &entity.MotherService{
-			ProvisioningStatus:  entity.ProvisioningStatusFailed,
-			Name:                "mother",
-			DatabaseName:        "db1",
-			DatabaseTableName:   "factorial",
-			KafkaLiveFeedTopic:  "live_feed",
-			KafkaFactorialTopic: "factorial",
-			ExceptionRate:       10,
-			ResponseDelayRate:   -1,
+			ProvisioningStatus: entity.ProvisioningStatusFailed,
+			Name:               "mother",
+			DatabaseName:       "db1",
+			DatabaseTableName:  "factorial",
+			ExceptionRate:      10,
+			ResponseDelayRate:  -1,
 		}
 
 		err := service.Create(ctx, sampleMS)
@@ -134,13 +124,11 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		service := NewMotherService(mockRepo)
 
 		sampleMS := &entity.MotherService{
-			ProvisioningStatus:  entity.ProvisioningStatusFailed,
-			Name:                "mother",
-			DatabaseName:        "db1",
-			DatabaseTableName:   "factorial",
-			KafkaLiveFeedTopic:  "live_feed",
-			KafkaFactorialTopic: "factorial",
-			ExceptionRate:       -10,
+			ProvisioningStatus: entity.ProvisioningStatusFailed,
+			Name:               "mother",
+			DatabaseName:       "db1",
+			DatabaseTableName:  "factorial",
+			ExceptionRate:      -10,
 		}
 
 		err := service.Create(ctx, sampleMS)
@@ -160,8 +148,6 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			Name:                  "mother",
 			DatabaseName:          "db1",
 			DatabaseTableName:     "factorial",
-			KafkaLiveFeedTopic:    "live_feed",
-			KafkaFactorialTopic:   "factorial",
 			ExceptionRate:         10,
 			ResponseDelayRate:     0,
 			ResponseDelayDuration: &duration,
@@ -182,13 +168,11 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 
 		inputID := uint64(1)
 		expectedResult := &entity.MotherService{
-			ID:                  uint64(1),
-			Name:                "mother1",
-			ProvisioningStatus:  entity.ProvisioningStatusFailed,
-			DatabaseName:        "db1",
-			DatabaseTableName:   "factorial",
-			KafkaLiveFeedTopic:  "live_feed",
-			KafkaFactorialTopic: "factorial",
+			ID:                 uint64(1),
+			Name:               "mother1",
+			ProvisioningStatus: entity.ProvisioningStatusFailed,
+			DatabaseName:       "db1",
+			DatabaseTableName:  "factorial",
 		}
 
 		mockRepo.On("GetByID", ctx, inputID).Return(expectedResult, nil)
@@ -201,8 +185,6 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		assert.Equal(t, result.ProvisioningStatus, expectedResult.ProvisioningStatus)
 		assert.Equal(t, result.DatabaseName, expectedResult.DatabaseName)
 		assert.Equal(t, result.DatabaseTableName, expectedResult.DatabaseTableName)
-		assert.Equal(t, result.KafkaLiveFeedTopic, expectedResult.KafkaLiveFeedTopic)
-		assert.Equal(t, result.KafkaFactorialTopic, expectedResult.KafkaFactorialTopic)
 		mockRepo.AssertCalled(t, "GetByID", ctx, inputID)
 	})
 
@@ -266,8 +248,6 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db5",
 				DatabaseTableName:        "test_table5",
-				KafkaLiveFeedTopic:       "live_feed",
-				KafkaFactorialTopic:      "factorial",
 			},
 			{
 				ID:                       uint64(4),
@@ -280,8 +260,6 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db4",
 				DatabaseTableName:        "test_table4",
-				KafkaLiveFeedTopic:       "live_feed",
-				KafkaFactorialTopic:      "factorial",
 			},
 		}
 

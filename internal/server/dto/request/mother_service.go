@@ -10,8 +10,6 @@ type MotherService struct {
 	ServiceDeploymentAddress *string `json:"service_deployment_address"`
 	DatabaseName             string  `json:"database_name"`
 	DatabaseTableName        string  `json:"database_table_name"`
-	KafkaLiveFeedTopic       string  `json:"kafka_livefeed_topic"`
-	KafkaFactorialTopic      string  `json:"kafka_factorial_topic"`
 }
 
 type PaginationRequest struct {
