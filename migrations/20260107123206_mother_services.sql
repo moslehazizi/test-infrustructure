@@ -1,8 +1,14 @@
 -- migrate:up
-CREATE TYPE provisioning_status AS ENUM ('pending', 'provisioning', 'provisioned', 'failed', 'de-provisioned');
+CREATE TYPE mother_service_status AS ENUM (
+    'pending', -- mother service just created 
+    'running', -- test is running on application level (sending level)
+    'paused', -- application level pause on sending request 
+    'stopped', -- stop container but can start scenario again.
+    'aborted' -- stop and delete containers. can not start again.
+);
 create table if not exists mother_services (
     id bigserial PRIMARY KEY,
-    name varchar(512) NOT NULL UNIQUE,
+    "name" varchar(512) NOT NULL UNIQUE,
     
     exception_rate int2 NOT NULL DEFAULT 0 CHECK (
         exception_rate >= 0 AND exception_rate <= 100
@@ -21,16 +27,13 @@ create table if not exists mother_services (
     -- RANDOM DELAY
     random_response_delay_min int  NULL,    
     random_response_delay_max int  NULL,
-    provisioning_status provisioning_status NOT NULL DEFAULT 'pending',
+    "status" mother_service_status NOT NULL DEFAULT 'pending',
     service_deployment_address varchar(512) NULL,
     database_name varchar(256) NOT NULL DEFAULT 'mother_service',
     database_table_name varchar(128) NOT NULL DEFAULT 'factorials',
     kafka_livefeed_topic varchar(128) NOT NULL DEFAULT 'livefeed',
     kafka_factorial_topic varchar(128) NOT NULL DEFAULT 'factorial',
     
-    stopped_at timestamptz,
-    restarted_at timestamptz,
-    started_at timestamptz,
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP,
 
