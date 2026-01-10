@@ -5,11 +5,13 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
+	"errors"
 	"fmt"
 )
 
 type TestScenario interface {
 	Create(ctx context.Context, testScenario *entity.TestScenario) error
+	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 }
 
 func NewTestScenarioUsecase(testScenarioRepository repository.TestScenarioRepository) TestScenario {
@@ -31,4 +33,17 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 	}
 
 	return nil
+}
+
+func (service *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error) {
+	result, err := service.testScenarioRepository.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
+			return nil, pkg.ErrTestScenarioNotFound
+		}
+
+		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
+	}
+
+	return result, nil
 }
