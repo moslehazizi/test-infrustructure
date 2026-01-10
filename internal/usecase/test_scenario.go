@@ -12,6 +12,7 @@ import (
 type TestScenario interface {
 	Create(ctx context.Context, testScenario *entity.TestScenario) error
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
+	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error)
 }
 
 func NewTestScenarioUsecase(testScenarioRepository repository.TestScenarioRepository) TestScenario {
@@ -43,6 +44,15 @@ func (service *testScenario) GetByID(ctx context.Context, id uint64) (*entity.Te
 		}
 
 		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
+	}
+
+	return result, nil
+}
+
+func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error) {
+	result, err := service.testScenarioRepository.GetPaginated(ctx, pagReq)
+	if err != nil {
+		return nil, fmt.Errorf("%w, %w", pkg.ErrFailedToGetTestScenarios, err)
 	}
 
 	return result, nil

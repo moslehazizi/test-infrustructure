@@ -137,3 +137,79 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 }
+
+func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		service := NewTestScenarioUsecase(mockRepo)
+
+		sampleInt := 2
+		pagReq := entity.TestScenarioPaginationRequest{
+			Page:    2,
+			PerPage: 2,
+		}
+		expectedResult := []*entity.TestScenario{
+			{
+				ID:                   uint64(2),
+				Name:                 "load1",
+				TestCategoryID:       uint64(1),
+				MotherServiceID:      uint64(2),
+				Status:               entity.ScenarioStatusSucceed,
+				MaxTestServiceCount:  &sampleInt,
+				ExecutionDuration:    &sampleInt,
+				AutoStepIncreaseRate: &sampleInt,
+			},
+			{
+				ID:                   uint64(1),
+				Name:                 "smoke2",
+				TestCategoryID:       uint64(1),
+				MotherServiceID:      uint64(2),
+				Status:               entity.ScenarioStatusSucceed,
+				MaxTestServiceCount:  &sampleInt,
+				ExecutionDuration:    &sampleInt,
+				AutoStepIncreaseRate: &sampleInt,
+			},
+		}
+
+		mockRepo.On("GetPaginated", ctx, pagReq).Return(expectedResult, nil)
+
+		result, err := service.GetPaginated(ctx, pagReq)
+
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, len(result), 2)
+
+		assert.Equal(t, expectedResult[0].ID, result[0].ID)
+		assert.Equal(t, expectedResult[0].Name, result[0].Name)
+		assert.Equal(t, expectedResult[0].MotherServiceID, result[0].MotherServiceID)
+
+		assert.Equal(t, expectedResult[1].ID, result[1].ID)
+		assert.Equal(t, expectedResult[1].Name, result[1].Name)
+		assert.Equal(t, expectedResult[1].MotherServiceID, result[1].MotherServiceID)
+
+		mockRepo.AssertCalled(t, "GetPaginated", ctx, pagReq)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed case", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		service := NewTestScenarioUsecase(mockRepo)
+
+		pagReq := entity.TestScenarioPaginationRequest{
+			Page:    2,
+			PerPage: 2,
+		}
+
+		mockRepo.On("GetPaginated", ctx, pagReq).Return(nil, errors.New("error happened"))
+
+		result, err := service.GetPaginated(ctx, pagReq)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenarios)
+		mockRepo.AssertCalled(t, "GetPaginated", ctx, pagReq)
+		mockRepo.AssertExpectations(t)
+	})
+}
