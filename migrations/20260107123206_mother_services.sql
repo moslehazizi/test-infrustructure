@@ -2,18 +2,18 @@
 CREATE TYPE provisioning_status AS ENUM ('pending', 'provisioning', 'provisioned', 'failed', 'de-provisioned');
 create table if not exists mother_services (
     id bigserial PRIMARY KEY,
-    name varchar(512),
+    name varchar(512) NOT NULL UNIQUE,
     
-    exception_rate float NOT NULL DEFAULT 0,
+    exception_rate int2 NOT NULL DEFAULT 0,
     CONSTRAINT exception_rate_valid CHECK (
-        exception_rate >= 0
+        exception_rate >= 0 AND exception_rate <= 100
     ),
     
     -- 0 means no delay
     -- x > 0 means delay percentage
-    response_delay_rate float  NOT NULL DEFAULT 0,
+    response_delay_rate int2  NOT NULL DEFAULT 0,
     CONSTRAINT response_delay_rate_valid CHECK (
-        response_delay_rate >= 0
+        response_delay_rate > = 0 AND response_delay_rate <= 100 
     ),
 
     -- FIXED DELAY
