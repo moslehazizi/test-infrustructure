@@ -56,14 +56,20 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	}
 
 	motherService := usecase.NewMotherService(postgres.NewMotherServiceRepository(db))
-	handler := handler.NewMotherServiceHandler(motherService)
+	motherHandler := handler.NewMotherServiceHandler(motherService)
+	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 
 	apiV1 := app.Group("/api/v1")
 
 	// Register APIs
-	apiV1.Post("/mother-service", handler.Create())
-	apiV1.Get("/mother-service/:id", handler.GetByID())
-	apiV1.Post("/mother-service/paginated", handler.GetPaginated())
+
+	// Mother service
+	apiV1.Post("/mother-services", motherHandler.Create())
+	apiV1.Get("/mother-services/:id", motherHandler.GetByID())
+	apiV1.Post("/mother-services/paginated", motherHandler.GetPaginated())
+
+	// test category
+	apiV1.Get("/test-categories", testCategoryHandler.GetAll())
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
 
