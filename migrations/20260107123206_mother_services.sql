@@ -4,16 +4,14 @@ create table if not exists mother_services (
     id bigserial PRIMARY KEY,
     name varchar(512) NOT NULL UNIQUE,
     
-    exception_rate int2 NOT NULL DEFAULT 0,
-    CONSTRAINT exception_rate_valid CHECK (
+    exception_rate int2 NOT NULL DEFAULT 0 CHECK (
         exception_rate >= 0 AND exception_rate <= 100
     ),
     
     -- 0 means no delay
     -- x > 0 means delay percentage
-    response_delay_rate int2  NOT NULL DEFAULT 0,
-    CONSTRAINT response_delay_rate_valid CHECK (
-        response_delay_rate > = 0 AND response_delay_rate <= 100 
+    response_delay_rate int2  NOT NULL DEFAULT 0 CHECK (
+        response_delay_rate >= 0 AND response_delay_rate <= 100
     ),
 
     -- FIXED DELAY
@@ -30,9 +28,9 @@ create table if not exists mother_services (
     kafka_livefeed_topic varchar(128) NOT NULL DEFAULT 'livefeed',
     kafka_factorial_topic varchar(128) NOT NULL DEFAULT 'factorial',
     
-    stopped_at timestamptz default CURRENT_TIMESTAMP,
-    restarted_at timestamptz default CURRENT_TIMESTAMP,
-    started_at timestamptz default CURRENT_TIMESTAMP,
+    stopped_at timestamptz,
+    restarted_at timestamptz,
+    started_at timestamptz,
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP,
 

@@ -3,9 +3,8 @@ package postgres
 import (
 	"context"
 	"control-panel-service/config"
+	"control-panel-service/pkg"
 	"fmt"
-	"net"
-	"strconv"
 
 	"gorm.io/driver/postgres"
 
@@ -13,16 +12,16 @@ import (
 )
 
 func OpenConnection(ctx context.Context, cfg config.Postgres) (*gorm.DB, error) {
-	dsn := fmt.Sprintf(
-		"postgresql://%s:%s@%s/%s?sslmode=%s",
-		cfg.User,
-		cfg.Password,
-		net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)),
-		cfg.Database,
-		cfg.SSLMode,
-	)
-
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(pkg.GetConnectionString(
+		pkg.DatabaseConfig{
+			Host:     cfg.Host,
+			Port:     cfg.Port,
+			User:     cfg.User,
+			Password: cfg.Password,
+			Database: cfg.Database,
+			SSLMode:  cfg.SSLMode,
+		},
+	)), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("open gorm postgres connection: %w", err)
 	}
