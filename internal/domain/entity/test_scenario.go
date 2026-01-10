@@ -34,3 +34,8 @@ type TestScenario struct {
 func (TestScenario) TableName() string {
 	return "test_scenarios"
 }
+
+type TestScenarioPaginationRequest struct {
+	Page    int
+	PerPage int
+}

@@ -16,7 +16,9 @@ var (
 	ErrFailedToGetMotherServices       = errors.New("failed to get mother service instances")
 	ErrMotherServiceAlreadyExist       = errors.New("mother service already exist")
 	ErrNegativePageOrPerPageNotAllowed = errors.New("negative value for page or per page are not allowed")
-
+	ErrTestScenarioNotFound            = errors.New("test scenario not found")
+	ErrFailedToGetTestScenario         = errors.New("failed to get test scenario")
+	ErrFailedToGetTestScenarios        = errors.New("failed to get test scenarios")
 
 	// Validation errors.
 	ErrInvalidName                             = errors.New("mother service name is required")
