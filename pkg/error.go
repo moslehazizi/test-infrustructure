@@ -17,8 +17,6 @@ var (
 	ErrMotherServiceAlreadyExist       = errors.New("mother service already exist")
 	ErrNegativePageOrPerPageNotAllowed = errors.New("negative value for page or per page are not allowed")
 
-	// Test Scenario.
-	ErrTestScenarioAlreadyExist = errors.New("test scenario already exist")
 
 	// Validation errors.
 	ErrInvalidName                             = errors.New("mother service name is required")
