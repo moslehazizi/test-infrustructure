@@ -27,7 +27,6 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 
 		sampleMS := &entity.MotherService{
 			Name:               "mother1",
-			ProvisioningStatus: entity.ProvisioningStatusFailed,
 			DatabaseName:       "db1",
 			DatabaseTableName:  "factorial",
 		}
@@ -47,7 +46,6 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 
 		sampleMS := &entity.MotherService{
 			Name:               "mother1",
-			ProvisioningStatus: entity.ProvisioningStatusFailed,
 			DatabaseName:       "db1",
 			DatabaseTableName:  "factorial",
 		}
@@ -68,7 +66,6 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 
 		sampleMS := &entity.MotherService{
 			Name:               "mother1",
-			ProvisioningStatus: entity.ProvisioningStatusFailed,
 			DatabaseName:       "db1",
 			DatabaseTableName:  "factorial",
 		}
@@ -88,7 +85,6 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		service := NewMotherService(mockRepo)
 
 		sampleMS := &entity.MotherService{
-			ProvisioningStatus: entity.ProvisioningStatusFailed,
 			DatabaseName:       "db1",
 			DatabaseTableName:  "factorial",
 		}
@@ -105,7 +101,6 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		service := NewMotherService(mockRepo)
 
 		sampleMS := &entity.MotherService{
-			ProvisioningStatus: entity.ProvisioningStatusFailed,
 			Name:               "mother",
 			DatabaseName:       "db1",
 			DatabaseTableName:  "factorial",
@@ -124,7 +119,6 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		service := NewMotherService(mockRepo)
 
 		sampleMS := &entity.MotherService{
-			ProvisioningStatus: entity.ProvisioningStatusFailed,
 			Name:               "mother",
 			DatabaseName:       "db1",
 			DatabaseTableName:  "factorial",
@@ -144,7 +138,6 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		duration := 100
 
 		sampleMS := &entity.MotherService{
-			ProvisioningStatus:    entity.ProvisioningStatusFailed,
 			Name:                  "mother",
 			DatabaseName:          "db1",
 			DatabaseTableName:     "factorial",

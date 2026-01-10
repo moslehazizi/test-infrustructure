@@ -31,6 +31,8 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 		return fmt.Errorf("failed to validate request: %w", err)
 	}
 
+	motherService.ProvisioningStatus = entity.ProvisioningStatusPending
+
 	err = service.motherServiceRepo.Create(ctx, motherService)
 	if err != nil {
 		if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
