@@ -5,6 +5,8 @@ import (
 	"control-panel-service/config"
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository/postgres"
+	"control-panel-service/internal/server/handler"
+	"control-panel-service/internal/usecase"
 	"fmt"
 	"log"
 
@@ -52,12 +54,16 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	if err != nil {
 		return fmt.Errorf("could not connect to postgres: %w", err)
 	}
-	_ = db
+
+	motherService := usecase.NewMotherService(postgres.NewMotherServiceRepository(db))
+	handler := handler.NewMotherServiceHandler(motherService)
 
 	apiV1 := app.Group("/api/v1")
 
 	// Register APIs
-	_ = apiV1
+	apiV1.Options("/mother-service", handler.Create())
+	apiV1.Options("/mother-service/:id", handler.GetByID())
+	apiV1.Options("/mother-service/paginated", handler.GetPaginated())
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
 
