@@ -1,7 +1,7 @@
 -- migrate:up
 create table if not exists test_scenarios (
     id bigserial PRIMARY KEY,
-    name varchar(512) NOT NULL,
+    name varchar(512) NOT NULL UNIQUE,
 
     test_category_id bigint NOT NULL,
     CONSTRAINT fk_test_category FOREIGN KEY (test_category_id) REFERENCES test_categories(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -10,7 +10,7 @@ create table if not exists test_scenarios (
     CONSTRAINT fk_mother_service FOREIGN KEY (mother_service_id) REFERENCES mother_services(id) ON DELETE CASCADE ON UPDATE CASCADE,
 
     -- تعداد سرویس تست قابل تعریف | حداکثر بار
-    max_test_services_count int NULL CHECK (
+    max_test_service_count int NULL CHECK (
         max_test_services_count IS NULL OR max_test_services_count >= 1
     ),
 
