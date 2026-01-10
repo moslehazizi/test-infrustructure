@@ -26,7 +26,7 @@ type TestScenario struct {
 	TestCategoryID       uint64          `gorm:"column:test_category_id"`
 	MotherServiceID      uint64          `gorm:"column:mother_service_id"`
 	Status               ScenarioStatus  `gorm:"column:status"`
-	MaxTestServiceCount  *int            `gorm:"coulmn:max_test_service_count"`
+	MaxTestServiceCount  *int            `gorm:"column:max_test_service_count"`
 	ExecutionDuration    *int            `gorm:"column:execution_duration"`
 	AutoStepIncreaseRate *int            `gorm:"column:auto_step_increase_rate"`
 }
