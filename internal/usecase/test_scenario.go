@@ -28,7 +28,7 @@ type testScenario struct {
 }
 
 func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) error {
-	_, err := service.testCategoryRepository.GetByID(ctx, int(testScenario.TestCategoryID))
+	_, err := service.testCategoryRepository.GetByID(ctx, testScenario.TestCategoryID)
 
 	err = testScenario.Validate()
 	if err != nil {

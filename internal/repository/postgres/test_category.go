@@ -31,7 +31,7 @@ func (repo *testCategory) GetAll(ctx context.Context) ([]entity.TestCategory, er
 	return items, nil
 }
 
-func (repo *testCategory) GetByID(ctx context.Context, id int) (*entity.TestCategory, error) {
+func (repo *testCategory) GetByID(ctx context.Context, id uint64) (*entity.TestCategory, error) {
 	var testCategory entity.TestCategory
 	err := repo.db.WithContext(ctx).First(&testCategory, id).Error
 	if err != nil {
