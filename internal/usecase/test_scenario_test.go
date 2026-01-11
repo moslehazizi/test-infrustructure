@@ -31,12 +31,12 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		sampleInt := 1
 		testSci := &entity.TestScenario{
-			Name:                 "load1",
-			TestCategoryID:       uint64(2),
-			MotherServiceID:      uint64(1),
-			MaxTestServiceCount:  &sampleInt,
-			ExecutionDuration:    &sampleInt,
-			AutoStepIncreaseRate: &sampleInt,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			MaxTestServiceCount: &sampleInt,
+			ExecutionDuration:   &sampleInt,
+			AutoStepChangeRate:  &sampleInt,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -66,12 +66,12 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		sampleInt := 1
 		testSci := &entity.TestScenario{
-			Name:                 "load1",
-			TestCategoryID:       uint64(2),
-			MotherServiceID:      uint64(1),
-			MaxTestServiceCount:  &sampleInt,
-			ExecutionDuration:    &sampleInt,
-			AutoStepIncreaseRate: &sampleInt,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			MaxTestServiceCount: &sampleInt,
+			ExecutionDuration:   &sampleInt,
+			AutoStepChangeRate:  &sampleInt,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -157,7 +157,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed case - validation error -  auto step increase less than one", func(t *testing.T) {
+	t.Run("failed case - validation error -  auto step change less than one", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -165,10 +165,10 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		sampleInt := -1
 		testSci := &entity.TestScenario{
-			Name:                 "load1",
-			TestCategoryID:       uint64(2),
-			MotherServiceID:      uint64(1),
-			AutoStepIncreaseRate: &sampleInt,
+			Name:               "load1",
+			TestCategoryID:     uint64(2),
+			MotherServiceID:    uint64(1),
+			AutoStepChangeRate: &sampleInt,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -183,7 +183,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		err := service.Create(ctx, testSci)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrAutoStepIncreaseRateLessThanOne)
+		assert.ErrorIs(t, err, pkg.ErrAutoStepChangeRateLessThanOne)
 		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
 		mockTestCatRepo.AssertExpectations(t)
 	})
@@ -196,10 +196,10 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		sampleInt := -1
 		testSci := &entity.TestScenario{
-			Name:                 "load1",
-			TestCategoryID:       uint64(2),
-			MotherServiceID:      uint64(1),
-			AutoStepIncreaseRate: &sampleInt,
+			Name:               "load1",
+			TestCategoryID:     uint64(2),
+			MotherServiceID:    uint64(1),
+			AutoStepChangeRate: &sampleInt,
 		}
 
 		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(nil, pkg.ErrTestCategoryNotFound)
@@ -220,10 +220,10 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		sampleInt := -1
 		testSci := &entity.TestScenario{
-			Name:                 "load1",
-			TestCategoryID:       uint64(2),
-			MotherServiceID:      uint64(1),
-			AutoStepIncreaseRate: &sampleInt,
+			Name:               "load1",
+			TestCategoryID:     uint64(2),
+			MotherServiceID:    uint64(1),
+			AutoStepChangeRate: &sampleInt,
 		}
 
 		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(nil, errors.New("error happened"))
@@ -272,10 +272,10 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		sampleInt := 1
 		testSci := &entity.TestScenario{
-			Name:                 "load1",
-			TestCategoryID:       uint64(2),
-			MotherServiceID:      uint64(1),
-			AutoStepIncreaseRate: &sampleInt,
+			Name:               "load1",
+			TestCategoryID:     uint64(2),
+			MotherServiceID:    uint64(1),
+			AutoStepChangeRate: &sampleInt,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -306,14 +306,14 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		sampleInt := 1
 		sampleID := uint64(4)
 		expectedTestScenario := &entity.TestScenario{
-			ID:                   sampleID,
-			Name:                 "load1",
-			TestCategoryID:       uint64(1),
-			MotherServiceID:      uint64(2),
-			Status:               entity.ScenarioStatusSucceed,
-			MaxTestServiceCount:  &sampleInt,
-			ExecutionDuration:    &sampleInt,
-			AutoStepIncreaseRate: &sampleInt,
+			ID:                  sampleID,
+			Name:                "load1",
+			TestCategoryID:      uint64(1),
+			MotherServiceID:     uint64(2),
+			Status:              entity.ScenarioStatusSucceed,
+			MaxTestServiceCount: &sampleInt,
+			ExecutionDuration:   &sampleInt,
+			AutoStepChangeRate:  &sampleInt,
 		}
 
 		mockRepo.On("GetByID", ctx, sampleID).Return(expectedTestScenario, nil)
@@ -399,24 +399,24 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		}
 		expectedResult := []*entity.TestScenario{
 			{
-				ID:                   uint64(2),
-				Name:                 "load1",
-				TestCategoryID:       uint64(1),
-				MotherServiceID:      uint64(2),
-				Status:               entity.ScenarioStatusSucceed,
-				MaxTestServiceCount:  &sampleInt,
-				ExecutionDuration:    &sampleInt,
-				AutoStepIncreaseRate: &sampleInt,
+				ID:                  uint64(2),
+				Name:                "load1",
+				TestCategoryID:      uint64(1),
+				MotherServiceID:     uint64(2),
+				Status:              entity.ScenarioStatusSucceed,
+				MaxTestServiceCount: &sampleInt,
+				ExecutionDuration:   &sampleInt,
+				AutoStepChangeRate:  &sampleInt,
 			},
 			{
-				ID:                   uint64(1),
-				Name:                 "smoke2",
-				TestCategoryID:       uint64(1),
-				MotherServiceID:      uint64(2),
-				Status:               entity.ScenarioStatusSucceed,
-				MaxTestServiceCount:  &sampleInt,
-				ExecutionDuration:    &sampleInt,
-				AutoStepIncreaseRate: &sampleInt,
+				ID:                  uint64(1),
+				Name:                "smoke2",
+				TestCategoryID:      uint64(1),
+				MotherServiceID:     uint64(2),
+				Status:              entity.ScenarioStatusSucceed,
+				MaxTestServiceCount: &sampleInt,
+				ExecutionDuration:   &sampleInt,
+				AutoStepChangeRate:  &sampleInt,
 			},
 		}
 

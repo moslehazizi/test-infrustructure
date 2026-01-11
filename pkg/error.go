@@ -37,7 +37,7 @@ var (
 	ErrFailedToGetTestCategoryFromRepository   = errors.New("failed to get test category from repository")
 	ErrExecutionDurationLessThanOne            = errors.New("execution duration should be more than one")
 	ErrMaxTestServiceCountLessThanOne          = errors.New("max test service count should be more than 1")
-	ErrAutoStepIncreaseRateLessThanOne         = errors.New("auto step increase rate should be more than one")
+	ErrAutoStepChangeRateLessThanOne           = errors.New("auto step change rate should be more than one")
 	ErrMaxTestServiceCountNotSet               = errors.New("for this test scenario max test service count should be set")
 	ErrNoNeedMaxTestServiceCount               = errors.New("no need to set max service count")
 	ErrExecutionDurationNotSet                 = errors.New("for this test scenario execution duration should be set")

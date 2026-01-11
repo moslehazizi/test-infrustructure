@@ -42,7 +42,7 @@ func TestGetAll(t *testing.T) {
 			"label",
 			"has_max_test_service_count",
 			"has_execution_duration",
-			"has_auto_step_increase_rate",
+			"has_auto_step_change_rate",
 			"created_at",
 			"updated_at",
 		}))
@@ -87,7 +87,7 @@ func TestGetAll(t *testing.T) {
 			"label",
 			"has_max_test_service_count",
 			"has_execution_duration",
-			"has_auto_step_increase_rate",
+			"has_auto_step_change_rate",
 			"created_at",
 			"updated_at",
 		}).AddRow(
@@ -158,7 +158,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "name", "label",
 				"has_max_test_service_count", "has_execution_duration",
-				"has_auto_step_increase_rate",
+				"has_auto_step_change_rate",
 			}).
 				AddRow(
 					expectedTestCategory.ID,

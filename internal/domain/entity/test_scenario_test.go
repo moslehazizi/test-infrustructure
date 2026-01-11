@@ -12,17 +12,17 @@ func TestTestScenarioValidation(t *testing.T) {
 	t.Run("success case - test category config matches inputs", func(t *testing.T) {
 		sampleInt := 2
 		testSci := TestScenario{
-			ID:                   uint64(1),
-			CreatedAt:            time.Now(),
-			UpdatedAt:            time.Now(),
-			DeletedAt:            nil,
-			Name:                 "load1",
-			TestCategoryID:       uint64(4),
-			MotherServiceID:      uint64(5),
-			Status:               ScenarioStatusPending,
-			MaxTestServiceCount:  &sampleInt,
-			ExecutionDuration:    &sampleInt,
-			AutoStepIncreaseRate: &sampleInt,
+			ID:                  uint64(1),
+			CreatedAt:           time.Now(),
+			UpdatedAt:           time.Now(),
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(4),
+			MotherServiceID:     uint64(5),
+			Status:              ScenarioStatusPending,
+			MaxTestServiceCount: &sampleInt,
+			ExecutionDuration:   &sampleInt,
+			AutoStepChangeRate:  &sampleInt,
 		}
 
 		TestCategory := &TestCategory{
@@ -120,18 +120,18 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrExecutionDurationLessThanOne)
 	})
 
-	t.Run("failed case - auto step increase rate should be more than 1", func(t *testing.T) {
+	t.Run("failed case - auto step change rate should be more than 1", func(t *testing.T) {
 		sampleIntLessThanOne := -1
 		testSci := TestScenario{
-			ID:                   uint64(1),
-			CreatedAt:            time.Now(),
-			UpdatedAt:            time.Now(),
-			DeletedAt:            nil,
-			Name:                 "load1",
-			TestCategoryID:       uint64(4),
-			MotherServiceID:      uint64(5),
-			Status:               ScenarioStatusPending,
-			AutoStepIncreaseRate: &sampleIntLessThanOne,
+			ID:                 uint64(1),
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+			DeletedAt:          nil,
+			Name:               "load1",
+			TestCategoryID:     uint64(4),
+			MotherServiceID:    uint64(5),
+			Status:             ScenarioStatusPending,
+			AutoStepChangeRate: &sampleIntLessThanOne,
 		}
 		TestCategory := &TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -145,22 +145,22 @@ func TestTestScenarioValidation(t *testing.T) {
 		err := testSci.Validate(TestCategory)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrAutoStepIncreaseRateLessThanOne)
+		assert.ErrorIs(t, err, pkg.ErrAutoStepChangeRateLessThanOne)
 	})
 
 	t.Run("failed case - max test service count not set", func(t *testing.T) {
 		sampleInt := 2
 		testSci := TestScenario{
-			ID:                   uint64(1),
-			CreatedAt:            time.Now(),
-			UpdatedAt:            time.Now(),
-			DeletedAt:            nil,
-			Name:                 "load1",
-			TestCategoryID:       uint64(4),
-			MotherServiceID:      uint64(5),
-			Status:               ScenarioStatusPending,
-			ExecutionDuration:    &sampleInt,
-			AutoStepIncreaseRate: &sampleInt,
+			ID:                 uint64(1),
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+			DeletedAt:          nil,
+			Name:               "load1",
+			TestCategoryID:     uint64(4),
+			MotherServiceID:    uint64(5),
+			Status:             ScenarioStatusPending,
+			ExecutionDuration:  &sampleInt,
+			AutoStepChangeRate: &sampleInt,
 		}
 
 		TestCategory := &TestCategory{
@@ -181,17 +181,17 @@ func TestTestScenarioValidation(t *testing.T) {
 	t.Run("failed case - no need to max test service count", func(t *testing.T) {
 		sampleInt := 2
 		testSci := TestScenario{
-			ID:                   uint64(1),
-			CreatedAt:            time.Now(),
-			UpdatedAt:            time.Now(),
-			DeletedAt:            nil,
-			Name:                 "load1",
-			TestCategoryID:       uint64(4),
-			MotherServiceID:      uint64(5),
-			Status:               ScenarioStatusPending,
-			MaxTestServiceCount:  &sampleInt,
-			ExecutionDuration:    &sampleInt,
-			AutoStepIncreaseRate: &sampleInt,
+			ID:                  uint64(1),
+			CreatedAt:           time.Now(),
+			UpdatedAt:           time.Now(),
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(4),
+			MotherServiceID:     uint64(5),
+			Status:              ScenarioStatusPending,
+			MaxTestServiceCount: &sampleInt,
+			ExecutionDuration:   &sampleInt,
+			AutoStepChangeRate:  &sampleInt,
 		}
 
 		TestCategory := &TestCategory{
@@ -212,15 +212,15 @@ func TestTestScenarioValidation(t *testing.T) {
 	t.Run("failed case - execution duration not set", func(t *testing.T) {
 		sampleInt := 2
 		testSci := TestScenario{
-			ID:                   uint64(1),
-			CreatedAt:            time.Now(),
-			UpdatedAt:            time.Now(),
-			DeletedAt:            nil,
-			Name:                 "load1",
-			TestCategoryID:       uint64(4),
-			MotherServiceID:      uint64(5),
-			Status:               ScenarioStatusPending,
-			AutoStepIncreaseRate: &sampleInt,
+			ID:                 uint64(1),
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+			DeletedAt:          nil,
+			Name:               "load1",
+			TestCategoryID:     uint64(4),
+			MotherServiceID:    uint64(5),
+			Status:             ScenarioStatusPending,
+			AutoStepChangeRate: &sampleInt,
 		}
 
 		TestCategory := &TestCategory{
@@ -241,16 +241,16 @@ func TestTestScenarioValidation(t *testing.T) {
 	t.Run("failed case - no need execution duration", func(t *testing.T) {
 		sampleInt := 2
 		testSci := TestScenario{
-			ID:                   uint64(1),
-			CreatedAt:            time.Now(),
-			UpdatedAt:            time.Now(),
-			DeletedAt:            nil,
-			Name:                 "load1",
-			TestCategoryID:       uint64(4),
-			MotherServiceID:      uint64(5),
-			Status:               ScenarioStatusPending,
-			ExecutionDuration:    &sampleInt,
-			AutoStepIncreaseRate: &sampleInt,
+			ID:                 uint64(1),
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+			DeletedAt:          nil,
+			Name:               "load1",
+			TestCategoryID:     uint64(4),
+			MotherServiceID:    uint64(5),
+			Status:             ScenarioStatusPending,
+			ExecutionDuration:  &sampleInt,
+			AutoStepChangeRate: &sampleInt,
 		}
 
 		TestCategory := &TestCategory{
@@ -297,15 +297,15 @@ func TestTestScenarioValidation(t *testing.T) {
 	t.Run("failed case - no need to auto step change", func(t *testing.T) {
 		sampleInt := 1
 		testSci := TestScenario{
-			ID:                   uint64(1),
-			CreatedAt:            time.Now(),
-			UpdatedAt:            time.Now(),
-			DeletedAt:            nil,
-			Name:                 "load1",
-			TestCategoryID:       uint64(4),
-			MotherServiceID:      uint64(5),
-			Status:               ScenarioStatusPending,
-			AutoStepIncreaseRate: &sampleInt,
+			ID:                 uint64(1),
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+			DeletedAt:          nil,
+			Name:               "load1",
+			TestCategoryID:     uint64(4),
+			MotherServiceID:    uint64(5),
+			Status:             ScenarioStatusPending,
+			AutoStepChangeRate: &sampleInt,
 		}
 
 		TestCategory := &TestCategory{

@@ -215,14 +215,14 @@ func TestGetByID(t *testing.T) {
 		theTime := time.Now()
 		srv := new(mocks.MockTestCategoryService)
 		want := &entity.TestCategory{
-			ID:                      1,
-			CreatedAt:               theTime,
-			UpdatedAt:               theTime,
-			Name:                    "load",
-			Label:                   "Load Test",
-			HasMaxTestServiceCount:  true,
-			HasExecutionDuration:    true,
-			HasAutoStepIncreaseRate: false,
+			ID:                     1,
+			CreatedAt:              theTime,
+			UpdatedAt:              theTime,
+			Name:                   "load",
+			Label:                  "Load Test",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  false,
 		}
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, nil)
 		h := NewTestCategoryHandler(&cfg, srv)
@@ -247,7 +247,7 @@ func TestGetByID(t *testing.T) {
 		assert.Equal(t, want.Label, got.Label)
 		assert.Equal(t, want.CreatedAt.Format("2006-01-02"), got.CreatedAt.Format("2006-01-02"))
 		assert.Equal(t, want.UpdatedAt.Format("2006-01-02"), got.UpdatedAt.Format("2006-01-02"))
-		assert.Equal(t, want.HasAutoStepIncreaseRate, got.HasAutoStepIncreaseRate)
+		assert.Equal(t, want.HasAutoStepChangeRate, got.HasAutoStepChangeRate)
 		assert.Equal(t, want.HasExecutionDuration, got.HasExecutionDuration)
 		assert.Equal(t, want.HasMaxTestServiceCount, got.HasMaxTestServiceCount)
 	})

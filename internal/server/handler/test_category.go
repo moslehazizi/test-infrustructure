@@ -80,14 +80,14 @@ func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 		}
 
 		responses := response.TestCategory{
-			ID:                      svcResult.ID,
-			CreatedAt:               svcResult.CreatedAt,
-			UpdatedAt:               svcResult.UpdatedAt,
-			Name:                    svcResult.Name,
-			Label:                   svcResult.Label,
-			HasMaxTestServiceCount:  svcResult.HasMaxTestServiceCount,
-			HasExecutionDuration:    svcResult.HasExecutionDuration,
-			HasAutoStepIncreaseRate: svcResult.HasAutoStepIncreaseRate,
+			ID:                     svcResult.ID,
+			CreatedAt:              svcResult.CreatedAt,
+			UpdatedAt:              svcResult.UpdatedAt,
+			Name:                   svcResult.Name,
+			Label:                  svcResult.Label,
+			HasMaxTestServiceCount: svcResult.HasMaxTestServiceCount,
+			HasExecutionDuration:   svcResult.HasExecutionDuration,
+			HasAutoStepChangeRate:  svcResult.HasAutoStepChangeRate,
 		}
 
 		return ctx.Status(http.StatusOK).JSON(responses)

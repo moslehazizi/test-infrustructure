@@ -81,14 +81,14 @@ func TestGetByID(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		testCategoryRepo := new(mocks.MockTestCategory)
 		want := &entity.TestCategory{
-			ID:                      1,
-			CreatedAt:               time.Now(),
-			UpdatedAt:               time.Now(),
-			Name:                    "load",
-			Label:                   "Load Test",
-			HasMaxTestServiceCount:  true,
-			HasExecutionDuration:    true,
-			HasAutoStepIncreaseRate: false,
+			ID:                     1,
+			CreatedAt:              time.Now(),
+			UpdatedAt:              time.Now(),
+			Name:                   "load",
+			Label:                  "Load Test",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  false,
 		}
 		testCategoryRepo.On("GetByID", mock.Anything, uint64(1)).Return(want, nil)
 
