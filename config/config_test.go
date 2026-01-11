@@ -46,7 +46,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedKafkaPort := 9092
 		expectedKafkaUsername := "kafka_user"
 		expectedKafkaPassword := "kafka_password_123"
-		expectedKafkaDbTopic := "factorial"
+		expectedKafkaProvisioningTopic := "factorial"
 		expectedKafkaDialerTimeout := 15 * time.Second
 		expectedKafkaMaxBytes := 20 * 1024 * 1024 // 20MB
 		expectedKafkaConsumerGroup := "factorial-consumer-group"
@@ -58,7 +58,7 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("KAFKA_PORT", strconv.Itoa(expectedKafkaPort))
 		os.Setenv("KAFKA_USERNAME", expectedKafkaUsername)
 		os.Setenv("KAFKA_PASSWORD", expectedKafkaPassword)
-		os.Setenv("KAFKA_DATABASE_TOPIC", expectedKafkaDbTopic)
+		os.Setenv("KAFKA_PROVISIONING_TOPIC", expectedKafkaProvisioningTopic)
 		os.Setenv("KAFKA_DIALER_TIMEOUT", fmt.Sprintf("%v", expectedKafkaDialerTimeout))
 		os.Setenv("KAFKA_MAX_BYTES", strconv.Itoa(expectedKafkaMaxBytes))
 		os.Setenv("KAFKA_CONSUMER_GROUP", expectedKafkaConsumerGroup)
@@ -73,7 +73,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.Port, expectedKafkaPort)
 		assert.Equal(t, cfg.Kafka.Username, expectedKafkaUsername)
 		assert.Equal(t, cfg.Kafka.Password, expectedKafkaPassword)
-		assert.Equal(t, cfg.Kafka.DatabaseTopic, expectedKafkaDbTopic)
+		assert.Equal(t, cfg.Kafka.ProvisioningTopic, expectedKafkaProvisioningTopic)
 		assert.Equal(t, cfg.Kafka.DialerTimeout, expectedKafkaDialerTimeout)
 		assert.Equal(t, cfg.Kafka.MaxBytes, expectedKafkaMaxBytes)
 		assert.Equal(t, cfg.Kafka.ConsumerGroup, expectedKafkaConsumerGroup)
@@ -85,11 +85,11 @@ func TestLoadConfig(t *testing.T) {
 	t.Run("success fetch kafka config without username and password", func(t *testing.T) {
 		expectedKafkaHost := "127.0.0.1"
 		expectedKafkaPort := 9092
-		expectedKafkaDbTopic := "factorial"
+		expectedKafkaProvisioningTopic := "factorial"
 
 		os.Setenv("KAFKA_HOST", expectedKafkaHost)
 		os.Setenv("KAFKA_PORT", strconv.Itoa(expectedKafkaPort))
-		os.Setenv("KAFKA_DATABASE_TOPIC", expectedKafkaDbTopic)
+		os.Setenv("KAFKA_PROVISIONING_TOPIC", expectedKafkaProvisioningTopic)
 		// Explicitly unset username and password to test backward compatibility
 		os.Unsetenv("KAFKA_USERNAME")
 		os.Unsetenv("KAFKA_PASSWORD")
@@ -101,7 +101,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.Port, expectedKafkaPort)
 		assert.Equal(t, cfg.Kafka.Username, "")
 		assert.Equal(t, cfg.Kafka.Password, "")
-		assert.Equal(t, cfg.Kafka.DatabaseTopic, expectedKafkaDbTopic)
+		assert.Equal(t, cfg.Kafka.ProvisioningTopic, expectedKafkaProvisioningTopic)
 
 	})
 	t.Run("success fetch postgres config", func(t *testing.T) {
@@ -109,7 +109,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedPostgresPort := 5432
 		expectedPostgresUser := "postgres"
 		expectedPostgresPassword := "1234$*&^3249M"
-		expectedPostgresDatabase := "mother"
+		expectedPostgresDatabase := "control-panel"
 		expectedPostgresSSLMode := "off"
 		expectedPostgresMaxOpenConnection := 100
 		expectedPostgresMaxIdleConnections := 10
@@ -154,6 +154,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKafkaBatchTimeout := 5 * time.Millisecond
 		expectedDefaultKafkaBatchSize := 1000
 		expectedDefaultKafkaBatchBytes := 1000000 // 1MB
+		expectedDefaultKafkaProvisioningTopic := "provisioning"
 
 		// Unset Kafka environment variables to test defaults
 		os.Unsetenv("KAFKA_DIALER_TIMEOUT")
@@ -163,6 +164,7 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("KAFKA_BATCH_BYTES")
 		// Unset shutdown timeout to test default
 		os.Unsetenv("HTTP_SHUTDOWN_TIMEOUT")
+		os.Unsetenv("KAFKA_PROVISIONING_TOPIC")
 
 		cfg, err := LoadConfig()
 
@@ -179,6 +181,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.BatchTimeout, expectedDefaultKafkaBatchTimeout)
 		assert.Equal(t, cfg.Kafka.BatchSize, expectedDefaultKafkaBatchSize)
 		assert.Equal(t, cfg.Kafka.BatchBytes, expectedDefaultKafkaBatchBytes)
+		assert.Equal(t, cfg.Kafka.ProvisioningTopic, expectedDefaultKafkaProvisioningTopic)
 	})
 
 	t.Run("error - invalid environment variable value", func(t *testing.T) {
