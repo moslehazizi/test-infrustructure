@@ -15,14 +15,16 @@ type TestScenario interface {
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error)
 }
 
-func NewTestScenarioUsecase(testScenarioRepository repository.TestScenarioRepository) TestScenario {
+func NewTestScenarioUsecase(testScenarioRepository repository.TestScenarioRepository, testCategoryRepository repository.TestCategory) TestScenario {
 	return &testScenario{
 		testScenarioRepository: testScenarioRepository,
+		testCategoryRepository: testCategoryRepository,
 	}
 }
 
 type testScenario struct {
 	testScenarioRepository repository.TestScenarioRepository
+	testCategoryRepository repository.TestCategory
 }
 
 func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) error {
