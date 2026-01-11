@@ -30,8 +30,8 @@ create table if not exists test_scenarios (
     ),
 
     -- معیار افزایش
-    auto_step_increase_rate int NULL CHECK (
-        auto_step_increase_rate IS NULL OR auto_step_increase_rate >= 1
+    auto_step_change_rate int NULL CHECK (
+        auto_step_change_rate IS NULL OR auto_step_change_rate >= 1
     ),
     
 
