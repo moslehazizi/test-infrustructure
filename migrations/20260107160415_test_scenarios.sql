@@ -21,7 +21,7 @@ create table if not exists test_scenarios (
 
     -- تعداد سرویس تست قابل تعریف | حداکثر بار
     max_test_service_count int NULL CHECK (
-        max_test_services_count IS NULL OR max_test_services_count >= 1
+        max_test_service_count IS NULL OR max_test_service_count >= 1
     ),
 
     -- مدت زمان اجرایی | مانایی در هر مرحله
