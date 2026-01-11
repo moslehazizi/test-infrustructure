@@ -142,19 +142,19 @@ func TestTestCategory_GetByID(t *testing.T) {
 		now := time.Now()
 
 		expectedTestCategory := &entity.TestCategory{
-			ID:                     1,
+			ID:                     uint64(1),
 			CreatedAt:              now,
 			UpdatedAt:              now,
 			Name:                   "load",
 			Label:                  "my load",
+			HasAutoStepChangeRate:  false,
 			HasMaxTestServiceCount: true,
 			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
 		}
 
 		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "test_categories" WHERE "test_categories"."id" = $1 ORDER BY "test_categories"."id" LIMIT $2`)).
-			WithArgs(1, 1).
+			WithArgs(2, 1).
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "name", "label",
 				"has_max_test_service_count", "has_execution_duration",
@@ -166,21 +166,22 @@ func TestTestCategory_GetByID(t *testing.T) {
 					expectedTestCategory.UpdatedAt,
 					expectedTestCategory.Name,
 					expectedTestCategory.Label,
-					expectedTestCategory.HasAutoStepChangeRate,
-					expectedTestCategory.HasExecutionDuration,
 					expectedTestCategory.HasMaxTestServiceCount,
+					expectedTestCategory.HasExecutionDuration,
+					expectedTestCategory.HasAutoStepChangeRate,
 				))
 
-		result, err := repo.GetByID(context.Background(), 1)
+		result, err := repo.GetByID(context.Background(), uint64(2))
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, expectedTestCategory.ID, result.ID)
 		assert.Equal(t, expectedTestCategory.Name, result.Name)
 		assert.Equal(t, expectedTestCategory.Label, result.Label)
-		assert.Equal(t, expectedTestCategory.HasAutoStepChangeRate, result.HasAutoStepChangeRate)
 		assert.Equal(t, expectedTestCategory.HasExecutionDuration, result.HasExecutionDuration)
 		assert.Equal(t, expectedTestCategory.HasMaxTestServiceCount, result.HasMaxTestServiceCount)
+		assert.Equal(t, expectedTestCategory.HasAutoStepChangeRate, result.HasAutoStepChangeRate)
+
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
