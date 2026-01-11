@@ -74,6 +74,7 @@ func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 					"error": pkg.TestCategoryNotFound,
 				})
 			}
+
 			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
 				"error": pkg.InternalServerErrorMessage,
 			})

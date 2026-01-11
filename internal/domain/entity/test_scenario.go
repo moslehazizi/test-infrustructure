@@ -58,7 +58,7 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 		if ts.MaxTestServiceCount == nil {
 			return pkg.ErrMaxTestServiceCountNotSet
 		}
-	} else if !testCat.HasMaxTestServiceCount {
+	} else {
 		if ts.MaxTestServiceCount != nil {
 			return pkg.ErrNoNeedMaxTestServiceCount
 		}
@@ -68,7 +68,7 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 		if ts.ExecutionDuration == nil {
 			return pkg.ErrExecutionDurationNotSet
 		}
-	} else if !testCat.HasExecutionDuration {
+	} else {
 		if ts.ExecutionDuration != nil {
 			return pkg.ErrNoNeedExecutionDuration
 		}
@@ -78,7 +78,7 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 		if ts.AutoStepChangeRate == nil {
 			return pkg.ErrAutoStepChangeNotSet
 		}
-	} else if !testCat.HasAutoStepChangeRate {
+	} else {
 		if ts.AutoStepChangeRate != nil {
 			return pkg.ErrNoNeedAutoStepChange
 		}
