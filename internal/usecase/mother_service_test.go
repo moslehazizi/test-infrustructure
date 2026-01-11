@@ -148,7 +148,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		err := service.Create(ctx, sampleMS)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrInvalidName)
+		assert.ErrorIs(t, err, pkg.ErrInvalidMotherServiceName)
 	})
 
 	t.Run("failed case - validation error response delay rete not be negative", func(t *testing.T) {

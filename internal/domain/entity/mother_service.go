@@ -47,7 +47,7 @@ func (MotherService) TableName() string {
 // nolint
 func (m *MotherService) Validate() error {
 	if m.Name == "" {
-		return pkg.ErrInvalidName
+		return pkg.ErrInvalidMotherServiceName
 	}
 
 	if m.ExceptionRate < 0 || m.ExceptionRate > 100 {

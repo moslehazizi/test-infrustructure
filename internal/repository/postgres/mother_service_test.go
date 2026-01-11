@@ -48,7 +48,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -93,7 +93,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -145,7 +145,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -212,7 +212,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -332,7 +332,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -430,7 +430,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -513,7 +513,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -602,7 +602,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -682,7 +682,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}))
 

@@ -5,7 +5,6 @@ import (
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -28,9 +27,7 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		svcResults, err := handler.testCategoryService.GetAll(ctx.Context())
 		if err != nil {
-			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
-				"error": pkg.InternalServerErrorMessage,
-			})
+			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
 		var responses []response.TestCategory
@@ -55,29 +52,17 @@ func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		idParam := ctx.Params("id")
 		if idParam == "" {
-			return ctx.Status(http.StatusNotFound).JSON(&fiber.Map{
-				"error": "404 not found",
-			})
+			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
 		}
 
 		id, err := strconv.ParseUint(idParam, 10, 64)
 		if err != nil {
-			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-				"error": pkg.InvalidIDInParams,
-			})
+			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
 		svcResult, err := handler.testCategoryService.GetByID(ctx.Context(), id)
 		if err != nil {
-			if errors.Is(err, pkg.ErrTestCategoryNotFound) {
-				return ctx.Status(http.StatusNotFound).JSON(&fiber.Map{
-					"error": pkg.TestCategoryNotFound,
-				})
-			}
-
-			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
-				"error": pkg.InternalServerErrorMessage,
-			})
+			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
 		responses := response.TestCategory{
