@@ -36,14 +36,14 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 		var responses []response.TestCategory
 		for _, svcResult := range svcResults {
 			responses = append(responses, response.TestCategory{
-				ID:                      svcResult.ID,
-				CreatedAt:               svcResult.CreatedAt,
-				UpdatedAt:               svcResult.UpdatedAt,
-				Name:                    svcResult.Name,
-				Label:                   svcResult.Label,
-				HasMaxTestServiceCount:  svcResult.HasMaxTestServiceCount,
-				HasExecutionDuration:    svcResult.HasExecutionDuration,
-				HasAutoStepIncreaseRate: svcResult.HasAutoStepIncreaseRate,
+				ID:                     svcResult.ID,
+				CreatedAt:              svcResult.CreatedAt,
+				UpdatedAt:              svcResult.UpdatedAt,
+				Name:                   svcResult.Name,
+				Label:                  svcResult.Label,
+				HasMaxTestServiceCount: svcResult.HasMaxTestServiceCount,
+				HasExecutionDuration:   svcResult.HasExecutionDuration,
+				HasAutoStepChangeRate:  svcResult.HasAutoStepChangeRate,
 			})
 		}
 

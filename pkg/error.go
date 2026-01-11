@@ -21,6 +21,7 @@ var (
 	ErrFailedToGetTestScenarios        = errors.New("failed to get test scenarios")
 	ErrFailedToCreateTestScenario      = errors.New("failed to create test scenario")
 	ErrTestCategoryNotFound            = errors.New("test category not found")
+	ErrFailedToGetTestCategory         = errors.New("failed to get test category record")
 
 	// Validation errors.
 	ErrInvalidName                             = errors.New("mother service name is required")
@@ -37,4 +38,10 @@ var (
 	ErrExecutionDurationLessThanOne            = errors.New("execution duration should be more than one")
 	ErrMaxTestServiceCountLessThanOne          = errors.New("max test service count should be more than 1")
 	ErrAutoStepIncreaseRateLessThanOne         = errors.New("auto step increase rate should be more than one")
+	ErrMaxTestServiceCountNotSet               = errors.New("for this test scenario max test service count should be set")
+	ErrNoNeedMaxTestServiceCount               = errors.New("no need to set max service count")
+	ErrExecutionDurationNotSet                 = errors.New("for this test scenario execution duration should be set")
+	ErrNoNeedExecutionDuration                 = errors.New("no need to set execution duration")
+	ErrAutoStepChangeNotSet                    = errors.New("for this test scenario auto step change should be set")
+	ErrNoNeedAutoStepChange                    = errors.New("no need to set auto step change rate")
 )

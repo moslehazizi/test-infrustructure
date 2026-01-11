@@ -28,9 +28,16 @@ type testScenario struct {
 }
 
 func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) error {
-	_, err := service.testCategoryRepository.GetByID(ctx, testScenario.TestCategoryID)
+	testCat, err := service.testCategoryRepository.GetByID(ctx, testScenario.TestCategoryID)
+	if err != nil {
+		if errors.Is(err, pkg.ErrTestCategoryNotFound) {
+			return pkg.ErrTestCategoryNotFound
+		}
 
-	err = testScenario.Validate()
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestCategory, err)
+	}
+
+	err = testScenario.Validate(testCat)
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
