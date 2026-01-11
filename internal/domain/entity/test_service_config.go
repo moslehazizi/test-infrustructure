@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"control-panel-service/pkg"
+	"time"
+)
 
 type TestServiceConfig struct {
 	ID                    uint64    `gorm:"primaryKey;autoIncrement;column:id"`
@@ -28,4 +31,72 @@ func (TestServiceConfig) TableName() string {
 	return "test_service_configs"
 }
 
-func 
+// nolint
+func (t *TestServiceConfig) Validate() error {
+	// validate public rules
+	if t.MaxRequests < 0 {
+		return pkg.ErrInvalidMaxRequest
+	}
+	if t.MaxDuration < 0 {
+		return pkg.ErrInvalidMaxDuration
+	}
+	if t.BadValueRate < 0 || t.BadValueRate > 100 {
+		return pkg.ErrInvalidBadValueRate
+	}
+	if t.NegativeValueRate < 0 || t.NegativeValueRate > 100 {
+		return pkg.ErrInvalidNegativeValueRate
+	}
+	if t.RealValueRate < 0 || t.RealValueRate > 100 {
+		return pkg.ErrInvalidRealValueRate
+	}
+	if t.ZeroValueRate < 0 || t.ZeroValueRate > 100 {
+		return pkg.ErrInvalidZeroValueRate
+	}
+	if t.StringValueRate < 0 || t.StringValueRate > 100 {
+		return pkg.ErrInvalidStringValueRate
+	}
+	if t.LongStringValueRate < 0 || t.LongStringValueRate > 100 {
+		return pkg.ErrInvalidLongStringValueRate
+	}
+	if t.NullValueRate < 0 || t.NullValueRate > 100 {
+		return pkg.ErrInvalidNullValueRate
+	}
+
+	// validate delay duration between two transaction
+	if t.RequestDelayDuration != nil && *t.RequestDelayDuration < 0 {
+		return pkg.ErrInvalidRequestDelayDuration
+	}
+	if t.RequestDelayDuration != nil && *t.RequestDelayDuration >= 0 {
+		if t.RandomRequestDelayMin != nil || t.RandomRequestDelayMax != nil {
+			return pkg.ErrInvalidRequestDelayDurationConfig
+		}
+	}
+
+	if t.RandomRequestDelayMin != nil && t.RandomRequestDelayMax != nil {
+		if *t.RandomRequestDelayMin >= *t.RandomRequestDelayMax {
+			return pkg.ErrMinDelayDurationMoreThanMax
+		}
+	}
+
+	// validate number that send via transaction - fix number or random number
+	if t.FixedTestNumber != nil && *t.FixedTestNumber <= 0 {
+		return pkg.ErrInvalidFixedTestNumber
+	}
+
+	if t.FixedTestNumber != nil {
+		if t.RandomTestNumberMin != nil || t.RandomTestNumberMax != nil {
+			return pkg.ErrInvalidFixedTestNumberConfig
+		}
+	}
+
+	if t.RandomTestNumberMin != nil && t.RandomTestNumberMax != nil {
+		if *t.RandomTestNumberMin < 0 || *t.RandomTestNumberMax < 0 {
+			return pkg.ErrInvalidMinOrMaxRandomTestNumber
+		}
+		if *t.RandomTestNumberMin >= *t.RandomTestNumberMax {
+			return pkg.ErrMinRandomTestNumberMoreThanMax
+		}
+	}
+
+	return nil
+}

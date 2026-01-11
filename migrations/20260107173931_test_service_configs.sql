@@ -12,7 +12,7 @@ create table if not exists test_service_configs (
     "max_duration" int NOT NULL DEFAULT 0 CHECK ("max_duration" >= 0),
 
     --#region REQUEST DELAY CONFIG
-    request_delay_duration int NULL CHECK (request_delay_duration IS NULL OR request_delay_duration >= 0),
+    request_delay_duration int NOT NULL CHECK (request_delay_duration >= 0),
 
     random_request_delay_min int  NULL CHECK (random_request_delay_min IS NULL OR random_request_delay_min >= 0),
 

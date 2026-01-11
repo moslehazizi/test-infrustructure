@@ -6,6 +6,7 @@ import (
 	"control-panel-service/internal/repository/mocks"
 	"control-panel-service/pkg"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -75,7 +76,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 		mockTestCatRepo.AssertExpectations(t)
 	})
-
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
@@ -149,13 +149,17 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			HasExecutionDuration:   true,
 			HasAutoStepChangeRate:  true,
 		}
+		testServiceCfg := &entity.TestServiceConfig{
+			MaxRequests: 1,
+			MaxDuration: 1,
+		}
 
 		mockRepo.On("Begin").Return(mock.Anything)
 		mockRepo.On("Create", ctx, testSci).Return(uint64(0), errors.New("error happened"))
 		mockRepo.On("Rollback").Return(nil)
 		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(testCat, nil)
 
-		err := service.Create(ctx, testSci, nil)
+		err := service.Create(ctx, testSci, testServiceCfg)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToCreateTestScenario)
@@ -342,7 +346,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
 		mockTestCatRepo.AssertExpectations(t)
 	})
-	t.Run("failed case - validation error - no need to auto step chang rate", func(t *testing.T) {
+	t.Run("failed case - validation error - no need to auto step change rate", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -370,6 +374,42 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrNoNeedAutoStepChange)
+		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
+		mockTestCatRepo.AssertExpectations(t)
+	})
+	t.Run("failed case - validation error - test service config", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo, mockTestServiceConfig)
+
+		sampleInt := 1
+		testSci := &entity.TestScenario{
+			Name:               "load1",
+			TestCategoryID:     uint64(2),
+			MotherServiceID:    uint64(1),
+			AutoStepChangeRate: &sampleInt,
+		}
+		testCat := &entity.TestCategory{
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: false,
+			HasExecutionDuration:   false,
+			HasAutoStepChangeRate:  true,
+		}
+		testServiceConfig := &entity.TestServiceConfig{
+			MaxRequests:  1,
+			MaxDuration:  0,
+			BadValueRate: -1,
+		}
+		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(testCat, nil)
+
+		err := service.Create(ctx, testSci, testServiceConfig)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, pkg.ErrInvalidBadValueRate))
 		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
 		mockTestCatRepo.AssertExpectations(t)
 	})

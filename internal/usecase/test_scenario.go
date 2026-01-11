@@ -53,6 +53,11 @@ func (service *testScenario) Create(
 
 	testScenario.Status = entity.ScenarioStatusPending
 
+	err = testSvcCfg.Validate()
+	if err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
+	}
+
 	repo := service.testScenarioRepository.Begin()
 	defer func() {
 		if e != nil {
