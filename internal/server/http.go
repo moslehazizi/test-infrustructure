@@ -70,6 +70,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	// test category
 	apiV1.Get("/test-categories", testCategoryHandler.GetAll())
+	apiV1.Get("/test-categories/:id", testCategoryHandler.GetByID())
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
 
