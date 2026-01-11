@@ -33,6 +33,7 @@ var (
 	ErrInvalidKafkaLivefeedTopic               = errors.New("kafka livefeed topic is required")
 	ErrInvalidKafkaFactorialTopic              = errors.New("kafka factorial topic is required")
 	ErrFailedToGetTestCategoriesFromRepository = errors.New("failed to get test categories from repository")
+	ErrFailedToGetTestCategoryFromRepository   = errors.New("failed to get test category from repository")
 	ErrExecutionDurationLessThanOne            = errors.New("execution duration should be more than one")
 	ErrMaxTestServiceCountLessThanOne          = errors.New("max test service count should be more than 1")
 	ErrAutoStepIncreaseRateLessThanOne         = errors.New("auto step increase rate should be more than one")
