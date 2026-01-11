@@ -427,10 +427,10 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		expectedSvcResp := &entity.MotherService{
-			Name:               "mother1",
-			ProvisioningStatus: entity.ProvisioningStatusFailed,
-			DatabaseName:       "db1",
-			DatabaseTableName:  "factorial",
+			Name:              "mother1",
+			Status:            entity.MotherServiceStatusRunning,
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
 		}
 
 		app := fiber.New()
@@ -457,7 +457,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		assert.Equal(t, resp.StatusCode, http.StatusOK)
 		assert.NotNil(t, response)
 		assert.Equal(t, expectedSvcResp.Name, response.Data.Name)
-		assert.Equal(t, string(expectedSvcResp.ProvisioningStatus), response.Data.ProvisioningStatus)
+		assert.Equal(t, string(expectedSvcResp.Status), response.Data.Status)
 		assert.Equal(t, expectedSvcResp.DatabaseName, response.Data.DatabaseName)
 		assert.Equal(t, expectedSvcResp.DatabaseTableName, response.Data.DatabaseTableName)
 		assert.Nil(t, response.Data.ServiceDeploymentAddress)
@@ -473,7 +473,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 
 		expectedSvcResp := &entity.MotherService{
 			Name:                     "mother1",
-			ProvisioningStatus:       entity.ProvisioningStatusFailed,
+			Status:                   entity.MotherServiceStatusRunning,
 			DatabaseName:             "db1",
 			DatabaseTableName:        "factorial",
 			ServiceDeploymentAddress: &sampleString,
@@ -623,7 +623,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 			{
 				ID:                       uint64(5),
 				Name:                     "mother1",
-				ProvisioningStatus:       entity.ProvisioningStatusFailed,
+				Status:                   entity.MotherServiceStatusRunning,
 				DatabaseName:             "db1",
 				DatabaseTableName:        "factorial",
 				ServiceDeploymentAddress: &sampleString,
@@ -634,7 +634,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 			{
 				ID:                       uint64(4),
 				Name:                     "mother2",
-				ProvisioningStatus:       entity.ProvisioningStatusFailed,
+				Status:                   entity.MotherServiceStatusRunning,
 				DatabaseName:             "db1",
 				DatabaseTableName:        "factorial",
 				ServiceDeploymentAddress: &sampleString,
@@ -687,18 +687,18 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
 		expectedMotherServices := []*entity.MotherService{
 			{
-				ID:                 uint64(5),
-				Name:               "mother1",
-				ProvisioningStatus: entity.ProvisioningStatusFailed,
-				DatabaseName:       "db1",
-				DatabaseTableName:  "factorial",
+				ID:                uint64(5),
+				Name:              "mother1",
+				Status:            entity.MotherServiceStatusRunning,
+				DatabaseName:      "db1",
+				DatabaseTableName: "factorial",
 			},
 			{
-				ID:                 uint64(4),
-				Name:               "mother2",
-				ProvisioningStatus: entity.ProvisioningStatusFailed,
-				DatabaseName:       "db1",
-				DatabaseTableName:  "factorial",
+				ID:                uint64(4),
+				Name:              "mother2",
+				Status:            entity.MotherServiceStatusRunning,
+				DatabaseName:      "db1",
+				DatabaseTableName: "factorial",
 			},
 		}
 

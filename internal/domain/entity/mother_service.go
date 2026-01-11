@@ -7,31 +7,31 @@ import (
 	"gorm.io/gorm"
 )
 
-type ProvisioningStatus string
+type MotherServiceStatus string
 
 const (
-	ProvisioningStatusPending       ProvisioningStatus = "pending"
-	ProvisioningStatusProvisioning  ProvisioningStatus = "provisioning"
-	ProvisioningStatusProvisioned   ProvisioningStatus = "provisioned"
-	ProvisioningStatusFailed        ProvisioningStatus = "failed"
-	ProvisioningStatusDeProvisioned ProvisioningStatus = "de-provisioned"
+	MotherServiceStatusPending MotherServiceStatus = "pending" // mother service just created
+	MotherServiceStatusRunning MotherServiceStatus = "running" // test is running on application level (sending level)
+	MotherServiceStatusPaused  MotherServiceStatus = "paused"  // application level pause on sending request
+	MotherServiceStatusStopped MotherServiceStatus = "stopped" // stop container but can start scenario again.
+	MotherServiceStatusAborted MotherServiceStatus = "aborted" //stop and delete containers. can not start again.
 )
 
 type MotherService struct {
-	ID                       uint64             `gorm:"primaryKey;autoIncrement;column:id"`
-	CreatedAt                time.Time          `gorm:"column:created_at"`
-	UpdatedAt                time.Time          `gorm:"column:updated_at"`
-	DeletedAt                *gorm.DeletedAt    `gorm:"column:deleted_at"`
-	Name                     string             `gorm:"column:name"`
-	ExceptionRate            int                `gorm:"column:exception_rate"`
-	ResponseDelayRate        int                `gorm:"column:response_delay_rate"`
-	ResponseDelayDuration    *int               `gorm:"column:response_delay_duration"`
-	RandomResponseDelayMin   *int               `gorm:"column:random_response_delay_min"`
-	RandomResponseDelayMax   *int               `gorm:"column:random_response_delay_max"`
-	ProvisioningStatus       ProvisioningStatus `gorm:"column:provisioning_status"`
-	ServiceDeploymentAddress *string            `gorm:"column:service_deployment_address"`
-	DatabaseName             string             `gorm:"column:database_name"`
-	DatabaseTableName        string             `gorm:"column:database_table_name"`
+	ID                       uint64              `gorm:"primaryKey;autoIncrement;column:id"`
+	CreatedAt                time.Time           `gorm:"column:created_at"`
+	UpdatedAt                time.Time           `gorm:"column:updated_at"`
+	DeletedAt                *gorm.DeletedAt     `gorm:"column:deleted_at"`
+	Name                     string              `gorm:"column:name"`
+	ExceptionRate            int                 `gorm:"column:exception_rate"`
+	ResponseDelayRate        int                 `gorm:"column:response_delay_rate"`
+	ResponseDelayDuration    *int                `gorm:"column:response_delay_duration"`
+	RandomResponseDelayMin   *int                `gorm:"column:random_response_delay_min"`
+	RandomResponseDelayMax   *int                `gorm:"column:random_response_delay_max"`
+	Status                   MotherServiceStatus `gorm:"column:provisioning_status"`
+	ServiceDeploymentAddress *string             `gorm:"column:service_deployment_address"`
+	DatabaseName             string              `gorm:"column:database_name"`
+	DatabaseTableName        string              `gorm:"column:database_table_name"`
 }
 
 // If both values of page and per page be zero then all items will be returned.

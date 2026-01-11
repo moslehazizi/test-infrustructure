@@ -221,11 +221,11 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 
 		inputID := uint64(1)
 		expectedResult := &entity.MotherService{
-			ID:                 uint64(1),
-			Name:               "mother1",
-			ProvisioningStatus: entity.ProvisioningStatusFailed,
-			DatabaseName:       "db1",
-			DatabaseTableName:  "factorial",
+			ID:                uint64(1),
+			Name:              "mother1",
+			Status:            entity.MotherServiceStatusRunning,
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
 		}
 
 		mockRepo.On("GetByID", ctx, inputID).Return(expectedResult, nil)
@@ -235,7 +235,7 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, result.ID, expectedResult.ID)
 		assert.Equal(t, result.Name, expectedResult.Name)
-		assert.Equal(t, result.ProvisioningStatus, expectedResult.ProvisioningStatus)
+		assert.Equal(t, result.Status, expectedResult.Status)
 		assert.Equal(t, result.DatabaseName, expectedResult.DatabaseName)
 		assert.Equal(t, result.DatabaseTableName, expectedResult.DatabaseTableName)
 		mockRepo.AssertCalled(t, "GetByID", ctx, inputID)
@@ -300,7 +300,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 				Name:                     "mother5",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				ProvisioningStatus:       entity.ProvisioningStatusPending,
+				Status:                   entity.MotherServiceStatusPending,
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db5",
 				DatabaseTableName:        "test_table5",
@@ -312,7 +312,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 				Name:                     "mother4",
 				ExceptionRate:            10,
 				ResponseDelayRate:        20,
-				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
+				Status:                   entity.MotherServiceStatusRunning,
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db4",
 				DatabaseTableName:        "test_table4",
