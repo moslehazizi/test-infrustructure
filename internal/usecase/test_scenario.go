@@ -10,24 +10,33 @@ import (
 )
 
 type TestScenario interface {
-	Create(ctx context.Context, testScenario *entity.TestScenario) error
+	Create(ctx context.Context, testScenario *entity.TestScenario, testSvcCfg *entity.TestServiceConfig) error
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error)
 }
 
-func NewTestScenarioUsecase(testScenarioRepository repository.TestScenarioRepository, testCategoryRepository repository.TestCategory) TestScenario {
+func NewTestScenarioUsecase(
+	testScenarioRepository repository.TestScenarioRepository,
+	testCategoryRepository repository.TestCategory,
+	testServiceConfigRepository repository.TestServiceConfigRepository) TestScenario {
 	return &testScenario{
-		testScenarioRepository: testScenarioRepository,
-		testCategoryRepository: testCategoryRepository,
+		testScenarioRepository:      testScenarioRepository,
+		testCategoryRepository:      testCategoryRepository,
+		testServiceConfigRepository: testServiceConfigRepository,
 	}
 }
 
 type testScenario struct {
-	testScenarioRepository repository.TestScenarioRepository
-	testCategoryRepository repository.TestCategory
+	testScenarioRepository      repository.TestScenarioRepository
+	testCategoryRepository      repository.TestCategory
+	testServiceConfigRepository repository.TestServiceConfigRepository
 }
 
-func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) error {
+func (service *testScenario) Create(
+	ctx context.Context,
+	testScenario *entity.TestScenario,
+	testSvcCfg *entity.TestServiceConfig,
+) (e error) {
 	testCat, err := service.testCategoryRepository.GetByID(ctx, testScenario.TestCategoryID)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestCategoryNotFound) {
@@ -44,10 +53,26 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 
 	testScenario.Status = entity.ScenarioStatusPending
 
-	err = service.testScenarioRepository.Create(ctx, testScenario)
+	repo := service.testScenarioRepository.Begin()
+	defer func() {
+		if e != nil {
+			_ = repo.Rollback()
+		}
+	}()
+
+	testSciID, err := repo.Create(ctx, testScenario)
 	if err != nil {
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
+
+	testSvcCfg.ID = testSciID
+
+	err = service.testServiceConfigRepository.Create(ctx, testSvcCfg)
+	if err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToCreateTestScenario, err)
+	}
+
+	_ = repo.Commit()
 
 	return nil
 }

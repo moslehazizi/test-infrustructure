@@ -27,3 +27,5 @@ type TestServiceConfig struct {
 func (TestServiceConfig) TableName() string {
 	return "test_service_configs"
 }
+
+func 

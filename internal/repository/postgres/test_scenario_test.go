@@ -66,9 +66,10 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 		mock.ExpectCommit()
 
-		err = repo.Create(context.Background(), testScenario)
+		id, err := repo.Create(context.Background(), testScenario)
 
 		assert.NoError(t, err)
+		assert.Equal(t, id, uint64(1))
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -107,9 +108,10 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 			WillReturnError(errors.New("insert failed"))
 		mock.ExpectRollback()
 
-		err = repo.Create(context.Background(), testScenario)
+		id, err := repo.Create(context.Background(), testScenario)
 
 		assert.Error(t, err)
+		assert.Equal(t, id, uint64(0))
 		assert.Contains(t, err.Error(), "failed to create test scenario record")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})

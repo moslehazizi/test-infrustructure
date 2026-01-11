@@ -21,13 +21,37 @@ type testScenario struct {
 	db *gorm.DB
 }
 
-func (repo *testScenario) Create(ctx context.Context, testSci *entity.TestScenario) error {
-	err := repo.db.WithContext(ctx).Create(testSci).Error
+func (t *testScenario) Begin() repository.TestScenarioRepository {
+	return NewTestScenarioRepository(t.db.Begin())
+}
+
+func (t *testScenario) Commit() error {
+	err := t.db.Commit().Error
 	if err != nil {
-		return fmt.Errorf("failed to create test scenario record: %w", err)
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil
+}
+
+func (t *testScenario) Rollback() error {
+	err := t.db.Rollback().Error
+	if err != nil {
+		return fmt.Errorf("failed to rollback transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *testScenario) Create(ctx context.Context, testSci *entity.TestScenario) (uint64, error) {
+	err := repo.db.WithContext(ctx).Create(testSci).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to create test scenario record: %w", err)
+	}
+
+	id := testSci.ID
+
+	return id, nil
 }
 
 func (repo *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error) {
