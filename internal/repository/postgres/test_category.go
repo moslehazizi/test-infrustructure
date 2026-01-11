@@ -21,7 +21,7 @@ type testCategory struct {
 
 func (repo *testCategory) GetAll(ctx context.Context) ([]entity.TestCategory, error) {
 	var items []entity.TestCategory
-	err := repo.db.WithContext(ctx).Order("id DESC").Find(&items).Error
+	err := repo.db.WithContext(ctx).Order("id ASC").Find(&items).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to load test categories from db: %w", err)
 	}
