@@ -41,7 +41,7 @@ type TestScenarioPaginationRequest struct {
 	PerPage int
 }
 
-func (ts *TestScenario) Validate() error {
+func (ts *TestScenario) Validate(testCat *TestCategory) error {
 	if ts.MaxTestServiceCount != nil && *ts.MaxTestServiceCount < 1 {
 		return pkg.ErrMaxTestServiceCountLessThanOne
 	}
@@ -52,6 +52,36 @@ func (ts *TestScenario) Validate() error {
 
 	if ts.AutoStepIncreaseRate != nil && *ts.AutoStepIncreaseRate < 1 {
 		return pkg.ErrAutoStepIncreaseRateLessThanOne
+	}
+
+	if testCat.HasMaxTestServiceCount {
+		if ts.MaxTestServiceCount == nil {
+			return pkg.ErrMaxTestServiceCountNotSet
+		}
+	} else if !testCat.HasMaxTestServiceCount {
+		if ts.MaxTestServiceCount != nil {
+			return pkg.ErrNoNeedMaxTestServiceCount
+		}
+	}
+
+	if testCat.HasExecutionDuration {
+		if ts.ExecutionDuration == nil {
+			return pkg.ErrExecutionDurationNotSet
+		}
+	} else if !testCat.HasExecutionDuration {
+		if ts.ExecutionDuration != nil {
+			return pkg.ErrNoNeedExecutionDuration
+		}
+	}
+
+	if testCat.HasAutoStepChangeRate {
+		if ts.AutoStepIncreaseRate == nil {
+			return pkg.ErrAutoStepChangeNotSet
+		}
+	} else if !testCat.HasAutoStepChangeRate {
+		if ts.AutoStepIncreaseRate != nil {
+			return pkg.ErrNoNeedAutoStepChange
+		}
 	}
 
 	return nil

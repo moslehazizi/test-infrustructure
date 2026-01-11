@@ -39,16 +39,16 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			AutoStepIncreaseRate: &sampleInt,
 		}
 		testCat := &entity.TestCategory{
-			ID:                      testSci.TestCategoryID,
-			Name:                    "load",
-			Label:                   "my load",
-			HasMaxTestServiceCount:  true,
-			HasExecutionDuration:    true,
-			HasAutoStepIncreaseRate: true,
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  true,
 		}
 
 		mockRepo.On("Create", ctx, testSci).Return(nil)
-		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(testCat)
+		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(testCat, nil)
 
 		err := service.Create(ctx, testSci)
 
@@ -73,15 +73,26 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			ExecutionDuration:    &sampleInt,
 			AutoStepIncreaseRate: &sampleInt,
 		}
+		testCat := &entity.TestCategory{
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  true,
+		}
 
 		mockRepo.On("Create", ctx, testSci).Return(errors.New("error happened"))
+		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(testCat, nil)
 
 		err := service.Create(ctx, testSci)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToCreateTestScenario)
 		mockRepo.AssertCalled(t, "Create", ctx, testSci)
+		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
 		mockRepo.AssertExpectations(t)
+		mockTestCatRepo.AssertExpectations(t)
 	})
 
 	t.Run("failed case - validation error - max test service count less than one", func(t *testing.T) {
@@ -97,11 +108,22 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MotherServiceID:     uint64(1),
 			MaxTestServiceCount: &sampleInt,
 		}
+		testCat := &entity.TestCategory{
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  true,
+		}
+		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(testCat, nil)
 
 		err := service.Create(ctx, testSci)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountLessThanOne)
+		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
+		mockTestCatRepo.AssertExpectations(t)
 	})
 
 	t.Run("failed case - validation error -  execution duration less than one", func(t *testing.T) {
@@ -117,11 +139,22 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MotherServiceID:   uint64(1),
 			ExecutionDuration: &sampleInt,
 		}
+		testCat := &entity.TestCategory{
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  true,
+		}
+		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(testCat, nil)
 
 		err := service.Create(ctx, testSci)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrExecutionDurationLessThanOne)
+		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
+		mockTestCatRepo.AssertExpectations(t)
 	})
 
 	t.Run("failed case - validation error -  auto step increase less than one", func(t *testing.T) {
@@ -137,11 +170,70 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MotherServiceID:      uint64(1),
 			AutoStepIncreaseRate: &sampleInt,
 		}
+		testCat := &entity.TestCategory{
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  true,
+		}
+		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(testCat, nil)
 
 		err := service.Create(ctx, testSci)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrAutoStepIncreaseRateLessThanOne)
+		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
+		mockTestCatRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed case - error get test category - not found", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
+
+		sampleInt := -1
+		testSci := &entity.TestScenario{
+			Name:                 "load1",
+			TestCategoryID:       uint64(2),
+			MotherServiceID:      uint64(1),
+			AutoStepIncreaseRate: &sampleInt,
+		}
+
+		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(nil, pkg.ErrTestCategoryNotFound)
+
+		err := service.Create(ctx, testSci)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrTestCategoryNotFound)
+		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
+		mockTestCatRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed case - error get test category - unknown", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
+
+		sampleInt := -1
+		testSci := &entity.TestScenario{
+			Name:                 "load1",
+			TestCategoryID:       uint64(2),
+			MotherServiceID:      uint64(1),
+			AutoStepIncreaseRate: &sampleInt,
+		}
+
+		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(nil, errors.New("error happened"))
+
+		err := service.Create(ctx, testSci)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestCategory)
+		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
+		mockTestCatRepo.AssertExpectations(t)
 	})
 }
 
@@ -191,6 +283,25 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
+		mockRepo.AssertCalled(t, "GetByID", ctx, sampleID)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed case - repository unknown error", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
+
+		sampleID := uint64(4)
+
+		mockRepo.On("GetByID", ctx, sampleID).Return(nil, errors.New("error happened"))
+
+		result, err := service.GetByID(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenario)
 		mockRepo.AssertCalled(t, "GetByID", ctx, sampleID)
 		mockRepo.AssertExpectations(t)
 	})

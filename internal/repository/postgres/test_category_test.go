@@ -60,24 +60,24 @@ func TestGetAll(t *testing.T) {
 
 		expected := []entity.TestCategory{
 			{
-				ID:                      1,
-				CreatedAt:               time.Now(),
-				UpdatedAt:               time.Now(),
-				Name:                    "load",
-				Label:                   "Load Test",
-				HasMaxTestServiceCount:  true,
-				HasExecutionDuration:    true,
-				HasAutoStepIncreaseRate: false,
+				ID:                     1,
+				CreatedAt:              time.Now(),
+				UpdatedAt:              time.Now(),
+				Name:                   "load",
+				Label:                  "Load Test",
+				HasMaxTestServiceCount: true,
+				HasExecutionDuration:   true,
+				HasAutoStepChangeRate:  false,
 			},
 			{
-				ID:                      2,
-				CreatedAt:               time.Now(),
-				UpdatedAt:               time.Now(),
-				Name:                    "smoke",
-				Label:                   "Smoke Test",
-				HasMaxTestServiceCount:  true,
-				HasExecutionDuration:    true,
-				HasAutoStepIncreaseRate: false,
+				ID:                     2,
+				CreatedAt:              time.Now(),
+				UpdatedAt:              time.Now(),
+				Name:                   "smoke",
+				Label:                  "Smoke Test",
+				HasMaxTestServiceCount: true,
+				HasExecutionDuration:   true,
+				HasAutoStepChangeRate:  false,
 			},
 		}
 
@@ -96,7 +96,7 @@ func TestGetAll(t *testing.T) {
 			expected[0].Label,
 			expected[0].HasMaxTestServiceCount,
 			expected[0].HasExecutionDuration,
-			expected[0].HasAutoStepIncreaseRate,
+			expected[0].HasAutoStepChangeRate,
 			expected[0].CreatedAt,
 			expected[0].UpdatedAt,
 		).AddRow(
@@ -105,7 +105,7 @@ func TestGetAll(t *testing.T) {
 			expected[1].Label,
 			expected[1].HasMaxTestServiceCount,
 			expected[1].HasExecutionDuration,
-			expected[1].HasAutoStepIncreaseRate,
+			expected[1].HasAutoStepChangeRate,
 			expected[1].CreatedAt,
 			expected[1].UpdatedAt,
 		))
@@ -142,14 +142,14 @@ func TestTestCategory_GetByID(t *testing.T) {
 		now := time.Now()
 
 		expectedTestCategory := &entity.TestCategory{
-			ID:                      1,
-			CreatedAt:               now,
-			UpdatedAt:               now,
-			Name:                    "load",
-			Label:                   "my load",
-			HasMaxTestServiceCount:  true,
-			HasExecutionDuration:    true,
-			HasAutoStepIncreaseRate: true,
+			ID:                     1,
+			CreatedAt:              now,
+			UpdatedAt:              now,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  true,
 		}
 
 		mock.ExpectQuery(regexp.QuoteMeta(
@@ -166,7 +166,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 					expectedTestCategory.UpdatedAt,
 					expectedTestCategory.Name,
 					expectedTestCategory.Label,
-					expectedTestCategory.HasAutoStepIncreaseRate,
+					expectedTestCategory.HasAutoStepChangeRate,
 					expectedTestCategory.HasExecutionDuration,
 					expectedTestCategory.HasMaxTestServiceCount,
 				))
@@ -178,7 +178,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 		assert.Equal(t, expectedTestCategory.ID, result.ID)
 		assert.Equal(t, expectedTestCategory.Name, result.Name)
 		assert.Equal(t, expectedTestCategory.Label, result.Label)
-		assert.Equal(t, expectedTestCategory.HasAutoStepIncreaseRate, result.HasAutoStepIncreaseRate)
+		assert.Equal(t, expectedTestCategory.HasAutoStepChangeRate, result.HasAutoStepChangeRate)
 		assert.Equal(t, expectedTestCategory.HasExecutionDuration, result.HasExecutionDuration)
 		assert.Equal(t, expectedTestCategory.HasMaxTestServiceCount, result.HasMaxTestServiceCount)
 		assert.NoError(t, mock.ExpectationsWereMet())
