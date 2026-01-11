@@ -22,6 +22,28 @@ func NewMotherServiceRepository(db *gorm.DB) repository.MotherServiceRepository 
 	}
 }
 
+func (m *motherServiceRepository) Begin() repository.MotherServiceRepository {
+	return NewMotherServiceRepository(m.db.Begin())
+}
+
+func (m *motherServiceRepository) Commit() error {
+	err := m.db.Commit().Error
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (m *motherServiceRepository) Rollback() error {
+	err := m.db.Rollback().Error
+	if err != nil {
+		return fmt.Errorf("failed to rollback transaction: %w", err)
+	}
+
+	return nil
+}
+
 func (m *motherServiceRepository) Create(ctx context.Context, motherService *entity.MotherService) error {
 	err := m.db.WithContext(ctx).Create(motherService).Error
 	if err != nil {

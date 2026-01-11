@@ -44,4 +44,5 @@ var (
 	ErrNoNeedExecutionDuration                 = errors.New("no need to set execution duration")
 	ErrAutoStepChangeNotSet                    = errors.New("for this test scenario auto step change should be set")
 	ErrNoNeedAutoStepChange                    = errors.New("no need to set auto step change rate")
+	ErrFailedToSendProvisioningEvent           = errors.New("failed to send provisioning event")
 )
