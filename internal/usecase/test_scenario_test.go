@@ -32,14 +32,14 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		sampleInt := 1
 		testSci := &entity.TestScenario{
 			Name:                 "load1",
-			TestCategoryID:       2,
+			TestCategoryID:       uint64(2),
 			MotherServiceID:      uint64(1),
 			MaxTestServiceCount:  &sampleInt,
 			ExecutionDuration:    &sampleInt,
 			AutoStepIncreaseRate: &sampleInt,
 		}
 		testCat := &entity.TestCategory{
-			ID:                      1,
+			ID:                      testSci.TestCategoryID,
 			Name:                    "load",
 			Label:                   "my load",
 			HasMaxTestServiceCount:  true,
@@ -54,7 +54,9 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		assert.Nil(t, err)
 		mockRepo.AssertCalled(t, "Create", ctx, testSci)
+		mockTestCatRepo.AssertCalled(t, "GetByID", ctx, testSci.TestCategoryID)
 		mockRepo.AssertExpectations(t)
+		mockTestCatRepo.AssertExpectations(t)
 	})
 	t.Run("failed case", func(t *testing.T) {
 		ctx := context.Background()

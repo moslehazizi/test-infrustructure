@@ -3,7 +3,7 @@ package response
 import "time"
 
 type TestCategory struct {
-	ID                      uint      `json:"id"`
+	ID                      uint64    `json:"id"`
 	CreatedAt               time.Time `json:"created_at"`
 	UpdatedAt               time.Time `json:"updated_at"`
 	Name                    string    `json:"name"`

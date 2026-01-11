@@ -3,7 +3,7 @@ package entity
 import "time"
 
 type TestCategory struct {
-	ID                      uint `gorm:"primarykey"`
+	ID                      uint64 `gorm:"primarykey"`
 	CreatedAt               time.Time
 	UpdatedAt               time.Time
 	Name                    string
