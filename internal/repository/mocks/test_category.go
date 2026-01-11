@@ -17,7 +17,7 @@ func (m *MockTestCategory) GetAll(ctx context.Context) ([]entity.TestCategory, e
 	return args.Get(0).([]entity.TestCategory), args.Error(1)
 }
 
-func (m *MockTestCategory) GetByID(ctx context.Context, id int) (*entity.TestCategory, error) {
+func (m *MockTestCategory) GetByID(ctx context.Context, id uint64) (*entity.TestCategory, error) {
 	args := m.Called(ctx, id)
 
 	var result *entity.TestCategory
