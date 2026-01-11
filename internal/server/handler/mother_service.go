@@ -62,7 +62,6 @@ func (handler *MotherService) Create() fiber.Handler {
 			ServiceDeploymentAddress: req.ServiceDeploymentAddress,
 			DatabaseName:             req.DatabaseName,
 			DatabaseTableName:        req.DatabaseTableName,
-			ProvisioningStatus:       entity.ProvisioningStatusPending,
 		}
 
 		err := handler.motherService.Create(ctx.Context(), reqService)

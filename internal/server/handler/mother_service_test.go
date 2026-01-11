@@ -48,7 +48,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 			return svc.Name == "my-service" &&
 				svc.ExceptionRate == 10 &&
 				svc.ResponseDelayRate == 20 &&
-				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data"
 		})).Return(nil)
@@ -155,7 +154,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 				svc.ResponseDelayDuration != nil && *svc.ResponseDelayDuration == sampleOne &&
 				svc.RandomResponseDelayMin != nil && *svc.RandomResponseDelayMin == sampleTwo &&
 				svc.RandomResponseDelayMax != nil && *svc.RandomResponseDelayMax == sampleThree &&
-				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data"
 		})).Return(nil)
@@ -197,7 +195,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 			return svc.Name == "my-service" &&
 				svc.ExceptionRate == 10 &&
 				svc.ResponseDelayRate == 20 &&
-				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data"
 		})).Return(pkg.ErrMotherServiceAlreadyExist)
@@ -239,7 +236,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 			return svc.Name == "my-service" &&
 				svc.ExceptionRate == 10 &&
 				svc.ResponseDelayRate == 20 &&
-				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data"
 		})).Return(errors.New("internal error"))
@@ -281,7 +277,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 			return svc.Name == "my-service" &&
 				svc.ExceptionRate == 10 &&
 				svc.ResponseDelayRate == 20 &&
-				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidResponseDelayRate))
@@ -322,7 +317,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 			return svc.Name == "my-service" &&
 				svc.ExceptionRate == 10 &&
 				svc.ResponseDelayRate == 20 &&
-				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidExceptionRate))
@@ -364,7 +358,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 			return svc.Name == "my-service" &&
 				svc.ExceptionRate == 10 &&
 				svc.ResponseDelayRate == 20 &&
-				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidDelayConfiguration))
@@ -405,7 +398,6 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 			return svc.Name == "my-service" &&
 				svc.ExceptionRate == 10 &&
 				svc.ResponseDelayRate == 20 &&
-				svc.ProvisioningStatus == entity.ProvisioningStatusPending &&
 				svc.DatabaseName == "service_db" &&
 				svc.DatabaseTableName == "data"
 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidRandomDelayRange))

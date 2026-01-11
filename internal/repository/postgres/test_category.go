@@ -4,6 +4,8 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
+	"control-panel-service/pkg"
+	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -27,4 +29,18 @@ func (repo *testCategory) GetAll(ctx context.Context) ([]entity.TestCategory, er
 	}
 
 	return items, nil
+}
+
+func (repo *testCategory) GetByID(ctx context.Context, id uint64) (*entity.TestCategory, error) {
+	var testCategory entity.TestCategory
+	err := repo.db.WithContext(ctx).First(&testCategory, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, pkg.ErrTestCategoryNotFound
+		}
+
+		return nil, fmt.Errorf("failed to get test category record: %w", err)
+	}
+
+	return &testCategory, nil
 }

@@ -39,21 +39,21 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 		now := time.Now()
 
 		testScenario := &entity.TestScenario{
-			CreatedAt:            now,
-			UpdatedAt:            now,
-			DeletedAt:            nil,
-			Name:                 "load1",
-			TestCategoryID:       uint64(2),
-			MotherServiceID:      uint64(1),
-			Status:               entity.ScenarioStatus(entity.ScenarioStatusPending),
-			MaxTestServiceCount:  nil,
-			ExecutionDuration:    nil,
-			AutoStepIncreaseRate: nil,
+			CreatedAt:           now,
+			UpdatedAt:           now,
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			Status:              entity.ScenarioStatus(entity.ScenarioStatusPending),
+			MaxTestServiceCount: nil,
+			ExecutionDuration:   nil,
+			AutoStepChangeRate:  nil,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_increase_rate") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "id"`)).
 			WithArgs(
 				testScenario.CreatedAt,
 				testScenario.UpdatedAt,
@@ -81,21 +81,21 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 		now := time.Now()
 
 		testScenario := &entity.TestScenario{
-			CreatedAt:            now,
-			UpdatedAt:            now,
-			DeletedAt:            nil,
-			Name:                 "load1",
-			TestCategoryID:       uint64(2),
-			MotherServiceID:      uint64(1),
-			Status:               entity.ScenarioStatus(entity.ScenarioStatusPending),
-			MaxTestServiceCount:  nil,
-			ExecutionDuration:    nil,
-			AutoStepIncreaseRate: nil,
+			CreatedAt:           now,
+			UpdatedAt:           now,
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			Status:              entity.ScenarioStatus(entity.ScenarioStatusPending),
+			MaxTestServiceCount: nil,
+			ExecutionDuration:   nil,
+			AutoStepChangeRate:  nil,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_increase_rate") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "id"`)).
 			WithArgs(testScenario.CreatedAt,
 				testScenario.UpdatedAt,
 				testScenario.DeletedAt,
@@ -125,16 +125,16 @@ func TestGetByID(t *testing.T) {
 		now := time.Now()
 
 		expectedTestScenario := &entity.TestScenario{
-			ID:                   uint64(1),
-			CreatedAt:            now,
-			UpdatedAt:            now,
-			Name:                 "load1",
-			TestCategoryID:       uint64(3),
-			MotherServiceID:      uint64(2),
-			Status:               entity.ScenarioStatusPending,
-			MaxTestServiceCount:  nil,
-			ExecutionDuration:    nil,
-			AutoStepIncreaseRate: nil,
+			ID:                  uint64(1),
+			CreatedAt:           now,
+			UpdatedAt:           now,
+			Name:                "load1",
+			TestCategoryID:      uint64(3),
+			MotherServiceID:     uint64(2),
+			Status:              entity.ScenarioStatusPending,
+			MaxTestServiceCount: nil,
+			ExecutionDuration:   nil,
+			AutoStepChangeRate:  nil,
 		}
 
 		mock.ExpectQuery(regexp.QuoteMeta(
@@ -144,7 +144,7 @@ func TestGetByID(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_increase_rate",
+				"auto_step_change_rate",
 			}).
 				AddRow(
 					expectedTestScenario.ID,
@@ -157,7 +157,7 @@ func TestGetByID(t *testing.T) {
 					expectedTestScenario.Status,
 					expectedTestScenario.MaxTestServiceCount,
 					expectedTestScenario.ExecutionDuration,
-					expectedTestScenario.AutoStepIncreaseRate,
+					expectedTestScenario.AutoStepChangeRate,
 				))
 
 		result, err := repo.GetByID(context.Background(), uint64(1))
@@ -171,7 +171,7 @@ func TestGetByID(t *testing.T) {
 		assert.Equal(t, expectedTestScenario.Status, result.Status)
 		assert.Equal(t, expectedTestScenario.MaxTestServiceCount, result.MaxTestServiceCount)
 		assert.Equal(t, expectedTestScenario.ExecutionDuration, result.ExecutionDuration)
-		assert.Equal(t, expectedTestScenario.AutoStepIncreaseRate, result.AutoStepIncreaseRate)
+		assert.Equal(t, expectedTestScenario.AutoStepChangeRate, result.AutoStepChangeRate)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -225,28 +225,28 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                   uint64(5),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load1",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(5),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load1",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(4),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "smoke1",
-				TestCategoryID:       uint64(5),
-				MotherServiceID:      uint64(4),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(4),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "smoke1",
+				TestCategoryID:      uint64(5),
+				MotherServiceID:     uint64(4),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 		}
 
@@ -262,7 +262,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_increase_rate",
+				"auto_step_change_rate",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -275,7 +275,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepIncreaseRate,
+					expectedTestScenarios[0].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[1].ID,
@@ -288,7 +288,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].Status,
 					expectedTestScenarios[1].MaxTestServiceCount,
 					expectedTestScenarios[1].ExecutionDuration,
-					expectedTestScenarios[1].AutoStepIncreaseRate,
+					expectedTestScenarios[1].AutoStepChangeRate,
 				))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -314,28 +314,28 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                   uint64(5),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load1",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(5),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load1",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(4),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "smoke1",
-				TestCategoryID:       uint64(5),
-				MotherServiceID:      uint64(4),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(4),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "smoke1",
+				TestCategoryID:      uint64(5),
+				MotherServiceID:     uint64(4),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 		}
 
@@ -351,7 +351,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_increase_rate",
+				"auto_step_change_rate",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -364,7 +364,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepIncreaseRate,
+					expectedTestScenarios[0].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[1].ID,
@@ -377,7 +377,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].Status,
 					expectedTestScenarios[1].MaxTestServiceCount,
 					expectedTestScenarios[1].ExecutionDuration,
-					expectedTestScenarios[1].AutoStepIncreaseRate,
+					expectedTestScenarios[1].AutoStepChangeRate,
 				))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -404,16 +404,16 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                   uint64(5),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load1",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(5),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load1",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 		}
 
@@ -429,7 +429,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_increase_rate",
+				"auto_step_change_rate",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -442,7 +442,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepIncreaseRate,
+					expectedTestScenarios[0].AutoStepChangeRate,
 				))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -467,64 +467,64 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                   uint64(6),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load1",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(6),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load1",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(5),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load2",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(5),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load2",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(4),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load3",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(4),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load3",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(3),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load4",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(3),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load4",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(2),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load5",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(2),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load5",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 		}
 
@@ -540,7 +540,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_increase_rate",
+				"auto_step_change_rate",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -553,7 +553,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepIncreaseRate,
+					expectedTestScenarios[0].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[1].ID,
@@ -566,7 +566,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].Status,
 					expectedTestScenarios[1].MaxTestServiceCount,
 					expectedTestScenarios[1].ExecutionDuration,
-					expectedTestScenarios[1].AutoStepIncreaseRate,
+					expectedTestScenarios[1].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[2].ID,
@@ -579,7 +579,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[2].Status,
 					expectedTestScenarios[2].MaxTestServiceCount,
 					expectedTestScenarios[2].ExecutionDuration,
-					expectedTestScenarios[2].AutoStepIncreaseRate,
+					expectedTestScenarios[2].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[3].ID,
@@ -592,7 +592,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[3].Status,
 					expectedTestScenarios[3].MaxTestServiceCount,
 					expectedTestScenarios[3].ExecutionDuration,
-					expectedTestScenarios[3].AutoStepIncreaseRate,
+					expectedTestScenarios[3].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[4].ID,
@@ -605,7 +605,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[4].Status,
 					expectedTestScenarios[4].MaxTestServiceCount,
 					expectedTestScenarios[4].ExecutionDuration,
-					expectedTestScenarios[4].AutoStepIncreaseRate,
+					expectedTestScenarios[4].AutoStepChangeRate,
 				))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -642,64 +642,64 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                   uint64(6),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load1",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(6),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load1",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(5),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load2",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(5),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load2",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(4),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load3",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(4),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load3",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(3),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load4",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(3),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load4",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                   uint64(2),
-				CreatedAt:            now,
-				UpdatedAt:            now,
-				Name:                 "load5",
-				TestCategoryID:       uint64(4),
-				MotherServiceID:      uint64(3),
-				Status:               entity.ScenarioStatusPending,
-				MaxTestServiceCount:  nil,
-				ExecutionDuration:    nil,
-				AutoStepIncreaseRate: nil,
+				ID:                  uint64(2),
+				CreatedAt:           now,
+				UpdatedAt:           now,
+				Name:                "load5",
+				TestCategoryID:      uint64(4),
+				MotherServiceID:     uint64(3),
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: nil,
+				ExecutionDuration:   nil,
+				AutoStepChangeRate:  nil,
 			},
 		}
 
@@ -714,7 +714,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_increase_rate",
+				"auto_step_change_rate",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -727,7 +727,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepIncreaseRate,
+					expectedTestScenarios[0].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[1].ID,
@@ -740,7 +740,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].Status,
 					expectedTestScenarios[1].MaxTestServiceCount,
 					expectedTestScenarios[1].ExecutionDuration,
-					expectedTestScenarios[1].AutoStepIncreaseRate,
+					expectedTestScenarios[1].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[2].ID,
@@ -753,7 +753,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[2].Status,
 					expectedTestScenarios[2].MaxTestServiceCount,
 					expectedTestScenarios[2].ExecutionDuration,
-					expectedTestScenarios[2].AutoStepIncreaseRate,
+					expectedTestScenarios[2].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[3].ID,
@@ -766,7 +766,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[3].Status,
 					expectedTestScenarios[3].MaxTestServiceCount,
 					expectedTestScenarios[3].ExecutionDuration,
-					expectedTestScenarios[3].AutoStepIncreaseRate,
+					expectedTestScenarios[3].AutoStepChangeRate,
 				).
 				AddRow(
 					expectedTestScenarios[4].ID,
@@ -779,7 +779,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[4].Status,
 					expectedTestScenarios[4].MaxTestServiceCount,
 					expectedTestScenarios[4].ExecutionDuration,
-					expectedTestScenarios[4].AutoStepIncreaseRate,
+					expectedTestScenarios[4].AutoStepChangeRate,
 				))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -824,7 +824,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_increase_rate",
+				"auto_step_change_rate",
 			}))
 
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
