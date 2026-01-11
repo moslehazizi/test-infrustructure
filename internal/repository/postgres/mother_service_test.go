@@ -40,7 +40,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			ResponseDelayDuration:    &responseDelayDuration,
 			RandomResponseDelayMin:   &randomDelayMin,
 			RandomResponseDelayMax:   &randomDelayMax,
-			ProvisioningStatus:       entity.ProvisioningStatusPending,
+			Status:                   entity.MotherServiceStatusPending,
 			ServiceDeploymentAddress: &serviceAddress,
 			DatabaseName:             "test_db",
 			DatabaseTableName:        "test_table",
@@ -48,7 +48,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -57,7 +57,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 				motherService.ResponseDelayDuration,
 				motherService.RandomResponseDelayMin,
 				motherService.RandomResponseDelayMax,
-				motherService.ProvisioningStatus,
+				motherService.Status,
 				motherService.ServiceDeploymentAddress,
 				motherService.DatabaseName,
 				motherService.DatabaseTableName,
@@ -81,19 +81,19 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		now := time.Now()
 
 		motherService := &entity.MotherService{
-			CreatedAt:          now,
-			UpdatedAt:          now,
-			Name:               "mother1",
-			ExceptionRate:      0.0,
-			ResponseDelayRate:  0.0,
-			ProvisioningStatus: entity.ProvisioningStatusPending,
-			DatabaseName:       "test_db",
-			DatabaseTableName:  "test_table",
+			CreatedAt:         now,
+			UpdatedAt:         now,
+			Name:              "mother1",
+			ExceptionRate:     0.0,
+			ResponseDelayRate: 0.0,
+			Status:            entity.MotherServiceStatusPending,
+			DatabaseName:      "test_db",
+			DatabaseTableName: "test_table",
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -102,7 +102,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 				motherService.ResponseDelayDuration,
 				motherService.RandomResponseDelayMin,
 				motherService.RandomResponseDelayMax,
-				motherService.ProvisioningStatus,
+				motherService.Status,
 				motherService.ServiceDeploymentAddress,
 				motherService.DatabaseName,
 				motherService.DatabaseTableName,
@@ -126,14 +126,14 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		now := time.Now()
 
 		motherService := &entity.MotherService{
-			CreatedAt:          now,
-			UpdatedAt:          now,
-			Name:               "mother1",
-			ExceptionRate:      0.0,
-			ResponseDelayRate:  0.0,
-			ProvisioningStatus: entity.ProvisioningStatusPending,
-			DatabaseName:       "test_db",
-			DatabaseTableName:  "test_table",
+			CreatedAt:         now,
+			UpdatedAt:         now,
+			Name:              "mother1",
+			ExceptionRate:     0.0,
+			ResponseDelayRate: 0.0,
+			Status:            entity.MotherServiceStatusPending,
+			DatabaseName:      "test_db",
+			DatabaseTableName: "test_table",
 		}
 
 		duplicateError := &pgconn.PgError{
@@ -145,7 +145,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","provisioning_status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				now, now, nil,
 				motherService.Name,
@@ -154,7 +154,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 				motherService.ResponseDelayDuration,
 				motherService.RandomResponseDelayMin,
 				motherService.RandomResponseDelayMax,
-				motherService.ProvisioningStatus,
+				motherService.Status,
 				motherService.ServiceDeploymentAddress,
 				motherService.DatabaseName,
 				motherService.DatabaseTableName,
@@ -199,7 +199,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 			ResponseDelayDuration:    &responseDelayDuration,
 			RandomResponseDelayMin:   &randomDelayMin,
 			RandomResponseDelayMax:   &randomDelayMax,
-			ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
+			Status:                   entity.MotherServiceStatusRunning,
 			ServiceDeploymentAddress: &serviceAddress,
 			DatabaseName:             "test_db",
 			DatabaseTableName:        "test_table",
@@ -212,7 +212,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -226,7 +226,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 					expectedMotherService.ResponseDelayDuration,
 					expectedMotherService.RandomResponseDelayMin,
 					expectedMotherService.RandomResponseDelayMax,
-					expectedMotherService.ProvisioningStatus,
+					expectedMotherService.Status,
 					expectedMotherService.ServiceDeploymentAddress,
 					expectedMotherService.DatabaseName,
 					expectedMotherService.DatabaseTableName,
@@ -239,7 +239,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 		assert.Equal(t, expectedMotherService.Name, result.Name)
 		assert.Equal(t, expectedMotherService.ExceptionRate, result.ExceptionRate)
 		assert.Equal(t, expectedMotherService.ResponseDelayRate, result.ResponseDelayRate)
-		assert.Equal(t, expectedMotherService.ProvisioningStatus, result.ProvisioningStatus)
+		assert.Equal(t, expectedMotherService.Status, result.Status)
 		assert.Equal(t, expectedMotherService.DatabaseName, result.DatabaseName)
 		assert.Equal(t, expectedMotherService.DatabaseTableName, result.DatabaseTableName)
 		assert.NoError(t, mock.ExpectationsWereMet())
@@ -301,7 +301,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				Name:                     "mother5",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				ProvisioningStatus:       entity.ProvisioningStatusPending,
+				Status:                   entity.MotherServiceStatusPending,
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db5",
 				DatabaseTableName:        "test_table5",
@@ -313,7 +313,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				Name:                     "mother4",
 				ExceptionRate:            10,
 				ResponseDelayRate:        20,
-				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
+				Status:                   entity.MotherServiceStatusPending,
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db4",
 				DatabaseTableName:        "test_table4",
@@ -332,7 +332,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -346,7 +346,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[0].ResponseDelayDuration,
 					expectedMotherServices[0].RandomResponseDelayMin,
 					expectedMotherServices[0].RandomResponseDelayMax,
-					expectedMotherServices[0].ProvisioningStatus,
+					expectedMotherServices[0].Status,
 					expectedMotherServices[0].ServiceDeploymentAddress,
 					expectedMotherServices[0].DatabaseName,
 					expectedMotherServices[0].DatabaseTableName,
@@ -362,7 +362,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[1].ResponseDelayDuration,
 					expectedMotherServices[1].RandomResponseDelayMin,
 					expectedMotherServices[1].RandomResponseDelayMax,
-					expectedMotherServices[1].ProvisioningStatus,
+					expectedMotherServices[1].Status,
 					expectedMotherServices[1].ServiceDeploymentAddress,
 					expectedMotherServices[1].DatabaseName,
 					expectedMotherServices[1].DatabaseTableName,
@@ -399,7 +399,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				Name:                     "mother3",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				ProvisioningStatus:       entity.ProvisioningStatusPending,
+				Status:                   entity.MotherServiceStatusPending,
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db3",
 				DatabaseTableName:        "test_table3",
@@ -411,7 +411,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				Name:                     "mother2",
 				ExceptionRate:            10,
 				ResponseDelayRate:        20,
-				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
+				Status:                   entity.MotherServiceStatusPending,
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db2",
 				DatabaseTableName:        "test_table2",
@@ -430,7 +430,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -444,7 +444,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[0].ResponseDelayDuration,
 					expectedMotherServices[0].RandomResponseDelayMin,
 					expectedMotherServices[0].RandomResponseDelayMax,
-					expectedMotherServices[0].ProvisioningStatus,
+					expectedMotherServices[0].Status,
 					expectedMotherServices[0].ServiceDeploymentAddress,
 					expectedMotherServices[0].DatabaseName,
 					expectedMotherServices[0].DatabaseTableName,
@@ -460,7 +460,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[1].ResponseDelayDuration,
 					expectedMotherServices[1].RandomResponseDelayMin,
 					expectedMotherServices[1].RandomResponseDelayMax,
-					expectedMotherServices[1].ProvisioningStatus,
+					expectedMotherServices[1].Status,
 					expectedMotherServices[1].ServiceDeploymentAddress,
 					expectedMotherServices[1].DatabaseName,
 					expectedMotherServices[1].DatabaseTableName,
@@ -495,7 +495,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 			Name:                     "mother25",
 			ExceptionRate:            0.0,
 			ResponseDelayRate:        0.0,
-			ProvisioningStatus:       entity.ProvisioningStatusPending,
+			Status:                   entity.MotherServiceStatusPending,
 			ServiceDeploymentAddress: &serviceAddress,
 			DatabaseName:             "test_db25",
 			DatabaseTableName:        "test_table25",
@@ -513,7 +513,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -527,7 +527,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherService.ResponseDelayDuration,
 					expectedMotherService.RandomResponseDelayMin,
 					expectedMotherService.RandomResponseDelayMax,
-					expectedMotherService.ProvisioningStatus,
+					expectedMotherService.Status,
 					expectedMotherService.ServiceDeploymentAddress,
 					expectedMotherService.DatabaseName,
 					expectedMotherService.DatabaseTableName,
@@ -560,7 +560,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				Name:                     "mother3",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				ProvisioningStatus:       entity.ProvisioningStatusPending,
+				Status:                   entity.MotherServiceStatusPending,
 				ServiceDeploymentAddress: &serviceAddress3,
 				DatabaseName:             "test_db3",
 				DatabaseTableName:        "test_table3",
@@ -572,7 +572,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				Name:                     "mother2",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				ProvisioningStatus:       entity.ProvisioningStatusPending,
+				Status:                   entity.MotherServiceStatusPending,
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db2",
 				DatabaseTableName:        "test_table2",
@@ -584,7 +584,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				Name:                     "mother1",
 				ExceptionRate:            10,
 				ResponseDelayRate:        20,
-				ProvisioningStatus:       entity.ProvisioningStatusProvisioned,
+				Status:                   entity.MotherServiceStatusPending,
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db1",
 				DatabaseTableName:        "test_table1",
@@ -602,7 +602,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}).
 				AddRow(
@@ -616,7 +616,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[0].ResponseDelayDuration,
 					expectedMotherServices[0].RandomResponseDelayMin,
 					expectedMotherServices[0].RandomResponseDelayMax,
-					expectedMotherServices[0].ProvisioningStatus,
+					expectedMotherServices[0].Status,
 					expectedMotherServices[0].ServiceDeploymentAddress,
 					expectedMotherServices[0].DatabaseName,
 					expectedMotherServices[0].DatabaseTableName,
@@ -632,7 +632,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[1].ResponseDelayDuration,
 					expectedMotherServices[1].RandomResponseDelayMin,
 					expectedMotherServices[1].RandomResponseDelayMax,
-					expectedMotherServices[1].ProvisioningStatus,
+					expectedMotherServices[1].Status,
 					expectedMotherServices[1].ServiceDeploymentAddress,
 					expectedMotherServices[1].DatabaseName,
 					expectedMotherServices[1].DatabaseTableName,
@@ -648,7 +648,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[2].ResponseDelayDuration,
 					expectedMotherServices[2].RandomResponseDelayMin,
 					expectedMotherServices[2].RandomResponseDelayMax,
-					expectedMotherServices[2].ProvisioningStatus,
+					expectedMotherServices[2].Status,
 					expectedMotherServices[2].ServiceDeploymentAddress,
 					expectedMotherServices[2].DatabaseName,
 					expectedMotherServices[2].DatabaseTableName,
@@ -682,7 +682,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"exception_rate", "response_delay_rate", "response_delay_duration",
 				"random_response_delay_min", "random_response_delay_max",
-				"provisioning_status", "service_deployment_address",
+				"status", "service_deployment_address",
 				"database_name", "database_table_name",
 			}))
 

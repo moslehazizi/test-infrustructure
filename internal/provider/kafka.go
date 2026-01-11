@@ -118,7 +118,7 @@ type kafkaConsumer struct {
 }
 
 func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsumer, error) {
-	log.Printf("initializing Kafka event consumer: %s:%d, topic: %s", cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.DatabaseTopic)
+	log.Printf("initializing Kafka event consumer: %s:%d, topic: %s", cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.ProvisioningTopic)
 
 	var dialer *kafka.Dialer
 	if cfg.Kafka.Username != "" && cfg.Kafka.Password != "" {
@@ -150,7 +150,7 @@ func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsum
 	brokerAddr := fmt.Sprintf("%s:%d", cfg.Kafka.Host, cfg.Kafka.Port)
 	readerCfg := kafka.ReaderConfig{
 		Brokers:  []string{brokerAddr},
-		Topic:    cfg.Kafka.DatabaseTopic,
+		Topic:    cfg.Kafka.ProvisioningTopic,
 		MaxBytes: cfg.Kafka.MaxBytes,
 		GroupID:  cfg.Kafka.ConsumerGroup,
 	}
@@ -158,7 +158,7 @@ func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsum
 		readerCfg.Dialer = dialer
 	}
 	kafkaReader := kafka.NewReader(readerCfg)
-	log.Printf("Kafka event consumer initialized successfully for topic: %s", cfg.Kafka.DatabaseTopic)
+	log.Printf("Kafka event consumer initialized successfully for topic: %s", cfg.Kafka.ProvisioningTopic)
 
 	return &kafkaConsumer{
 		reader: kafkaReader,

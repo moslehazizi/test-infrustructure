@@ -34,6 +34,7 @@ create table if not exists mother_services (
     
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP,
+    deleted_at timestamptz,
 
     -- CHECK constraint that validates response delay configuration
     -- Ensures one of three valid delay scenarios:
@@ -60,4 +61,4 @@ create table if not exists mother_services (
 
 -- migrate:down
 DROP TABLE IF EXISTS mother_services;
-DROP TYPE IF EXISTS provisioning_status;
+DROP TYPE IF EXISTS status;

@@ -25,17 +25,17 @@ type Server struct {
 }
 
 type Kafka struct {
-	Host          string        `envconfig:"KAFKA_HOST"`
-	Port          int           `envconfig:"KAFKA_PORT"`
-	Username      string        `envconfig:"KAFKA_USERNAME"`
-	Password      string        `envconfig:"KAFKA_PASSWORD"`
-	DatabaseTopic string        `envconfig:"KAFKA_DATABASE_TOPIC"`
-	DialerTimeout time.Duration `envconfig:"KAFKA_DIALER_TIMEOUT" default:"10s"`
-	MaxBytes      int           `envconfig:"KAFKA_MAX_BYTES" default:"10485760"` // 10MB = 10 * 1024 * 1024
-	ConsumerGroup string        `envconfig:"KAFKA_CONSUMER_GROUP" default:"factorial-consumer-group"`
-	BatchTimeout  time.Duration `envconfig:"KAFKA_BATCH_TIMEOUT" default:"5ms"`
-	BatchSize     int           `envconfig:"KAFKA_BATCH_SIZE" default:"1000"`
-	BatchBytes    int           `envconfig:"KAFKA_BATCH_BYTES" default:"1000000"` // 1MB = 1e6
+	Host              string        `envconfig:"KAFKA_HOST"`
+	Port              int           `envconfig:"KAFKA_PORT"`
+	Username          string        `envconfig:"KAFKA_USERNAME"`
+	Password          string        `envconfig:"KAFKA_PASSWORD"`
+	ProvisioningTopic string        `envconfig:"KAFKA_PROVISIONING_TOPIC" default:"provisioning"`
+	DialerTimeout     time.Duration `envconfig:"KAFKA_DIALER_TIMEOUT" default:"10s"`
+	MaxBytes          int           `envconfig:"KAFKA_MAX_BYTES" default:"10485760"` // 10MB = 10 * 1024 * 1024
+	ConsumerGroup     string        `envconfig:"KAFKA_CONSUMER_GROUP" default:"factorial-consumer-group"`
+	BatchTimeout      time.Duration `envconfig:"KAFKA_BATCH_TIMEOUT" default:"5ms"`
+	BatchSize         int           `envconfig:"KAFKA_BATCH_SIZE" default:"1000"`
+	BatchBytes        int           `envconfig:"KAFKA_BATCH_BYTES" default:"1000000"` // 1MB = 1e6
 }
 
 type Postgres struct {

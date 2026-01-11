@@ -35,7 +35,7 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 		return fmt.Errorf("failed to validate request: %w", err)
 	}
 
-	motherService.ProvisioningStatus = entity.ProvisioningStatusPending
+	motherService.Status = entity.MotherServiceStatusPending
 
 	repo := service.motherServiceRepo.Begin()
 	defer func() {

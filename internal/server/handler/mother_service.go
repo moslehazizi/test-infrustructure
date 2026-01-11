@@ -29,9 +29,7 @@ func (handler *MotherService) Create() fiber.Handler {
 		req := new(request.MotherService)
 
 		if err := ctx.BodyParser(req); err != nil {
-			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-				"error": pkg.InvalidReqBody,
-			})
+			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
 		reqService := &entity.MotherService{
@@ -65,34 +63,8 @@ func (handler *MotherService) Create() fiber.Handler {
 		}
 
 		err := handler.motherService.Create(ctx.Context(), reqService)
-
 		if err != nil {
-			switch {
-			case errors.Is(err, pkg.ErrMotherServiceAlreadyExist):
-				return ctx.Status(http.StatusConflict).JSON(&fiber.Map{
-					"error": pkg.MotherServiceAlreadyExist,
-				})
-			case errors.Is(err, pkg.ErrInvalidResponseDelayRate):
-				return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{
-					"error": pkg.InvalidResponseDelayRate,
-				})
-			case errors.Is(err, pkg.ErrInvalidExceptionRate):
-				return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{
-					"error": pkg.InvalidExceptionRate,
-				})
-			case errors.Is(err, pkg.ErrInvalidDelayConfiguration):
-				return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{
-					"error": pkg.InvalidDelayConfiguration,
-				})
-			case errors.Is(err, pkg.ErrInvalidRandomDelayRange):
-				return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{
-					"error": pkg.InvalidRandomDelayRange,
-				})
-			}
-
-			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
-				"error": pkg.InternalServerErrorMessage,
-			})
+			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
@@ -107,22 +79,16 @@ func (handler *MotherService) GetByID() fiber.Handler {
 
 		id, err := strconv.ParseUint(strID, 10, 64)
 		if err != nil {
-			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-				"error": pkg.InvalidIDInParams,
-			})
+			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
 		svcResult, err := handler.motherService.GetByID(ctx.Context(), id)
 		if err != nil {
 			if errors.Is(err, pkg.ErrMotherServiceNotFound) {
-				return ctx.Status(http.StatusNotFound).JSON(&fiber.Map{
-					"error": pkg.MotherServiceNotFound,
-				})
+				return pkg.ToHTTPError(pkg.ErrMotherServiceNotFound).AsFiber(ctx)
 			}
 
-			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
-				"error": pkg.InternalServerErrorMessage,
-			})
+			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
 		response := response.MotherService{
@@ -135,7 +101,7 @@ func (handler *MotherService) GetByID() fiber.Handler {
 			ResponseDelayDuration:    svcResult.ResponseDelayDuration,
 			RandomResponseDelayMin:   svcResult.RandomResponseDelayMin,
 			RandomResponseDelayMax:   svcResult.RandomResponseDelayMax,
-			ProvisioningStatus:       string(svcResult.ProvisioningStatus),
+			Status:                   string(svcResult.Status),
 			ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
 			DatabaseName:             svcResult.DatabaseName,
 			DatabaseTableName:        svcResult.DatabaseTableName,
@@ -152,15 +118,11 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 		req := new(request.PaginationRequest)
 
 		if err := ctx.BodyParser(req); err != nil {
-			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-				"error": pkg.InvalidReqBody,
-			})
+			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
 		if req.Page < 0 || req.PerPage < 0 {
-			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-				"error": pkg.InvalidReqBody,
-			})
+			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
 		reqSvc := entity.PaginationRequest{
@@ -170,9 +132,7 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 
 		svcResults, err := handler.motherService.GetPaginated(ctx.Context(), reqSvc)
 		if err != nil {
-			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
-				"error": pkg.InternalServerErrorMessage,
-			})
+			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
 		var responses []response.MotherService
@@ -187,7 +147,7 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 				ResponseDelayDuration:    svcResult.ResponseDelayDuration,
 				RandomResponseDelayMin:   svcResult.RandomResponseDelayMin,
 				RandomResponseDelayMax:   svcResult.RandomResponseDelayMax,
-				ProvisioningStatus:       string(svcResult.ProvisioningStatus),
+				Status:                   string(svcResult.Status),
 				ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
 				DatabaseName:             svcResult.DatabaseName,
 				DatabaseTableName:        svcResult.DatabaseTableName,

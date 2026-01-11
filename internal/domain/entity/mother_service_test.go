@@ -62,7 +62,7 @@ func TestMotherService_Validate(t *testing.T) {
 		err := service.Validate()
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrInvalidName)
+		assert.ErrorIs(t, err, pkg.ErrInvalidMotherServiceName)
 	})
 
 	t.Run("failed case - delay rate is negative", func(t *testing.T) {

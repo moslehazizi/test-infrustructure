@@ -14,7 +14,7 @@ type MotherService struct {
 	ResponseDelayDuration    *int      `json:"response_delay_duration"`
 	RandomResponseDelayMin   *int      `json:"random_response_delay_min"`
 	RandomResponseDelayMax   *int      `json:"random_response_delay_max"`
-	ProvisioningStatus       string    `json:"provisioning_status"`
+	Status                   string    `json:"status"`
 	ServiceDeploymentAddress *string   `json:"service_deployment_address"`
 	DatabaseName             string    `json:"database_name"`
 	DatabaseTableName        string    `json:"database_table_name"`
