@@ -36,7 +36,7 @@ func TestGetAll(t *testing.T) {
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
 
-		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" ORDER BY id DESC`)).WillReturnRows(sqlmock.NewRows([]string{
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" ORDER BY id ASC`)).WillReturnRows(sqlmock.NewRows([]string{
 			"id",
 			"name",
 			"label",
@@ -81,7 +81,7 @@ func TestGetAll(t *testing.T) {
 			},
 		}
 
-		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" ORDER BY id DESC`)).WillReturnRows(sqlmock.NewRows([]string{
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" ORDER BY id ASC`)).WillReturnRows(sqlmock.NewRows([]string{
 			"id",
 			"name",
 			"label",
@@ -123,7 +123,7 @@ func TestGetAll(t *testing.T) {
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
 
-		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" ORDER BY id DESC`)).WillReturnError(errors.New("database error"))
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" ORDER BY id ASC`)).WillReturnError(errors.New("database error"))
 
 		repo := NewTestCategoryRepository(db)
 		result, err := repo.GetAll(context.Background())
