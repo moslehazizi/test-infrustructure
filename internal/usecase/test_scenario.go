@@ -26,9 +26,14 @@ type testScenario struct {
 }
 
 func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) error {
+	err := testScenario.Validate()
+	if err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToCreateTestScenario, err)
+	}
+
 	testScenario.Status = entity.ScenarioStatusPending
 
-	err := service.testScenarioRepository.Create(ctx, testScenario)
+	err = service.testScenarioRepository.Create(ctx, testScenario)
 	if err != nil {
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateTestScenario, err)
 	}

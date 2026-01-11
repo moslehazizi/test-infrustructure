@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"control-panel-service/pkg"
 	"time"
 
 	"gorm.io/gorm"
@@ -38,4 +39,20 @@ func (TestScenario) TableName() string {
 type TestScenarioPaginationRequest struct {
 	Page    int
 	PerPage int
+}
+
+func (ts *TestScenario) Validate() error {
+	if ts.MaxTestServiceCount != nil && *ts.MaxTestServiceCount < 1 {
+		return pkg.ErrMaxTestServiceCountLessThanOne
+	}
+
+	if ts.ExecutionDuration != nil && *ts.ExecutionDuration < 1 {
+		return pkg.ErrExecutionDurationLessThanOne
+	}
+
+	if ts.AutoStepIncreaseRate != nil && *ts.AutoStepIncreaseRate < 1 {
+		return pkg.ErrAutoStepIncreaseRateLessThanOne
+	}
+
+	return nil
 }

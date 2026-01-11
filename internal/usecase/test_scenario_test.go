@@ -69,6 +69,63 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockRepo.AssertCalled(t, "Create", ctx, testSci)
 		mockRepo.AssertExpectations(t)
 	})
+
+	t.Run("failed case - validation error - max test service count less than one", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		service := NewTestScenarioUsecase(mockRepo)
+
+		sampleInt := -1
+		testSci := &entity.TestScenario{
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			MaxTestServiceCount: &sampleInt,
+		}
+
+		err := service.Create(ctx, testSci)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountLessThanOne)
+	})
+
+	t.Run("failed case - validation error -  execution duration less than one", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		service := NewTestScenarioUsecase(mockRepo)
+
+		sampleInt := -1
+		testSci := &entity.TestScenario{
+			Name:              "load1",
+			TestCategoryID:    uint64(2),
+			MotherServiceID:   uint64(1),
+			ExecutionDuration: &sampleInt,
+		}
+
+		err := service.Create(ctx, testSci)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrExecutionDurationLessThanOne)
+	})
+
+	t.Run("failed case - validation error -  auto step increase less than one", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		service := NewTestScenarioUsecase(mockRepo)
+
+		sampleInt := -1
+		testSci := &entity.TestScenario{
+			Name:                 "load1",
+			TestCategoryID:       uint64(2),
+			MotherServiceID:      uint64(1),
+			AutoStepIncreaseRate: &sampleInt,
+		}
+
+		err := service.Create(ctx, testSci)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrAutoStepIncreaseRateLessThanOne)
+	})
 }
 
 func TestTestScenarioUsecase_GetByID(t *testing.T) {
