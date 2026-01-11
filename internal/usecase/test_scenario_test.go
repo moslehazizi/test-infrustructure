@@ -13,7 +13,8 @@ import (
 
 func TestTestScenarioUsecase_Init(t *testing.T) {
 	mockRepo := new(mocks.MockTestScenario)
-	service := NewTestScenarioUsecase(mockRepo)
+	mockTestCatRepo := new(mocks.MockTestCategory)
+	service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 	assert.NotNil(t, service)
 
 	st, ok := service.(*testScenario)
@@ -25,19 +26,29 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		sampleInt := 1
 		testSci := &entity.TestScenario{
 			Name:                 "load1",
-			TestCategoryID:       uint64(2),
+			TestCategoryID:       2,
 			MotherServiceID:      uint64(1),
 			MaxTestServiceCount:  &sampleInt,
 			ExecutionDuration:    &sampleInt,
 			AutoStepIncreaseRate: &sampleInt,
 		}
+		testCat := &entity.TestCategory{
+			ID:                      1,
+			Name:                    "load",
+			Label:                   "my load",
+			HasMaxTestServiceCount:  true,
+			HasExecutionDuration:    true,
+			HasAutoStepIncreaseRate: true,
+		}
 
 		mockRepo.On("Create", ctx, testSci).Return(nil)
+		mockTestCatRepo.On("GetByID", ctx, testSci.TestCategoryID).Return(testCat)
 
 		err := service.Create(ctx, testSci)
 
@@ -48,7 +59,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 	t.Run("failed case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		sampleInt := 1
 		testSci := &entity.TestScenario{
@@ -73,7 +85,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 	t.Run("failed case - validation error - max test service count less than one", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		sampleInt := -1
 		testSci := &entity.TestScenario{
@@ -92,7 +105,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 	t.Run("failed case - validation error -  execution duration less than one", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		sampleInt := -1
 		testSci := &entity.TestScenario{
@@ -111,7 +125,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 	t.Run("failed case - validation error -  auto step increase less than one", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		sampleInt := -1
 		testSci := &entity.TestScenario{
@@ -132,7 +147,8 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		sampleInt := 1
 		sampleID := uint64(4)
@@ -161,7 +177,8 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 	t.Run("failed case - not found", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		sampleID := uint64(4)
 
@@ -179,7 +196,8 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 	t.Run("failed case - repository unknown error", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		sampleID := uint64(4)
 
@@ -199,7 +217,8 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		sampleInt := 2
 		pagReq := entity.TestScenarioPaginationRequest{
@@ -252,7 +271,8 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 	t.Run("failed case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
-		service := NewTestScenarioUsecase(mockRepo)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		service := NewTestScenarioUsecase(mockRepo, mockTestCatRepo)
 
 		pagReq := entity.TestScenarioPaginationRequest{
 			Page:    2,

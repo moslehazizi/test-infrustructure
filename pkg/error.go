@@ -20,6 +20,7 @@ var (
 	ErrFailedToGetTestScenario         = errors.New("failed to get test scenario")
 	ErrFailedToGetTestScenarios        = errors.New("failed to get test scenarios")
 	ErrFailedToCreateTestScenario      = errors.New("failed to create test scenario")
+	ErrTestCategoryNotFound            = errors.New("test category not found")
 
 	// Validation errors.
 	ErrInvalidName                             = errors.New("mother service name is required")
