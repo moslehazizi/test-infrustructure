@@ -28,7 +28,7 @@ type MotherService struct {
 	ResponseDelayDuration    *int                `gorm:"column:response_delay_duration"`
 	RandomResponseDelayMin   *int                `gorm:"column:random_response_delay_min"`
 	RandomResponseDelayMax   *int                `gorm:"column:random_response_delay_max"`
-	Status                   MotherServiceStatus `gorm:"column:provisioning_status"`
+	Status                   MotherServiceStatus `gorm:"column:status"`
 	ServiceDeploymentAddress *string             `gorm:"column:service_deployment_address"`
 	DatabaseName             string              `gorm:"column:database_name"`
 	DatabaseTableName        string              `gorm:"column:database_table_name"`
