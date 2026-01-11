@@ -6,7 +6,7 @@ create table if not exists test_categories (
 
     has_max_test_service_count boolean NOT NULL DEFAULT true, -- تعداد سرویس در سناریو یا حداکثر بار
     has_execution_duration boolean NOT NULL DEFAULT true, -- مدت زمان اجرا یا مانایی در هر مرحله
-    has_auto_step_increase_rate boolean NOT NULL DEFAULT false, -- معیار افزایش بار
+    has_auto_step_change_rate boolean NOT NULL DEFAULT false, -- معیار افزایش بار
 
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP
