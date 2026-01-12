@@ -199,6 +199,82 @@ func TestToHTTPError(t *testing.T) {
 			err:    ErrNoNeedAutoStepChange,
 			wanted: HTTPError{http.StatusUnprocessableEntity, NoNeedAutoStepChange},
 		},
+		{
+			err:    ErrInvalidMaxRequest,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidMaxRequest},
+		},
+		{
+			err:    ErrInvalidMaxDuration,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidMaxDuration},
+		},
+		{
+			err:    ErrInvalidBadValueRate,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidBadValueRate},
+		},
+		{
+			err:    ErrInvalidNegativeValueRate,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidNegativeValueRate},
+		},
+		{
+			err:    ErrInvalidRealValueRate,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidRealValueRate},
+		},
+		{
+			err:    ErrInvalidZeroValueRate,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidZeroValueRate},
+		},
+		{
+			err:    ErrInvalidStringValueRate,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidStringValueRate},
+		},
+		{
+			err:    ErrInvalidLongStringValueRate,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidLongStringValueRate},
+		},
+		{
+			err:    ErrInvalidNullValueRate,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidNullValueRate},
+		},
+		{
+			err:    ErrInvalidRequestDelayDurationConfig,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidRequestDelayDurationConfig},
+		},
+		{
+			err:    ErrInvalidRequestDelayDuration,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidRequestDelayDuration},
+		},
+		{
+			err:    ErrMinDelayDurationMoreThanMax,
+			wanted: HTTPError{http.StatusUnprocessableEntity, MinDelayDurationMoreThanMax},
+		},
+		{
+			err:    ErrInvalidTestNumberConfig,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidTestNumberConfig},
+		},
+		{
+			err:    ErrInvalidFixedTestNumber,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidFixedTestNumber},
+		},
+		{
+			err:    ErrInvalidFixedTestNumberConfig,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidFixedTestNumberConfig},
+		},
+		{
+			err:    ErrInvalidMinOrMaxRandomTestNumber,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidMinOrMaxRandomTestNumber},
+		},
+		{
+			err:    ErrMinRandomTestNumberMoreThanMax,
+			wanted: HTTPError{http.StatusUnprocessableEntity, MinRandomTestNumberMoreThanMax},
+		},
+		{
+			err:    ErrInvalidZeroSumOfBadValues,
+			wanted: HTTPError{http.StatusUnprocessableEntity, InvalidZeroSumOfBadValues},
+		},
+		{
+			err:    ErrInvalid100SumOfBadValues,
+			wanted: HTTPError{http.StatusUnprocessableEntity, Invalid100SumOfBadValues},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {

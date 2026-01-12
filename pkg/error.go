@@ -112,6 +112,64 @@ func ToHTTPError(err error) *HTTPError {
 		status = http.StatusNotFound
 		msg = PageNotFound
 
+	case errors.Is(err, ErrInvalidMaxRequest):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidMaxRequest
+	case errors.Is(err, ErrInvalidMaxDuration):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidMaxDuration
+	case errors.Is(err, ErrInvalidBadValueRate):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidBadValueRate
+	case errors.Is(err, ErrInvalidNegativeValueRate):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidNegativeValueRate
+	case errors.Is(err, ErrInvalidRealValueRate):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidRealValueRate
+	case errors.Is(err, ErrInvalidZeroValueRate):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidZeroValueRate
+	case errors.Is(err, ErrInvalidStringValueRate):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidStringValueRate
+	case errors.Is(err, ErrInvalidLongStringValueRate):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidLongStringValueRate
+	case errors.Is(err, ErrInvalidNullValueRate):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidNullValueRate
+	case errors.Is(err, ErrInvalidRequestDelayDurationConfig):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidRequestDelayDurationConfig
+	case errors.Is(err, ErrInvalidRequestDelayDuration):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidRequestDelayDuration
+	case errors.Is(err, ErrMinDelayDurationMoreThanMax):
+		status = http.StatusUnprocessableEntity
+		msg = MinDelayDurationMoreThanMax
+	case errors.Is(err, ErrInvalidTestNumberConfig):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidTestNumberConfig
+	case errors.Is(err, ErrInvalidFixedTestNumber):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidFixedTestNumber
+	case errors.Is(err, ErrInvalidFixedTestNumberConfig):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidFixedTestNumberConfig
+	case errors.Is(err, ErrInvalidMinOrMaxRandomTestNumber):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidMinOrMaxRandomTestNumber
+	case errors.Is(err, ErrMinRandomTestNumberMoreThanMax):
+		status = http.StatusUnprocessableEntity
+		msg = MinRandomTestNumberMoreThanMax
+	case errors.Is(err, ErrInvalidZeroSumOfBadValues):
+		status = http.StatusUnprocessableEntity
+		msg = InvalidZeroSumOfBadValues
+	case errors.Is(err, ErrInvalid100SumOfBadValues):
+		status = http.StatusUnprocessableEntity
+		msg = Invalid100SumOfBadValues
+
 	default:
 		status = http.StatusInternalServerError
 		msg = InternalServerErrorMessage
