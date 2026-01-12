@@ -5,46 +5,26 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/database"
+	"control-panel-service/pkg/database/postgres"
 	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
 )
 
-func NewTestScenarioRepository(db *gorm.DB) repository.TestScenarioRepository {
+func NewTestScenarioRepository(db database.Database) repository.TestScenarioRepository {
 	return &testScenario{
 		db: db,
 	}
 }
 
 type testScenario struct {
-	db *gorm.DB
-}
-
-func (t *testScenario) Begin() repository.TestScenarioRepository {
-	return NewTestScenarioRepository(t.db.Begin())
-}
-
-func (t *testScenario) Commit() error {
-	err := t.db.Commit().Error
-	if err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	return nil
-}
-
-func (t *testScenario) Rollback() error {
-	err := t.db.Rollback().Error
-	if err != nil {
-		return fmt.Errorf("failed to rollback transaction: %w", err)
-	}
-
-	return nil
+	db database.Database
 }
 
 func (repo *testScenario) Create(ctx context.Context, testSci *entity.TestScenario) (uint64, error) {
-	err := repo.db.WithContext(ctx).Create(testSci).Error
+	err := postgres.QueryBuilder(ctx, repo.db).Create(testSci).Error
 	if err != nil {
 		return 0, fmt.Errorf("failed to create test scenario record: %w", err)
 	}
@@ -56,7 +36,7 @@ func (repo *testScenario) Create(ctx context.Context, testSci *entity.TestScenar
 
 func (repo *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error) {
 	var testScenario entity.TestScenario
-	err := repo.db.WithContext(ctx).First(&testScenario, id).Error
+	err := postgres.QueryBuilder(ctx, repo.db).First(&testScenario, id).Error
 	_ = err
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -75,7 +55,7 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, pkg.ErrNegativePageOrPerPageNotAllowed)
 	}
 
-	query := repo.db.WithContext(ctx).Order("id DESC")
+	query := postgres.QueryBuilder(ctx, repo.db).Order("id DESC")
 
 	if pagRequest.Page > 0 && pagRequest.PerPage > 0 {
 		offset := (pagRequest.Page - 1) * pagRequest.PerPage

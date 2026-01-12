@@ -5,6 +5,7 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/database"
 	"errors"
 	"fmt"
 )
@@ -16,10 +17,12 @@ type TestScenario interface {
 }
 
 func NewTestScenarioUsecase(
+	db database.Database,
 	testScenarioRepository repository.TestScenarioRepository,
 	testCategoryRepository repository.TestCategory,
 	testServiceConfigRepository repository.TestServiceConfigRepository) TestScenario {
 	return &testScenario{
+		db:                          db,
 		testScenarioRepository:      testScenarioRepository,
 		testCategoryRepository:      testCategoryRepository,
 		testServiceConfigRepository: testServiceConfigRepository,
@@ -27,6 +30,7 @@ func NewTestScenarioUsecase(
 }
 
 type testScenario struct {
+	db                          database.Database
 	testScenarioRepository      repository.TestScenarioRepository
 	testCategoryRepository      repository.TestCategory
 	testServiceConfigRepository repository.TestServiceConfigRepository
@@ -58,26 +62,27 @@ func (service *testScenario) Create(
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
 	}
 
-	repo := service.testScenarioRepository.Begin()
+	tx := service.db.Begin()
+	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
 	defer func() {
 		if e != nil {
-			_ = repo.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
-	testSciID, err := repo.Create(ctx, testScenario)
+	testSciID, err := service.testScenarioRepository.Create(dbCtx, testScenario)
 	if err != nil {
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
 
 	testSvcCfg.ID = testSciID
 
-	err = service.testServiceConfigRepository.Create(ctx, testSvcCfg)
+	err = service.testServiceConfigRepository.Create(dbCtx, testSvcCfg)
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
 
-	_ = repo.Commit()
+	_ = tx.Commit()
 
 	return nil
 }

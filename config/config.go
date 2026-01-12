@@ -45,7 +45,7 @@ type Postgres struct {
 	Password           string        `envconfig:"POSTGRES_PASSWORD"`
 	Database           string        `envconfig:"POSTGRES_DATABASE"`
 	SSLMode            string        `envconfig:"POSTGRES_SSL_MODE"`
-	MaxOpenConnection  int           `envconfig:"POSTGRES_MAX_OPEN_CONNECTION"`
+	MaxOpenConnections int           `envconfig:"POSTGRES_MAX_OPEN_CONNECTIONS"`
 	MaxIdleConnections int           `envconfig:"POSTGRES_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `envconfig:"POSTGRES_CONN_MAX_LIFETIME"`
 	ConnMaxIdleTime    time.Duration `envconfig:"POSTGRES_CONN_MAX_IDLE_TIME"`

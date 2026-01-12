@@ -6,6 +6,7 @@ import (
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/database"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,14 +18,16 @@ type MotherService interface {
 	GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, error)
 }
 
-func NewMotherService(motherServiceRepo repository.MotherServiceRepository, eventProducer provider.EventProducer) MotherService {
+func NewMotherService(db database.Database, motherServiceRepo repository.MotherServiceRepository, eventProducer provider.EventProducer) MotherService {
 	return &motherService{
+		db,
 		motherServiceRepo,
 		eventProducer,
 	}
 }
 
 type motherService struct {
+	db                database.Database
 	motherServiceRepo repository.MotherServiceRepository
 	eventProducer     provider.EventProducer
 }
@@ -37,14 +40,15 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 
 	motherService.Status = entity.MotherServiceStatusPending
 
-	repo := service.motherServiceRepo.Begin()
+	tx := service.db.Begin()
+	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
 	defer func() {
 		if e != nil {
-			_ = repo.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
-	err = repo.Create(ctx, motherService)
+	err = service.motherServiceRepo.Create(dbCtx, motherService)
 	if err != nil {
 		if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
 			return pkg.ErrMotherServiceAlreadyExist
@@ -63,7 +67,7 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToSendProvisioningEvent, err)
 	}
 
-	_ = repo.Commit()
+	_ = tx.Commit()
 
 	return nil
 }

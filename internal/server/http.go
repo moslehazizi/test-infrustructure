@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"log"
 
+	pslq "control-panel-service/pkg/database/postgres"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -50,12 +52,20 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		}
 	}()
 
-	db, err := postgres.OpenConnection(ctx, cfg.Postgres)
+	db, err := pslq.New(&pslq.DatabaseConfig{
+		Host:               cfg.Postgres.Host,
+		Port:               cfg.Postgres.Port,
+		User:               cfg.Postgres.User,
+		Password:           cfg.Postgres.Password,
+		Database:           cfg.Postgres.Database,
+		MaxOpenConnections: cfg.Postgres.MaxOpenConnections,
+		LogLevel:           pslq.Silent,
+	})
 	if err != nil {
 		return fmt.Errorf("could not connect to postgres: %w", err)
 	}
 
-	motherService := usecase.NewMotherService(postgres.NewMotherServiceRepository(db), eventProducer)
+	motherService := usecase.NewMotherService(db, postgres.NewMotherServiceRepository(db), eventProducer)
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 

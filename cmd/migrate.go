@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"control-panel-service/config"
-	"control-panel-service/pkg"
+	"control-panel-service/pkg/database/postgres"
 	"fmt"
 
 	"errors"
@@ -20,13 +20,17 @@ import (
 var ErrMigrationFileNameRequired = errors.New("migration name is required")
 
 func dbmateDB(cfg config.Config) *dbmate.DB {
-	connStr := pkg.GetConnectionString(pkg.DatabaseConfig{
-		Host:     cfg.Postgres.Host,
-		Port:     cfg.Postgres.Port,
-		Database: cfg.Postgres.Database,
-		User:     cfg.Postgres.User,
-		SSLMode:  cfg.Postgres.SSLMode,
-		Password: cfg.Postgres.Password,
+	connStr := postgres.GetConnectionString(&postgres.DatabaseConfig{
+		Host:               cfg.Postgres.Host,
+		Port:               cfg.Postgres.Port,
+		Database:           cfg.Postgres.Database,
+		User:               cfg.Postgres.User,
+		SSLMode:            cfg.Postgres.SSLMode,
+		Password:           cfg.Postgres.Password,
+		MaxOpenConnections: cfg.Postgres.MaxOpenConnections,
+		MaxIdleConnections: cfg.Postgres.MaxIdleConnections,
+		ConnMaxLifetime:    cfg.Postgres.ConnMaxLifetime,
+		ConnMaxIdleTime:    cfg.Postgres.ConnMaxIdleTime,
 	})
 
 	u, _ := url.Parse(connStr)

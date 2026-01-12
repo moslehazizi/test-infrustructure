@@ -3,31 +3,12 @@ package mocks
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/repository"
 
 	"github.com/stretchr/testify/mock"
 )
 
 type MockMotherService struct {
 	mock.Mock
-}
-
-func (m *MockMotherService) Begin() repository.MotherServiceRepository {
-	_ = m.Called()
-
-	return m
-}
-
-func (m *MockMotherService) Commit() error {
-	args := m.Called()
-
-	return args.Error(0)
-}
-
-func (m *MockMotherService) Rollback() error {
-	args := m.Called()
-
-	return args.Error(0)
 }
 
 func (m *MockMotherService) Create(ctx context.Context, motherService *entity.MotherService) error {
