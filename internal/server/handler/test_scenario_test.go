@@ -29,6 +29,225 @@ func TestTestServiceConfigHandler_New(t *testing.T) {
 }
 
 func TestTestScenarioHandler_Create(t *testing.T) {
+	t.Run("success case - bad values set", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios", handler.Create())
+
+		reqBody := `{
+			"name": "load1",
+			"test_category_id": 1,
+			"mother_service_id": 1,
+			"max_test_service_count": 1,
+			"execution_duration": 1,
+			"auto_step_change_rate": 1,
+			"max_requests": 1,
+			"max_duration": 1,
+			"request_delay_duration": null,
+			"random_request_delay_min": 10,
+			"random_request_delay_max": 20,
+			"fixed_test_number": null,
+			"random_test_number_min": 10,
+			"random_test_number_max": 20,
+			"bad_value_rate": 50,
+			"negative_value_rate": 10,
+			"real_value_rate": 20,
+			"zero_value_rate": 40,
+			"string_value_rate": 10,
+			"long_string_value_rate": 10,
+			"null_value_rate": 10
+    	}`
+
+		sampleUin64 := uint64(1)
+		sampleInt := 1
+		min := 10
+		max := 20
+		sampleTestScenarioRequest := &entity.TestScenario{
+			Name:                "load1",
+			TestCategoryID:      sampleUin64,
+			MotherServiceID:     sampleUin64,
+			MaxTestServiceCount: &sampleInt,
+			ExecutionDuration:   &sampleInt,
+			AutoStepChangeRate:  &sampleInt,
+		}
+		sampleTestServiceConfig := &entity.TestServiceConfig{
+			MaxRequests:           sampleInt,
+			MaxDuration:           sampleInt,
+			RandomRequestDelayMin: &min,
+			RandomRequestDelayMax: &max,
+			RandomTestNumberMin:   &min,
+			RandomTestNumberMax:   &max,
+			BadValueRate:          50,
+			NegativeValueRate:     10,
+			RealValueRate:         20,
+			ZeroValueRate:         40,
+			StringValueRate:       10,
+			LongStringValueRate:   10,
+			NullValueRate:         10,
+		}
+
+		mockSvc.On("Create", mock.Anything, sampleTestScenarioRequest, sampleTestServiceConfig).Return(nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result map[string]interface{}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
+		mockSvc.AssertExpectations(t)
+	})
+	t.Run("success case - random test number ", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios", handler.Create())
+
+		reqBody := `{
+			"name": "load1",
+			"test_category_id": 1,
+			"mother_service_id": 1,
+			"max_test_service_count": 1,
+			"execution_duration": 1,
+			"auto_step_change_rate": 1,
+			"max_requests": 1,
+			"max_duration": 1,
+			"request_delay_duration": null,
+			"random_request_delay_min": 10,
+			"random_request_delay_max": 20,
+			"fixed_test_number": null,
+			"random_test_number_min": 10,
+			"random_test_number_max": 20,
+			"bad_value_rate": 0,
+			"negative_value_rate": 0,
+			"real_value_rate": 0,
+			"zero_value_rate": 0,
+			"string_value_rate": 0,
+			"long_string_value_rate": 0,
+			"null_value_rate": 0
+    	}`
+
+		sampleUin64 := uint64(1)
+		sampleInt := 1
+		min := 10
+		max := 20
+		sampleTestScenarioRequest := &entity.TestScenario{
+			Name:                "load1",
+			TestCategoryID:      sampleUin64,
+			MotherServiceID:     sampleUin64,
+			MaxTestServiceCount: &sampleInt,
+			ExecutionDuration:   &sampleInt,
+			AutoStepChangeRate:  &sampleInt,
+		}
+		sampleTestServiceConfig := &entity.TestServiceConfig{
+			MaxRequests:           sampleInt,
+			MaxDuration:           sampleInt,
+			RandomRequestDelayMin: &min,
+			RandomRequestDelayMax: &max,
+			RandomTestNumberMin:   &min,
+			RandomTestNumberMax:   &max,
+		}
+
+		mockSvc.On("Create", mock.Anything, sampleTestScenarioRequest, sampleTestServiceConfig).Return(nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result map[string]interface{}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
+		mockSvc.AssertExpectations(t)
+	})
+	t.Run("success case - random request delay ", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios", handler.Create())
+
+		reqBody := `{
+			"name": "load1",
+			"test_category_id": 1,
+			"mother_service_id": 1,
+			"max_test_service_count": 1,
+			"execution_duration": 1,
+			"auto_step_change_rate": 1,
+			"max_requests": 1,
+			"max_duration": 1,
+			"request_delay_duration": null,
+			"random_request_delay_min": 10,
+			"random_request_delay_max": 20,
+			"fixed_test_number": 1,
+			"random_test_number_min": null,
+			"random_test_number_max": null,
+			"bad_value_rate": 0,
+			"negative_value_rate": 0,
+			"real_value_rate": 0,
+			"zero_value_rate": 0,
+			"string_value_rate": 0,
+			"long_string_value_rate": 0,
+			"null_value_rate": 0
+    	}`
+
+		sampleUin64 := uint64(1)
+		sampleInt := 1
+		min := 10
+		max := 20
+		sampleTestScenarioRequest := &entity.TestScenario{
+			Name:                "load1",
+			TestCategoryID:      sampleUin64,
+			MotherServiceID:     sampleUin64,
+			MaxTestServiceCount: &sampleInt,
+			ExecutionDuration:   &sampleInt,
+			AutoStepChangeRate:  &sampleInt,
+		}
+		sampleTestServiceConfig := &entity.TestServiceConfig{
+			MaxRequests:           sampleInt,
+			MaxDuration:           sampleInt,
+			RandomRequestDelayMin: &min,
+			RandomRequestDelayMax: &max,
+			FixedTestNumber:       &sampleInt,
+		}
+
+		mockSvc.On("Create", mock.Anything, sampleTestScenarioRequest, sampleTestServiceConfig).Return(nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result map[string]interface{}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
+		mockSvc.AssertExpectations(t)
+	})
 	t.Run("success case", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
@@ -46,8 +265,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -96,6 +315,95 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
 		mockSvc.AssertExpectations(t)
 	})
+	t.Run("success case - fill null fields in test scenario", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios", handler.Create())
+
+		reqBody := `{
+			"name": "load1",
+			"test_category_id": 1,
+			"mother_service_id": 1,
+			"max_test_service_count": null,
+			"execution_duration": null,
+			"auto_step_change_rate": null,
+			"max_requests": 1,
+			"max_duration": 1,
+			"request_delay_duration": 1,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
+			"fixed_test_number": 1,
+			"random_test_number_min": null,
+			"random_test_number_max": null,
+			"bad_value_rate": 0,
+			"negative_value_rate": 0,
+			"real_value_rate": 0,
+			"zero_value_rate": 0,
+			"string_value_rate": 0,
+			"long_string_value_rate": 0,
+			"null_value_rate": 0
+    	}`
+
+		sampleUin64 := uint64(1)
+		sampleInt := 1
+		sampleTestScenarioRequest := &entity.TestScenario{
+			Name:            "load1",
+			TestCategoryID:  sampleUin64,
+			MotherServiceID: sampleUin64,
+		}
+		sampleTestServiceConfig := &entity.TestServiceConfig{
+			MaxRequests:          sampleInt,
+			MaxDuration:          sampleInt,
+			RequestDelayDuration: &sampleInt,
+			FixedTestNumber:      &sampleInt,
+		}
+
+		mockSvc.On("Create", mock.Anything, sampleTestScenarioRequest, sampleTestServiceConfig).Return(nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result map[string]interface{}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
+		mockSvc.AssertExpectations(t)
+	})
+	t.Run("failed case - body parser bad request", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios", handler.Create())
+
+		reqBody := ``
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result map[string]interface{}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Equal(t, pkg.InvalidReqBody, result["error"])
+	})
 	t.Run("failed case - test category not found", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
@@ -113,8 +421,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -180,8 +488,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -247,8 +555,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -314,8 +622,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -381,8 +689,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -448,8 +756,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -515,8 +823,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -582,8 +890,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -649,8 +957,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -716,8 +1024,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -783,8 +1091,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -851,8 +1159,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -918,8 +1226,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -985,8 +1293,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1052,8 +1360,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1119,8 +1427,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1186,8 +1494,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1253,8 +1561,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1320,8 +1628,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1387,8 +1695,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1454,8 +1762,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1521,8 +1829,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1588,8 +1896,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1655,8 +1963,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1722,8 +2030,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1789,8 +2097,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1856,8 +2164,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1923,8 +2231,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
@@ -1990,8 +2298,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_requests": 1,
 			"max_duration": 1,
 			"request_delay_duration": 1,
-			"random_response_delay_min": null,
-			"random_response_delay_max": null,
+			"random_request_delay_min": null,
+			"random_request_delay_max": null,
 			"fixed_test_number": 1,
 			"random_test_number_min": null,
 			"random_test_number_max": null,
