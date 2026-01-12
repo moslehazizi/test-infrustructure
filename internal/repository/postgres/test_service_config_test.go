@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/repository/postgres/mocks"
+	"control-panel-service/pkg/database/postgres/mocks"
 	"errors"
 	"regexp"
 	"testing"

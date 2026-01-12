@@ -5,6 +5,8 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/database"
+	"control-panel-service/pkg/database/postgres"
 	"errors"
 	"fmt"
 
@@ -13,39 +15,17 @@ import (
 )
 
 type motherServiceRepository struct {
-	db *gorm.DB
+	db database.Database
 }
 
-func NewMotherServiceRepository(db *gorm.DB) repository.MotherServiceRepository {
+func NewMotherServiceRepository(db database.Database) repository.MotherServiceRepository {
 	return &motherServiceRepository{
 		db: db,
 	}
 }
 
-func (m *motherServiceRepository) Begin() repository.MotherServiceRepository {
-	return NewMotherServiceRepository(m.db.Begin())
-}
-
-func (m *motherServiceRepository) Commit() error {
-	err := m.db.Commit().Error
-	if err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	return nil
-}
-
-func (m *motherServiceRepository) Rollback() error {
-	err := m.db.Rollback().Error
-	if err != nil {
-		return fmt.Errorf("failed to rollback transaction: %w", err)
-	}
-
-	return nil
-}
-
 func (m *motherServiceRepository) Create(ctx context.Context, motherService *entity.MotherService) error {
-	err := m.db.WithContext(ctx).Create(motherService).Error
+	err := postgres.QueryBuilder(ctx, m.db).Create(motherService).Error
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
@@ -60,7 +40,7 @@ func (m *motherServiceRepository) Create(ctx context.Context, motherService *ent
 
 func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {
 	var motherService entity.MotherService
-	err := m.db.WithContext(ctx).First(&motherService, id).Error
+	err := postgres.QueryBuilder(ctx, m.db).First(&motherService, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, pkg.ErrMotherServiceNotFound
@@ -78,7 +58,7 @@ func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRe
 		return nil, fmt.Errorf("failed to get mother service records: %w", pkg.ErrNegativePageOrPerPageNotAllowed)
 	}
 
-	query := m.db.WithContext(ctx).Order("id DESC")
+	query := postgres.QueryBuilder(ctx, m.db).Order("id DESC")
 
 	if paginationRequest.Page > 0 && paginationRequest.PerPage > 0 {
 		offset := (paginationRequest.Page - 1) * paginationRequest.PerPage

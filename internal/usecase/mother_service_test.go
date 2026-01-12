@@ -6,18 +6,29 @@ import (
 	providerMock "control-panel-service/internal/provider/mocks"
 	"control-panel-service/internal/repository/mocks"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/database"
+	connmock "control-panel-service/pkg/database/postgres/mocks"
 	"errors"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
+
+func getMockDB(t *testing.T) database.Database {
+	mockConn := new(connmock.Connection)
+	db, _, err := mockConn.OpenConnection()
+	require.NoError(t, err)
+
+	return db
+}
 
 func TestNewMotherService(t *testing.T) {
 	mockRepo := new(mocks.MockMotherService)
 	mockEventProducer := new(providerMock.KafkaMock)
-	service := NewMotherService(mockRepo, mockEventProducer)
+	service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 	assert.NotNil(t, service)
 
@@ -32,7 +43,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -40,25 +51,21 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Begin").Return(mock.Anything)
-		mockRepo.On("Create", ctx, sampleMS).Return(nil)
-		mockRepo.On("Commit").Return(nil)
+		mockRepo.On("Create", mock.Anything, sampleMS).Return(nil)
 
 		mockEventProducer.On("SendEvent", mock.Anything, mock.Anything, "provisioning").Return(nil)
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.NoError(t, err)
-		mockRepo.AssertCalled(t, "Create", ctx, sampleMS)
-		mockRepo.AssertCalled(t, "Begin")
-		mockRepo.AssertCalled(t, "Commit")
+		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
 		mockEventProducer.AssertCalled(t, "SendEvent", mock.Anything, mock.Anything, "provisioning")
 	})
 	t.Run("failed to send kafka event => database should be rolled back", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -66,9 +73,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Begin").Return(mock.Anything)
-		mockRepo.On("Create", ctx, sampleMS).Return(nil)
-		mockRepo.On("Rollback").Return(nil)
+		mockRepo.On("Create", mock.Anything, sampleMS).Return(nil)
 
 		mockEventProducer.On("SendEvent", mock.Anything, mock.Anything, "provisioning").Return(errors.New("something went wrong"))
 
@@ -77,9 +82,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToSendProvisioningEvent)
 
-		mockRepo.AssertCalled(t, "Create", ctx, sampleMS)
-		mockRepo.AssertCalled(t, "Begin")
-		mockRepo.AssertCalled(t, "Rollback")
+		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
 
 		mockEventProducer.AssertCalled(t, "SendEvent", mock.Anything, mock.Anything, "provisioning")
 	})
@@ -88,7 +91,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -96,24 +99,20 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Begin").Return(mock.Anything)
-		mockRepo.On("Create", ctx, sampleMS).Return(pkg.ErrFailedToCreateMotherService)
-		mockRepo.On("Rollback").Return(nil)
+		mockRepo.On("Create", mock.Anything, sampleMS).Return(pkg.ErrFailedToCreateMotherService)
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToCreateMotherService)
-		mockRepo.AssertCalled(t, "Create", ctx, sampleMS)
-		mockRepo.AssertCalled(t, "Begin")
-		mockRepo.AssertCalled(t, "Rollback")
+		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
 	})
 
 	t.Run("failed case - duplicate", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -121,24 +120,20 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Begin").Return(mock.Anything)
-		mockRepo.On("Create", ctx, sampleMS).Return(pkg.ErrMotherServiceAlreadyExist)
-		mockRepo.On("Rollback").Return(nil)
+		mockRepo.On("Create", mock.Anything, sampleMS).Return(pkg.ErrMotherServiceAlreadyExist)
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMotherServiceAlreadyExist)
-		mockRepo.AssertCalled(t, "Create", ctx, sampleMS)
-		mockRepo.AssertCalled(t, "Begin")
-		mockRepo.AssertCalled(t, "Rollback")
+		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
 	})
 
 	t.Run("failed case - validation error service name is missing", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		sampleMS := &entity.MotherService{
 			DatabaseName:      "db1",
@@ -155,7 +150,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -174,7 +169,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -193,7 +188,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 		duration := 100
 
 		sampleMS := &entity.MotherService{
@@ -217,7 +212,7 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		inputID := uint64(1)
 		expectedResult := &entity.MotherService{
@@ -228,7 +223,7 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("GetByID", ctx, inputID).Return(expectedResult, nil)
+		mockRepo.On("GetByID", mock.Anything, inputID).Return(expectedResult, nil)
 
 		result, err := service.GetByID(ctx, inputID)
 
@@ -238,43 +233,43 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		assert.Equal(t, result.Status, expectedResult.Status)
 		assert.Equal(t, result.DatabaseName, expectedResult.DatabaseName)
 		assert.Equal(t, result.DatabaseTableName, expectedResult.DatabaseTableName)
-		mockRepo.AssertCalled(t, "GetByID", ctx, inputID)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, inputID)
 	})
 
 	t.Run("failed case - not found", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		inputID := uint64(1)
 
-		mockRepo.On("GetByID", ctx, inputID).Return(nil, pkg.ErrMotherServiceNotFound)
+		mockRepo.On("GetByID", mock.Anything, inputID).Return(nil, pkg.ErrMotherServiceNotFound)
 
 		result, err := service.GetByID(ctx, inputID)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrMotherServiceNotFound)
-		mockRepo.AssertCalled(t, "GetByID", ctx, inputID)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, inputID)
 	})
 
 	t.Run("failed case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		inputID := uint64(1)
 
-		mockRepo.On("GetByID", ctx, inputID).Return(nil, errors.New("failed to get mother service"))
+		mockRepo.On("GetByID", mock.Anything, inputID).Return(nil, errors.New("failed to get mother service"))
 
 		result, err := service.GetByID(ctx, inputID)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherService)
-		mockRepo.AssertCalled(t, "GetByID", ctx, inputID)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, inputID)
 	})
 }
 
@@ -283,7 +278,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
@@ -319,55 +314,55 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 			},
 		}
 
-		mockRepo.On("GetPaginated", ctx, paginationRequest).Return(expectedMotherServices, nil)
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(expectedMotherServices, nil)
 
 		result, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, expectedMotherServices, result)
-		mockRepo.AssertCalled(t, "GetPaginated", ctx, paginationRequest)
+		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
 
 	t.Run("failed case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
 			PerPage: 2,
 		}
 
-		mockRepo.On("GetPaginated", ctx, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, errors.New("failed to get mother services"))
 
 		result, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
-		mockRepo.AssertCalled(t, "GetPaginated", ctx, paginationRequest)
+		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
 
 	t.Run("failed case - negative page", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
-		service := NewMotherService(mockRepo, mockEventProducer)
+		service := NewMotherService(getMockDB(t), mockRepo, mockEventProducer)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    -1,
 			PerPage: 2,
 		}
 
-		mockRepo.On("GetPaginated", ctx, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, errors.New("failed to get mother services"))
 
 		result, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
-		mockRepo.AssertCalled(t, "GetPaginated", ctx, paginationRequest)
+		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
 }

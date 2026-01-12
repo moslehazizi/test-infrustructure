@@ -1,4 +1,4 @@
-package pkg
+package postgres
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 
 func TestGetConnectionString(t *testing.T) {
 	t.Run("ssl mode disabled", func(t *testing.T) {
-		cfg := DatabaseConfig{
+		cfg := &DatabaseConfig{
 			Host:     "localhost",
 			Port:     5432,
 			User:     "dev",
@@ -21,7 +21,7 @@ func TestGetConnectionString(t *testing.T) {
 		assert.Equal(t, str, "postgres://dev:psswd@localhost:5432/control-panel?sslmode=disable")
 	})
 	t.Run("ssl mode allow", func(t *testing.T) {
-		cfg := DatabaseConfig{
+		cfg := &DatabaseConfig{
 			Host:     "localhost",
 			Port:     5432,
 			User:     "dev",
@@ -34,7 +34,7 @@ func TestGetConnectionString(t *testing.T) {
 		assert.Equal(t, str, "postgres://dev:psswd@localhost:5432/control-panel?sslmode=allow")
 	})
 	t.Run("complicate password", func(t *testing.T) {
-		cfg := DatabaseConfig{
+		cfg := &DatabaseConfig{
 			Host:     "localhost",
 			Port:     5432,
 			User:     "dev",
