@@ -2,9 +2,11 @@ package handler
 
 import (
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -2039,4 +2041,82 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
+}
+
+func TestTestScenarioHandler_GetPaginated(t *testing.T) {
+	t.Run("success case - with nil values", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/paginated", handler.GetPaginated())
+
+		payload := entity.TestScenarioPaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
+		expectedItems := []*entity.TestScenario{
+			{
+				ID:   uint64(5),
+				Name: "load test 123",
+			},
+			{
+				ID:   uint64(4),
+				Name: "smoke test 123",
+			},
+		}
+
+		mockSvc.On("GetPaginated", mock.Anything, payload).Return(expectedItems, nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/paginated", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result struct {
+			Data    []response.TestScenario `json:"data"`
+			Page    int                     `json:"page"`
+			PerPage int                     `json:"per_page"`
+		}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, result.Data[0].Name, expectedItems[0].Name)
+		assert.Equal(t, result.Data[1].Name, expectedItems[1].Name)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("error: invalid request body", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/paginated", handler.GetPaginated())
+
+		reqBody := "invalid body"
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/paginated", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result struct {
+			Error string `json:"error"`
+		}
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Equal(t, result.Error, pkg.InvalidReqBody)
+	})
 }

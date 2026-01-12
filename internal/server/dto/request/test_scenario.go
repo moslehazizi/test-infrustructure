@@ -23,3 +23,6 @@ type TestScenario struct {
 	LongStringValueRate   int    `json:"long_string_value_rate"`
 	NullValueRate         int    `json:"null_value_rate"`
 }
+
+type TestScenarioPaginationRequest struct {
+}

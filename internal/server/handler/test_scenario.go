@@ -3,6 +3,7 @@ package handler
 import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/server/dto/request"
+	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
 	"net/http"
@@ -115,6 +116,43 @@ func (handler *TestScenario) Create() fiber.Handler {
 
 		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
 			"message": pkg.CreateTestScenarioSuccessfully,
+		})
+	}
+}
+
+func (handler *TestScenario) GetPaginated() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		req := new(request.PaginationRequest)
+		if err := ctx.BodyParser(req); err != nil {
+			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
+		}
+
+		items, err := handler.testScenario.GetPaginated(ctx.Context(), entity.TestScenarioPaginationRequest{
+			Page:    req.Page,
+			PerPage: req.PerPage,
+		})
+		_ = err
+
+		var responses []response.TestScenario
+		for _, item := range items {
+			responses = append(responses, response.TestScenario{
+				ID:                  item.ID,
+				Name:                item.Name,
+				CreatedAt:           item.CreatedAt,
+				UpdatedAt:           item.UpdatedAt,
+				TestCategoryID:      item.TestCategoryID,
+				MotherServiceID:     item.MotherServiceID,
+				Status:              item.Status,
+				MaxTestServiceCount: item.MaxTestServiceCount,
+				ExecutionDuration:   item.ExecutionDuration,
+				AutoStepChangeRate:  item.AutoStepChangeRate,
+			})
+		}
+
+		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
+			"data":     responses,
+			"page":     req.Page,
+			"per_page": req.PerPage,
 		})
 	}
 }
