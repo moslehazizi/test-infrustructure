@@ -56,14 +56,25 @@ create table if not exists test_service_configs (
 
     CONSTRAINT all_bad_values CHECK ( 
         (
-            bad_value_rate + 
-            negative_value_rate + 
-            real_value_rate + 
-            zero_value_rate + 
-            string_value_rate + 
-            long_string_value_rate + 
-            null_value_rate
-        ) <= 100
+            bad_value_rate > 0 and (
+                negative_value_rate + 
+                real_value_rate + 
+                zero_value_rate + 
+                string_value_rate + 
+                long_string_value_rate + 
+                null_value_rate
+            ) = 100
+        )
+        OR (
+            bad_value_rate = 0 and (
+                negative_value_rate + 
+                real_value_rate + 
+                zero_value_rate + 
+                string_value_rate + 
+                long_string_value_rate + 
+                null_value_rate
+            ) = 0
+        )
     ),
 
     --#endregion BAD VALUES
