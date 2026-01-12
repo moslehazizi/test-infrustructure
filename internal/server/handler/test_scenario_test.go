@@ -22,6 +22,8 @@ func TestTestServiceConfigHandler_New(t *testing.T) {
 	handler := NewTestScenarioHandler(mockSrv)
 
 	assert.NotNil(t, handler)
+
+	assert.NotNil(t, handler.testScenario)
 }
 
 func TestTestScenarioHandler_Create(t *testing.T) {
