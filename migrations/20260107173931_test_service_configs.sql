@@ -56,7 +56,6 @@ create table if not exists test_service_configs (
 
     CONSTRAINT all_bad_values CHECK ( 
         (
-            bad_value_rate + 
             negative_value_rate + 
             real_value_rate + 
             zero_value_rate + 
