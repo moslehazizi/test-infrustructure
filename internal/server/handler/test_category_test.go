@@ -32,7 +32,7 @@ func TestNewTestCategoryHandler(t *testing.T) {
 	})
 }
 
-func TestGetAll(t *testing.T) {
+func TestTestCategory_GetAll(t *testing.T) {
 	cfg, err := config.LoadConfig()
 	assert.Nil(t, err)
 
@@ -122,7 +122,7 @@ func TestGetAll(t *testing.T) {
 	})
 }
 
-func TestGetByID(t *testing.T) {
+func TestTestCategory_GetByID(t *testing.T) {
 	cfg, err := config.LoadConfig()
 	assert.Nil(t, err)
 
