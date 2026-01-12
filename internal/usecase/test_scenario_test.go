@@ -58,9 +58,11 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockRepo.On("Rollback").Return(nil)
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID: expectedID,
-			MaxRequests:    1,
-			MaxDuration:    1,
+			TestScenarioID:       expectedID,
+			MaxRequests:          1,
+			MaxDuration:          1,
+			RequestDelayDuration: &sampleInt,
+			FixedTestNumber:      &sampleInt,
 		}
 
 		mockTestServiceConfig.On("Create", ctx, testServiceConfig).Return(errors.New("error happened"))
@@ -108,9 +110,11 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockRepo.On("Commit").Return(nil)
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID: expectedID,
-			MaxRequests:    1,
-			MaxDuration:    1,
+			TestScenarioID:       expectedID,
+			MaxRequests:          1,
+			MaxDuration:          1,
+			RequestDelayDuration: &sampleInt,
+			FixedTestNumber:      &sampleInt,
 		}
 
 		mockTestServiceConfig.On("Create", ctx, testServiceConfig).Return(nil)
@@ -150,8 +154,10 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			HasAutoStepChangeRate:  true,
 		}
 		testServiceCfg := &entity.TestServiceConfig{
-			MaxRequests: 1,
-			MaxDuration: 1,
+			MaxRequests:          1,
+			MaxDuration:          1,
+			RequestDelayDuration: &sampleInt,
+			FixedTestNumber:      &sampleInt,
 		}
 
 		mockRepo.On("Begin").Return(mock.Anything)

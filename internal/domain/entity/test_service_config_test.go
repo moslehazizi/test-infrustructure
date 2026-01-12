@@ -80,12 +80,26 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrMinDelayDurationMoreThanMax)
 	})
 
+	t.Run("failed case - all delay request config couldn't be null at the same time", func(t *testing.T) {
+		testSvcCfg := TestServiceConfig{
+			MaxRequests: 1,
+			MaxDuration: 0,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidRequestDelayDurationConfig)
+	})
+
 	t.Run("failed case - invalid fixed test number", func(t *testing.T) {
 		sampleInt := -1
+		sampleUInt := 1
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:     1,
-			MaxDuration:     0,
-			FixedTestNumber: &sampleInt,
+			MaxRequests:          1,
+			MaxDuration:          0,
+			RequestDelayDuration: &sampleUInt,
+			FixedTestNumber:      &sampleInt,
 		}
 
 		err := testSvcCfg.Validate()
@@ -97,10 +111,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		sampleInt := 2
 		min := 10
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:         1,
-			MaxDuration:         0,
-			FixedTestNumber:     &sampleInt,
-			RandomTestNumberMin: &min,
+			MaxRequests:          1,
+			MaxDuration:          0,
+			RequestDelayDuration: &sampleInt,
+			FixedTestNumber:      &sampleInt,
+			RandomTestNumberMin:  &min,
 		}
 
 		err := testSvcCfg.Validate()
@@ -112,10 +127,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		min := 20
 		max := 10
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:         1,
-			MaxDuration:         0,
-			RandomTestNumberMin: &min,
-			RandomTestNumberMax: &max,
+			MaxRequests:          1,
+			MaxDuration:          0,
+			RequestDelayDuration: &min,
+			RandomTestNumberMin:  &min,
+			RandomTestNumberMax:  &max,
 		}
 
 		err := testSvcCfg.Validate()
@@ -127,16 +143,31 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		min := -10
 		max := 10
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:         1,
-			MaxDuration:         0,
-			RandomTestNumberMin: &min,
-			RandomTestNumberMax: &max,
+			MaxRequests:          1,
+			MaxDuration:          0,
+			RequestDelayDuration: &max,
+			RandomTestNumberMin:  &min,
+			RandomTestNumberMax:  &max,
 		}
 
 		err := testSvcCfg.Validate()
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrInvalidMinOrMaxRandomTestNumber)
+	})
+
+	t.Run("failed case - all fixed and random value couldn't be null at the same time", func(t *testing.T) {
+		sampleInt := 10
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:          1,
+			MaxDuration:          0,
+			RequestDelayDuration: &sampleInt,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidTestNumberConfig)
 	})
 	t.Run("failed case - bad value rate less than 0 or more than 100", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
@@ -241,5 +272,48 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		err := testSvcCfg.Validate()
 
 		assert.Nil(t, err)
+	})
+	t.Run("failed case - if bad value rate is zero - sum of all bad value should be zero", func(t *testing.T) {
+		sampleInt := 2
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:          1,
+			MaxDuration:          0,
+			RequestDelayDuration: &sampleInt,
+			FixedTestNumber:      &sampleInt,
+			BadValueRate:         0,
+			NegativeValueRate:    0,
+			RealValueRate:        0,
+			ZeroValueRate:        0,
+			StringValueRate:      1,
+			LongStringValueRate:  0,
+			NullValueRate:        0,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidZeroSumOfBadValues)
+	})
+
+	t.Run("failed case - if bad value rate not zero - sum of all bad value should be 100", func(t *testing.T) {
+		sampleInt := 2
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:          1,
+			MaxDuration:          0,
+			RequestDelayDuration: &sampleInt,
+			FixedTestNumber:      &sampleInt,
+			BadValueRate:         10,
+			NegativeValueRate:    0,
+			RealValueRate:        0,
+			ZeroValueRate:        0,
+			StringValueRate:      5,
+			LongStringValueRate:  0,
+			NullValueRate:        0,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalid100SumOfBadValues)
 	})
 }

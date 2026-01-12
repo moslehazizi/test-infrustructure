@@ -63,6 +63,9 @@ func (t *TestServiceConfig) Validate() error {
 	}
 
 	// validate delay duration between two transaction
+	if t.RequestDelayDuration == nil && t.RandomRequestDelayMax == nil && t.RandomRequestDelayMin == nil {
+		return pkg.ErrInvalidRequestDelayDurationConfig
+	}
 	if t.RequestDelayDuration != nil && *t.RequestDelayDuration < 0 {
 		return pkg.ErrInvalidRequestDelayDuration
 	}
@@ -79,6 +82,9 @@ func (t *TestServiceConfig) Validate() error {
 	}
 
 	// validate number that send via transaction - fix number or random number
+	if t.FixedTestNumber == nil && t.RandomTestNumberMin == nil && t.RandomTestNumberMax == nil {
+		return pkg.ErrInvalidTestNumberConfig
+	}
 	if t.FixedTestNumber != nil && *t.FixedTestNumber <= 0 {
 		return pkg.ErrInvalidFixedTestNumber
 	}
@@ -95,6 +101,17 @@ func (t *TestServiceConfig) Validate() error {
 		}
 		if *t.RandomTestNumberMin >= *t.RandomTestNumberMax {
 			return pkg.ErrMinRandomTestNumberMoreThanMax
+		}
+	}
+
+	if t.BadValueRate == 0 {
+		if t.NegativeValueRate+t.RealValueRate+t.StringValueRate+t.NullValueRate+t.LongStringValueRate+t.ZeroValueRate != 0 {
+			return pkg.ErrInvalidZeroSumOfBadValues
+		}
+	}
+	if t.BadValueRate > 0 {
+		if t.NegativeValueRate+t.RealValueRate+t.StringValueRate+t.NullValueRate+t.LongStringValueRate+t.ZeroValueRate != 100 {
+			return pkg.ErrInvalid100SumOfBadValues
 		}
 	}
 

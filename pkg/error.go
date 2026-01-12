@@ -179,4 +179,7 @@ var (
 	ErrInvalidStringValueRate                  = errors.New("string value rate should be between 0 and 100")
 	ErrInvalidLongStringValueRate              = errors.New("long string value rate should be between 0 and 100")
 	ErrInvalidNullValueRate                    = errors.New("null value rate should be between 0 and 100")
+	ErrInvalidTestNumberConfig                 = errors.New("invalid test number configuration")
+	ErrInvalidZeroSumOfBadValues               = errors.New("sum of all bad values rate should be 0 if bad value rate field is zero")
+	ErrInvalid100SumOfBadValues                = errors.New("sum of all bad values should be 100 if bad value field has value")
 )
