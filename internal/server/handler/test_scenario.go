@@ -36,18 +36,21 @@ func (handler *TestScenario) Create() fiber.Handler {
 				if req.MaxTestServiceCount != nil {
 					return req.MaxTestServiceCount
 				}
+
 				return nil
 			}(),
 			ExecutionDuration: func() *int {
 				if req.ExecutionDuration != nil {
 					return req.ExecutionDuration
 				}
+
 				return nil
 			}(),
 			AutoStepChangeRate: func() *int {
 				if req.AutoStepChangeRate != nil {
 					return req.AutoStepChangeRate
 				}
+
 				return nil
 			}(),
 		}
