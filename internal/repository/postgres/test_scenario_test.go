@@ -124,19 +124,23 @@ func TestGetByID(t *testing.T) {
 		require.NoError(t, err)
 		repo := NewTestScenarioRepository(db)
 
-		now := time.Now()
-
+		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Local)
+		num := 10
 		expectedTestScenario := &entity.TestScenario{
-			ID:              uint64(1),
-			CreatedAt:       now,
-			UpdatedAt:       now,
-			Name:            "some test",
-			TestCategoryID:  uint64(3),
-			MotherServiceID: uint64(2),
+			ID:                  1,
+			CreatedAt:           someTime,
+			UpdatedAt:           someTime,
+			Name:                "some test",
+			Status:              entity.ScenarioStatusPending,
+			MaxTestServiceCount: nil,
+			ExecutionDuration:   nil,
+			AutoStepChangeRate:  nil,
+			TestCategoryID:      3,
+			MotherServiceID:     2,
 			TestCategory: &entity.TestCategory{
 				ID:                     3,
-				CreatedAt:              now,
-				UpdatedAt:              now,
+				CreatedAt:              someTime,
+				UpdatedAt:              someTime,
 				Name:                   "peak",
 				Label:                  "peak test",
 				HasMaxTestServiceCount: true,
@@ -147,10 +151,27 @@ func TestGetByID(t *testing.T) {
 				ID:   2,
 				Name: "m2",
 			},
-			Status:              entity.ScenarioStatusPending,
-			MaxTestServiceCount: nil,
-			ExecutionDuration:   nil,
-			AutoStepChangeRate:  nil,
+			TestServiceConfig: &entity.TestServiceConfig{
+				ID:                    100,
+				TestScenarioID:        1,
+				CreatedAt:             someTime,
+				UpdatedAt:             someTime,
+				MaxRequests:           100,
+				MaxDuration:           0,
+				RequestDelayDuration:  nil,
+				RandomRequestDelayMin: nil,
+				RandomRequestDelayMax: nil,
+				FixedTestNumber:       &num,
+				RandomTestNumberMin:   nil,
+				RandomTestNumberMax:   nil,
+				BadValueRate:          0,
+				NegativeValueRate:     0,
+				RealValueRate:         0,
+				ZeroValueRate:         0,
+				StringValueRate:       0,
+				LongStringValueRate:   0,
+				NullValueRate:         0,
+			},
 		}
 
 		mock.ExpectQuery(regexp.QuoteMeta(
@@ -195,20 +216,63 @@ func TestGetByID(t *testing.T) {
 			"has_auto_step_change_rate",
 		}).AddRow(
 			3,
-			now,
-			now,
+			someTime,
+			someTime,
 			"peak",
 			"peak test",
 			true,
 			true,
 			false,
 		))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_service_configs" WHERE "test_service_configs"."test_scenario_id" = $1`)).WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"created_at",
+			"updated_at",
+			"test_scenario_id",
+			"max_requests",
+			"max_duration",
+			"request_delay_duration",
+			"random_request_delay_min",
+			"random_request_delay_max",
+			"fixed_test_number",
+			"random_test_number_min",
+			"random_test_number_max",
+			"bad_value_rate",
+			"negative_value_rate",
+			"real_value_rate",
+			"zero_value_rate",
+			"string_value_rate",
+			"long_string_value_rate",
+			"null_value_rate",
+		}).AddRow(
+			100,
+			someTime,
+			someTime,
+			1,
+			100,
+			0,
+			nil,
+			nil,
+			nil,
+			10,
+			nil,
+			nil,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+		))
+
 		result, err := repo.GetByID(context.Background(), uint64(1))
 
+		require.NoError(t, mock.ExpectationsWereMet())
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, expectedTestScenario, result)
-		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("failed case - record not found", func(t *testing.T) {

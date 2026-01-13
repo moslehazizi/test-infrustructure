@@ -2731,6 +2731,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		cnt := 100
 		rate := 50
 		exe := 500000
+		num := 10
 
 		srv := new(mocks.MockTestScenario)
 		item := &entity.TestScenario{
@@ -2771,6 +2772,27 @@ func TestTestScenario_GetByID(t *testing.T) {
 				}(),
 				DatabaseName:      "m200",
 				DatabaseTableName: "t200",
+			},
+			TestServiceConfig: &entity.TestServiceConfig{
+				ID:                    100,
+				TestScenarioID:        1,
+				CreatedAt:             someTime,
+				UpdatedAt:             someTime,
+				MaxRequests:           100,
+				MaxDuration:           0,
+				RequestDelayDuration:  nil,
+				RandomRequestDelayMin: nil,
+				RandomRequestDelayMax: nil,
+				FixedTestNumber:       &num,
+				RandomTestNumberMin:   nil,
+				RandomTestNumberMax:   nil,
+				BadValueRate:          0,
+				NegativeValueRate:     0,
+				RealValueRate:         0,
+				ZeroValueRate:         0,
+				StringValueRate:       0,
+				LongStringValueRate:   0,
+				NullValueRate:         0,
 			},
 		}
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
@@ -2825,6 +2847,26 @@ func TestTestScenario_GetByID(t *testing.T) {
 				DatabaseName:      "m200",
 				DatabaseTableName: "t200",
 			},
+			TestServiceConfig: &response.TestServiceConfig{
+				ID:                    100,
+				CreatedAt:             someTime,
+				UpdatedAt:             someTime,
+				MaxRequests:           100,
+				MaxDuration:           0,
+				RequestDelayDuration:  nil,
+				RandomRequestDelayMin: nil,
+				RandomRequestDelayMax: nil,
+				FixedTestNumber:       &num,
+				RandomTestNumberMin:   nil,
+				RandomTestNumberMax:   nil,
+				BadValueRate:          0,
+				NegativeValueRate:     0,
+				RealValueRate:         0,
+				ZeroValueRate:         0,
+				StringValueRate:       0,
+				LongStringValueRate:   0,
+				NullValueRate:         0,
+			},
 		}
 
 		var got response.TestScenario
@@ -2852,6 +2894,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 			MotherServiceID:     200,
 			TestCategory:        nil,
 			MotherService:       nil,
+			TestServiceConfig:   nil,
 		}
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
 		h := NewTestScenarioHandler(srv)
@@ -2879,6 +2922,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 			ExecutionDuration:   &exe,
 			TestCategory:        nil,
 			MotherService:       nil,
+			TestServiceConfig:   nil,
 		}
 
 		var got response.TestScenario

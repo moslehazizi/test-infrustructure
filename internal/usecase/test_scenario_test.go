@@ -417,6 +417,8 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig)
 
+		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Local)
+		num := 10
 		sampleInt := 1
 		sampleID := uint64(4)
 		expectedTestScenario := &entity.TestScenario{
@@ -428,8 +430,8 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 				ID:                     1,
 				Name:                   "load",
 				Label:                  "Load Test",
-				CreatedAt:              time.Now(),
-				UpdatedAt:              time.Now(),
+				CreatedAt:              someTime,
+				UpdatedAt:              someTime,
 				HasMaxTestServiceCount: true,
 				HasExecutionDuration:   true,
 				HasAutoStepChangeRate:  false,
@@ -442,6 +444,27 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 			MaxTestServiceCount: &sampleInt,
 			ExecutionDuration:   &sampleInt,
 			AutoStepChangeRate:  &sampleInt,
+			TestServiceConfig: &entity.TestServiceConfig{
+				ID:                    100,
+				TestScenarioID:        1,
+				CreatedAt:             someTime,
+				UpdatedAt:             someTime,
+				MaxRequests:           100,
+				MaxDuration:           0,
+				RequestDelayDuration:  nil,
+				RandomRequestDelayMin: nil,
+				RandomRequestDelayMax: nil,
+				FixedTestNumber:       &num,
+				RandomTestNumberMin:   nil,
+				RandomTestNumberMax:   nil,
+				BadValueRate:          0,
+				NegativeValueRate:     0,
+				RealValueRate:         0,
+				ZeroValueRate:         0,
+				StringValueRate:       0,
+				LongStringValueRate:   0,
+				NullValueRate:         0,
+			},
 		}
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(expectedTestScenario, nil)

@@ -39,6 +39,7 @@ func (repo *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestS
 	err := postgres.QueryBuilder(ctx, repo.db).
 		Preload("TestCategory").
 		Preload("MotherService").
+		Preload("TestServiceConfig").
 		First(&testScenario, id).Error
 	_ = err
 	if err != nil {

@@ -258,6 +258,32 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 					DatabaseTableName:        svcResult.MotherService.DatabaseTableName,
 				}
 			}(),
+			TestServiceConfig: func() *response.TestServiceConfig {
+				if svcResult.TestServiceConfig == nil {
+					return nil
+				}
+
+				return &response.TestServiceConfig{
+					ID:                    svcResult.TestServiceConfig.ID,
+					CreatedAt:             svcResult.TestServiceConfig.CreatedAt,
+					UpdatedAt:             svcResult.TestServiceConfig.UpdatedAt,
+					MaxRequests:           svcResult.TestServiceConfig.MaxRequests,
+					MaxDuration:           svcResult.TestServiceConfig.MaxDuration,
+					RequestDelayDuration:  svcResult.TestServiceConfig.RequestDelayDuration,
+					RandomRequestDelayMin: svcResult.TestServiceConfig.RandomRequestDelayMin,
+					RandomRequestDelayMax: svcResult.TestServiceConfig.RandomRequestDelayMax,
+					FixedTestNumber:       svcResult.TestServiceConfig.FixedTestNumber,
+					RandomTestNumberMin:   svcResult.TestServiceConfig.RandomTestNumberMin,
+					RandomTestNumberMax:   svcResult.TestServiceConfig.RandomTestNumberMax,
+					BadValueRate:          svcResult.TestServiceConfig.BadValueRate,
+					NegativeValueRate:     svcResult.TestServiceConfig.NegativeValueRate,
+					RealValueRate:         svcResult.TestServiceConfig.RealValueRate,
+					ZeroValueRate:         svcResult.TestServiceConfig.ZeroValueRate,
+					StringValueRate:       svcResult.TestServiceConfig.StringValueRate,
+					LongStringValueRate:   svcResult.TestServiceConfig.LongStringValueRate,
+					NullValueRate:         svcResult.TestServiceConfig.NullValueRate,
+				}
+			}(),
 		}
 
 		return ctx.Status(http.StatusOK).JSON(responses)

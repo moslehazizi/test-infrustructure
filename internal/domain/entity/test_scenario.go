@@ -19,19 +19,20 @@ const (
 )
 
 type TestScenario struct {
-	ID                  uint64          `gorm:"primaryKey;autoIncrement;column:id"`
-	CreatedAt           time.Time       `gorm:"column:created_at"`
-	UpdatedAt           time.Time       `gorm:"column:updated_at"`
-	DeletedAt           *gorm.DeletedAt `gorm:"column:deleted_at"`
-	Name                string          `gorm:"column:name"`
-	TestCategoryID      uint64          `gorm:"column:test_category_id"`
-	TestCategory        *TestCategory   `gorm:"ForeignKey:TestCategoryID"`
-	MotherServiceID     uint64          `gorm:"column:mother_service_id"`
-	MotherService       *MotherService  `gorm:"ForeignKey:MotherServiceID"`
-	Status              ScenarioStatus  `gorm:"column:status"`
-	MaxTestServiceCount *int            `gorm:"column:max_test_service_count"`
-	ExecutionDuration   *int            `gorm:"column:execution_duration"`
-	AutoStepChangeRate  *int            `gorm:"column:auto_step_change_rate"`
+	ID                  uint64             `gorm:"primaryKey;autoIncrement;column:id"`
+	CreatedAt           time.Time          `gorm:"column:created_at"`
+	UpdatedAt           time.Time          `gorm:"column:updated_at"`
+	DeletedAt           *gorm.DeletedAt    `gorm:"column:deleted_at"`
+	Name                string             `gorm:"column:name"`
+	TestCategoryID      uint64             `gorm:"column:test_category_id"`
+	TestCategory        *TestCategory      `gorm:"ForeignKey:TestCategoryID"`
+	MotherServiceID     uint64             `gorm:"column:mother_service_id"`
+	MotherService       *MotherService     `gorm:"ForeignKey:MotherServiceID"`
+	Status              ScenarioStatus     `gorm:"column:status"`
+	MaxTestServiceCount *int               `gorm:"column:max_test_service_count"`
+	ExecutionDuration   *int               `gorm:"column:execution_duration"`
+	AutoStepChangeRate  *int               `gorm:"column:auto_step_change_rate"`
+	TestServiceConfig   *TestServiceConfig `gorm:"ForeignKey:TestScenarioID"`
 }
 
 func (TestScenario) TableName() string {
