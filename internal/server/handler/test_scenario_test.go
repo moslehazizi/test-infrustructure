@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase/mocks"
@@ -2636,5 +2637,253 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		json.Unmarshal(bts, &got)
 
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+}
+
+func TestTestScenario_GetByID(t *testing.T) {
+	_, err := config.LoadConfig()
+	assert.Nil(t, err)
+
+	t.Run("error: missing id in param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Get("/test-scenarios", h.GetByID())
+
+		req := httptest.NewRequest(http.MethodGet, "/test-scenarios", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+	t.Run("error: invalid id data in param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Get("/test-scenarios/:id", h.GetByID())
+
+		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/invalid", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response struct {
+			Error string `json:"error"`
+		}
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
+	})
+
+	t.Run("error on getting data from service layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		var want *entity.TestScenario
+		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, errors.New("something went wrong"))
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Get("/test-scenarios/:id", h.GetByID())
+
+		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/1", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+	t.Run("error item not found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		var want *entity.TestScenario
+		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Get("/test-scenarios/:id", h.GetByID())
+
+		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/1", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response struct {
+			Error string `json:"error"`
+		}
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
+	})
+	t.Run("success case", func(t *testing.T) {
+		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.Local)
+		cnt := 100
+		rate := 50
+		exe := 500000
+
+		srv := new(mocks.MockTestScenario)
+		item := &entity.TestScenario{
+			ID:                  1,
+			Name:                "load test 123",
+			CreatedAt:           someTime,
+			UpdatedAt:           someTime,
+			Status:              entity.ScenarioStatusPending,
+			MaxTestServiceCount: &cnt,
+			AutoStepChangeRate:  &rate,
+			ExecutionDuration:   &exe,
+			TestCategoryID:      100,
+			MotherServiceID:     200,
+			TestCategory: &entity.TestCategory{
+				ID:                     100,
+				Name:                   "load",
+				Label:                  "Load Test",
+				CreatedAt:              someTime,
+				UpdatedAt:              someTime,
+				HasMaxTestServiceCount: true,
+				HasExecutionDuration:   true,
+				HasAutoStepChangeRate:  false,
+			},
+			MotherService: &entity.MotherService{
+				ID:                     200,
+				CreatedAt:              someTime,
+				UpdatedAt:              someTime,
+				Name:                   "mother200",
+				ExceptionRate:          0,
+				ResponseDelayRate:      0,
+				ResponseDelayDuration:  nil,
+				RandomResponseDelayMin: nil,
+				RandomResponseDelayMax: nil,
+				Status:                 entity.MotherServiceStatusRunning,
+				ServiceDeploymentAddress: func() *string {
+					addr := "m200.svc"
+					return &addr
+				}(),
+				DatabaseName:      "m200",
+				DatabaseTableName: "t200",
+			},
+		}
+		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Get("/test-scenarios/:id", h.GetByID())
+
+		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/1", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		bts, _ := io.ReadAll(resp.Body)
+
+		expected := response.TestScenario{
+			ID:                  1,
+			Name:                "load test 123",
+			CreatedAt:           someTime,
+			UpdatedAt:           someTime,
+			Status:              entity.ScenarioStatusPending,
+			MaxTestServiceCount: &cnt,
+			AutoStepChangeRate:  &rate,
+			ExecutionDuration:   &exe,
+			TestCategory: &response.TestCategory{
+				ID:                     100,
+				Name:                   "load",
+				Label:                  "Load Test",
+				CreatedAt:              someTime,
+				UpdatedAt:              someTime,
+				HasMaxTestServiceCount: true,
+				HasExecutionDuration:   true,
+				HasAutoStepChangeRate:  false,
+			},
+			MotherService: &response.MotherService{
+				ID:                     200,
+				CreatedAt:              someTime,
+				UpdatedAt:              someTime,
+				Name:                   "mother200",
+				ExceptionRate:          0,
+				ResponseDelayRate:      0,
+				ResponseDelayDuration:  nil,
+				RandomResponseDelayMin: nil,
+				RandomResponseDelayMax: nil,
+				Status:                 entity.MotherServiceStatusRunning,
+				ServiceDeploymentAddress: func() *string {
+					addr := "m200.svc"
+					return &addr
+				}(),
+				DatabaseName:      "m200",
+				DatabaseTableName: "t200",
+			},
+		}
+
+		var got response.TestScenario
+		err = json.Unmarshal(bts, &got)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, got)
+	})
+	t.Run("success case => category and mother service are null", func(t *testing.T) {
+		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.Local)
+		cnt := 100
+		rate := 50
+		exe := 500000
+
+		srv := new(mocks.MockTestScenario)
+		item := &entity.TestScenario{
+			ID:                  1,
+			Name:                "load test 123",
+			CreatedAt:           someTime,
+			UpdatedAt:           someTime,
+			Status:              entity.ScenarioStatusPending,
+			MaxTestServiceCount: &cnt,
+			AutoStepChangeRate:  &rate,
+			ExecutionDuration:   &exe,
+			TestCategoryID:      100,
+			MotherServiceID:     200,
+			TestCategory:        nil,
+			MotherService:       nil,
+		}
+		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Get("/test-scenarios/:id", h.GetByID())
+
+		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/1", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		bts, _ := io.ReadAll(resp.Body)
+
+		expected := response.TestScenario{
+			ID:                  1,
+			Name:                "load test 123",
+			CreatedAt:           someTime,
+			UpdatedAt:           someTime,
+			Status:              entity.ScenarioStatusPending,
+			MaxTestServiceCount: &cnt,
+			AutoStepChangeRate:  &rate,
+			ExecutionDuration:   &exe,
+			TestCategory:        nil,
+			MotherService:       nil,
+		}
+
+		var got response.TestScenario
+		err = json.Unmarshal(bts, &got)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, got)
 	})
 }

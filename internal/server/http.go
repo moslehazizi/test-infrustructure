@@ -86,6 +86,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	// test scenario
 	apiV1.Post("/test-scenarios", testScenarioHandler.Create())
+	apiV1.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
 	apiV1.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)

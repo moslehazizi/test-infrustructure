@@ -7,6 +7,7 @@ import (
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
 	"net/http"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -191,5 +192,74 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 			Page:    req.Page,
 			PerPage: req.PerPage,
 		})
+	}
+}
+
+func (handler *TestScenario) GetByID() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		idParam := ctx.Params("id")
+		if idParam == "" {
+			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
+		}
+
+		id, err := strconv.ParseUint(idParam, 10, 64)
+		if err != nil {
+			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
+		}
+
+		svcResult, err := handler.testScenario.GetByID(ctx.Context(), id)
+		if err != nil {
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
+
+		responses := response.TestScenario{
+			ID:                  svcResult.ID,
+			CreatedAt:           svcResult.CreatedAt,
+			UpdatedAt:           svcResult.UpdatedAt,
+			Name:                svcResult.Name,
+			Status:              svcResult.Status,
+			MaxTestServiceCount: svcResult.MaxTestServiceCount,
+			ExecutionDuration:   svcResult.ExecutionDuration,
+			AutoStepChangeRate:  svcResult.AutoStepChangeRate,
+			TestCategory: func() *response.TestCategory {
+				if svcResult.TestCategory == nil {
+					return nil
+				}
+
+				return &response.TestCategory{
+					ID:                     svcResult.TestCategory.ID,
+					Name:                   svcResult.TestCategory.Name,
+					Label:                  svcResult.TestCategory.Label,
+					HasMaxTestServiceCount: svcResult.TestCategory.HasMaxTestServiceCount,
+					HasExecutionDuration:   svcResult.TestCategory.HasExecutionDuration,
+					HasAutoStepChangeRate:  svcResult.TestCategory.HasAutoStepChangeRate,
+					CreatedAt:              svcResult.TestCategory.CreatedAt,
+					UpdatedAt:              svcResult.TestCategory.UpdatedAt,
+				}
+			}(),
+			MotherService: func() *response.MotherService {
+				if svcResult.MotherService == nil {
+					return nil
+				}
+
+				return &response.MotherService{
+					ID:                       svcResult.MotherService.ID,
+					CreatedAt:                svcResult.MotherService.CreatedAt,
+					UpdatedAt:                svcResult.MotherService.UpdatedAt,
+					Name:                     svcResult.MotherService.Name,
+					ExceptionRate:            svcResult.MotherService.ExceptionRate,
+					ResponseDelayRate:        svcResult.MotherService.ResponseDelayRate,
+					ResponseDelayDuration:    svcResult.MotherService.ResponseDelayDuration,
+					RandomResponseDelayMin:   svcResult.MotherService.RandomResponseDelayMin,
+					RandomResponseDelayMax:   svcResult.MotherService.RandomResponseDelayMax,
+					Status:                   svcResult.MotherService.Status,
+					ServiceDeploymentAddress: svcResult.MotherService.ServiceDeploymentAddress,
+					DatabaseName:             svcResult.MotherService.DatabaseName,
+					DatabaseTableName:        svcResult.MotherService.DatabaseTableName,
+				}
+			}(),
+		}
+
+		return ctx.Status(http.StatusOK).JSON(responses)
 	}
 }
