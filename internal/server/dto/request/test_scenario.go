@@ -7,7 +7,7 @@ type TestScenario struct {
 	MaxTestServiceCount *int                      `json:"max_test_service_count"`
 	ExecutionDuration   *int                      `json:"execution_duration"`
 	AutoStepChangeRate  *int                      `json:"auto_step_change_rate"`
-	Config              *TestServiceConfigRequest `json:"config"`
+	Config              *TestServiceConfigRequest `json:"test_service_config"`
 }
 
 type TestServiceConfigRequest struct {

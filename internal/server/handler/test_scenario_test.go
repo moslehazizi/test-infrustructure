@@ -46,7 +46,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": null,
@@ -126,7 +126,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": null,
@@ -199,7 +199,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": null,
@@ -271,7 +271,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -340,7 +340,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": null,
 			"execution_duration": null,
 			"auto_step_change_rate": null,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -431,7 +431,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -500,7 +500,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -569,7 +569,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -638,7 +638,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -707,7 +707,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -776,7 +776,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -845,7 +845,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -914,7 +914,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -983,7 +983,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1052,7 +1052,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1121,7 +1121,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1191,7 +1191,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1260,7 +1260,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1329,7 +1329,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1398,7 +1398,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1467,7 +1467,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1536,7 +1536,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1605,7 +1605,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1674,7 +1674,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1743,7 +1743,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1812,7 +1812,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1881,7 +1881,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -1950,7 +1950,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -2019,7 +2019,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -2088,7 +2088,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -2157,7 +2157,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -2226,7 +2226,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -2295,7 +2295,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
@@ -2364,7 +2364,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"config": {
+			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
 				"request_delay_duration": 1,
