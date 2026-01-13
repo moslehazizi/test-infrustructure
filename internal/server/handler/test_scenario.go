@@ -122,7 +122,7 @@ func (handler *TestScenario) Create() fiber.Handler {
 
 func (handler *TestScenario) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		req := new(request.PaginationRequest)
+		req := new(request.TestScenarioPaginationRequest)
 		if err := ctx.BodyParser(req); err != nil {
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
