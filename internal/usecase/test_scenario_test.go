@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -419,10 +420,24 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		sampleInt := 1
 		sampleID := uint64(4)
 		expectedTestScenario := &entity.TestScenario{
-			ID:                  sampleID,
-			Name:                "load1",
-			TestCategoryID:      uint64(1),
-			MotherServiceID:     uint64(2),
+			ID:              sampleID,
+			Name:            "load1",
+			TestCategoryID:  uint64(1),
+			MotherServiceID: uint64(2),
+			TestCategory: &entity.TestCategory{
+				ID:                     1,
+				Name:                   "load",
+				Label:                  "Load Test",
+				CreatedAt:              time.Now(),
+				UpdatedAt:              time.Now(),
+				HasMaxTestServiceCount: true,
+				HasExecutionDuration:   true,
+				HasAutoStepChangeRate:  false,
+			},
+			MotherService: &entity.MotherService{
+				ID:   2,
+				Name: "m2",
+			},
 			Status:              entity.ScenarioStatusSucceed,
 			MaxTestServiceCount: &sampleInt,
 			ExecutionDuration:   &sampleInt,
@@ -435,6 +450,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
+		assert.Equal(t, expectedTestScenario, result)
 		assert.Equal(t, expectedTestScenario.ID, result.ID)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertExpectations(t)
@@ -516,20 +532,48 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		}
 		expectedResult := []*entity.TestScenario{
 			{
-				ID:                  uint64(2),
-				Name:                "load1",
-				TestCategoryID:      uint64(1),
-				MotherServiceID:     uint64(2),
+				ID:              uint64(2),
+				Name:            "load1",
+				TestCategoryID:  uint64(1),
+				MotherServiceID: uint64(2),
+				TestCategory: &entity.TestCategory{
+					ID:                     1,
+					Name:                   "load",
+					Label:                  "Load Test",
+					CreatedAt:              time.Now(),
+					UpdatedAt:              time.Now(),
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   2,
+					Name: "m2",
+				},
 				Status:              entity.ScenarioStatusSucceed,
 				MaxTestServiceCount: &sampleInt,
 				ExecutionDuration:   &sampleInt,
 				AutoStepChangeRate:  &sampleInt,
 			},
 			{
-				ID:                  uint64(1),
-				Name:                "smoke2",
-				TestCategoryID:      uint64(1),
-				MotherServiceID:     uint64(2),
+				ID:              uint64(1),
+				Name:            "smoke2",
+				TestCategoryID:  uint64(1),
+				MotherServiceID: uint64(2),
+				TestCategory: &entity.TestCategory{
+					ID:                     1,
+					Name:                   "load",
+					Label:                  "Load Test",
+					CreatedAt:              time.Now(),
+					UpdatedAt:              time.Now(),
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   2,
+					Name: "m2",
+				},
 				Status:              entity.ScenarioStatusSucceed,
 				MaxTestServiceCount: &sampleInt,
 				ExecutionDuration:   &sampleInt,
@@ -545,13 +589,7 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Equal(t, len(result), 2)
 
-		assert.Equal(t, expectedResult[0].ID, result[0].ID)
-		assert.Equal(t, expectedResult[0].Name, result[0].Name)
-		assert.Equal(t, expectedResult[0].MotherServiceID, result[0].MotherServiceID)
-
-		assert.Equal(t, expectedResult[1].ID, result[1].ID)
-		assert.Equal(t, expectedResult[1].Name, result[1].Name)
-		assert.Equal(t, expectedResult[1].MotherServiceID, result[1].MotherServiceID)
+		assert.Equal(t, expectedResult, result)
 
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, pagReq)
 		mockRepo.AssertExpectations(t)
