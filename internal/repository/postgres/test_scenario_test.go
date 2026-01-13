@@ -127,12 +127,26 @@ func TestGetByID(t *testing.T) {
 		now := time.Now()
 
 		expectedTestScenario := &entity.TestScenario{
-			ID:                  uint64(1),
-			CreatedAt:           now,
-			UpdatedAt:           now,
-			Name:                "load1",
-			TestCategoryID:      uint64(3),
-			MotherServiceID:     uint64(2),
+			ID:              uint64(1),
+			CreatedAt:       now,
+			UpdatedAt:       now,
+			Name:            "some test",
+			TestCategoryID:  uint64(3),
+			MotherServiceID: uint64(2),
+			TestCategory: &entity.TestCategory{
+				ID:                     3,
+				CreatedAt:              now,
+				UpdatedAt:              now,
+				Name:                   "peak",
+				Label:                  "peak test",
+				HasMaxTestServiceCount: true,
+				HasExecutionDuration:   true,
+				HasAutoStepChangeRate:  false,
+			},
+			MotherService: &entity.MotherService{
+				ID:   2,
+				Name: "m2",
+			},
 			Status:              entity.ScenarioStatusPending,
 			MaxTestServiceCount: nil,
 			ExecutionDuration:   nil,
@@ -162,18 +176,38 @@ func TestGetByID(t *testing.T) {
 					expectedTestScenario.AutoStepChangeRate,
 				))
 
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL`)).WithArgs(2).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"name",
+		}).AddRow(
+			2,
+			"m2",
+		))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" WHERE "test_categories"."id" = $1`)).WithArgs(3).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"created_at",
+			"updated_at",
+			"name",
+			"label",
+			"has_max_test_service_count",
+			"has_execution_duration",
+			"has_auto_step_change_rate",
+		}).AddRow(
+			3,
+			now,
+			now,
+			"peak",
+			"peak test",
+			true,
+			true,
+			false,
+		))
 		result, err := repo.GetByID(context.Background(), uint64(1))
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, expectedTestScenario.ID, result.ID)
-		assert.Equal(t, expectedTestScenario.Name, result.Name)
-		assert.Equal(t, expectedTestScenario.TestCategoryID, result.TestCategoryID)
-		assert.Equal(t, expectedTestScenario.MotherServiceID, result.MotherServiceID)
-		assert.Equal(t, expectedTestScenario.Status, result.Status)
-		assert.Equal(t, expectedTestScenario.MaxTestServiceCount, result.MaxTestServiceCount)
-		assert.Equal(t, expectedTestScenario.ExecutionDuration, result.ExecutionDuration)
-		assert.Equal(t, expectedTestScenario.AutoStepChangeRate, result.AutoStepChangeRate)
+		assert.Equal(t, expectedTestScenario, result)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -227,24 +261,52 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                  uint64(5),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load1",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              5,
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "the test",
+				TestCategoryID:  4,
+				MotherServiceID: 3,
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(4),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "smoke1",
-				TestCategoryID:      uint64(5),
-				MotherServiceID:     uint64(4),
+				ID:              uint64(4),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "new test",
+				TestCategoryID:  uint64(5),
+				MotherServiceID: uint64(4),
+				TestCategory: &entity.TestCategory{
+					ID:                     5,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "spike",
+					Label:                  "spike test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   4,
+					Name: "m4",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
@@ -257,6 +319,7 @@ func TestGetPaginated(t *testing.T) {
 			PerPage: 2,
 		} // LIMIT 2 (no OFFSET because offset=0)
 
+		mock.MatchExpectationsInOrder(false)
 		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1`)).
 			WithArgs(2).
@@ -293,16 +356,52 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].AutoStepChangeRate,
 				))
 
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" IN ($1,$2) AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3, 4).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"name",
+		}).AddRow(
+			3,
+			"m3",
+		).AddRow(
+			4,
+			"m4",
+		))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" WHERE "test_categories"."id" IN ($1,$2)`)).WithArgs(4, 5).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"created_at",
+			"updated_at",
+			"name",
+			"label",
+			"has_max_test_service_count",
+			"has_execution_duration",
+			"has_auto_step_change_rate",
+		}).AddRow(
+			4,
+			now,
+			now,
+			"peak",
+			"peak test",
+			true,
+			true,
+			false,
+		).AddRow(
+			5,
+			now,
+			now,
+			"spike",
+			"spike test",
+			true,
+			true,
+			false,
+		))
+
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 2)
-		assert.Equal(t, uint64(5), result[0].ID)
-		assert.Equal(t, expectedTestScenarios[0].Name, result[0].Name)
-		assert.Equal(t, uint64(4), result[1].ID)
-		assert.Equal(t, expectedTestScenarios[1].Name, result[1].Name)
-
+		assert.Equal(t, expectedTestScenarios, result)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -316,24 +415,52 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                  uint64(5),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load1",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(5),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load1",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(4),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "smoke1",
-				TestCategoryID:      uint64(5),
-				MotherServiceID:     uint64(4),
+				ID:              uint64(4),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "smoke1",
+				TestCategoryID:  uint64(5),
+				MotherServiceID: uint64(4),
+				TestCategory: &entity.TestCategory{
+					ID:                     5,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "spike",
+					Label:                  "spike test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   4,
+					Name: "m4",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
@@ -382,16 +509,53 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].AutoStepChangeRate,
 				))
 
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" IN ($1,$2) AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3, 4).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"name",
+		}).AddRow(
+			3,
+			"m3",
+		).AddRow(
+			4,
+			"m4",
+		))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" WHERE "test_categories"."id" IN ($1,$2)`)).WithArgs(4, 5).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"created_at",
+			"updated_at",
+			"name",
+			"label",
+			"has_max_test_service_count",
+			"has_execution_duration",
+			"has_auto_step_change_rate",
+		}).AddRow(
+			4,
+			now,
+			now,
+			"peak",
+			"peak test",
+			true,
+			true,
+			false,
+		).AddRow(
+			5,
+			now,
+			now,
+			"spike",
+			"spike test",
+			true,
+			true,
+			false,
+		))
+
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 2)
 
-		assert.Equal(t, expectedTestScenarios[0].ID, result[0].ID)
-		assert.Equal(t, expectedTestScenarios[0].Name, result[0].Name)
-		assert.Equal(t, expectedTestScenarios[1].ID, result[1].ID)
-		assert.Equal(t, expectedTestScenarios[1].Name, result[1].Name)
+		assert.Equal(t, expectedTestScenarios, result)
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -406,12 +570,26 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                  uint64(5),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load1",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(5),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load1",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
@@ -447,14 +625,41 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].AutoStepChangeRate,
 				))
 
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"name",
+		}).AddRow(
+			3,
+			"m3",
+		))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" WHERE "test_categories"."id" = $1`)).WithArgs(4).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"created_at",
+			"updated_at",
+			"name",
+			"label",
+			"has_max_test_service_count",
+			"has_execution_duration",
+			"has_auto_step_change_rate",
+		}).AddRow(
+			4,
+			now,
+			now,
+			"peak",
+			"peak test",
+			true,
+			true,
+			false,
+		))
+
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 1)
 
-		assert.Equal(t, expectedTestScenarios[0].ID, result[0].ID)
-		assert.Equal(t, expectedTestScenarios[0].Name, result[0].Name)
+		assert.Equal(t, expectedTestScenarios, result)
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -469,60 +674,130 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                  uint64(6),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load1",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(6),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load1",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(5),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load2",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(5),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load2",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(4),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load3",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(4),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load3",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(3),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load4",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(3),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load4",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(2),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load5",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(2),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load5",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
@@ -610,26 +885,41 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[4].AutoStepChangeRate,
 				))
 
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"name",
+		}).AddRow(
+			3,
+			"m3",
+		))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" WHERE "test_categories"."id" = $1`)).WithArgs(4).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"created_at",
+			"updated_at",
+			"name",
+			"label",
+			"has_max_test_service_count",
+			"has_execution_duration",
+			"has_auto_step_change_rate",
+		}).AddRow(
+			4,
+			now,
+			now,
+			"peak",
+			"peak test",
+			true,
+			true,
+			false,
+		))
+
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 5)
 
-		assert.Equal(t, expectedTestScenarios[0].ID, result[0].ID)
-		assert.Equal(t, expectedTestScenarios[0].Name, result[0].Name)
-
-		assert.Equal(t, expectedTestScenarios[1].ID, result[1].ID)
-		assert.Equal(t, expectedTestScenarios[1].Name, result[1].Name)
-
-		assert.Equal(t, expectedTestScenarios[2].ID, result[2].ID)
-		assert.Equal(t, expectedTestScenarios[2].Name, result[2].Name)
-
-		assert.Equal(t, expectedTestScenarios[3].ID, result[3].ID)
-		assert.Equal(t, expectedTestScenarios[3].Name, result[3].Name)
-
-		assert.Equal(t, expectedTestScenarios[4].ID, result[4].ID)
-		assert.Equal(t, expectedTestScenarios[4].Name, result[4].Name)
+		assert.Equal(t, expectedTestScenarios, result)
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -644,60 +934,130 @@ func TestGetPaginated(t *testing.T) {
 
 		expectedTestScenarios := []*entity.TestScenario{
 			{
-				ID:                  uint64(6),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load1",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(6),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load1",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(5),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load2",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(5),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load2",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(4),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load3",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(4),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load3",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(3),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load4",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(3),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load4",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
 			},
 			{
-				ID:                  uint64(2),
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				Name:                "load5",
-				TestCategoryID:      uint64(4),
-				MotherServiceID:     uint64(3),
+				ID:              uint64(2),
+				CreatedAt:       now,
+				UpdatedAt:       now,
+				Name:            "load5",
+				TestCategoryID:  uint64(4),
+				MotherServiceID: uint64(3),
+				TestCategory: &entity.TestCategory{
+					ID:                     4,
+					CreatedAt:              now,
+					UpdatedAt:              now,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherService: &entity.MotherService{
+					ID:   3,
+					Name: "m3",
+				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
@@ -784,26 +1144,41 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[4].AutoStepChangeRate,
 				))
 
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"name",
+		}).AddRow(
+			3,
+			"m3",
+		))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" WHERE "test_categories"."id" = $1`)).WithArgs(4).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"created_at",
+			"updated_at",
+			"name",
+			"label",
+			"has_max_test_service_count",
+			"has_execution_duration",
+			"has_auto_step_change_rate",
+		}).AddRow(
+			4,
+			now,
+			now,
+			"peak",
+			"peak test",
+			true,
+			true,
+			false,
+		))
+
 		result, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 5)
 
-		assert.Equal(t, expectedTestScenarios[0].ID, result[0].ID)
-		assert.Equal(t, expectedTestScenarios[0].Name, result[0].Name)
-
-		assert.Equal(t, expectedTestScenarios[1].ID, result[1].ID)
-		assert.Equal(t, expectedTestScenarios[1].Name, result[1].Name)
-
-		assert.Equal(t, expectedTestScenarios[2].ID, result[2].ID)
-		assert.Equal(t, expectedTestScenarios[2].Name, result[2].Name)
-
-		assert.Equal(t, expectedTestScenarios[3].ID, result[3].ID)
-		assert.Equal(t, expectedTestScenarios[3].Name, result[3].Name)
-
-		assert.Equal(t, expectedTestScenarios[4].ID, result[4].ID)
-		assert.Equal(t, expectedTestScenarios[4].Name, result[4].Name)
+		assert.Equal(t, expectedTestScenarios, result)
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})

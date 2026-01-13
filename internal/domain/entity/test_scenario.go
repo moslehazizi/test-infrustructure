@@ -25,7 +25,9 @@ type TestScenario struct {
 	DeletedAt           *gorm.DeletedAt `gorm:"column:deleted_at"`
 	Name                string          `gorm:"column:name"`
 	TestCategoryID      uint64          `gorm:"column:test_category_id"`
+	TestCategory        *TestCategory   `gorm:"ForeignKey:TestCategoryID"`
 	MotherServiceID     uint64          `gorm:"column:mother_service_id"`
+	MotherService       *MotherService  `gorm:"ForeignKey:MotherServiceID"`
 	Status              ScenarioStatus  `gorm:"column:status"`
 	MaxTestServiceCount *int            `gorm:"column:max_test_service_count"`
 	ExecutionDuration   *int            `gorm:"column:execution_duration"`

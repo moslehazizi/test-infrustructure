@@ -36,7 +36,10 @@ func (repo *testScenario) Create(ctx context.Context, testSci *entity.TestScenar
 
 func (repo *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error) {
 	var testScenario entity.TestScenario
-	err := postgres.QueryBuilder(ctx, repo.db).First(&testScenario, id).Error
+	err := postgres.QueryBuilder(ctx, repo.db).
+		Preload("TestCategory").
+		Preload("MotherService").
+		First(&testScenario, id).Error
 	_ = err
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -55,7 +58,10 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, pkg.ErrNegativePageOrPerPageNotAllowed)
 	}
 
-	query := postgres.QueryBuilder(ctx, repo.db).Order("id DESC")
+	query := postgres.QueryBuilder(ctx, repo.db).
+		Preload("TestCategory").
+		Preload("MotherService").
+		Order("id DESC")
 
 	if pagRequest.Page > 0 && pagRequest.PerPage > 0 {
 		offset := (pagRequest.Page - 1) * pagRequest.PerPage

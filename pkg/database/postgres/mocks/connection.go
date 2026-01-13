@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Connection struct {
@@ -26,7 +27,9 @@ func (c *Connection) OpenConnection() (database.Database, sqlmock.Sqlmock, error
 		PreferSimpleProtocol: true,
 	})
 
-	gormDB, err := gorm.Open(dialector, &gorm.Config{})
+	gormDB, err := gorm.Open(dialector, &gorm.Config{
+		Logger: logger.Discard,
+	})
 	if err != nil {
 		return nil, nil, fmt.Errorf("open gorm mock postgres connection: %w", err)
 	}
