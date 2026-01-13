@@ -131,7 +131,9 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 			Page:    req.Page,
 			PerPage: req.PerPage,
 		})
-		_ = err
+		if err != nil {
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
 
 		var responses []response.TestScenario
 		for _, item := range items {
@@ -140,19 +142,54 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 				Name:                item.Name,
 				CreatedAt:           item.CreatedAt,
 				UpdatedAt:           item.UpdatedAt,
-				TestCategoryID:      item.TestCategoryID,
-				MotherServiceID:     item.MotherServiceID,
 				Status:              item.Status,
 				MaxTestServiceCount: item.MaxTestServiceCount,
-				ExecutionDuration:   item.ExecutionDuration,
 				AutoStepChangeRate:  item.AutoStepChangeRate,
+				ExecutionDuration:   item.ExecutionDuration,
+				TestCategory: func() *response.TestCategory {
+					if item.TestCategory == nil {
+						return nil
+					}
+
+					return &response.TestCategory{
+						ID:                     item.TestCategory.ID,
+						Name:                   item.TestCategory.Name,
+						Label:                  item.TestCategory.Label,
+						HasMaxTestServiceCount: item.TestCategory.HasMaxTestServiceCount,
+						HasExecutionDuration:   item.TestCategory.HasExecutionDuration,
+						HasAutoStepChangeRate:  item.TestCategory.HasAutoStepChangeRate,
+						CreatedAt:              item.TestCategory.CreatedAt,
+						UpdatedAt:              item.TestCategory.UpdatedAt,
+					}
+				}(),
+				MotherService: func() *response.MotherService {
+					if item.MotherService == nil {
+						return nil
+					}
+
+					return &response.MotherService{
+						ID:                       item.MotherService.ID,
+						CreatedAt:                item.MotherService.CreatedAt,
+						UpdatedAt:                item.MotherService.UpdatedAt,
+						Name:                     item.MotherService.Name,
+						ExceptionRate:            item.MotherService.ExceptionRate,
+						ResponseDelayRate:        item.MotherService.ResponseDelayRate,
+						ResponseDelayDuration:    item.MotherService.ResponseDelayDuration,
+						RandomResponseDelayMin:   item.MotherService.RandomResponseDelayMin,
+						RandomResponseDelayMax:   item.MotherService.RandomResponseDelayMax,
+						Status:                   item.MotherService.Status,
+						ServiceDeploymentAddress: item.MotherService.ServiceDeploymentAddress,
+						DatabaseName:             item.MotherService.DatabaseName,
+						DatabaseTableName:        item.MotherService.DatabaseTableName,
+					}
+				}(),
 			})
 		}
 
-		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
-			"data":     responses,
-			"page":     req.Page,
-			"per_page": req.PerPage,
+		return ctx.Status(http.StatusOK).JSON(&response.Paginated[[]response.TestScenario]{
+			Data:    responses,
+			Page:    req.Page,
+			PerPage: req.PerPage,
 		})
 	}
 }

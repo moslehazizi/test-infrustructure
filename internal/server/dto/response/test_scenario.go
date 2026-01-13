@@ -6,14 +6,14 @@ import (
 )
 
 type TestScenario struct {
-	ID                  uint64                `gorm:"primaryKey;autoIncrement;column:id"`
-	CreatedAt           time.Time             `gorm:"column:created_at"`
-	UpdatedAt           time.Time             `gorm:"column:updated_at"`
-	Name                string                `gorm:"column:name"`
-	TestCategoryID      uint64                `gorm:"column:test_category_id"`
-	MotherServiceID     uint64                `gorm:"column:mother_service_id"`
-	Status              entity.ScenarioStatus `gorm:"column:status"`
-	MaxTestServiceCount *int                  `gorm:"column:max_test_service_count"`
-	ExecutionDuration   *int                  `gorm:"column:execution_duration"`
-	AutoStepChangeRate  *int                  `gorm:"column:auto_step_change_rate"`
+	ID                  uint64                `json:"id"`
+	CreatedAt           time.Time             `json:"created_at"`
+	UpdatedAt           time.Time             `json:"updated_at"`
+	Name                string                `json:"name"`
+	TestCategory        *TestCategory         `json:"test_category"`
+	MotherService       *MotherService        `json:"mother_service"`
+	Status              entity.ScenarioStatus `json:"status"`
+	MaxTestServiceCount *int                  `json:"max_test_service_count"`
+	ExecutionDuration   *int                  `json:"execution_duration"`
+	AutoStepChangeRate  *int                  `json:"auto_step_change_rate"`
 }

@@ -78,7 +78,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	// Mother service
 	apiV1.Post("/mother-services", motherHandler.Create())
 	apiV1.Get("/mother-services/:id", motherHandler.GetByID())
-	apiV1.Post("/mother-services/paginated", motherHandler.GetPaginated())
+	apiV1.Post("/mother-services/search", motherHandler.GetPaginated())
 
 	// test category
 	apiV1.Get("/test-categories", testCategoryHandler.GetAll())
@@ -86,6 +86,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	// test scenario
 	apiV1.Post("/test-scenarios", testScenarioHandler.Create())
+	apiV1.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
 

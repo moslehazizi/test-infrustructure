@@ -6,12 +6,14 @@ import (
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
@@ -2357,47 +2359,158 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		handler := NewTestScenarioHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/paginated", handler.GetPaginated())
+		app.Post("/test-scenarios/search", handler.GetPaginated())
 
 		payload := entity.TestScenarioPaginationRequest{
 			Page:    1,
 			PerPage: 2,
 		}
+		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.Local)
+
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
-		expectedItems := []*entity.TestScenario{
+
+		cnt := 100
+		rate := 50
+		exe := 500000
+		serviceResult := []*entity.TestScenario{
 			{
-				ID:   uint64(5),
-				Name: "load test 123",
+				ID:                  1,
+				Name:                "load test 123",
+				CreatedAt:           someTime,
+				UpdatedAt:           someTime,
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: &cnt,
+				AutoStepChangeRate:  &rate,
+				ExecutionDuration:   &exe,
+				TestCategoryID:      100,
+				TestCategory: &entity.TestCategory{
+					ID:                     100,
+					Name:                   "load",
+					Label:                  "Load Test",
+					CreatedAt:              someTime,
+					UpdatedAt:              someTime,
+					HasMaxTestServiceCount: true,
+					HasExecutionDuration:   true,
+					HasAutoStepChangeRate:  false,
+				},
+				MotherServiceID: 200,
+				MotherService: &entity.MotherService{
+					ID:                     200,
+					CreatedAt:              someTime,
+					UpdatedAt:              someTime,
+					Name:                   "mother200",
+					ExceptionRate:          0,
+					ResponseDelayRate:      0,
+					ResponseDelayDuration:  nil,
+					RandomResponseDelayMin: nil,
+					RandomResponseDelayMax: nil,
+					Status:                 entity.MotherServiceStatusRunning,
+					ServiceDeploymentAddress: func() *string {
+						addr := "m200.svc"
+						return &addr
+					}(),
+					DatabaseName:      "m200",
+					DatabaseTableName: "t200",
+				},
 			},
 			{
-				ID:   uint64(4),
-				Name: "smoke test 123",
+				ID:           2,
+				TestCategory: nil,
 			},
 		}
 
-		mockSvc.On("GetPaginated", mock.Anything, payload).Return(expectedItems, nil)
+		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, nil)
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/paginated", strings.NewReader(reqBody))
+		expected := response.Paginated[[]response.TestScenario]{
+			Page:    1,
+			PerPage: 2,
+			Data: []response.TestScenario{
+				{
+					ID:                  1,
+					Name:                "load test 123",
+					CreatedAt:           someTime,
+					UpdatedAt:           someTime,
+					Status:              entity.ScenarioStatusPending,
+					MaxTestServiceCount: &cnt,
+					AutoStepChangeRate:  &rate,
+					ExecutionDuration:   &exe,
+					TestCategory: &response.TestCategory{
+						ID:                     100,
+						Name:                   "load",
+						Label:                  "Load Test",
+						CreatedAt:              someTime,
+						UpdatedAt:              someTime,
+						HasMaxTestServiceCount: true,
+						HasExecutionDuration:   true,
+						HasAutoStepChangeRate:  false,
+					},
+					MotherService: &response.MotherService{
+						ID:                     200,
+						CreatedAt:              someTime,
+						UpdatedAt:              someTime,
+						Name:                   "mother200",
+						ExceptionRate:          0,
+						ResponseDelayRate:      0,
+						ResponseDelayDuration:  nil,
+						RandomResponseDelayMin: nil,
+						RandomResponseDelayMax: nil,
+						Status:                 entity.MotherServiceStatusRunning,
+						ServiceDeploymentAddress: func() *string {
+							addr := "m200.svc"
+							return &addr
+						}(),
+						DatabaseName:      "m200",
+						DatabaseTableName: "t200",
+					},
+				},
+				{
+					// this object is for testing nil checking on TestCategory and MotherService
+					ID:            2,
+					TestCategory:  nil,
+					MotherService: nil,
+				},
+			},
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result struct {
-			Data    []response.TestScenario `json:"data"`
-			Page    int                     `json:"page"`
-			PerPage int                     `json:"per_page"`
-		}
+		var got response.Paginated[[]response.TestScenario]
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
-
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
+		json.Unmarshal(bts, &got)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, result.Data[0].Name, expectedItems[0].Name)
-		assert.Equal(t, result.Data[1].Name, expectedItems[1].Name)
-		mockSvc.AssertExpectations(t)
+		assert.Equal(t, expected.Page, got.Page)
+		assert.Len(t, got.Data, 2)
+		assert.Equal(t, expected, got)
+
+		// for i, want := range expected.Data {
+		// 	assert.Equal(t, want.ID, got.Data[i].ID)
+		// 	assert.Equal(t, want.CreatedAt.Format("2006-01-02"), got.Data[i].CreatedAt.Format("2006-01-02"))
+		// 	assert.Equal(t, want.UpdatedAt.Format("2006-01-02"), got.Data[i].UpdatedAt.Format("2006-01-02"))
+		// 	assert.Equal(t, want.Status, got.Data[i].Status)
+
+		// 	assert.Equal(t, want.MaxTestServiceCount, got.Data[i].MaxTestServiceCount)
+		// 	assert.Equal(t, want.AutoStepChangeRate, got.Data[i].AutoStepChangeRate)
+		// 	assert.Equal(t, want.ExecutionDuration, got.Data[i].ExecutionDuration)
+
+		// 	if want.TestCategory != nil {
+		// 		assert.Equal(t, want.TestCategory.ID, got.Data[i].TestCategory.ID)
+		// 		assert.Equal(t, want.TestCategory.Name, got.Data[i].TestCategory.Name)
+		// 		assert.Equal(t, want.TestCategory.Label, got.Data[i].TestCategory.Label)
+		// 		assert.Equal(t, want.TestCategory.HasMaxTestServiceCount, got.Data[i].TestCategory.HasMaxTestServiceCount)
+		// 		assert.Equal(t, want.TestCategory.HasExecutionDuration, got.Data[i].TestCategory.HasExecutionDuration)
+		// 		assert.Equal(t, want.TestCategory.HasAutoStepChangeRate, got.Data[i].TestCategory.HasAutoStepChangeRate)
+		// 		assert.Equal(t, want.TestCategory.CreatedAt.Format("2006-01-02"), got.Data[i].TestCategory.CreatedAt.Format("2006-01-02"))
+		// 		assert.Equal(t, want.TestCategory.UpdatedAt.Format("2006-01-02"), got.Data[i].TestCategory.UpdatedAt.Format("2006-01-02"))
+		// 	} else {
+		// 		assert.Nil(t, got.Data[i].TestCategory)
+		// 	}
+		// }
 	})
 
 	t.Run("error: invalid request body", func(t *testing.T) {
@@ -2405,11 +2518,11 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		handler := NewTestScenarioHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/paginated", handler.GetPaginated())
+		app.Post("/test-scenarios/search", handler.GetPaginated())
 
 		reqBody := "invalid body"
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -2426,5 +2539,34 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 		assert.Equal(t, result.Error, pkg.InvalidReqBody)
+	})
+	t.Run("error from service layer", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/search", handler.GetPaginated())
+
+		payload := entity.TestScenarioPaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
+		var serviceResult []*entity.TestScenario
+
+		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, errors.New("something went wrong"))
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var got response.Paginated[[]response.TestScenario]
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+		json.Unmarshal(bts, &got)
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	})
 }
