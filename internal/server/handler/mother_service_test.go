@@ -606,7 +606,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/paginated", handler.GetPaginated())
+		app.Post("/mother-services/search", handler.GetPaginated())
 
 		sampleString := "sample"
 		sampleNum := 1
@@ -646,7 +646,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, nil)
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -674,7 +674,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/paginated", handler.GetPaginated())
+		app.Post("/mother-services/search", handler.GetPaginated())
 
 		sampleReq := request.PaginationRequest{
 			Page:    1,
@@ -704,7 +704,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, nil)
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -732,11 +732,11 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/paginated", handler.GetPaginated())
+		app.Post("/mother-services/search", handler.GetPaginated())
 
 		reqBody := `{"page": ewy,"per_page": erw}`
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -759,11 +759,11 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/paginated", handler.GetPaginated())
+		app.Post("/mother-services/search", handler.GetPaginated())
 
 		reqBody := `{"page": -1,"per_page": 3}`
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -786,7 +786,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/paginated", handler.GetPaginated())
+		app.Post("/mother-services/search", handler.GetPaginated())
 
 		sampleReq := request.PaginationRequest{
 			Page:    1,
@@ -800,7 +800,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(nil, errors.New("error happened"))
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
@@ -825,7 +825,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/paginated", handler.GetPaginated())
+		app.Post("/mother-services/search", handler.GetPaginated())
 
 		sampleReq := request.PaginationRequest{
 			Page:    0,
@@ -839,7 +839,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return([]*entity.MotherService{}, nil)
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/paginated", strings.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
