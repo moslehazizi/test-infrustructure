@@ -45,21 +45,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": null,
-			"random_request_delay_min": 10,
-			"random_request_delay_max": 20,
-			"fixed_test_number": null,
-			"random_test_number_min": 10,
-			"random_test_number_max": 20,
-			"bad_value_rate": 50,
-			"negative_value_rate": 10,
-			"real_value_rate": 20,
-			"zero_value_rate": 40,
-			"string_value_rate": 10,
-			"long_string_value_rate": 10,
-			"null_value_rate": 10
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": null,
+				"random_request_delay_min": 10,
+				"random_request_delay_max": 20,
+				"fixed_test_number": null,
+				"random_test_number_min": 10,
+				"random_test_number_max": 20,
+				"bad_value_rate": 50,
+				"negative_value_rate": 10,
+				"real_value_rate": 20,
+				"zero_value_rate": 40,
+				"string_value_rate": 10,
+				"long_string_value_rate": 10,
+				"null_value_rate": 10
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -123,21 +125,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": null,
-			"random_request_delay_min": 10,
-			"random_request_delay_max": 20,
-			"fixed_test_number": null,
-			"random_test_number_min": 10,
-			"random_test_number_max": 20,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": null,
+				"random_request_delay_min": 10,
+				"random_request_delay_max": 20,
+				"fixed_test_number": null,
+				"random_test_number_min": 10,
+				"random_test_number_max": 20,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -194,21 +198,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": null,
-			"random_request_delay_min": 10,
-			"random_request_delay_max": 20,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": null,
+				"random_request_delay_min": 10,
+				"random_request_delay_max": 20,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -250,7 +256,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success case - request delay and fixed number set", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -264,21 +270,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -317,7 +325,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("success case - fill null fields in test scenario", func(t *testing.T) {
+	t.Run("success case - don't fill null fields in test scenario", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -331,21 +339,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": null,
 			"execution_duration": null,
 			"auto_step_change_rate": null,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -420,21 +430,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -487,21 +499,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -554,21 +568,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -621,21 +637,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -688,21 +706,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -755,21 +775,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -822,21 +844,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -889,21 +913,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -956,21 +982,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1023,21 +1051,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1090,21 +1120,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1158,21 +1190,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1225,21 +1259,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1292,21 +1328,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1359,21 +1397,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1426,21 +1466,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1493,21 +1535,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1560,21 +1604,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1627,21 +1673,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1694,21 +1742,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1761,21 +1811,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1828,21 +1880,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1895,21 +1949,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -1962,21 +2018,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -2029,21 +2087,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -2096,21 +2156,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -2163,21 +2225,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -2230,21 +2294,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)
@@ -2297,21 +2363,23 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"max_test_service_count": 1,
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
-			"max_requests": 1,
-			"max_duration": 1,
-			"request_delay_duration": 1,
-			"random_request_delay_min": null,
-			"random_request_delay_max": null,
-			"fixed_test_number": 1,
-			"random_test_number_min": null,
-			"random_test_number_max": null,
-			"bad_value_rate": 0,
-			"negative_value_rate": 0,
-			"real_value_rate": 0,
-			"zero_value_rate": 0,
-			"string_value_rate": 0,
-			"long_string_value_rate": 0,
-			"null_value_rate": 0
+			"config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": 1,
+				"random_request_delay_min": null,
+				"random_request_delay_max": null,
+				"fixed_test_number": 1,
+				"random_test_number_min": null,
+				"random_test_number_max": null,
+				"bad_value_rate": 0,
+				"negative_value_rate": 0,
+				"real_value_rate": 0,
+				"zero_value_rate": 0,
+				"string_value_rate": 0,
+				"long_string_value_rate": 0,
+				"null_value_rate": 0
+			}
     	}`
 
 		sampleUin64 := uint64(1)

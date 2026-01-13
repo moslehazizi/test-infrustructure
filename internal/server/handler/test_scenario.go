@@ -56,57 +56,57 @@ func (handler *TestScenario) Create() fiber.Handler {
 			}(),
 		}
 		testSvcCfg := &entity.TestServiceConfig{
-			MaxRequests: req.MaxRequests,
-			MaxDuration: req.MaxDuration,
+			MaxRequests: req.Config.MaxRequests,
+			MaxDuration: req.Config.MaxDuration,
 			RequestDelayDuration: func() *int {
-				if req.RequestDelayDuration != nil {
-					return req.RequestDelayDuration
+				if req.Config.RequestDelayDuration != nil {
+					return req.Config.RequestDelayDuration
 				}
 
 				return nil
 			}(),
 			RandomRequestDelayMin: func() *int {
-				if req.RandomRequestDelayMin != nil {
-					return req.RandomRequestDelayMin
+				if req.Config.RandomRequestDelayMin != nil {
+					return req.Config.RandomRequestDelayMin
 				}
 
 				return nil
 			}(),
 			RandomRequestDelayMax: func() *int {
-				if req.RandomRequestDelayMax != nil {
-					return req.RandomRequestDelayMax
+				if req.Config.RandomRequestDelayMax != nil {
+					return req.Config.RandomRequestDelayMax
 				}
 
 				return nil
 			}(),
 			FixedTestNumber: func() *int {
-				if req.FixedTestNumber != nil {
-					return req.FixedTestNumber
+				if req.Config.FixedTestNumber != nil {
+					return req.Config.FixedTestNumber
 				}
 
 				return nil
 			}(),
 			RandomTestNumberMin: func() *int {
-				if req.RandomTestNumberMin != nil {
-					return req.RandomTestNumberMin
+				if req.Config.RandomTestNumberMin != nil {
+					return req.Config.RandomTestNumberMin
 				}
 
 				return nil
 			}(),
 			RandomTestNumberMax: func() *int {
-				if req.RandomTestNumberMax != nil {
-					return req.RandomTestNumberMax
+				if req.Config.RandomTestNumberMax != nil {
+					return req.Config.RandomTestNumberMax
 				}
 
 				return nil
 			}(),
-			BadValueRate:        req.BadValueRate,
-			NegativeValueRate:   req.NegativeValueRate,
-			ZeroValueRate:       req.ZeroValueRate,
-			StringValueRate:     req.StringValueRate,
-			RealValueRate:       req.RealValueRate,
-			LongStringValueRate: req.LongStringValueRate,
-			NullValueRate:       req.NullValueRate,
+			BadValueRate:        req.Config.BadValueRate,
+			NegativeValueRate:   req.Config.NegativeValueRate,
+			ZeroValueRate:       req.Config.ZeroValueRate,
+			StringValueRate:     req.Config.StringValueRate,
+			RealValueRate:       req.Config.RealValueRate,
+			LongStringValueRate: req.Config.LongStringValueRate,
+			NullValueRate:       req.Config.NullValueRate,
 		}
 
 		err := handler.testScenario.Create(ctx.Context(), testScenario, testSvcCfg)
