@@ -457,7 +457,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		assert.Equal(t, resp.StatusCode, http.StatusOK)
 		assert.NotNil(t, response)
 		assert.Equal(t, expectedSvcResp.Name, response.Data.Name)
-		assert.Equal(t, string(expectedSvcResp.Status), response.Data.Status)
+		assert.Equal(t, string(expectedSvcResp.Status), string(response.Data.Status))
 		assert.Equal(t, expectedSvcResp.DatabaseName, response.Data.DatabaseName)
 		assert.Equal(t, expectedSvcResp.DatabaseTableName, response.Data.DatabaseTableName)
 		assert.Nil(t, response.Data.ServiceDeploymentAddress)
