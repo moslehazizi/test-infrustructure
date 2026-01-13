@@ -75,7 +75,7 @@ func (service *testScenario) Create(
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
 
-	testSvcCfg.ID = testSciID
+	testSvcCfg.TestScenarioID = testSciID
 
 	err = service.testServiceConfigRepository.Create(dbCtx, testSvcCfg)
 	if err != nil {
