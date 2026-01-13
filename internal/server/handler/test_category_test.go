@@ -128,8 +128,6 @@ func TestTestCategory_GetByID(t *testing.T) {
 
 	t.Run("error: missing id in param", func(t *testing.T) {
 		srv := new(mocks.MockTestCategoryService)
-		var want *entity.TestCategory
-		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, errors.New("something went wrong"))
 		h := NewTestCategoryHandler(&cfg, srv)
 
 		app := fiber.New(fiber.Config{})
@@ -144,8 +142,6 @@ func TestTestCategory_GetByID(t *testing.T) {
 	})
 	t.Run("error: invalid id data in param", func(t *testing.T) {
 		srv := new(mocks.MockTestCategoryService)
-		var want *entity.TestCategory
-		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, errors.New("something went wrong"))
 		h := NewTestCategoryHandler(&cfg, srv)
 
 		app := fiber.New(fiber.Config{})
@@ -212,9 +208,9 @@ func TestTestCategory_GetByID(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.TestCategoryNotFound)
 	})
 	t.Run("success case", func(t *testing.T) {
-		theTime := time.Now()
+		theTime := time.Date(2026, 01, 13, 10, 06, 30, 0, time.Local)
 		srv := new(mocks.MockTestCategoryService)
-		want := &entity.TestCategory{
+		item := &entity.TestCategory{
 			ID:                     1,
 			CreatedAt:              theTime,
 			UpdatedAt:              theTime,
@@ -224,7 +220,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 			HasExecutionDuration:   true,
 			HasAutoStepChangeRate:  false,
 		}
-		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, nil)
+		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
 		h := NewTestCategoryHandler(&cfg, srv)
 
 		app := fiber.New(fiber.Config{})
@@ -239,16 +235,20 @@ func TestTestCategory_GetByID(t *testing.T) {
 
 		bts, _ := io.ReadAll(resp.Body)
 
+		want := response.TestCategory{
+			ID:                     1,
+			CreatedAt:              theTime,
+			UpdatedAt:              theTime,
+			Name:                   "load",
+			Label:                  "Load Test",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  false,
+		}
 		var got response.TestCategory
 		err = json.Unmarshal(bts, &got)
 		assert.NoError(t, err)
-		assert.Equal(t, want.ID, got.ID)
-		assert.Equal(t, want.Name, got.Name)
-		assert.Equal(t, want.Label, got.Label)
-		assert.Equal(t, want.CreatedAt.Format("2006-01-02"), got.CreatedAt.Format("2006-01-02"))
-		assert.Equal(t, want.UpdatedAt.Format("2006-01-02"), got.UpdatedAt.Format("2006-01-02"))
-		assert.Equal(t, want.HasAutoStepChangeRate, got.HasAutoStepChangeRate)
-		assert.Equal(t, want.HasExecutionDuration, got.HasExecutionDuration)
-		assert.Equal(t, want.HasMaxTestServiceCount, got.HasMaxTestServiceCount)
+
+		assert.Equal(t, want, got)
 	})
 }
