@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func NewTestScenarioRepository(db database.Database) repository.TestScenarioRepository {
@@ -24,7 +25,9 @@ type testScenario struct {
 }
 
 func (repo *testScenario) Create(ctx context.Context, testSci *entity.TestScenario) (uint64, error) {
-	err := postgres.QueryBuilder(ctx, repo.db).Create(testSci).Error
+	err := postgres.QueryBuilder(ctx, repo.db).
+		Omit(clause.Associations).
+		Create(testSci).Error
 	if err != nil {
 		return 0, fmt.Errorf("failed to create test scenario record: %w", err)
 	}
