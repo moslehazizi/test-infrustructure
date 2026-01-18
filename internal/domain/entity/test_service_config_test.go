@@ -91,6 +91,22 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrInvalidRequestDelayDurationConfig)
 	})
+	t.Run("success case: delay is 0 and random delays are null", func(t *testing.T) {
+		d := 0
+		n := 10
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:           1,
+			MaxDuration:           0,
+			RequestDelayDuration:  &d,
+			RandomRequestDelayMax: nil,
+			RandomRequestDelayMin: nil,
+			FixedTestNumber:       &n,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.NoError(t, err)
+	})
 
 	t.Run("failed case - invalid fixed test number", func(t *testing.T) {
 		sampleInt := -1
