@@ -2,13 +2,14 @@ package pkg
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestToHTTPError(t *testing.T) {
+func Test_toHTTPError(t *testing.T) {
 	tests := []struct {
 		err    error
 		wanted HTTPError
@@ -282,9 +283,60 @@ func TestToHTTPError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {
-			got := ToHTTPError(tt.err)
+			got := toHTTPError(tt.err)
 			assert.Equal(t, got.msg, tt.wanted.msg)
 			assert.Equal(t, got.status, tt.wanted.status)
 		})
 	}
+}
+
+func TestToHTTPError(t *testing.T) {
+	t.Run("success case: we have only one error and having no error wrapping", func(t *testing.T) {
+		want := &HTTPError{
+			status: http.StatusInternalServerError,
+			msg:    InternalServerErrorMessage,
+		}
+		got := ToHTTPError(ErrFailedToGetTestCategoryFromRepository)
+		assert.Equal(t, want, got)
+	})
+	t.Run("success case: we have 2 wrapped error: 500 and 400 and should get 400", func(t *testing.T) {
+		want := &HTTPError{
+			status: http.StatusBadRequest,
+			msg:    InvalidReqBody,
+		}
+		got := ToHTTPError(fmt.Errorf("%w:%w", ErrFailedToGetTestCategoryFromRepository, ErrBadRequest))
+		assert.Equal(t, want, got)
+	})
+	t.Run("success case: we have 2 wrapped error: 400 and 500 and should get 400", func(t *testing.T) {
+		want := &HTTPError{
+			status: http.StatusBadRequest,
+			msg:    InvalidReqBody,
+		}
+		got := ToHTTPError(fmt.Errorf("%w:%w", ErrBadRequest, ErrFailedToGetTestCategoryFromRepository))
+		assert.Equal(t, want, got)
+	})
+	t.Run("success case: we have 3 wrapped error: 400, 422, and 500 and should get 400", func(t *testing.T) {
+		want := &HTTPError{
+			status: http.StatusBadRequest,
+			msg:    InvalidReqBody,
+		}
+		got := ToHTTPError(fmt.Errorf("%w:%w:%w", ErrBadRequest, ErrFailedToGetTestCategoryFromRepository, ErrTestServiceConfigIsRequired))
+		assert.Equal(t, want, got)
+	})
+	t.Run("success case: we have 1 wrapped error: 400 and should get 400", func(t *testing.T) {
+		want := &HTTPError{
+			status: http.StatusBadRequest,
+			msg:    InvalidReqBody,
+		}
+		got := ToHTTPError(fmt.Errorf("%w", ErrBadRequest))
+		assert.Equal(t, want, got)
+	})
+	t.Run("success case: we do not have a wrapped error", func(t *testing.T) {
+		want := &HTTPError{
+			status: http.StatusInternalServerError,
+			msg:    InternalServerErrorMessage,
+		}
+		got := ToHTTPError(errors.New("something went wrong"))
+		assert.Equal(t, want, got)
+	})
 }

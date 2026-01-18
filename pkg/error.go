@@ -19,6 +19,35 @@ func (e *HTTPError) AsFiber(ctx *fiber.Ctx) error {
 }
 
 func ToHTTPError(err error) *HTTPError {
+	switch x := err.(type) {
+	case interface{ Unwrap() error }:
+		e := x.Unwrap()
+		if e == nil {
+			return toHTTPError(err)
+		} else {
+			return toHTTPError(e)
+		}
+	case interface{ Unwrap() []error }:
+		var finalErr *HTTPError
+		for _, err := range x.Unwrap() {
+			herr := toHTTPError(err)
+			if finalErr == nil {
+				finalErr = herr
+
+				continue
+			}
+			if finalErr.status > herr.status {
+				finalErr = herr
+			}
+		}
+
+		return finalErr
+	default:
+		return toHTTPError(err)
+	}
+}
+
+func toHTTPError(err error) *HTTPError {
 	var status int
 	var msg string
 
