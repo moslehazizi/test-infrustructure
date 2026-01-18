@@ -169,6 +169,9 @@ func ToHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrInvalid100SumOfBadValues):
 		status = http.StatusUnprocessableEntity
 		msg = Invalid100SumOfBadValues
+	case errors.Is(err, ErrTestServiceConfigIsRequired):
+		status = http.StatusUnprocessableEntity
+		msg = TestServiceConfigIsRequired
 
 	default:
 		status = http.StatusInternalServerError
@@ -240,4 +243,5 @@ var (
 	ErrInvalidTestNumberConfig                 = errors.New("invalid test number configuration")
 	ErrInvalidZeroSumOfBadValues               = errors.New("sum of all bad values rate should be 0 if bad value rate field is zero")
 	ErrInvalid100SumOfBadValues                = errors.New("sum of all bad values should be 100 if bad value field has value")
+	ErrTestServiceConfigIsRequired             = errors.New("test service config is required")
 )

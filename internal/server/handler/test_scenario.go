@@ -31,86 +31,37 @@ func (handler *TestScenario) Create() fiber.Handler {
 		}
 
 		testScenario := &entity.TestScenario{
-			Name:            req.Name,
-			TestCategoryID:  req.TestCategoryID,
-			MotherServiceID: req.MotherServiceID,
-			MaxTestServiceCount: func() *int {
-				if req.MaxTestServiceCount != nil {
-					return req.MaxTestServiceCount
+			Name:                req.Name,
+			TestCategoryID:      req.TestCategoryID,
+			MotherServiceID:     req.MotherServiceID,
+			MaxTestServiceCount: req.MaxTestServiceCount,
+			ExecutionDuration:   req.ExecutionDuration,
+			AutoStepChangeRate:  req.AutoStepChangeRate,
+			TestServiceConfig: func() *entity.TestServiceConfig {
+				if req.Config == nil {
+					return nil
 				}
-
-				return nil
-			}(),
-			ExecutionDuration: func() *int {
-				if req.ExecutionDuration != nil {
-					return req.ExecutionDuration
+				return &entity.TestServiceConfig{
+					MaxRequests:           req.Config.MaxRequests,
+					MaxDuration:           req.Config.MaxDuration,
+					RequestDelayDuration:  req.Config.RequestDelayDuration,
+					RandomRequestDelayMin: req.Config.RandomRequestDelayMin,
+					RandomRequestDelayMax: req.Config.RandomRequestDelayMax,
+					FixedTestNumber:       req.Config.FixedTestNumber,
+					RandomTestNumberMin:   req.Config.RandomTestNumberMin,
+					RandomTestNumberMax:   req.Config.RandomTestNumberMax,
+					BadValueRate:          req.Config.BadValueRate,
+					NegativeValueRate:     req.Config.NegativeValueRate,
+					ZeroValueRate:         req.Config.ZeroValueRate,
+					StringValueRate:       req.Config.StringValueRate,
+					RealValueRate:         req.Config.RealValueRate,
+					LongStringValueRate:   req.Config.LongStringValueRate,
+					NullValueRate:         req.Config.NullValueRate,
 				}
-
-				return nil
-			}(),
-			AutoStepChangeRate: func() *int {
-				if req.AutoStepChangeRate != nil {
-					return req.AutoStepChangeRate
-				}
-
-				return nil
 			}(),
 		}
-		testSvcCfg := &entity.TestServiceConfig{
-			MaxRequests: req.Config.MaxRequests,
-			MaxDuration: req.Config.MaxDuration,
-			RequestDelayDuration: func() *int {
-				if req.Config.RequestDelayDuration != nil {
-					return req.Config.RequestDelayDuration
-				}
 
-				return nil
-			}(),
-			RandomRequestDelayMin: func() *int {
-				if req.Config.RandomRequestDelayMin != nil {
-					return req.Config.RandomRequestDelayMin
-				}
-
-				return nil
-			}(),
-			RandomRequestDelayMax: func() *int {
-				if req.Config.RandomRequestDelayMax != nil {
-					return req.Config.RandomRequestDelayMax
-				}
-
-				return nil
-			}(),
-			FixedTestNumber: func() *int {
-				if req.Config.FixedTestNumber != nil {
-					return req.Config.FixedTestNumber
-				}
-
-				return nil
-			}(),
-			RandomTestNumberMin: func() *int {
-				if req.Config.RandomTestNumberMin != nil {
-					return req.Config.RandomTestNumberMin
-				}
-
-				return nil
-			}(),
-			RandomTestNumberMax: func() *int {
-				if req.Config.RandomTestNumberMax != nil {
-					return req.Config.RandomTestNumberMax
-				}
-
-				return nil
-			}(),
-			BadValueRate:        req.Config.BadValueRate,
-			NegativeValueRate:   req.Config.NegativeValueRate,
-			ZeroValueRate:       req.Config.ZeroValueRate,
-			StringValueRate:     req.Config.StringValueRate,
-			RealValueRate:       req.Config.RealValueRate,
-			LongStringValueRate: req.Config.LongStringValueRate,
-			NullValueRate:       req.Config.NullValueRate,
-		}
-
-		err := handler.testScenario.Create(ctx.Context(), testScenario, testSvcCfg)
+		err := handler.testScenario.Create(ctx.Context(), testScenario)
 		if err != nil {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}

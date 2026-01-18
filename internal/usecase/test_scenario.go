@@ -11,7 +11,7 @@ import (
 )
 
 type TestScenario interface {
-	Create(ctx context.Context, testScenario *entity.TestScenario, testSvcCfg *entity.TestServiceConfig) error
+	Create(ctx context.Context, testScenario *entity.TestScenario) error
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error)
 }
@@ -39,7 +39,6 @@ type testScenario struct {
 func (service *testScenario) Create(
 	ctx context.Context,
 	testScenario *entity.TestScenario,
-	testSvcCfg *entity.TestServiceConfig,
 ) (e error) {
 	testCat, err := service.testCategoryRepository.GetByID(ctx, testScenario.TestCategoryID)
 	if err != nil {
@@ -57,7 +56,10 @@ func (service *testScenario) Create(
 
 	testScenario.Status = entity.ScenarioStatusPending
 
-	err = testSvcCfg.Validate()
+	if testScenario.TestServiceConfig == nil {
+		return pkg.ErrTestServiceConfigIsRequired
+	}
+	err = testScenario.TestServiceConfig.Validate()
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
 	}
@@ -75,9 +77,9 @@ func (service *testScenario) Create(
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
 
-	testSvcCfg.TestScenarioID = testSciID
+	testScenario.TestServiceConfig.TestScenarioID = testSciID
 
-	err = service.testServiceConfigRepository.Create(dbCtx, testSvcCfg)
+	err = service.testServiceConfigRepository.Create(dbCtx, testScenario.TestServiceConfig)
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToCreateTestScenario, err)
 	}

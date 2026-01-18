@@ -275,6 +275,10 @@ func TestToHTTPError(t *testing.T) {
 			err:    ErrInvalid100SumOfBadValues,
 			wanted: HTTPError{http.StatusUnprocessableEntity, Invalid100SumOfBadValues},
 		},
+		{
+			err:    ErrTestServiceConfigIsRequired,
+			wanted: HTTPError{http.StatusUnprocessableEntity, TestServiceConfigIsRequired},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {

@@ -47,4 +47,5 @@ const (
 	MinRandomTestNumberMoreThanMax    = "مقدار حداقل عدد تصادفی نباید از مقدار حداکثر بیشتر باشد"
 	InvalidZeroSumOfBadValues         = "وقتی که درصد ارسال داده اشتباه صفر است مجموع حالت های داده اشتباه باید صفر باشد"
 	Invalid100SumOfBadValues          = "وقتی که درصد ارسال داده اشتباه بیشتر از صفر است باید مجموع درصد حالت ها ۱۰۰ باشد"
+	TestServiceConfigIsRequired       = "تنظیمات سرویس تست الزامی است."
 )
