@@ -68,7 +68,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	motherService := usecase.NewMotherService(db, postgres.NewMotherServiceRepository(db), eventProducer)
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
-	testScenarioUsecase := usecase.NewTestScenarioUsecase(db, postgres.NewTestScenarioRepository(db), postgres.NewTestCategoryRepository(db), postgres.NewTestServiceConfigRepository(db))
+	testScenarioUsecase := usecase.NewTestScenarioUsecase(db, postgres.NewTestScenarioRepository(db), postgres.NewTestCategoryRepository(db), postgres.NewTestServiceConfigRepository(db), postgres.NewMotherServiceRepository(db))
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
 
 	apiV1 := app.Group("/api/v1")

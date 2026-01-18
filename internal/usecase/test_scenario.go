@@ -20,12 +20,14 @@ func NewTestScenarioUsecase(
 	db database.Database,
 	testScenarioRepository repository.TestScenarioRepository,
 	testCategoryRepository repository.TestCategory,
-	testServiceConfigRepository repository.TestServiceConfigRepository) TestScenario {
+	testServiceConfigRepository repository.TestServiceConfigRepository,
+	motherService repository.MotherServiceRepository) TestScenario {
 	return &testScenario{
 		db:                          db,
 		testScenarioRepository:      testScenarioRepository,
 		testCategoryRepository:      testCategoryRepository,
 		testServiceConfigRepository: testServiceConfigRepository,
+		motherService:               motherService,
 	}
 }
 
@@ -34,12 +36,19 @@ type testScenario struct {
 	testScenarioRepository      repository.TestScenarioRepository
 	testCategoryRepository      repository.TestCategory
 	testServiceConfigRepository repository.TestServiceConfigRepository
+	motherService               repository.MotherServiceRepository
 }
 
 func (service *testScenario) Create(
 	ctx context.Context,
 	testScenario *entity.TestScenario,
 ) (e error) {
+	motherService, err := service.motherService.GetByID(ctx, testScenario.MotherServiceID)
+	if err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetMotherService, err)
+	}
+	testScenario.MotherService = motherService
+
 	testCat, err := service.testCategoryRepository.GetByID(ctx, testScenario.TestCategoryID)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestCategoryNotFound) {
