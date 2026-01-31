@@ -180,7 +180,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		int	true	"Test scenario ID"
-//	@Success		200	{object}	response.TestScenario
+//	@Success		200	{object}	response.TestScenarioResponseByID
 //	@Failure		400	{object}	response.ErrorResponse
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
@@ -202,7 +202,7 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
-		responses := response.TestScenario{
+		result := response.TestScenario{
 			ID:                  svcResult.ID,
 			CreatedAt:           svcResult.CreatedAt,
 			UpdatedAt:           svcResult.UpdatedAt,
@@ -276,6 +276,8 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 			}(),
 		}
 
-		return ctx.Status(http.StatusOK).JSON(responses)
+		return ctx.Status(http.StatusOK).JSON(&response.TestScenarioResponseByID{
+			Data: result,
+		})
 	}
 }

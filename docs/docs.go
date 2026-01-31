@@ -375,7 +375,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.TestScenario"
+                            "$ref": "#/definitions/response.TestScenarioResponseByID"
                         }
                     },
                     "400": {
@@ -747,6 +747,14 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "response.TestScenarioResponseByID": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/response.TestScenario"
                 }
             }
         },

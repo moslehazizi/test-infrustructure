@@ -101,7 +101,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.SuccessResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -109,7 +109,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
+		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
 	t.Run("success case - random test number ", func(t *testing.T) {
@@ -174,7 +174,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.SuccessResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -182,7 +182,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
+		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
 	t.Run("success case - random request delay ", func(t *testing.T) {
@@ -246,7 +246,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.SuccessResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -254,7 +254,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
+		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
 	t.Run("success case - request delay and fixed number set", func(t *testing.T) {
@@ -315,7 +315,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.SuccessResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -323,7 +323,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
+		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
 	t.Run("success case - don't fill null fields in test scenario", func(t *testing.T) {
@@ -381,7 +381,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.SuccessResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -389,7 +389,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result["message"])
+		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
 	t.Run("failed case - body parser bad request", func(t *testing.T) {
@@ -407,7 +407,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -415,7 +415,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		assert.Equal(t, pkg.InvalidReqBody, result["error"])
+		assert.Equal(t, pkg.InvalidReqBody, result.Error)
 	})
 	t.Run("failed case - test category not found", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
@@ -475,7 +475,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -483,7 +483,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-		assert.Equal(t, pkg.TestCategoryNotFound, result["error"])
+		assert.Equal(t, pkg.TestCategoryNotFound, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
 	t.Run("failed case - failed to get test category", func(t *testing.T) {
@@ -544,7 +544,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -552,7 +552,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-		assert.Equal(t, result["error"], pkg.InternalServerErrorMessage)
+		assert.Equal(t, result.Error, pkg.InternalServerErrorMessage)
 		mockSvc.AssertExpectations(t)
 	})
 	t.Run("failed case - validation error handler", func(t *testing.T) {
@@ -614,7 +614,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -622,7 +622,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-		assert.Equal(t, result["error"], pkg.MaxTestServiceCountLessThanOne)
+		assert.Equal(t, result.Error, pkg.MaxTestServiceCountLessThanOne)
 		mockSvc.AssertExpectations(t)
 	})
 }
@@ -802,9 +802,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result struct {
-			Error string `json:"error"`
-		}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -879,9 +877,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
-		var response struct {
-			Error string `json:"error"`
-		}
+		var response response.ErrorResponse
 		err = json.Unmarshal(bts, &response)
 		assert.Nil(t, err)
 
@@ -922,9 +918,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
-		var response struct {
-			Error string `json:"error"`
-		}
+		var response response.ErrorResponse
 		err = json.Unmarshal(bts, &response)
 		assert.Nil(t, err)
 
@@ -1074,10 +1068,10 @@ func TestTestScenario_GetByID(t *testing.T) {
 			},
 		}
 
-		var got response.TestScenario
+		var got response.TestScenarioResponseByID
 		err = json.Unmarshal(bts, &got)
 		assert.NoError(t, err)
-		assert.Equal(t, expected, got)
+		assert.Equal(t, expected, got.Data)
 	})
 	t.Run("success case => category and mother service are null", func(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.Local)
@@ -1130,9 +1124,9 @@ func TestTestScenario_GetByID(t *testing.T) {
 			TestServiceConfig:   nil,
 		}
 
-		var got response.TestScenario
+		var got response.TestScenarioResponseByID
 		err = json.Unmarshal(bts, &got)
 		assert.NoError(t, err)
-		assert.Equal(t, expected, got)
+		assert.Equal(t, expected, got.Data)
 	})
 }

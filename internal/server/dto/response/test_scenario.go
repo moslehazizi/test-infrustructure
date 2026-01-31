@@ -45,3 +45,7 @@ type PaginatedTestScenario struct {
 	PerPage int            `json:"per_page"`
 	Data    []TestScenario `json:"data"`
 }
+
+type TestScenarioResponseByID struct {
+	Data TestScenario `json:"data"`
+}

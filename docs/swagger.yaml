@@ -236,6 +236,11 @@ definitions:
       updated_at:
         type: string
     type: object
+  response.TestScenarioResponseByID:
+    properties:
+      data:
+        $ref: '#/definitions/response.TestScenario'
+    type: object
   response.TestServiceConfig:
     properties:
       bad_value_rate:
@@ -480,7 +485,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.TestScenario'
+            $ref: '#/definitions/response.TestScenarioResponseByID'
         "400":
           description: Bad Request
           schema:
