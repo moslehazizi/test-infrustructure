@@ -695,7 +695,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 
 		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, nil)
 
-		expected := response.Paginated[[]response.TestScenario]{
+		expected := response.PaginatedTestScenario{
 			Page:    1,
 			PerPage: 2,
 			Data: []response.TestScenario{
@@ -752,7 +752,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var got response.Paginated[[]response.TestScenario]
+		var got response.PaginatedTestScenario
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 		json.Unmarshal(bts, &got)
@@ -836,10 +836,10 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var got response.Paginated[[]response.TestScenario]
+		var got response.PaginatedTestScenario
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
-		json.Unmarshal(bts, &got)
+		json.Unmarshal(bts, &got.Data)
 
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	})

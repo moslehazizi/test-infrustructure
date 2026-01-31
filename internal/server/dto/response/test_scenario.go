@@ -39,3 +39,9 @@ type TestServiceConfig struct {
 	CreatedAt             time.Time `json:"created_at"`
 	UpdatedAt             time.Time `json:"updated_at"`
 }
+
+type PaginatedTestScenario struct {
+	Page    int            `json:"page"`
+	PerPage int            `json:"per_page"`
+	Data    []TestScenario `json:"data"`
+}

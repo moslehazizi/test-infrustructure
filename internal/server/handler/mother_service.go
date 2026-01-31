@@ -80,8 +80,8 @@ func (handler *MotherService) Create() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
-		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
-			"message": pkg.CreateMotherServiceSuccessfully,
+		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
+			Message: pkg.CreateMotherServiceSuccessfully,
 		})
 	}
 }

@@ -22,6 +22,19 @@ func NewTestScenarioHandler(testScenario usecase.TestScenario) *TestScenario {
 	}
 }
 
+// Create godoc
+//
+//	@Summary		Create a test scenario
+//	@Description	Create a new test scenario with configuration
+//	@Tags			test-scenarios
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		request.TestScenario	true	"Request body"
+//	@Success		200		{object}	response.SuccessResponse
+//	@Failure		400		{object}	response.ErrorResponse
+//	@Failure		422		{object}	response.ErrorResponse
+//	@Failure		500		{object}	response.ErrorResponse
+//	@Router			/api/v1/test-scenarios [post]
 func (handler *TestScenario) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		req := new(request.TestScenario)
@@ -66,12 +79,25 @@ func (handler *TestScenario) Create() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
-		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
-			"message": pkg.CreateTestScenarioSuccessfully,
+		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
+			Message: pkg.CreateTestScenarioSuccessfully,
 		})
 	}
 }
 
+// GetPaginated godoc
+//
+//	@Summary		Get paginated test scenarios
+//	@Description	Get test scenarios with pagination support
+//	@Tags			test-scenarios
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		request.TestScenarioPaginationRequest	true	"Pagination request with page and per_page"
+//	@Success		200		{object}	response.PaginatedTestScenario
+//	@Failure		400		{object}	response.ErrorResponse
+//	@Failure		422		{object}	response.ErrorResponse
+//	@Failure		500		{object}	response.ErrorResponse
+//	@Router			/api/v1/test-scenarios/search [post]
 func (handler *TestScenario) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		req := new(request.TestScenarioPaginationRequest)
@@ -138,14 +164,27 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 			})
 		}
 
-		return ctx.Status(http.StatusOK).JSON(&response.Paginated[[]response.TestScenario]{
-			Data:    responses,
+		return ctx.Status(http.StatusOK).JSON(&response.PaginatedTestScenario{
 			Page:    req.Page,
 			PerPage: req.PerPage,
+			Data:    responses,
 		})
 	}
 }
 
+// GetByID godoc
+//
+//	@Summary		Get test scenario by ID
+//	@Description	Retrieve a specific test scenario by its ID
+//	@Tags			test-scenarios
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Test scenario ID"
+//	@Success		200	{object}	response.TestScenario
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		404	{object}	response.ErrorResponse
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/api/v1/test-scenarios/{id} [get]
 func (handler *TestScenario) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		idParam := ctx.Params("id")
