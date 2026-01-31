@@ -1,0 +1,317 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/v1/mother-services": {
+            "post": {
+                "description": "Create a new mother service",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mother-services"
+                ],
+                "summary": "Create a mother service",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MotherService"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mother-services/search": {
+            "post": {
+                "description": "Get mother services with pagination support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mother-services"
+                ],
+                "summary": "Get paginated mother services",
+                "parameters": [
+                    {
+                        "description": "Pagination request with page and per_page",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PaginationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PaginatedMotherServices"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mother-services/{id}": {
+            "get": {
+                "description": "Retrieve a specific mother service by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mother-services"
+                ],
+                "summary": "Get mother service by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Mother service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.MotherServiceResponseByID"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "entity.MotherServiceStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "running",
+                "paused",
+                "stopped",
+                "aborted"
+            ],
+            "x-enum-comments": {
+                "MotherServiceStatusAborted": "stop and delete containers. can not start again.",
+                "MotherServiceStatusPaused": "application level pause on sending request",
+                "MotherServiceStatusPending": "mother service just created",
+                "MotherServiceStatusRunning": "test is running on application level (sending level)",
+                "MotherServiceStatusStopped": "stop container but can start scenario again."
+            },
+            "x-enum-descriptions": [
+                "mother service just created",
+                "test is running on application level (sending level)",
+                "application level pause on sending request",
+                "stop container but can start scenario again.",
+                "stop and delete containers. can not start again."
+            ],
+            "x-enum-varnames": [
+                "MotherServiceStatusPending",
+                "MotherServiceStatusRunning",
+                "MotherServiceStatusPaused",
+                "MotherServiceStatusStopped",
+                "MotherServiceStatusAborted"
+            ]
+        },
+        "request.MotherService": {
+            "type": "object",
+            "properties": {
+                "database_name": {
+                    "type": "string"
+                },
+                "database_table_name": {
+                    "type": "string"
+                },
+                "exception_rate": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "random_response_delay_max": {
+                    "type": "integer"
+                },
+                "random_response_delay_min": {
+                    "type": "integer"
+                },
+                "response_delay_duration": {
+                    "type": "integer"
+                },
+                "response_delay_rate": {
+                    "type": "integer"
+                },
+                "service_deployment_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.PaginationRequest": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "per_page": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.MotherService": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "database_name": {
+                    "type": "string"
+                },
+                "database_table_name": {
+                    "type": "string"
+                },
+                "exception_rate": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "random_response_delay_max": {
+                    "type": "integer"
+                },
+                "random_response_delay_min": {
+                    "type": "integer"
+                },
+                "response_delay_duration": {
+                    "type": "integer"
+                },
+                "response_delay_rate": {
+                    "type": "integer"
+                },
+                "service_deployment_address": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/entity.MotherServiceStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.MotherServiceResponseByID": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/response.MotherService"
+                }
+            }
+        },
+        "response.PaginatedMotherServices": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.MotherService"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "per_page": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

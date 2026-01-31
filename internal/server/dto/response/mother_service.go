@@ -20,3 +20,13 @@ type MotherService struct {
 	DatabaseName             string                     `json:"database_name"`
 	DatabaseTableName        string                     `json:"database_table_name"`
 }
+
+type PaginatedMotherServices struct {
+	Data    []MotherService `json:"data"`
+	Page    int             `json:"page"`
+	PerPage int             `json:"per_page"`
+}
+
+type MotherServiceResponseByID struct {
+	Data MotherService `json:"data"`
+}

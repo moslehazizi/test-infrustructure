@@ -24,6 +24,19 @@ func NewMotherServiceHandler(motherService usecase.MotherService) *MotherService
 	}
 }
 
+// Create godoc
+//
+//	@Summary		Create a mother service
+//	@Description	Create a new mother service
+//	@Tags			mother-services
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		request.MotherService	true	"Request body"
+//	@Success		200		{object}	response.SuccessResponse
+//	@Failure		400		{object}	response.ErrorResponse
+//	@Failure		422		{object}	response.ErrorResponse
+//	@Failure		500		{object}	response.ErrorResponse
+//	@Router			/api/v1/mother-services [post]
 func (handler *MotherService) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		req := new(request.MotherService)
@@ -73,6 +86,19 @@ func (handler *MotherService) Create() fiber.Handler {
 	}
 }
 
+// GetByID godoc
+//
+//	@Summary		Get mother service by ID
+//	@Description	Retrieve a specific mother service by its ID
+//	@Tags			mother-services
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Mother service ID"
+//	@Success		200	{object}	response.MotherServiceResponseByID
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		404	{object}	response.ErrorResponse
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/api/v1/mother-services/{id} [get]
 func (handler *MotherService) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		strID := strings.TrimSpace(ctx.Params("id"))
@@ -91,7 +117,7 @@ func (handler *MotherService) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
-		response := response.MotherService{
+		result := response.MotherService{
 			ID:                       svcResult.ID,
 			CreatedAt:                svcResult.CreatedAt,
 			UpdatedAt:                svcResult.UpdatedAt,
@@ -107,12 +133,24 @@ func (handler *MotherService) GetByID() fiber.Handler {
 			DatabaseTableName:        svcResult.DatabaseTableName,
 		}
 
-		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
-			"data": response,
+		return ctx.Status(http.StatusOK).JSON(&response.MotherServiceResponseByID{
+			Data: result,
 		})
 	}
 }
 
+// GetPaginated godoc
+//
+//	@Summary		Get paginated mother services
+//	@Description	Get mother services with pagination support
+//	@Tags			mother-services
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		request.PaginationRequest	true	"Pagination request with page and per_page"
+//	@Success		200		{object}	response.PaginatedMotherServices
+//	@Failure		400		{object}	response.ErrorResponse
+//	@Failure		500		{object}	response.ErrorResponse
+//	@Router			/api/v1/mother-services/search [post]
 func (handler *MotherService) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		req := new(request.PaginationRequest)
@@ -154,10 +192,10 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 			})
 		}
 
-		return ctx.Status(http.StatusOK).JSON(&fiber.Map{
-			"data":     responses,
-			"page":     req.Page,
-			"per_page": req.PerPage,
+		return ctx.Status(http.StatusOK).JSON(&response.PaginatedMotherServices{
+			Data:    responses,
+			Page:    req.Page,
+			PerPage: req.PerPage,
 		})
 	}
 }
