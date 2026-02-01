@@ -1,4 +1,13 @@
 services:
+    control-panel-service-migration:
+        image: challenge-control-panel-service:TAG_NAME
+        container_name: challenge-control-panel-service-migration
+        restart: no
+        entrypoint: ["./main", "migrate", "up"]
+        env_file:
+            - ../.env
+        networks:
+            - backend
     control-panel-service:
         image: challenge-control-panel-service:TAG_NAME
         container_name: challenge-control-panel-service
@@ -9,6 +18,8 @@ services:
             - ../.env
         networks:
             - backend
+        depends_on:
+          - control-panel-service-migration
 
 networks:
     backend:
