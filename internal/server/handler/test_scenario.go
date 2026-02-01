@@ -54,6 +54,7 @@ func (handler *TestScenario) Create() fiber.Handler {
 				if req.Config == nil {
 					return nil
 				}
+
 				return &entity.TestServiceConfig{
 					MaxRequests:           req.Config.MaxRequests,
 					MaxDuration:           req.Config.MaxDuration,
@@ -278,6 +279,42 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 
 		return ctx.Status(http.StatusOK).JSON(&response.TestScenarioResponseByID{
 			Data: result,
+		})
+	}
+}
+
+// Start godoc
+//
+//	@Summary		Start a test scenario.
+//	@Description	Retrieve a specific test scenario by its ID and start the scenario.
+//	@Tags			test-scenarios
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Test scenario ID"
+//	@Success		200	{object}	response.SuccessResponse
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		404	{object}	response.ErrorResponse
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/api/v1/test-scenarios/{id}/start [post]
+func (handler *TestScenario) Start() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		idParam := ctx.Params("id")
+		if idParam == "" {
+			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
+		}
+
+		id, err := strconv.ParseUint(idParam, 10, 64)
+		if err != nil {
+			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
+		}
+
+		err = handler.testScenario.Start(ctx.Context(), id)
+		if err != nil {
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
+
+		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
+			Message: pkg.TestScenarioStarted,
 		})
 	}
 }

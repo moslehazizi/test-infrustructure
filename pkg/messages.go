@@ -10,6 +10,7 @@ const (
 	PageNotFound                      = "صفحه مورد نظر یافت نشد."
 	MotherServiceNotFound             = "سرویس مادر مورد نظر یافت نشد"
 	TestScenarioNotFound              = "سناروی تست مورد نظر یافت نشد"
+	TestScenarioStarted               = "سناروی تست با موفقیت شروع به کار کرد."
 	InvalidResponseDelayRate          = "درصد تاخیر در پاسخ باید عددی بین ۰ تا ۱۰۰ باشد"
 	InvalidExceptionRate              = "مقدار درصد پاسخ با مقدار قابل پیشبینی باید عددی بین ۰ تا ۱۰۰ باشد"
 	InvalidDelayConfiguration         = "تنظیمات تاخیر صحیح نیست؛ لطفاً یکی از گزینه‌های بدون تاخیر، تاخیر ثابت و یا تاخیر تصادفی را انتخاب کنید"

@@ -845,3 +845,46 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 }
+
+func TestTestScenarioUsecase_Start(t *testing.T) {
+	t.Run("failed case - not found", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+
+		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService)
+		sampleID := uint64(4)
+
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, pkg.ErrTestScenarioNotFound)
+
+		err := service.Start(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed case - repository unknown error", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+
+		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService)
+		sampleID := uint64(4)
+
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, errors.New("error happened"))
+
+		err := service.Start(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenario)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertExpectations(t)
+	})
+
+}

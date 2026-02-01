@@ -14,6 +14,7 @@ type TestScenario interface {
 	Create(ctx context.Context, testScenario *entity.TestScenario) error
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error)
+	Start(ctx context.Context, id uint64) error
 }
 
 func NewTestScenarioUsecase(
@@ -117,4 +118,19 @@ func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.Tes
 	}
 
 	return result, nil
+}
+
+func (service *testScenario) Start(ctx context.Context, id uint64) error {
+	result, err := service.testScenarioRepository.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
+			return pkg.ErrTestScenarioNotFound
+		}
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
+	}
+
+	_ = result
+
+	return nil
 }
