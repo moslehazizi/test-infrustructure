@@ -21,4 +21,4 @@ COPY . .
 RUN make tools
 RUN make check
 
-RUN go test -v -race -cover -count=1 ./...
+RUN make test
