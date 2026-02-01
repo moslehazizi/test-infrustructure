@@ -58,7 +58,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.SuccessResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -66,7 +66,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, pkg.CreateMotherServiceSuccessfully, result["message"])
+		assert.Equal(t, pkg.CreateMotherServiceSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
 
@@ -85,7 +85,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -93,7 +93,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		assert.Equal(t, pkg.InvalidReqBody, result["error"])
+		assert.Equal(t, pkg.InvalidReqBody, result.Error)
 	})
 
 	t.Run("failed case - required fields in request body", func(t *testing.T) {
@@ -114,7 +114,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -122,7 +122,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		assert.Equal(t, pkg.InvalidReqBody, result["error"])
+		assert.Equal(t, pkg.InvalidReqBody, result.Error)
 	})
 
 	t.Run("success case - with nullable values", func(t *testing.T) {
@@ -164,7 +164,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.SuccessResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -172,7 +172,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, pkg.CreateMotherServiceSuccessfully, result["message"])
+		assert.Equal(t, pkg.CreateMotherServiceSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
 
@@ -205,7 +205,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -213,7 +213,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusConflict, resp.StatusCode)
-		assert.Equal(t, pkg.MotherServiceAlreadyExist, result["error"])
+		assert.Equal(t, pkg.MotherServiceAlreadyExist, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
 
@@ -246,7 +246,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -254,7 +254,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-		assert.Equal(t, pkg.InternalServerErrorMessage, result["error"])
+		assert.Equal(t, pkg.InternalServerErrorMessage, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
 
@@ -287,7 +287,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -295,7 +295,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-		assert.Equal(t, pkg.InvalidResponseDelayRate, result["error"])
+		assert.Equal(t, pkg.InvalidResponseDelayRate, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
 	t.Run("failed case - request validation error exception rate is negative", func(t *testing.T) {
@@ -327,7 +327,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -335,7 +335,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-		assert.Equal(t, pkg.InvalidExceptionRate, result["error"])
+		assert.Equal(t, pkg.InvalidExceptionRate, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
 
@@ -368,7 +368,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -376,7 +376,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-		assert.Equal(t, pkg.InvalidDelayConfiguration, result["error"])
+		assert.Equal(t, pkg.InvalidDelayConfiguration, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
 	t.Run("failed case - request validation error min is greater than max", func(t *testing.T) {
@@ -408,7 +408,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result map[string]interface{}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -416,7 +416,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-		assert.Equal(t, pkg.InvalidRandomDelayRange, result["error"])
+		assert.Equal(t, pkg.InvalidRandomDelayRange, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
 }
@@ -444,9 +444,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 
-		var response struct {
-			Data response.MotherService `json:"data"`
-		}
+		var response response.MotherServiceResponseByID
 
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
@@ -493,9 +491,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 
-		var response struct {
-			Data response.MotherService `json:"data"`
-		}
+		var response response.MotherServiceResponseByID
 
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
@@ -523,9 +519,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 
-		var response struct {
-			Error string `json:"error"`
-		}
+		var response response.ErrorResponse
 
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
@@ -552,9 +546,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 
-		var response struct {
-			Error string `json:"error"`
-		}
+		var response response.ErrorResponse
 
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
@@ -583,9 +575,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 
-		var response struct {
-			Error string `json:"error"`
-		}
+		var response response.ErrorResponse
 
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
@@ -652,11 +642,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result struct {
-			Data    []response.MotherService `json:"data"`
-			Page    int                      `json:"page"`
-			PerPage int                      `json:"per_page"`
-		}
+		var result response.PaginatedMotherServices
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -710,11 +696,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result struct {
-			Data    []response.MotherService `json:"data"`
-			Page    int                      `json:"page"`
-			PerPage int                      `json:"per_page"`
-		}
+		var result response.PaginatedMotherServices
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -742,9 +724,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result struct {
-			Error string `json:"error"`
-		}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -769,9 +749,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result struct {
-			Error string `json:"error"`
-		}
+		var result response.ErrorResponse
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
@@ -806,9 +784,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result struct {
-			Error string `json:"error"`
-		}
+		var result response.ErrorResponse
 
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
@@ -845,11 +821,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result struct {
-			Data    []response.MotherService `json:"data"`
-			Page    int                      `json:"page"`
-			PerPage int                      `json:"per_page"`
-		}
+		var result response.PaginatedMotherServices
 
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)

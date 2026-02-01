@@ -23,6 +23,16 @@ type TestCategoryHandler struct {
 	testCategoryService usecase.TestCategoryService
 }
 
+// GetAll godoc
+//
+//	@Summary		Get all test categories
+//	@Description	Retrieve all available test categories
+//	@Tags			test-categories
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{array}		response.TestCategory
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/api/v1/test-categories [get]
 func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		svcResults, err := handler.testCategoryService.GetAll(ctx.Context())
@@ -48,6 +58,19 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 	}
 }
 
+// GetByID godoc
+//
+//	@Summary		Get test category by ID
+//	@Description	Retrieve a specific test category by its ID
+//	@Tags			test-categories
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Test category ID"
+//	@Success		200	{object}	response.TestCategory
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		404	{object}	response.ErrorResponse
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/api/v1/test-categories/{id} [get]
 func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		idParam := ctx.Params("id")

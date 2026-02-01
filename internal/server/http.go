@@ -12,6 +12,11 @@ import (
 
 	pslq "control-panel-service/pkg/database/postgres"
 
+	_ "control-panel-service/docs"
+
+	_ "control-panel-service/docs"
+
+	fiberSwagger "github.com/arsmn/fiber-swagger/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -73,8 +78,6 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	apiV1 := app.Group("/api/v1")
 
-	// Register APIs
-
 	// Mother service
 	apiV1.Post("/mother-services", motherHandler.Create())
 	apiV1.Get("/mother-services/:id", motherHandler.GetByID())
@@ -88,6 +91,9 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Post("/test-scenarios", testScenarioHandler.Create())
 	apiV1.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
 	apiV1.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
+
+	// swagger endpoint
+	app.Get("/swagger/*", fiberSwagger.HandlerDefault)
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
 

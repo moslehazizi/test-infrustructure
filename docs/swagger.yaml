@@ -1,0 +1,538 @@
+definitions:
+  entity.MotherServiceStatus:
+    enum:
+    - pending
+    - running
+    - paused
+    - stopped
+    - aborted
+    type: string
+    x-enum-comments:
+      MotherServiceStatusAborted: stop and delete containers. can not start again.
+      MotherServiceStatusPaused: application level pause on sending request
+      MotherServiceStatusPending: mother service just created
+      MotherServiceStatusRunning: test is running on application level (sending level)
+      MotherServiceStatusStopped: stop container but can start scenario again.
+    x-enum-descriptions:
+    - mother service just created
+    - test is running on application level (sending level)
+    - application level pause on sending request
+    - stop container but can start scenario again.
+    - stop and delete containers. can not start again.
+    x-enum-varnames:
+    - MotherServiceStatusPending
+    - MotherServiceStatusRunning
+    - MotherServiceStatusPaused
+    - MotherServiceStatusStopped
+    - MotherServiceStatusAborted
+  entity.ScenarioStatus:
+    enum:
+    - pending
+    - running
+    - paused
+    - stopped
+    - aborted
+    - succeed
+    type: string
+    x-enum-varnames:
+    - ScenarioStatusPending
+    - ScenarioStatusRunning
+    - ScenarioStatusPaused
+    - ScenarioStatusStopped
+    - ScenarioStatusAborted
+    - ScenarioStatusSucceed
+  request.MotherService:
+    properties:
+      database_name:
+        type: string
+      database_table_name:
+        type: string
+      exception_rate:
+        type: integer
+      name:
+        type: string
+      random_response_delay_max:
+        type: integer
+      random_response_delay_min:
+        type: integer
+      response_delay_duration:
+        type: integer
+      response_delay_rate:
+        type: integer
+      service_deployment_address:
+        type: string
+    type: object
+  request.PaginationRequest:
+    properties:
+      page:
+        type: integer
+      per_page:
+        type: integer
+    type: object
+  request.TestScenario:
+    properties:
+      auto_step_change_rate:
+        type: integer
+      execution_duration:
+        type: integer
+      max_test_service_count:
+        type: integer
+      mother_service_id:
+        type: integer
+      name:
+        type: string
+      test_category_id:
+        type: integer
+      test_service_config:
+        $ref: '#/definitions/request.TestServiceConfigRequest'
+    type: object
+  request.TestScenarioPaginationRequest:
+    properties:
+      page:
+        type: integer
+      per_page:
+        type: integer
+    type: object
+  request.TestServiceConfigRequest:
+    properties:
+      bad_value_rate:
+        type: integer
+      fixed_test_number:
+        type: integer
+      long_string_value_rate:
+        type: integer
+      max_duration:
+        type: integer
+      max_requests:
+        type: integer
+      negative_value_rate:
+        type: integer
+      null_value_rate:
+        type: integer
+      random_request_delay_max:
+        type: integer
+      random_request_delay_min:
+        type: integer
+      random_test_number_max:
+        type: integer
+      random_test_number_min:
+        type: integer
+      real_value_rate:
+        type: integer
+      request_delay_duration:
+        type: integer
+      string_value_rate:
+        type: integer
+      zero_value_rate:
+        type: integer
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  response.MotherService:
+    properties:
+      created_at:
+        type: string
+      database_name:
+        type: string
+      database_table_name:
+        type: string
+      exception_rate:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      random_response_delay_max:
+        type: integer
+      random_response_delay_min:
+        type: integer
+      response_delay_duration:
+        type: integer
+      response_delay_rate:
+        type: integer
+      service_deployment_address:
+        type: string
+      status:
+        $ref: '#/definitions/entity.MotherServiceStatus'
+      updated_at:
+        type: string
+    type: object
+  response.MotherServiceResponseByID:
+    properties:
+      data:
+        $ref: '#/definitions/response.MotherService'
+    type: object
+  response.PaginatedMotherServices:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.MotherService'
+        type: array
+      page:
+        type: integer
+      per_page:
+        type: integer
+    type: object
+  response.PaginatedTestScenario:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.TestScenario'
+        type: array
+      page:
+        type: integer
+      per_page:
+        type: integer
+    type: object
+  response.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  response.TestCategory:
+    properties:
+      created_at:
+        type: string
+      has_auto_step_change_rate:
+        type: boolean
+      has_execution_duration:
+        type: boolean
+      has_max_test_service_count:
+        type: boolean
+      id:
+        type: integer
+      label:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  response.TestScenario:
+    properties:
+      auto_step_change_rate:
+        type: integer
+      created_at:
+        type: string
+      execution_duration:
+        type: integer
+      id:
+        type: integer
+      max_test_service_count:
+        type: integer
+      mother_service:
+        $ref: '#/definitions/response.MotherService'
+      name:
+        type: string
+      status:
+        $ref: '#/definitions/entity.ScenarioStatus'
+      test_category:
+        $ref: '#/definitions/response.TestCategory'
+      test_service_config:
+        $ref: '#/definitions/response.TestServiceConfig'
+      updated_at:
+        type: string
+    type: object
+  response.TestScenarioResponseByID:
+    properties:
+      data:
+        $ref: '#/definitions/response.TestScenario'
+    type: object
+  response.TestServiceConfig:
+    properties:
+      bad_value_rate:
+        type: integer
+      created_at:
+        type: string
+      fixed_test_number:
+        type: integer
+      id:
+        type: integer
+      long_string_value_rate:
+        type: integer
+      max_duration:
+        type: integer
+      max_requests:
+        type: integer
+      negative_value_rate:
+        type: integer
+      null_value_rate:
+        type: integer
+      random_request_delay_max:
+        type: integer
+      random_request_delay_min:
+        type: integer
+      random_test_number_max:
+        type: integer
+      random_test_number_min:
+        type: integer
+      real_value_rate:
+        type: integer
+      request_delay_duration:
+        type: integer
+      string_value_rate:
+        type: integer
+      updated_at:
+        type: string
+      zero_value_rate:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/mother-services:
+    post:
+      consumes:
+      - application/json
+      description: Create a new mother service
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.MotherService'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a mother service
+      tags:
+      - mother-services
+  /api/v1/mother-services/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific mother service by its ID
+      parameters:
+      - description: Mother service ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.MotherServiceResponseByID'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get mother service by ID
+      tags:
+      - mother-services
+  /api/v1/mother-services/search:
+    post:
+      consumes:
+      - application/json
+      description: Get mother services with pagination support
+      parameters:
+      - description: Pagination request with page and per_page
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.PaginationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginatedMotherServices'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get paginated mother services
+      tags:
+      - mother-services
+  /api/v1/test-categories:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all available test categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.TestCategory'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get all test categories
+      tags:
+      - test-categories
+  /api/v1/test-categories/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific test category by its ID
+      parameters:
+      - description: Test category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.TestCategory'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get test category by ID
+      tags:
+      - test-categories
+  /api/v1/test-scenarios:
+    post:
+      consumes:
+      - application/json
+      description: Create a new test scenario with configuration
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestScenario'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a test scenario
+      tags:
+      - test-scenarios
+  /api/v1/test-scenarios/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific test scenario by its ID
+      parameters:
+      - description: Test scenario ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.TestScenarioResponseByID'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get test scenario by ID
+      tags:
+      - test-scenarios
+  /api/v1/test-scenarios/search:
+    post:
+      consumes:
+      - application/json
+      description: Get test scenarios with pagination support
+      parameters:
+      - description: Pagination request with page and per_page
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.TestScenarioPaginationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginatedTestScenario'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get paginated test scenarios
+      tags:
+      - test-scenarios
+swagger: "2.0"
