@@ -10,16 +10,6 @@ services:
         networks:
             - backend
 
-    control-panel-jobs-service:
-        image: challenge-control-panel-service:TAG_NAME
-        container_name: challenge-control-panel-jobs-service
-        restart: unless-stopped
-        env_file:
-            - ../.env
-        entrypoint: ["./main", "jobs"]
-        networks:
-            - backend
-
 networks:
     backend:
         external: true
