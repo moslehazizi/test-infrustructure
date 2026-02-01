@@ -7,6 +7,8 @@ import (
 	"context"
 	"control-panel-service/config"
 	"control-panel-service/internal/server"
+	"control-panel-service/pkg/telemetry"
+	"fmt"
 
 	"log"
 	"os"
@@ -15,6 +17,10 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // serveCmd represents the serve command.
@@ -40,6 +46,42 @@ to quickly create a Cobra application.`,
 		// Create a context that can be cancelled
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
+
+		conn, err := initConn()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		serviceName := semconv.ServiceNameKey.String(cfg.ServiceName)
+
+		res, err := resource.New(ctx,
+			resource.WithAttributes(
+				serviceName,
+			),
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		shutdownTracerProvider, err := telemetry.InitTracerProvider(ctx, res, conn)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			if err := shutdownTracerProvider(ctx); err != nil {
+				log.Fatalf("failed to shutdown TracerProvider: %s", err)
+			}
+		}()
+
+		shutdownMeterProvider, err := telemetry.InitMeterProvider(ctx, res, conn)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			if err := shutdownMeterProvider(ctx); err != nil {
+				log.Fatalf("failed to shutdown MeterProvider: %s", err)
+			}
+		}()
 
 		// Set up signal handling for graceful shutdown
 		sigChan := make(chan os.Signal, 1)
@@ -77,6 +119,26 @@ to quickly create a Cobra application.`,
 	},
 }
 
+func initConn() (*grpc.ClientConn, error) {
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("could not load config:", err)
+
+		return nil, nil
+	}
+
+	url := fmt.Sprintf("%s:%d", cfg.Otlp.GRPCHost, cfg.Otlp.GRPCPort)
+
+	conn, err := grpc.NewClient(url,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gRPC connection to collector: %w", err)
+	}
+
+	return conn, err
+}
+
 func init() {
 	rootCmd.AddCommand(serveCmd)
 
@@ -90,3 +152,5 @@ func init() {
 	// is called directly, e.g.:
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
+
+var serviceName = semconv.ServiceNameKey.String("test-service")

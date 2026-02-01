@@ -9,9 +9,16 @@ import (
 )
 
 type Config struct {
-	Server   Server
-	Kafka    Kafka
-	Postgres Postgres
+	ServiceName string `envconfig:"SERVICE_NAME"`
+	Server      Server
+	Kafka       Kafka
+	Postgres    Postgres
+	Otlp        Otlp
+}
+
+type Otlp struct {
+	GRPCPort int    `envconfig:"OTLP_GRPC_PORT"`
+	GRPCHost string `envconfig:"OTLP_GRPC_HOST"`
 }
 
 type Server struct {

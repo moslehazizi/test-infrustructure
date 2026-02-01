@@ -7,8 +7,11 @@ import (
 	"control-panel-service/internal/repository/postgres"
 	"control-panel-service/internal/server/handler"
 	"control-panel-service/internal/usecase"
+	"control-panel-service/pkg/telemetry"
 	"fmt"
 	"log"
+	"strconv"
+	"time"
 
 	pslq "control-panel-service/pkg/database/postgres"
 
@@ -20,7 +23,49 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
+
+func MetricsMiddleware() fiber.Handler {
+	meter := telemetry.GetMeter()
+
+	requestCounter, _ := meter.Int64Counter("http.requests.total")
+	requestDuration, _ := meter.Int64Histogram("http.request.duration_ms")
+	requestSize, _ := meter.Int64Histogram("http.request.size_bytes")
+	responseSize, _ := meter.Int64Histogram("http.response.size_bytes")
+
+	return func(c *fiber.Ctx) error {
+		start := time.Now()
+
+		requestSizeBytes := int64(len(c.Request().Header.String()) + len(c.Body()))
+		attrs := attribute.NewSet(
+			attribute.String("method", c.Method()),
+			attribute.String("route", c.Route().Path),
+		)
+		requestSize.Record(c.Context(), requestSizeBytes, metric.WithAttributeSet(attrs))
+
+		err := c.Next()
+
+		duration := time.Since(start)
+		durationMs := duration.Milliseconds()
+
+		statusCode := c.Response().StatusCode()
+		attrs = attribute.NewSet(
+			attribute.String("method", c.Method()),
+			attribute.String("route", c.Route().Path),
+			attribute.String("status_code", strconv.Itoa(statusCode)),
+		)
+
+		requestCounter.Add(c.Context(), 1, metric.WithAttributeSet(attrs))
+		requestDuration.Record(c.Context(), durationMs, metric.WithAttributeSet(attrs))
+
+		responseSizeBytes := int64(len(c.Response().Header.String()) + len(c.Response().Body()))
+		responseSize.Record(c.Context(), responseSizeBytes, metric.WithAttributeSet(attrs))
+
+		return err
+	}
+}
 
 func Serve(ctx context.Context, cfg *config.Config) error {
 	app := fiber.New(fiber.Config{
@@ -32,7 +77,10 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	// Global middlewares
 	app.Use(cors.New())
 
-	// 🔒 Rate Limiter (GLOBAL)
+
+	app.Use(MetricsMiddleware())
+
+	// �🔒 Rate Limiter (GLOBAL)
 	app.Use(limiter.New(limiter.Config{
 		Max:        cfg.Server.RateLimitMaxRequest,         // max requests
 		Expiration: cfg.Server.RateLimitExpirationDuration, // per minute
