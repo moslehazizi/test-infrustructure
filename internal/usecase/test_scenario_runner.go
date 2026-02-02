@@ -7,6 +7,15 @@ import (
 	"sync"
 )
 
+// What is ScenarioExecutorBox?
+// ScenarioExecutorBox is a collection of scenarios which are executing in the background.
+// Each scenario that is added to the BOX is of type ScenarioExecutor.
+//
+// The inMemoryScenarioExecutorBox is an in-memory implementation of ScenarioExecutorBox.
+//
+// The most important function of ScenarioExecutor is ResumeOrStart. This function
+// is responsible to run scenario in background. For more details about this method, please see its doc.
+
 // #region ScenarioExecutorBox
 
 func NewInMemoryScenarioExecutorBox() interfaces.ScenarioExecutorBox {
