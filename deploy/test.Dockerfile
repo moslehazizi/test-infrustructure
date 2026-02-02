@@ -1,4 +1,4 @@
-FROM golang:1.25.5-alpine AS builder
+FROM golang:1.25.6-alpine AS builder
 
 # Use a specific German mirror for Alpine packages
 RUN echo "http://mirror1.hs-esslingen.de/pub/Mirrors/alpine/v3.22/main" > /etc/apk/repositories && \
@@ -21,4 +21,4 @@ COPY . .
 RUN make tools
 RUN make check
 
-RUN go test -v -race -cover -count=1 ./...
+RUN make test

@@ -208,7 +208,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.TestCategoryNotFound)
 	})
 	t.Run("success case", func(t *testing.T) {
-		theTime := time.Date(2026, 01, 13, 10, 06, 30, 0, time.Local)
+		theTime := time.Date(2026, 01, 13, 10, 06, 30, 0, time.UTC)
 		srv := new(mocks.MockTestCategoryService)
 		item := &entity.TestCategory{
 			ID:                     1,

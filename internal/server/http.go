@@ -99,7 +99,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Post("/test-scenarios/:id/start", testScenarioHandler.Start())
 
 	// swagger endpoint
-	app.Get("/swagger/*", fiberSwagger.HandlerDefault)
+	apiV1.Get("/swagger/*", fiberSwagger.HandlerDefault)
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
 
