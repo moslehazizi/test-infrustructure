@@ -3,10 +3,26 @@ package config
 import (
 	"control-panel-service/pkg"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
+
+type StringSlice []string
+
+func (ss *StringSlice) Set(value string) error {
+	if value == "" {
+		*ss = []string{"http", "https"}
+	} else {
+		parts := strings.Split(value, ",")
+		for i := range parts {
+			parts[i] = strings.TrimSpace(parts[i])
+		}
+		*ss = parts
+	}
+	return nil
+}
 
 type Config struct {
 	Server   Server
@@ -16,6 +32,8 @@ type Config struct {
 
 type Server struct {
 	Port                        int           `envconfig:"HTTP_PORT" default:"8080"`
+	Host                        string        `envconfig:"HTTP_HOST" default:"localhost"`
+	SwaggerScheme               StringSlice   `envconfig:"SWAGGER_SCHEME" default:"http,https"`
 	PostBodyLimit               int           `envconfig:"HTTP_POST_BODY_LIMIT" default:"4096"` // 4096 = 4KB
 	ReadTimeout                 time.Duration `envconfig:"HTTP_READ_TIMEOUT" default:"10s"`
 	WriteTimeout                time.Duration `envconfig:"HTTP_WRITE_TIMEOUT" default:"20s"`

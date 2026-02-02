@@ -15,6 +15,8 @@ import (
 func TestLoadConfig(t *testing.T) {
 	t.Run("success fetch http config", func(t *testing.T) {
 		expectedPort := 8080
+		expectedHost := "localhost"
+		expectedSwaggerScheme := []string{"http", "https"}
 		expectedPostBodyLimit := 4 * 1024
 		expectedReadTimeout := time.Second * 10
 		expectedWriteTimeout := time.Second * 20
@@ -29,6 +31,8 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("HTTP_RATE_LIMIT_MAX_REQUEST", strconv.Itoa(expectedRateLimitMaxRequest))
 		os.Setenv("HTTP_RATE_LIMIT_EXPIRATION_DURATION", fmt.Sprintf("%v", expectedRateLimitExpirationDuration))
 		os.Setenv("HTTP_SHUTDOWN_TIMEOUT", fmt.Sprintf("%v", expectedShutdownTimeout))
+		os.Setenv("HTTP_HOST", expectedHost)
+		os.Setenv("SWAGGER_SCHEME", "http,https")
 
 		cfg, err := LoadConfig()
 
@@ -38,6 +42,8 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Server.ReadTimeout, expectedReadTimeout)
 		assert.Equal(t, cfg.Server.WriteTimeout, expectedWriteTimeout)
 		assert.Equal(t, cfg.Server.RateLimitMaxRequest, expectedRateLimitMaxRequest)
+		assert.Equal(t, cfg.Server.Host, expectedHost)
+		assert.Equal(t, []string(cfg.Server.SwaggerScheme), expectedSwaggerScheme)
 		assert.Equal(t, cfg.Server.RateLimitExpirationDuration, expectedRateLimitExpirationDuration)
 		assert.Equal(t, cfg.Server.ShutdownTimeout, expectedShutdownTimeout)
 	})
@@ -143,6 +149,7 @@ func TestLoadConfig(t *testing.T) {
 
 	t.Run("check default values config", func(t *testing.T) {
 		expectedDefaultPort := 8080
+		expectedDefaultHTTPHost := "localhost"
 		expectedDefaultPostBodyLimit := 4 * 1024
 		expectedDefaultReadTimeout := time.Second * 10
 		expectedDefaultWriteTimeout := time.Second * 20
@@ -170,6 +177,8 @@ func TestLoadConfig(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, cfg.Server.Port, expectedDefaultPort)
+		assert.Equal(t, cfg.Server.Host, expectedDefaultHTTPHost)
+		assert.Equal(t, []string(cfg.Server.SwaggerScheme), []string{"http", "https"})
 		assert.Equal(t, cfg.Server.PostBodyLimit, expectedDefaultPostBodyLimit)
 		assert.Equal(t, cfg.Server.ReadTimeout, expectedDefaultReadTimeout)
 		assert.Equal(t, cfg.Server.WriteTimeout, expectedDefaultWriteTimeout)
