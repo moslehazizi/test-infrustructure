@@ -725,6 +725,9 @@ const docTemplate = `{
                 },
                 "per_page": {
                     "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },

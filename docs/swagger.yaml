@@ -188,6 +188,8 @@ definitions:
         type: integer
       per_page:
         type: integer
+      total:
+        type: integer
     type: object
   response.SuccessResponse:
     properties:

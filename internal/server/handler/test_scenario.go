@@ -125,7 +125,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 
 		span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", req.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", req.PerPage)))
 
-		items, err := handler.testScenario.GetPaginated(traceCtx, entity.TestScenarioPaginationRequest{
+		items, count, err := handler.testScenario.GetPaginated(traceCtx, entity.TestScenarioPaginationRequest{
 			Page:    req.Page,
 			PerPage: req.PerPage,
 		})
@@ -189,6 +189,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 			Page:    req.Page,
 			PerPage: req.PerPage,
 			Data:    responses,
+			Total:   count,
 		})
 	}
 }

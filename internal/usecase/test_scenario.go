@@ -19,7 +19,7 @@ import (
 type TestScenario interface {
 	Create(ctx context.Context, testScenario *entity.TestScenario) error
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
-	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error)
+	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error)
 	Start(ctx context.Context, id uint64) error
 }
 
@@ -216,7 +216,7 @@ func (service *testScenario) GetByID(ctx context.Context, id uint64) (*entity.Te
 	return result, nil
 }
 
-func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error) {
+func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error) {
 	tracer := otel.Tracer("test-scenario-usecase")
 	_, span := tracer.Start(ctx, "get_paginated_test_scenarios")
 	defer span.End()
@@ -225,7 +225,7 @@ func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.Tes
 
 	span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", pagReq.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", pagReq.PerPage)))
 
-	result, err := service.testScenarioRepository.GetPaginated(ctx, pagReq)
+	result, count, err := service.testScenarioRepository.GetPaginated(ctx, pagReq)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
 
@@ -236,7 +236,7 @@ func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.Tes
 			zap.Error(err),
 		)
 
-		return nil, fmt.Errorf("%w, %w", pkg.ErrFailedToGetTestScenarios, err)
+		return nil, 0, fmt.Errorf("%w, %w", pkg.ErrFailedToGetTestScenarios, err)
 	}
 
 	zap.L().Debug("retrieved paginated test scenarios",
@@ -245,7 +245,7 @@ func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.Tes
 		zap.Int("page", pagReq.Page),
 	)
 
-	return result, nil
+	return result, count, nil
 }
 
 func (service *testScenario) Start(ctx context.Context, id uint64) error {

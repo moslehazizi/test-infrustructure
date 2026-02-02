@@ -78,7 +78,7 @@ func (repo *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestS
 	return &testScenario, nil
 }
 
-func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error) {
+func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error) {
 	tracer := otel.Tracer("test-scenario-repository")
 	_, span := tracer.Start(ctx, "get_paginated_test_scenarios")
 	defer span.End()
@@ -88,13 +88,19 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 	var testScenarios []*entity.TestScenario
 	if pagRequest.Page < 0 || pagRequest.PerPage < 0 {
 		span.SetAttributes(attribute.String("error.type", "invalid_pagination"))
-		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, pkg.ErrNegativePageOrPerPageNotAllowed)
+		return nil, 0, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, pkg.ErrNegativePageOrPerPageNotAllowed)
 	}
 
 	query := postgres.QueryBuilder(ctx, repo.db).
 		Preload("TestCategory").
 		Preload("MotherService").
 		Order("id DESC")
+
+	var count int64
+
+	if err := postgres.QueryBuilder(ctx, repo.db).Model(&entity.TestScenario{}).Count(&count).Error; err != nil {
+		return nil, 0, fmt.Errorf("failed to get test scenario records total count: %w", err)
+	}
 
 	if pagRequest.Page > 0 && pagRequest.PerPage > 0 {
 		offset := (pagRequest.Page - 1) * pagRequest.PerPage
@@ -108,10 +114,10 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
-		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, err)
+		return nil, 0, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, err)
 	}
 
-	return testScenarios, nil
+	return testScenarios, count, nil
 }
 
 func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entity.ScenarioStatus) error {
