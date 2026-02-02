@@ -6,13 +6,11 @@ import (
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository/postgres"
 	"control-panel-service/internal/server/handler"
+	"control-panel-service/internal/server/middleware"
 	"control-panel-service/internal/usecase"
 	"fmt"
-	"log"
 
 	pslq "control-panel-service/pkg/database/postgres"
-
-	_ "control-panel-service/docs"
 
 	_ "control-panel-service/docs"
 
@@ -20,6 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"go.uber.org/zap"
 )
 
 func Serve(ctx context.Context, cfg *config.Config) error {
@@ -46,14 +45,19 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		},
 	}))
 
+	// Logging middleware should be early to capture all requests
+	app.Use(middleware.LoggingMiddleware())
+
 	eventProducer, err := provider.NewKafkaEventProducer(ctx, cfg)
 	if err != nil {
+		zap.L().Error("failed to create kafka event producer", zap.Error(err))
+
 		return fmt.Errorf("create kafka event producer: %w", err)
 	}
 	defer func() {
 		err := eventProducer.Close()
 		if err != nil {
-			log.Printf("failed to close event producer: %v", err)
+			zap.L().Error("failed to close event producer", zap.Error(err))
 		}
 	}()
 
@@ -67,6 +71,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		LogLevel:           pslq.Silent,
 	})
 	if err != nil {
+		zap.L().Error("failed to connect to postgres", zap.Error(err))
+
 		return fmt.Errorf("could not connect to postgres: %w", err)
 	}
 
@@ -95,7 +101,9 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	// swagger endpoint
 	apiV1.Get("/swagger/*", fiberSwagger.HandlerDefault)
 
-	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
+	zap.L().Info("fiber server starting",
+		zap.Int("port", cfg.Server.Port),
+	)
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 
@@ -110,15 +118,19 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	// Wait for context cancellation or server error
 	select {
 	case <-ctx.Done():
-		log.Println("Shutting down server gracefully...")
+		zap.L().Info("shutting down server gracefully")
 		// Gracefully shutdown the server
 		if err := app.Shutdown(); err != nil {
+			zap.L().Error("fiber shutdown failed", zap.Error(err))
+
 			return fmt.Errorf("fiber shutdown failed: %w", err)
 		}
-		log.Println("Server shut down successfully")
+		zap.L().Info("server shut down successfully")
 
 		return nil
 	case err := <-errChan:
+		zap.L().Error("server error", zap.Error(err))
+
 		return err
 	}
 }

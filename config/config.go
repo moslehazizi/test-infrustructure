@@ -12,6 +12,7 @@ type Config struct {
 	Server   Server
 	Kafka    Kafka
 	Postgres Postgres
+	Logger   Logger
 }
 
 type Server struct {
@@ -49,6 +50,12 @@ type Postgres struct {
 	MaxIdleConnections int           `envconfig:"POSTGRES_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `envconfig:"POSTGRES_CONN_MAX_LIFETIME"`
 	ConnMaxIdleTime    time.Duration `envconfig:"POSTGRES_CONN_MAX_IDLE_TIME"`
+}
+
+type Logger struct {
+	Level  string `envconfig:"LOG_LEVEL" default:"info"`
+	Format string `envconfig:"LOG_FORMAT" default:"json"` // json or console
+	Output string `envconfig:"LOG_OUTPUT" default:"stdout"`
 }
 
 // var GlobalConfigInstance *Config

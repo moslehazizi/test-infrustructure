@@ -54,6 +54,7 @@ func (handler *TestScenario) Create() fiber.Handler {
 				if req.Config == nil {
 					return nil
 				}
+
 				return &entity.TestServiceConfig{
 					MaxRequests:           req.Config.MaxRequests,
 					MaxDuration:           req.Config.MaxDuration,

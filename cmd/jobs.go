@@ -7,13 +7,14 @@ import (
 	"context"
 	"control-panel-service/config"
 	"control-panel-service/internal/jobs"
-	"log"
+	"control-panel-service/pkg/logger"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var jobsCmd = &cobra.Command{
@@ -30,10 +31,34 @@ to quickly create a Cobra application.`,
 
 		cfg, err := config.LoadConfig()
 		if err != nil {
-			log.Fatal("could not load config:", err)
-
-			return
+			_, _ = os.Stderr.WriteString("could not load config: " + err.Error() + "\n")
+			os.Exit(1)
 		}
+
+		// Initialize logger early
+		loggerConfig := &logger.Config{
+			Level:  cfg.Logger.Level,
+			Format: cfg.Logger.Format,
+			Output: cfg.Logger.Output,
+		}
+		zapLogger, err := logger.New(loggerConfig, logger.DefaultJobServiceName)
+		if err != nil {
+			_, _ = os.Stderr.WriteString("could not initialize logger: " + err.Error() + "\n")
+			os.Exit(1)
+		}
+		// Replace global logger so zap.L() can be used throughout the application
+		zap.ReplaceGlobals(zapLogger)
+		defer func() {
+			if syncErr := zap.L().Sync(); syncErr != nil {
+				// Ignore sync errors on stderr/stdout in some cases
+				_ = syncErr
+			}
+		}()
+
+		zap.L().Info("application starting",
+			zap.String("log_level", cfg.Logger.Level),
+			zap.String("log_format", cfg.Logger.Format),
+		)
 
 		// Create a context that can be cancelled
 		ctx, cancel := context.WithCancel(context.Background())
@@ -46,9 +71,9 @@ to quickly create a Cobra application.`,
 		// Run the consumer job in a goroutine
 		jobDone := make(chan struct{})
 		go func() {
-			log.Println("starting job serve")
+			zap.L().Info("starting job")
 			if err := jobs.Serve(ctx, &cfg); err != nil {
-				log.Println("could not serve job:", err)
+				zap.L().Error("job error", zap.Error(err))
 			}
 			close(jobDone)
 		}()
@@ -56,7 +81,9 @@ to quickly create a Cobra application.`,
 		// Wait for shutdown signal or job completion
 		select {
 		case sig := <-sigChan:
-			log.Printf("Received signal: %v. Initiating graceful shutdown...", sig)
+			zap.L().Info("received shutdown signal, initiating graceful shutdown",
+				zap.String("signal", sig.String()),
+			)
 			cancel() // Cancel the context to stop the job
 
 			// Give the job some time to finish gracefully
@@ -65,12 +92,12 @@ to quickly create a Cobra application.`,
 
 			select {
 			case <-jobDone:
-				log.Println("Job completed gracefully")
+				zap.L().Info("job completed gracefully")
 			case <-shutdownCtx.Done():
-				log.Println("Shutdown timeout reached, forcing exit")
+				zap.L().Warn("shutdown timeout reached, forcing exit")
 			}
 		case <-jobDone:
-			log.Println("Job completed")
+			zap.L().Info("job completed")
 		}
 	},
 }

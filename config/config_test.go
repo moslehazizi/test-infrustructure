@@ -141,6 +141,23 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Postgres.ConnMaxLifetime, expectedPostgresConnMaxLifetime)
 	})
 
+	t.Run("success fetch logger config", func(t *testing.T) {
+		expectedLogLevel := "debug"
+		expectedLogFormat := "console"
+		expectedLogOutput := "stderr"
+
+		os.Setenv("LOG_LEVEL", expectedLogLevel)
+		os.Setenv("LOG_FORMAT", expectedLogFormat)
+		os.Setenv("LOG_OUTPUT", expectedLogOutput)
+
+		cfg, err := LoadConfig()
+
+		assert.NoError(t, err)
+		assert.Equal(t, cfg.Logger.Level, expectedLogLevel)
+		assert.Equal(t, cfg.Logger.Format, expectedLogFormat)
+		assert.Equal(t, cfg.Logger.Output, expectedLogOutput)
+	})
+
 	t.Run("check default values config", func(t *testing.T) {
 		expectedDefaultPort := 8080
 		expectedDefaultPostBodyLimit := 4 * 1024
@@ -155,6 +172,9 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKafkaBatchSize := 1000
 		expectedDefaultKafkaBatchBytes := 1000000 // 1MB
 		expectedDefaultKafkaProvisioningTopic := "provisioning"
+		expectedDefaultLogLevel := "info"
+		expectedDefaultLogFormat := "json"
+		expectedDefaultLogOutput := "stdout"
 
 		// Unset Kafka environment variables to test defaults
 		os.Unsetenv("KAFKA_DIALER_TIMEOUT")
@@ -165,6 +185,10 @@ func TestLoadConfig(t *testing.T) {
 		// Unset shutdown timeout to test default
 		os.Unsetenv("HTTP_SHUTDOWN_TIMEOUT")
 		os.Unsetenv("KAFKA_PROVISIONING_TOPIC")
+		// Unset logger environment variables to test defaults
+		os.Unsetenv("LOG_LEVEL")
+		os.Unsetenv("LOG_FORMAT")
+		os.Unsetenv("LOG_OUTPUT")
 
 		cfg, err := LoadConfig()
 
@@ -182,6 +206,9 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.BatchSize, expectedDefaultKafkaBatchSize)
 		assert.Equal(t, cfg.Kafka.BatchBytes, expectedDefaultKafkaBatchBytes)
 		assert.Equal(t, cfg.Kafka.ProvisioningTopic, expectedDefaultKafkaProvisioningTopic)
+		assert.Equal(t, cfg.Logger.Level, expectedDefaultLogLevel)
+		assert.Equal(t, cfg.Logger.Format, expectedDefaultLogFormat)
+		assert.Equal(t, cfg.Logger.Output, expectedDefaultLogOutput)
 	})
 
 	t.Run("error - invalid environment variable value", func(t *testing.T) {
