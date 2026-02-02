@@ -53,7 +53,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		DeepLinking:          true,
 		PersistAuthorization: true,
 		DocExpansion:         "list",
-		ConfigURL:            cfg.Server.SwaggerDocJSON,
+		URL:                  cfg.Server.SwaggerDocJSON,
 	})
 
 	eventProducer, err := provider.NewKafkaEventProducer(ctx, cfg)
