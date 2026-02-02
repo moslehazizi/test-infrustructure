@@ -49,7 +49,13 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	swaggerHost := cfg.Server.Host + ":" + strconv.Itoa(cfg.Server.Port)
 	docs.SwaggerInfo.Host = swaggerHost
 	docs.SwaggerInfo.Schemes = cfg.Server.SwaggerScheme
-	
+
+	swaggerHandler := fiberSwagger.New(fiberSwagger.Config{
+		Title:                "Control Panel API",
+		DeepLinking:          true,
+		PersistAuthorization: true,
+		DocExpansion:         "list",
+	})
 
 	eventProducer, err := provider.NewKafkaEventProducer(ctx, cfg)
 	if err != nil {
@@ -106,7 +112,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Post("/test-scenarios/:id/start", testScenarioHandler.Start())
 
 	// swagger endpoint
-	apiV1.Get("/swagger/*", fiberSwagger.HandlerDefault)
+	app.Get("/docs/*", swaggerHandler)
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
 
