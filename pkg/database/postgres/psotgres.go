@@ -29,17 +29,17 @@ type DatabaseConfig struct {
 	ConnMaxIdleTime    time.Duration
 }
 
-// LogLevel log level
+// LogLevel log level.
 type LogLevel int
 
 const (
-	// Silent silent log level
+	// Silent silent log level.
 	Silent LogLevel = iota + 1
-	// Error error log level
+	// Error error log level.
 	Error
-	// Warn warn log level
+	// Warn warn log level.
 	Warn
-	// Info info log level
+	// Info info log level.
 	Info
 )
 

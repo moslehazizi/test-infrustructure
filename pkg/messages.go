@@ -49,4 +49,5 @@ const (
 	InvalidZeroSumOfBadValues         = "وقتی که درصد ارسال داده اشتباه صفر است مجموع حالت های داده اشتباه باید صفر باشد"
 	Invalid100SumOfBadValues          = "وقتی که درصد ارسال داده اشتباه بیشتر از صفر است باید مجموع درصد حالت ها ۱۰۰ باشد"
 	TestServiceConfigIsRequired       = "تنظیمات سرویس تست الزامی است."
+	OnlyPendingScenariosCanBeStarted  = "تنها سناریو های با وضعیت در انتظار میتوانند شروع به اجرا شوند."
 )
