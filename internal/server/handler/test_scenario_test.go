@@ -639,7 +639,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 			Page:    1,
 			PerPage: 2,
 		}
-		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.Local)
+		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.UTC)
 
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
 
@@ -926,7 +926,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
 	})
 	t.Run("success case", func(t *testing.T) {
-		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.Local)
+		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := 100
 		rate := 50
 		exe := 500000
@@ -1074,7 +1074,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.Equal(t, expected, got.Data)
 	})
 	t.Run("success case => category and mother service are null", func(t *testing.T) {
-		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.Local)
+		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := 100
 		rate := 50
 		exe := 500000
