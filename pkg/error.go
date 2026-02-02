@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,26 +14,29 @@ type HTTPError struct {
 }
 
 func (e *HTTPError) AsFiber(ctx *fiber.Ctx) error {
-	// nolint
-	return ctx.Status(e.status).JSON(&fiber.Map{
+	if err := ctx.Status(e.status).JSON(&fiber.Map{
 		"error": e.msg,
-	})
+	}); err != nil {
+		return fmt.Errorf("failed to write JSON response: %w", err)
+	}
+
+	return nil
 }
 
 func ToHTTPError(err error) *HTTPError {
-	// nolint:errorlint
-	switch x := err.(type) {
-	case interface{ Unwrap() error }:
-		e := x.Unwrap()
-		if e == nil {
-			return toHTTPError(err)
-		} else {
-			return toHTTPError(e)
+	var unwrapper interface{ Unwrap() error }
+	if errors.As(err, &unwrapper) {
+		unwrappedErr := unwrapper.Unwrap()
+		if unwrappedErr != nil {
+			return toHTTPError(unwrappedErr)
 		}
-	case interface{ Unwrap() []error }:
+	}
+
+	var multiUnwrapper interface{ Unwrap() []error }
+	if errors.As(err, &multiUnwrapper) {
 		var finalErr *HTTPError
-		for _, err := range x.Unwrap() {
-			herr := toHTTPError(err)
+		for _, e := range multiUnwrapper.Unwrap() {
+			herr := toHTTPError(e)
 			if finalErr == nil {
 				finalErr = herr
 
@@ -44,12 +48,12 @@ func ToHTTPError(err error) *HTTPError {
 		}
 
 		return finalErr
-	default:
-		return toHTTPError(err)
 	}
+
+	return toHTTPError(err)
 }
 
-// nolint
+//nolint:gocyclo,maintidx // Complex error mapping function with many error types
 func toHTTPError(err error) *HTTPError {
 	var status int
 	var msg string

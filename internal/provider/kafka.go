@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 	"control-panel-service/config"
+	"control-panel-service/pkg/logger"
 	"fmt"
-	"log"
 
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl/plain"
+	"go.uber.org/zap"
 )
 
 type EventProducer interface {
@@ -20,11 +21,14 @@ type kafkaEventProducer struct {
 }
 
 func NewKafkaEventProducer(ctx context.Context, cfg *config.Config) (EventProducer, error) {
-	log.Printf("initializing Kafka event producer: %s:%d", cfg.Kafka.Host, cfg.Kafka.Port)
+	zap.L().Info("initializing Kafka event producer",
+		zap.String("host", cfg.Kafka.Host),
+		zap.Int("port", cfg.Kafka.Port),
+	)
 
 	var transport *kafka.Transport
 	if cfg.Kafka.Username != "" && cfg.Kafka.Password != "" {
-		log.Println("configuring SASL authentication for Kafka producer")
+		zap.L().Info("configuring SASL authentication for Kafka producer")
 		mechanism := plain.Mechanism{
 			Username: cfg.Kafka.Username,
 			Password: cfg.Kafka.Password,
@@ -37,20 +41,27 @@ func NewKafkaEventProducer(ctx context.Context, cfg *config.Config) (EventProduc
 		}
 
 		brokerAddr := fmt.Sprintf("%s:%d", cfg.Kafka.Host, cfg.Kafka.Port)
-		log.Printf("connecting to Kafka broker: %s", brokerAddr)
+		zap.L().Info("connecting to Kafka broker",
+			zap.String("broker", brokerAddr),
+		)
 		_, err := dialer.DialContext(ctx, "tcp", brokerAddr)
 		if err != nil {
-			log.Printf("failed to connect to Kafka broker %s: %v", brokerAddr, err)
+			zap.L().Error("failed to connect to Kafka broker",
+				zap.String("broker", brokerAddr),
+				zap.Error(err),
+			)
 
 			return nil, fmt.Errorf("could not connect to kafka: %w", err)
 		}
-		log.Printf("successfully connected to Kafka broker: %s", brokerAddr)
+		zap.L().Info("successfully connected to Kafka broker",
+			zap.String("broker", brokerAddr),
+		)
 
 		transport = &kafka.Transport{
 			SASL: mechanism,
 		}
 	} else {
-		log.Println("no authentication configured for Kafka producer")
+		zap.L().Info("no authentication configured for Kafka producer")
 	}
 
 	kafkaWriter := &kafka.Writer{
@@ -65,7 +76,7 @@ func NewKafkaEventProducer(ctx context.Context, cfg *config.Config) (EventProduc
 		kafkaWriter.Transport = transport
 	}
 
-	log.Println("Kafka event producer initialized successfully")
+	zap.L().Info("Kafka event producer initialized successfully")
 
 	return &kafkaEventProducer{
 		writer: kafkaWriter,
@@ -73,7 +84,12 @@ func NewKafkaEventProducer(ctx context.Context, cfg *config.Config) (EventProduc
 }
 
 func (eventProducer *kafkaEventProducer) SendEvent(ctx context.Context, payload []byte, topic string) error {
-	log.Printf("sending event to topic '%s', payload size: %d bytes", topic, len(payload))
+	requestID := logger.GetRequestID(ctx)
+	zap.L().Info("sending event to Kafka topic",
+		zap.String(logger.FieldTopic, topic),
+		zap.Int("payload_size", len(payload)),
+		zap.String(logger.FieldRequestID, requestID),
+	)
 
 	err := eventProducer.writer.WriteMessages(ctx,
 		kafka.Message{
@@ -83,25 +99,32 @@ func (eventProducer *kafkaEventProducer) SendEvent(ctx context.Context, payload 
 	)
 
 	if err != nil {
-		log.Printf("failed to send event to topic '%s': %v", topic, err)
+		zap.L().Error("failed to send event to Kafka topic",
+			zap.String(logger.FieldTopic, topic),
+			zap.String(logger.FieldRequestID, requestID),
+			zap.Error(err),
+		)
 
 		return fmt.Errorf("failed to write messages: %w", err)
 	}
 
-	log.Printf("successfully sent event to topic '%s'", topic)
+	zap.L().Info("successfully sent event to Kafka topic",
+		zap.String(logger.FieldTopic, topic),
+		zap.String(logger.FieldRequestID, requestID),
+	)
 
 	return nil
 }
 
 func (eventProducer *kafkaEventProducer) Close() error {
-	log.Println("closing Kafka producer")
+	zap.L().Info("closing Kafka producer")
 	err := eventProducer.writer.Close()
 	if err != nil {
-		log.Printf("error closing Kafka producer: %v", err)
+		zap.L().Error("error closing Kafka producer", zap.Error(err))
 
 		return fmt.Errorf("%w", err)
 	}
-	log.Println("Kafka producer closed successfully")
+	zap.L().Info("Kafka producer closed successfully")
 
 	return nil
 }
@@ -118,11 +141,15 @@ type kafkaConsumer struct {
 }
 
 func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsumer, error) {
-	log.Printf("initializing Kafka event consumer: %s:%d, topic: %s", cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.ProvisioningTopic)
+	zap.L().Info("initializing Kafka event consumer",
+		zap.String("host", cfg.Kafka.Host),
+		zap.Int("port", cfg.Kafka.Port),
+		zap.String(logger.FieldTopic, cfg.Kafka.ProvisioningTopic),
+	)
 
 	var dialer *kafka.Dialer
 	if cfg.Kafka.Username != "" && cfg.Kafka.Password != "" {
-		log.Println("configuring SASL authentication for Kafka consumer")
+		zap.L().Info("configuring SASL authentication for Kafka consumer")
 		mechanism := plain.Mechanism{
 			Username: cfg.Kafka.Username,
 			Password: cfg.Kafka.Password,
@@ -135,16 +162,23 @@ func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsum
 		}
 
 		brokerAddr := fmt.Sprintf("%s:%d", cfg.Kafka.Host, cfg.Kafka.Port)
-		log.Printf("connecting to Kafka broker: %s", brokerAddr)
+		zap.L().Info("connecting to Kafka broker",
+			zap.String("broker", brokerAddr),
+		)
 		_, err := dialer.DialContext(ctx, "tcp", brokerAddr)
 		if err != nil {
-			log.Printf("failed to connect to Kafka broker %s: %v", brokerAddr, err)
+			zap.L().Error("failed to connect to Kafka broker",
+				zap.String("broker", brokerAddr),
+				zap.Error(err),
+			)
 
 			return nil, fmt.Errorf("could not connect to kafka: %w", err)
 		}
-		log.Printf("successfully connected to Kafka broker: %s", brokerAddr)
+		zap.L().Info("successfully connected to Kafka broker",
+			zap.String("broker", brokerAddr),
+		)
 	} else {
-		log.Println("no authentication configured for Kafka consumer")
+		zap.L().Info("no authentication configured for Kafka consumer")
 	}
 
 	brokerAddr := fmt.Sprintf("%s:%d", cfg.Kafka.Host, cfg.Kafka.Port)
@@ -158,7 +192,9 @@ func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsum
 		readerCfg.Dialer = dialer
 	}
 	kafkaReader := kafka.NewReader(readerCfg)
-	log.Printf("Kafka event consumer initialized successfully for topic: %s", cfg.Kafka.ProvisioningTopic)
+	zap.L().Info("Kafka event consumer initialized successfully",
+		zap.String(logger.FieldTopic, cfg.Kafka.ProvisioningTopic),
+	)
 
 	return &kafkaConsumer{
 		reader: kafkaReader,
@@ -167,36 +203,47 @@ func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsum
 
 //nolint:unused // Consume method is kept for future use
 func (eventConsumer *kafkaConsumer) Consume(ctx context.Context, topic string, ch chan []byte) error {
-	log.Printf("starting to consume messages from topic: %s", topic)
+	zap.L().Info("starting to consume messages from Kafka topic",
+		zap.String(logger.FieldTopic, topic),
+	)
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("consumption context cancelled for topic: %s", topic)
+			zap.L().Info("consumption context cancelled",
+				zap.String(logger.FieldTopic, topic),
+			)
 
 			return nil
 		default:
 			m, err := eventConsumer.reader.ReadMessage(ctx)
 			if err != nil {
-				log.Printf("error reading message from kafka topic '%s': %v", topic, err)
+				zap.L().Error("error reading message from Kafka topic",
+					zap.String(logger.FieldTopic, topic),
+					zap.Error(err),
+				)
 
 				continue
 			}
-			log.Printf("received message from topic '%s', partition: %d, offset: %d, size: %d bytes",
-				m.Topic, m.Partition, m.Offset, len(m.Value))
+			zap.L().Info("received message from Kafka topic",
+				zap.String(logger.FieldTopic, m.Topic),
+				zap.Int(logger.FieldPartition, m.Partition),
+				zap.Int64(logger.FieldOffset, m.Offset),
+				zap.Int("message_size", len(m.Value)),
+			)
 			ch <- m.Value
 		}
 	}
 }
 
 func (eventConsumer *kafkaConsumer) Close() error {
-	log.Println("closing Kafka consumer")
+	zap.L().Info("closing Kafka consumer")
 	err := eventConsumer.reader.Close()
 	if err != nil {
-		log.Printf("error closing Kafka consumer: %v", err)
+		zap.L().Error("error closing Kafka consumer", zap.Error(err))
 
 		return fmt.Errorf("%w", err)
 	}
-	log.Println("Kafka consumer closed successfully")
+	zap.L().Info("Kafka consumer closed successfully")
 
 	return nil
 }

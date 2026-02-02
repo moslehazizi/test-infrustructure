@@ -15,6 +15,9 @@ import (
 func TestLoadConfig(t *testing.T) {
 	t.Run("success fetch http config", func(t *testing.T) {
 		expectedPort := 8080
+		expectedHost := "localhost"
+		expectedSwaggerScheme := []string{"http", "https"}
+		expectedSwaggerDocJSON := "doc.json"
 		expectedPostBodyLimit := 4 * 1024
 		expectedReadTimeout := time.Second * 10
 		expectedWriteTimeout := time.Second * 20
@@ -29,6 +32,9 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("HTTP_RATE_LIMIT_MAX_REQUEST", strconv.Itoa(expectedRateLimitMaxRequest))
 		os.Setenv("HTTP_RATE_LIMIT_EXPIRATION_DURATION", fmt.Sprintf("%v", expectedRateLimitExpirationDuration))
 		os.Setenv("HTTP_SHUTDOWN_TIMEOUT", fmt.Sprintf("%v", expectedShutdownTimeout))
+		os.Setenv("SWAGGER_HOST", expectedHost)
+		os.Setenv("SWAGGER_SCHEME", "http,https")
+		os.Setenv("SWAGGER_DOC_JSON", "doc.json")
 
 		cfg, err := LoadConfig()
 
@@ -38,6 +44,9 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Server.ReadTimeout, expectedReadTimeout)
 		assert.Equal(t, cfg.Server.WriteTimeout, expectedWriteTimeout)
 		assert.Equal(t, cfg.Server.RateLimitMaxRequest, expectedRateLimitMaxRequest)
+		assert.Equal(t, cfg.Server.SwaggerHost, expectedHost)
+		assert.Equal(t, []string(cfg.Server.SwaggerScheme), expectedSwaggerScheme)
+		assert.Equal(t, cfg.Server.SwaggerDocJSON, expectedSwaggerDocJSON)
 		assert.Equal(t, cfg.Server.RateLimitExpirationDuration, expectedRateLimitExpirationDuration)
 		assert.Equal(t, cfg.Server.ShutdownTimeout, expectedShutdownTimeout)
 	})
@@ -141,8 +150,27 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Postgres.ConnMaxLifetime, expectedPostgresConnMaxLifetime)
 	})
 
+	t.Run("success fetch logger config", func(t *testing.T) {
+		expectedLogLevel := "debug"
+		expectedLogFormat := "console"
+		expectedLogOutput := "stderr"
+
+		os.Setenv("LOG_LEVEL", expectedLogLevel)
+		os.Setenv("LOG_FORMAT", expectedLogFormat)
+		os.Setenv("LOG_OUTPUT", expectedLogOutput)
+
+		cfg, err := LoadConfig()
+
+		assert.NoError(t, err)
+		assert.Equal(t, cfg.Logger.Level, expectedLogLevel)
+		assert.Equal(t, cfg.Logger.Format, expectedLogFormat)
+		assert.Equal(t, cfg.Logger.Output, expectedLogOutput)
+	})
+
 	t.Run("check default values config", func(t *testing.T) {
 		expectedDefaultPort := 8080
+		expectedDefaultHTTPHost := "localhost"
+		expectedDefaultSwaggerDocJSON := "doc.json"
 		expectedDefaultPostBodyLimit := 4 * 1024
 		expectedDefaultReadTimeout := time.Second * 10
 		expectedDefaultWriteTimeout := time.Second * 20
@@ -155,6 +183,9 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKafkaBatchSize := 1000
 		expectedDefaultKafkaBatchBytes := 1000000 // 1MB
 		expectedDefaultKafkaProvisioningTopic := "provisioning"
+		expectedDefaultLogLevel := "info"
+		expectedDefaultLogFormat := "json"
+		expectedDefaultLogOutput := "stdout"
 
 		// Unset Kafka environment variables to test defaults
 		os.Unsetenv("KAFKA_DIALER_TIMEOUT")
@@ -165,11 +196,18 @@ func TestLoadConfig(t *testing.T) {
 		// Unset shutdown timeout to test default
 		os.Unsetenv("HTTP_SHUTDOWN_TIMEOUT")
 		os.Unsetenv("KAFKA_PROVISIONING_TOPIC")
+		// Unset logger environment variables to test defaults
+		os.Unsetenv("LOG_LEVEL")
+		os.Unsetenv("LOG_FORMAT")
+		os.Unsetenv("LOG_OUTPUT")
 
 		cfg, err := LoadConfig()
 
 		assert.NoError(t, err)
 		assert.Equal(t, cfg.Server.Port, expectedDefaultPort)
+		assert.Equal(t, cfg.Server.SwaggerHost, expectedDefaultHTTPHost)
+		assert.Equal(t, []string(cfg.Server.SwaggerScheme), []string{"http", "https"})
+		assert.Equal(t, cfg.Server.SwaggerDocJSON, expectedDefaultSwaggerDocJSON)
 		assert.Equal(t, cfg.Server.PostBodyLimit, expectedDefaultPostBodyLimit)
 		assert.Equal(t, cfg.Server.ReadTimeout, expectedDefaultReadTimeout)
 		assert.Equal(t, cfg.Server.WriteTimeout, expectedDefaultWriteTimeout)
@@ -182,6 +220,9 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.BatchSize, expectedDefaultKafkaBatchSize)
 		assert.Equal(t, cfg.Kafka.BatchBytes, expectedDefaultKafkaBatchBytes)
 		assert.Equal(t, cfg.Kafka.ProvisioningTopic, expectedDefaultKafkaProvisioningTopic)
+		assert.Equal(t, cfg.Logger.Level, expectedDefaultLogLevel)
+		assert.Equal(t, cfg.Logger.Format, expectedDefaultLogFormat)
+		assert.Equal(t, cfg.Logger.Output, expectedDefaultLogOutput)
 	})
 
 	t.Run("error - invalid environment variable value", func(t *testing.T) {
