@@ -608,6 +608,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 			Page:    sampleReq.Page,
 			PerPage: sampleReq.PerPage,
 		}
+		count := int64(2)
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
 		expectedMotherServices := []*entity.MotherService{
 			{
@@ -634,7 +635,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 			},
 		}
 
-		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, nil)
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, count, nil)
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
@@ -650,6 +651,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, result.Total, count)
 		assert.Equal(t, result.Data[0].Name, expectedMotherServices[0].Name)
 		assert.Equal(t, result.Data[1].Name, expectedMotherServices[1].Name)
 		mockSvc.AssertExpectations(t)
@@ -670,6 +672,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 			Page:    sampleReq.Page,
 			PerPage: sampleReq.PerPage,
 		}
+		count := int64(2)
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
 		expectedMotherServices := []*entity.MotherService{
 			{
@@ -688,7 +691,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 			},
 		}
 
-		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, nil)
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, count, nil)
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
@@ -705,6 +708,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		assert.Equal(t, result.Data[0].Name, expectedMotherServices[0].Name)
+		assert.Equal(t, result.Total, count)
 		assert.Equal(t, result.Data[1].Name, expectedMotherServices[1].Name)
 		mockSvc.AssertExpectations(t)
 	})
@@ -776,7 +780,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		}
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
 
-		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(nil, errors.New("error happened"))
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(nil, int64(0), errors.New("error happened"))
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
@@ -813,7 +817,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		}
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
 
-		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return([]*entity.MotherService{}, nil)
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return([]*entity.MotherService{}, int64(0), nil)
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
@@ -830,6 +834,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, result.Total, int64(0))
 		assert.Equal(t, result.Data, []response.MotherService(nil))
 		mockSvc.AssertExpectations(t)
 	})

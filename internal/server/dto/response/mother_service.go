@@ -25,6 +25,7 @@ type PaginatedMotherServices struct {
 	Data    []MotherService `json:"data"`
 	Page    int             `json:"page"`
 	PerPage int             `json:"per_page"`
+	Total   int64           `json:"total"`
 }
 
 type MotherServiceResponseByID struct {

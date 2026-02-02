@@ -204,7 +204,7 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 			PerPage: req.PerPage,
 		}
 
-		svcResults, err := handler.motherService.GetPaginated(traceCtx, reqSvc)
+		svcResults, count, err := handler.motherService.GetPaginated(traceCtx, reqSvc)
 		if err != nil {
 			span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
@@ -233,6 +233,7 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 			Data:    responses,
 			Page:    req.Page,
 			PerPage: req.PerPage,
+			Total:   count,
 		})
 	}
 }

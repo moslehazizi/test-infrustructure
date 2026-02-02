@@ -153,7 +153,6 @@ to quickly create a Cobra application.`,
 	},
 }
 
-
 func initConn() (*grpc.ClientConn, error) {
 	cfg, err := config.LoadConfig()
 	if err != nil {

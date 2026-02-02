@@ -9,10 +9,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"fmt"
 )
 
 type TestScenario struct {
