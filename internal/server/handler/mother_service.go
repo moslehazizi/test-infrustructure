@@ -180,23 +180,32 @@ func (handler *MotherService) GetByID() fiber.Handler {
 //	@Router			/api/v1/mother-services/search [post]
 func (handler *MotherService) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("mother-service-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "get_paginated_mother_services")
+		defer span.End()
+
 		req := new(request.PaginationRequest)
 
 		if err := ctx.BodyParser(req); err != nil {
+			span.SetAttributes(attribute.String("error.type", "bad_request"))
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
 		if req.Page < 0 || req.PerPage < 0 {
+			span.SetAttributes(attribute.String("error.type", "invalid_pagination"))
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
+
+		span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", req.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", req.PerPage)))
 
 		reqSvc := entity.PaginationRequest{
 			Page:    req.Page,
 			PerPage: req.PerPage,
 		}
 
-		svcResults, err := handler.motherService.GetPaginated(ctx.Context(), reqSvc)
+		svcResults, err := handler.motherService.GetPaginated(traceCtx, reqSvc)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 

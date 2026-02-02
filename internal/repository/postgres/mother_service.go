@@ -73,8 +73,15 @@ func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*enti
 }
 
 func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, error) {
+	tracer := otel.Tracer("mother-service-repository")
+	_, span := tracer.Start(ctx, "get_paginated_mother_services")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("pagination.page", fmt.Sprintf("%d", paginationRequest.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", paginationRequest.PerPage)))
+
 	var motherServices []*entity.MotherService
 	if paginationRequest.Page < 0 || paginationRequest.PerPage < 0 {
+		span.SetAttributes(attribute.String("error.type", "invalid_pagination"))
 		return nil, fmt.Errorf("failed to get mother service records: %w", pkg.ErrNegativePageOrPerPageNotAllowed)
 	}
 
@@ -90,6 +97,7 @@ func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRe
 
 	err := query.Find(&motherServices).Error
 	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
 		return nil, fmt.Errorf("failed to get mother service records: %w", err)
 	}
 

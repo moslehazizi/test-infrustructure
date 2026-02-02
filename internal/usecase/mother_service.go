@@ -110,8 +110,15 @@ func (service *motherService) GetByID(ctx context.Context, id uint64) (*entity.M
 }
 
 func (service *motherService) GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, error) {
+	tracer := otel.Tracer("mother-service-usecase")
+	_, span := tracer.Start(ctx, "get_paginated_mother_services")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", paginationRequest.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", paginationRequest.PerPage)))
+
 	result, err := service.motherServiceRepo.GetPaginated(ctx, paginationRequest)
 	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
 		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetMotherServices, err)
 	}
 
