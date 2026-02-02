@@ -6,6 +6,7 @@ import (
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/logger"
 	"net/http"
 	"strconv"
 
@@ -41,9 +42,12 @@ func NewTestScenarioHandler(testScenario usecase.TestScenario) *TestScenario {
 //	@Router			/api/v1/test-scenarios [post]
 func (handler *TestScenario) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		requestID := logger.GetRequestID(ctx.Context())
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "create_test_scenario")
 		defer span.End()
+
+		span.SetAttributes(attribute.String("request_id", requestID))
 
 		req := new(request.TestScenario)
 
@@ -116,6 +120,9 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "get_paginated_test_scenarios")
 		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
 
 		req := new(request.TestScenarioPaginationRequest)
 		if err := ctx.BodyParser(req); err != nil {
@@ -212,6 +219,9 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "get_test_scenario_by_id")
 		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
 
 		idParam := ctx.Params("id")
 		if idParam == "" {
@@ -331,6 +341,9 @@ func (handler *TestScenario) Start() fiber.Handler {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "start_test_scenario")
 		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
 
 		idParam := ctx.Params("id")
 		if idParam == "" {

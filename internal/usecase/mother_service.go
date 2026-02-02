@@ -43,6 +43,7 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 	defer span.End()
 
 	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	err := motherService.Validate()
 	if err != nil {
@@ -136,6 +137,7 @@ func (service *motherService) GetByID(ctx context.Context, id uint64) (*entity.M
 	defer span.End()
 
 	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", id)))
 
@@ -170,6 +172,7 @@ func (service *motherService) GetPaginated(ctx context.Context, paginationReques
 	defer span.End()
 
 	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", paginationRequest.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", paginationRequest.PerPage)))
 

@@ -5,6 +5,7 @@ import (
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/logger"
 	"net/http"
 	"strconv"
 
@@ -42,6 +43,9 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 		tracer := otel.Tracer("test-category-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "get_test_categories")
 		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
 
 		svcResults, err := handler.testCategoryService.GetAll(traceCtx)
 		if err != nil {
@@ -85,6 +89,9 @@ func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 		tracer := otel.Tracer("test-category-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "get_test_category_by_id")
 		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
 
 		idParam := ctx.Params("id")
 		if idParam == "" {

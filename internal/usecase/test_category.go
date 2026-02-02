@@ -33,6 +33,7 @@ func (srv *testCategoryService) GetAll(ctx context.Context) ([]entity.TestCatego
 	defer span.End()
 
 	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	items, err := srv.testCategoryRepo.GetAll(ctx)
 	if err != nil {
@@ -60,6 +61,7 @@ func (srv *testCategoryService) GetByID(ctx context.Context, id uint64) (*entity
 	defer span.End()
 
 	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", id)))
 

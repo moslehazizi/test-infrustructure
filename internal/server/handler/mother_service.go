@@ -6,6 +6,7 @@ import (
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/logger"
 	"errors"
 	"net/http"
 	"strconv"
@@ -46,6 +47,9 @@ func (handler *MotherService) Create() fiber.Handler {
 		tracer := otel.Tracer("mother-service-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "create_mother_service")
 		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
 
 		req := new(request.MotherService)
 
@@ -126,6 +130,9 @@ func (handler *MotherService) GetByID() fiber.Handler {
 		traceCtx, span := tracer.Start(ctx.Context(), "get_mother_service-by-id")
 		defer span.End()
 
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
 		strID := strings.TrimSpace(ctx.Params("id"))
 
 		id, err := strconv.ParseUint(strID, 10, 64)
@@ -184,6 +191,9 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 		tracer := otel.Tracer("mother-service-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "get_paginated_mother_services")
 		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
 
 		req := new(request.PaginationRequest)
 

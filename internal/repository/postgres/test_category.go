@@ -7,6 +7,7 @@ import (
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
+	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
 
@@ -31,6 +32,9 @@ func (repo *testCategory) GetAll(ctx context.Context) ([]entity.TestCategory, er
 	_, span := tracer.Start(ctx, "get_test_categories")
 	defer span.End()
 
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
 	span.SetAttributes(attribute.String("database.operation", "select"))
 
 	var items []entity.TestCategory
@@ -47,6 +51,9 @@ func (repo *testCategory) GetByID(ctx context.Context, id uint64) (*entity.TestC
 	tracer := otel.Tracer("test-category-repository")
 	_, span := tracer.Start(ctx, "get_test_category_by_id")
 	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", fmt.Sprintf("%d", id)))
 

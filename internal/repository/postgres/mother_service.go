@@ -7,6 +7,7 @@ import (
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
+	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
 
@@ -31,6 +32,9 @@ func (m *motherServiceRepository) Create(ctx context.Context, motherService *ent
 	_, span := tracer.Start(ctx, "create_mother_service")
 	defer span.End()
 
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
 	span.SetAttributes(attribute.String("database.operation", "insert"), attribute.String("service.name", motherService.Name))
 
 	err := postgres.QueryBuilder(ctx, m.db).Create(motherService).Error
@@ -54,6 +58,9 @@ func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*enti
 	_, span := tracer.Start(ctx, "get_mother_service_by_id")
 	defer span.End()
 
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", fmt.Sprintf("%d", id)))
 
 	var motherService entity.MotherService
@@ -76,6 +83,9 @@ func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRe
 	tracer := otel.Tracer("mother-service-repository")
 	_, span := tracer.Start(ctx, "get_paginated_mother_services")
 	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("pagination.page", fmt.Sprintf("%d", paginationRequest.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", paginationRequest.PerPage)))
 

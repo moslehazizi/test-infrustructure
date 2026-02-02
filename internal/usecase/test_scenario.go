@@ -57,7 +57,9 @@ func (service *testScenario) Create(
 	tracer := otel.Tracer("test-scenario-usecase")
 	_, span := tracer.Start(ctx, "create_test_scenario")
 	defer span.End()
+
 	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("test_scenario.name", testScenario.Name), attribute.String("test_category.id", fmt.Sprintf("%d", testScenario.TestCategoryID)), attribute.String("mother_service.id", fmt.Sprintf("%d", testScenario.MotherServiceID)))
 
@@ -188,6 +190,7 @@ func (service *testScenario) GetByID(ctx context.Context, id uint64) (*entity.Te
 	defer span.End()
 
 	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
 
@@ -222,6 +225,7 @@ func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.Tes
 	defer span.End()
 
 	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", pagReq.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", pagReq.PerPage)))
 
@@ -252,6 +256,9 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	tracer := otel.Tracer("test-scenario-usecase")
 	_, span := tracer.Start(ctx, "start_test_scenario")
 	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
 
