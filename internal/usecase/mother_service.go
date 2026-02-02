@@ -88,11 +88,20 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 }
 
 func (service *motherService) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {
+	tracer := otel.Tracer("mother-service-usecase")
+	_, span := tracer.Start(ctx, "get_mother_service_by_id")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", id)))
+
 	result, err := service.motherServiceRepo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pkg.ErrMotherServiceNotFound) {
+			span.SetAttributes(attribute.String("error.type", "not_found"))
 			return nil, pkg.ErrMotherServiceNotFound
 		}
+
+		span.SetAttributes(attribute.String("error.type", "get_error"), attribute.String("error.message", err.Error()))
 
 		return nil, fmt.Errorf("%w, %w", pkg.ErrFailedToGetMotherService, err)
 	}

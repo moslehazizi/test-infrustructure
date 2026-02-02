@@ -50,16 +50,25 @@ func (m *motherServiceRepository) Create(ctx context.Context, motherService *ent
 }
 
 func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {
+	tracer := otel.Tracer("mother-service-repository")
+	_, span := tracer.Start(ctx, "get_mother_service_by_id")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", fmt.Sprintf("%d", id)))
+
 	var motherService entity.MotherService
 	err := postgres.QueryBuilder(ctx, m.db).First(&motherService, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			span.SetAttributes(attribute.String("error.type", "not_found"))
 			return nil, pkg.ErrMotherServiceNotFound
 		}
 
+		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
 		return nil, fmt.Errorf("failed to get mother service record: %w", err)
 	}
 
+	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", motherService.ID)))
 	return &motherService, nil
 }
 

@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+    "fmt"
 )
 
 type MotherService struct {
@@ -120,14 +121,21 @@ func (handler *MotherService) Create() fiber.Handler {
 //	@Router			/api/v1/mother-services/{id} [get]
 func (handler *MotherService) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("mother-service-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "get_mother_service-by-id")
+		defer span.End()
+
 		strID := strings.TrimSpace(ctx.Params("id"))
 
 		id, err := strconv.ParseUint(strID, 10, 64)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
 			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
-		svcResult, err := handler.motherService.GetByID(ctx.Context(), id)
+		span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", id)))
+
+		svcResult, err := handler.motherService.GetByID(traceCtx, id)
 		if err != nil {
 			if errors.Is(err, pkg.ErrMotherServiceNotFound) {
 				return pkg.ToHTTPError(pkg.ErrMotherServiceNotFound).AsFiber(ctx)
