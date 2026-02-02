@@ -20,7 +20,7 @@ func TestTestScenarioUsecase_Init(t *testing.T) {
 	mockTestCatRepo := new(mocks.MockTestCategory)
 	mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 	mockMotherService := new(mocks.MockMotherService)
-	mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+	mockExecutor := new(svcMock.MockScenarioExecutorBox)
 
 	service := NewTestScenarioUsecase(
 		getMockDB(t),
@@ -35,7 +35,7 @@ func TestTestScenarioUsecase_Init(t *testing.T) {
 	st, ok := service.(*testScenario)
 	assert.True(t, ok)
 	assert.NotNil(t, st.testScenarioRepository)
-	assert.NotNil(t, st.scenarioExecutorEngine)
+	assert.NotNil(t, st.scenarioExecutorBox)
 }
 
 func TestTestScenarioUsecase_Create(t *testing.T) {
@@ -44,7 +44,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 
 		sampleInt := 1
@@ -104,7 +104,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := 1
 
@@ -150,7 +150,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := 1
 		expectedID := uint64(1)
@@ -208,7 +208,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := 1
 		testServiceCfg := &entity.TestServiceConfig{
@@ -262,7 +262,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := -1
 		testSci := &entity.TestScenario{
@@ -304,7 +304,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := -1
 		testSci := &entity.TestScenario{
@@ -346,7 +346,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := -1
 		testSci := &entity.TestScenario{
@@ -388,7 +388,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := -1
 		testSci := &entity.TestScenario{
@@ -423,7 +423,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := -1
 		testSci := &entity.TestScenario{
@@ -458,7 +458,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		testSci := &entity.TestScenario{
 			Name:            "load1",
@@ -497,7 +497,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := 1
 		testSci := &entity.TestScenario{
@@ -538,7 +538,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := 1
 		testSci := &entity.TestScenario{
@@ -585,7 +585,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockMotherService := new(mocks.MockMotherService)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 
 		sampleInt := 1
@@ -627,7 +627,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Now().Location())
 		num := 10
@@ -697,7 +697,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleID := uint64(4)
 
@@ -718,7 +718,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleID := uint64(4)
 
@@ -739,7 +739,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleID := uint64(4)
 
@@ -762,7 +762,7 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		sampleInt := 2
 		pagReq := entity.TestScenarioPaginationRequest{
@@ -841,7 +841,7 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
+		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
 		pagReq := entity.TestScenarioPaginationRequest{
 			Page:    2,
@@ -867,8 +867,8 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
+		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
 		sampleID := uint64(4)
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, pkg.ErrTestScenarioNotFound)
@@ -887,8 +887,8 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
+		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
 		sampleID := uint64(4)
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, errors.New("error happened"))
@@ -907,8 +907,8 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
+		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
 		sampleID := uint64(4)
 
 		scenario := &entity.TestScenario{
@@ -930,8 +930,8 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
+		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
 		sampleID := uint64(4)
 
 		scenario := &entity.TestScenario{
@@ -955,8 +955,9 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
+
+		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
 		sampleID := uint64(4)
 
 		scenario := &entity.TestScenario{
@@ -965,14 +966,15 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
 		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning).Return(nil)
-		mockExecutor.On("Add", scenario)
+
+		mockExecutorBox.On("Add", mock.Anything)
 
 		err := service.Start(ctx, sampleID)
 
 		assert.NoError(t, err)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning)
-		mockExecutor.AssertCalled(t, "Add", scenario)
+		mockExecutorBox.AssertCalled(t, "Add", mock.Anything)
 
 		mockRepo.AssertExpectations(t)
 	})

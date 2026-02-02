@@ -77,7 +77,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewTestCategoryRepository(db),
 		postgres.NewTestServiceConfigRepository(db),
 		postgres.NewMotherServiceRepository(db),
-		usecase.NewInMemoryScenarioExecutorEngine(),
+		usecase.NewInMemoryScenarioExecutorBox(),
 	)
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
 
