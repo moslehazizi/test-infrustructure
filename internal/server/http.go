@@ -17,8 +17,6 @@ import (
 
 	_ "control-panel-service/docs"
 
-	_ "control-panel-service/docs"
-
 	fiberSwagger "github.com/arsmn/fiber-swagger/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -121,7 +119,14 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	motherService := usecase.NewMotherService(db, postgres.NewMotherServiceRepository(db), eventProducer)
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
-	testScenarioUsecase := usecase.NewTestScenarioUsecase(db, postgres.NewTestScenarioRepository(db), postgres.NewTestCategoryRepository(db), postgres.NewTestServiceConfigRepository(db), postgres.NewMotherServiceRepository(db))
+	testScenarioUsecase := usecase.NewTestScenarioUsecase(
+		db,
+		postgres.NewTestScenarioRepository(db),
+		postgres.NewTestCategoryRepository(db),
+		postgres.NewTestServiceConfigRepository(db),
+		postgres.NewMotherServiceRepository(db),
+		usecase.NewInMemoryScenarioExecutorEngine(),
+	)
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
 
 	apiV1 := app.Group("/api/v1")
@@ -139,9 +144,10 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Post("/test-scenarios", testScenarioHandler.Create())
 	apiV1.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
 	apiV1.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
+	apiV1.Post("/test-scenarios/:id/start", testScenarioHandler.Start())
 
 	// swagger endpoint
-	app.Get("/swagger/*", fiberSwagger.HandlerDefault)
+	apiV1.Get("/swagger/*", fiberSwagger.HandlerDefault)
 
 	log.Printf("🚀 Fiber server started on :%d\n", cfg.Server.Port)
 

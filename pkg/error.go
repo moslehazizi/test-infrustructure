@@ -13,12 +13,14 @@ type HTTPError struct {
 }
 
 func (e *HTTPError) AsFiber(ctx *fiber.Ctx) error {
+	// nolint
 	return ctx.Status(e.status).JSON(&fiber.Map{
 		"error": e.msg,
 	})
 }
 
 func ToHTTPError(err error) *HTTPError {
+	// nolint:errorlint
 	switch x := err.(type) {
 	case interface{ Unwrap() error }:
 		e := x.Unwrap()
@@ -47,6 +49,7 @@ func ToHTTPError(err error) *HTTPError {
 	}
 }
 
+// nolint
 func toHTTPError(err error) *HTTPError {
 	var status int
 	var msg string
@@ -137,6 +140,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrNoNeedAutoStepChange):
 		status = http.StatusUnprocessableEntity
 		msg = NoNeedAutoStepChange
+	case errors.Is(err, ErrOnlyPendingScenariosCanBeStarted):
+		status = http.StatusUnprocessableEntity
+		msg = OnlyPendingScenariosCanBeStarted
 	case errors.Is(err, ErrPageNotFound):
 		status = http.StatusNotFound
 		msg = PageNotFound
@@ -273,4 +279,6 @@ var (
 	ErrInvalidZeroSumOfBadValues               = errors.New("sum of all bad values rate should be 0 if bad value rate field is zero")
 	ErrInvalid100SumOfBadValues                = errors.New("sum of all bad values should be 100 if bad value field has value")
 	ErrTestServiceConfigIsRequired             = errors.New("test service config is required")
+	ErrOnlyPendingScenariosCanBeStarted        = errors.New("only pending scenarios can be started")
+	ErrFailedToSetScenarioStatusAsRunning      = errors.New("failed to set scenario status as running")
 )

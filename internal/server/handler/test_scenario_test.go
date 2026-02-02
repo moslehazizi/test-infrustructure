@@ -639,7 +639,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 			Page:    1,
 			PerPage: 2,
 		}
-		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.Local)
+		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.UTC)
 
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
 
@@ -926,7 +926,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
 	})
 	t.Run("success case", func(t *testing.T) {
-		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.Local)
+		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := 100
 		rate := 50
 		exe := 500000
@@ -1074,7 +1074,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.Equal(t, expected, got.Data)
 	})
 	t.Run("success case => category and mother service are null", func(t *testing.T) {
-		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.Local)
+		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := 100
 		rate := 50
 		exe := 500000
@@ -1129,4 +1129,111 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected, got.Data)
 	})
+}
+
+func TestTestScenario_Start(t *testing.T) {
+	_, err := config.LoadConfig()
+	assert.Nil(t, err)
+
+	t.Run("error: missing id in param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+	t.Run("error: invalid id data in param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/start", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
+	})
+
+	t.Run("error on getting data from service layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Start", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+	t.Run("error item not found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Start", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
+	})
+
+	t.Run("success case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Start", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.SuccessResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, response.Message, pkg.TestScenarioStarted)
+	})
+
 }

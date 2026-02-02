@@ -501,6 +501,39 @@ paths:
       summary: Get test scenario by ID
       tags:
       - test-scenarios
+  /api/v1/test-scenarios/{id}/start:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve a specific test scenario by its ID and start the scenario.
+      parameters:
+      - description: Test scenario ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Start a test scenario.
+      tags:
+      - test-scenarios
   /api/v1/test-scenarios/search:
     post:
       consumes:

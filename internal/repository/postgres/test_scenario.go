@@ -9,6 +9,7 @@ import (
 	"control-panel-service/pkg/database/postgres"
 	"errors"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -82,4 +83,20 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 	}
 
 	return testScenarios, nil
+}
+
+func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entity.ScenarioStatus) error {
+	err := postgres.QueryBuilder(ctx, repo.db).
+		Omit(clause.Associations).
+		Model(&entity.TestScenario{}).
+		Where("id", id).
+		Updates(map[string]any{
+			"status":     status,
+			"updated_at": time.Now(),
+		}).Error
+	if err != nil {
+		return fmt.Errorf("failed to update test scenario status: %w", err)
+	}
+
+	return nil
 }
