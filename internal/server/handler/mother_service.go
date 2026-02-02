@@ -12,6 +12,8 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type MotherService struct {
@@ -39,11 +41,22 @@ func NewMotherServiceHandler(motherService usecase.MotherService) *MotherService
 //	@Router			/api/v1/mother-services [post]
 func (handler *MotherService) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("mother-service-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "create_mother_service")
+		defer span.End()
+
 		req := new(request.MotherService)
 
 		if err := ctx.BodyParser(req); err != nil {
+			span.SetAttributes(attribute.String("error.type", "bad_request"))
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
+
+		span.SetAttributes(
+			attribute.String("service.name", req.Name),
+			attribute.Float64("service.exception_rate", float64(req.ExceptionRate)),
+			attribute.Float64("service.response_delay_rate", float64(req.ResponseDelayRate)),
+		)
 
 		reqService := &entity.MotherService{
 			Name:              req.Name,
@@ -75,10 +88,16 @@ func (handler *MotherService) Create() fiber.Handler {
 			DatabaseTableName:        req.DatabaseTableName,
 		}
 
-		err := handler.motherService.Create(ctx.Context(), reqService)
+		err := handler.motherService.Create(traceCtx, reqService)
 		if err != nil {
+			span.SetAttributes(
+				attribute.String("error.type", "create_error"),
+				attribute.String("error.message", err.Error()),
+			)
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
+
+		span.SetAttributes(attribute.String("status", "success"))
 
 		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
 			Message: pkg.CreateMotherServiceSuccessfully,

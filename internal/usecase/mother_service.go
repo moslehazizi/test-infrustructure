@@ -10,6 +10,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type MotherService interface {
@@ -33,41 +36,53 @@ type motherService struct {
 }
 
 func (service *motherService) Create(ctx context.Context, motherService *entity.MotherService) (e error) {
+	tracer := otel.Tracer("mother-service-usecase")
+	_, span := tracer.Start(ctx, "create_mother_service")
+	defer span.End()
+
 	err := motherService.Validate()
 	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "validation_error"))
 		return fmt.Errorf("failed to validate request: %w", err)
 	}
 
 	motherService.Status = entity.MotherServiceStatusPending
+	span.SetAttributes(attribute.String("service.name", motherService.Name))
 
 	tx := service.db.Begin()
 	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
 	defer func() {
 		if e != nil {
 			_ = tx.Rollback()
+			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
 		}
 	}()
 
 	err = service.motherServiceRepo.Create(dbCtx, motherService)
 	if err != nil {
 		if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
+			span.SetAttributes(attribute.String("error.type", "already_exists"))
 			return pkg.ErrMotherServiceAlreadyExist
 		}
 
+		span.SetAttributes(attribute.String("error.type", "create_error"), attribute.String("error.message", err.Error()))
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateMotherService, err)
 	}
 
 	// send kafka event for provisioning purpose
 	bts, err := json.Marshal(&motherService)
 	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "marshal_error"))
 		return fmt.Errorf("failed to marshal mother service data to send event: %w", err)
 	}
 	err = service.eventProducer.SendEvent(ctx, bts, "provisioning")
 	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "event_send_error"))
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToSendProvisioningEvent, err)
 	}
 
 	_ = tx.Commit()
+	span.SetAttributes(attribute.String("transaction.status", "committed"))
 
 	return nil
 }
