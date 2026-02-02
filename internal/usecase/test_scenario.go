@@ -14,6 +14,7 @@ type TestScenario interface {
 	Create(ctx context.Context, testScenario *entity.TestScenario) error
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error)
+	Start(ctx context.Context, id uint64) error
 }
 
 func NewTestScenarioUsecase(
@@ -21,13 +22,16 @@ func NewTestScenarioUsecase(
 	testScenarioRepository repository.TestScenarioRepository,
 	testCategoryRepository repository.TestCategory,
 	testServiceConfigRepository repository.TestServiceConfigRepository,
-	motherService repository.MotherServiceRepository) TestScenario {
+	motherService repository.MotherServiceRepository,
+	scenarioExecutorEngine ScenarioExecutorEngine,
+) TestScenario {
 	return &testScenario{
 		db:                          db,
 		testScenarioRepository:      testScenarioRepository,
 		testCategoryRepository:      testCategoryRepository,
 		testServiceConfigRepository: testServiceConfigRepository,
 		motherService:               motherService,
+		scenarioExecutorEngine:      scenarioExecutorEngine,
 	}
 }
 
@@ -37,6 +41,7 @@ type testScenario struct {
 	testCategoryRepository      repository.TestCategory
 	testServiceConfigRepository repository.TestServiceConfigRepository
 	motherService               repository.MotherServiceRepository
+	scenarioExecutorEngine      ScenarioExecutorEngine
 }
 
 func (service *testScenario) Create(
@@ -117,4 +122,31 @@ func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.Tes
 	}
 
 	return result, nil
+}
+
+func (service *testScenario) Start(ctx context.Context, id uint64) error {
+	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
+			return pkg.ErrTestScenarioNotFound
+		}
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
+	}
+
+	// make sure scenario has correct status
+	if scenario.Status != entity.ScenarioStatusPending {
+		return pkg.ErrOnlyPendingScenariosCanBeStarted
+	}
+
+	// mark scenario as running
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning)
+	if err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatusAsRunning, err)
+	}
+
+	// add scenario to executor.
+	service.scenarioExecutorEngine.Add(scenario)
+
+	return nil
 }

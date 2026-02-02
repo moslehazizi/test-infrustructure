@@ -124,7 +124,7 @@ func TestGetByID(t *testing.T) {
 		require.NoError(t, err)
 		repo := NewTestScenarioRepository(db)
 
-		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Local)
+		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Now().Location())
 		num := 10
 		expectedTestScenario := &entity.TestScenario{
 			ID:                  1,
@@ -1335,4 +1335,57 @@ func TestGetPaginated(t *testing.T) {
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)
 	})
+}
+
+func TestTestScenarioRepository_SetStatus(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET "status"=$1,"updated_at"=$2 WHERE "id" = $3 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(
+				entity.ScenarioStatusRunning,
+				sqlmock.AnyArg(),
+				uint64(1),
+			).
+			WillReturnResult(sqlmock.NewResult(0, 1))
+
+		mock.ExpectCommit()
+
+		err = repo.SetStatus(context.Background(), uint64(1), entity.ScenarioStatusRunning)
+
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+	t.Run("failed case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET "status"=$1,"updated_at"=$2 WHERE "id" = $3 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(
+				entity.ScenarioStatusRunning,
+				sqlmock.AnyArg(),
+				uint64(1),
+			).
+			WillReturnError(errors.New("something went wrong"))
+
+		mock.ExpectRollback()
+
+		err = repo.SetStatus(context.Background(), uint64(1), entity.ScenarioStatusRunning)
+
+		assert.Error(t, err)
+	})
+
 }

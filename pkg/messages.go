@@ -10,6 +10,7 @@ const (
 	PageNotFound                      = "صفحه مورد نظر یافت نشد."
 	MotherServiceNotFound             = "سرویس مادر مورد نظر یافت نشد"
 	TestScenarioNotFound              = "سناروی تست مورد نظر یافت نشد"
+	TestScenarioStarted               = "سناروی تست با موفقیت شروع به کار کرد."
 	InvalidResponseDelayRate          = "درصد تاخیر در پاسخ باید عددی بین ۰ تا ۱۰۰ باشد"
 	InvalidExceptionRate              = "مقدار درصد پاسخ با مقدار قابل پیشبینی باید عددی بین ۰ تا ۱۰۰ باشد"
 	InvalidDelayConfiguration         = "تنظیمات تاخیر صحیح نیست؛ لطفاً یکی از گزینه‌های بدون تاخیر، تاخیر ثابت و یا تاخیر تصادفی را انتخاب کنید"
@@ -48,4 +49,5 @@ const (
 	InvalidZeroSumOfBadValues         = "وقتی که درصد ارسال داده اشتباه صفر است مجموع حالت های داده اشتباه باید صفر باشد"
 	Invalid100SumOfBadValues          = "وقتی که درصد ارسال داده اشتباه بیشتر از صفر است باید مجموع درصد حالت ها ۱۰۰ باشد"
 	TestServiceConfigIsRequired       = "تنظیمات سرویس تست الزامی است."
+	OnlyPendingScenariosCanBeStarted  = "تنها سناریو های با وضعیت در انتظار میتوانند شروع به اجرا شوند."
 )

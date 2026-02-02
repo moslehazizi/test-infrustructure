@@ -280,6 +280,10 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrTestServiceConfigIsRequired,
 			wanted: HTTPError{http.StatusUnprocessableEntity, TestServiceConfigIsRequired},
 		},
+		{
+			err:    ErrOnlyPendingScenariosCanBeStarted,
+			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyPendingScenariosCanBeStarted},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {
