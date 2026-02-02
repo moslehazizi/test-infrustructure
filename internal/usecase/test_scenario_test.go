@@ -629,7 +629,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorEngine)
 		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
-		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Local)
+		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Now().Location())
 		num := 10
 		sampleInt := 1
 		sampleID := uint64(4)

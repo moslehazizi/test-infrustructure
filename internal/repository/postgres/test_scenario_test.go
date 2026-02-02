@@ -124,7 +124,7 @@ func TestGetByID(t *testing.T) {
 		require.NoError(t, err)
 		repo := NewTestScenarioRepository(db)
 
-		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Local)
+		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Now().Location())
 		num := 10
 		expectedTestScenario := &entity.TestScenario{
 			ID:                  1,
