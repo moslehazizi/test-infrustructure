@@ -57,3 +57,9 @@ func (m *MockTestScenario) GetPaginated(ctx context.Context, pagRequest entity.T
 
 	return result, args.Error(1)
 }
+
+func (m *MockTestScenario) SetStatus(ctx context.Context, id uint64, status entity.ScenarioStatus) error {
+	args := m.Called(ctx, id, status)
+
+	return args.Error(0)
+}
