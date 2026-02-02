@@ -31,7 +31,7 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("HTTP_RATE_LIMIT_MAX_REQUEST", strconv.Itoa(expectedRateLimitMaxRequest))
 		os.Setenv("HTTP_RATE_LIMIT_EXPIRATION_DURATION", fmt.Sprintf("%v", expectedRateLimitExpirationDuration))
 		os.Setenv("HTTP_SHUTDOWN_TIMEOUT", fmt.Sprintf("%v", expectedShutdownTimeout))
-		os.Setenv("HTTP_HOST", expectedHost)
+		os.Setenv("SWAGGER_HOST", expectedHost)
 		os.Setenv("SWAGGER_SCHEME", "http,https")
 
 		cfg, err := LoadConfig()
@@ -42,7 +42,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Server.ReadTimeout, expectedReadTimeout)
 		assert.Equal(t, cfg.Server.WriteTimeout, expectedWriteTimeout)
 		assert.Equal(t, cfg.Server.RateLimitMaxRequest, expectedRateLimitMaxRequest)
-		assert.Equal(t, cfg.Server.Host, expectedHost)
+		assert.Equal(t, cfg.Server.SwaggerHost, expectedHost)
 		assert.Equal(t, []string(cfg.Server.SwaggerScheme), expectedSwaggerScheme)
 		assert.Equal(t, cfg.Server.RateLimitExpirationDuration, expectedRateLimitExpirationDuration)
 		assert.Equal(t, cfg.Server.ShutdownTimeout, expectedShutdownTimeout)
@@ -177,7 +177,7 @@ func TestLoadConfig(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, cfg.Server.Port, expectedDefaultPort)
-		assert.Equal(t, cfg.Server.Host, expectedDefaultHTTPHost)
+		assert.Equal(t, cfg.Server.SwaggerHost, expectedDefaultHTTPHost)
 		assert.Equal(t, []string(cfg.Server.SwaggerScheme), []string{"http", "https"})
 		assert.Equal(t, cfg.Server.PostBodyLimit, expectedDefaultPostBodyLimit)
 		assert.Equal(t, cfg.Server.ReadTimeout, expectedDefaultReadTimeout)

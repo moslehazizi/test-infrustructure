@@ -10,7 +10,6 @@ import (
 	"control-panel-service/internal/usecase"
 	"fmt"
 	"log"
-	"strconv"
 
 	pslq "control-panel-service/pkg/database/postgres"
 
@@ -46,8 +45,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		},
 	}))
 
-	swaggerHost := cfg.Server.Host + ":" + strconv.Itoa(cfg.Server.Port)
-	docs.SwaggerInfo.Host = swaggerHost
+	docs.SwaggerInfo.Host = cfg.Server.SwaggerHost
 	docs.SwaggerInfo.Schemes = cfg.Server.SwaggerScheme
 
 	swaggerHandler := fiberSwagger.New(fiberSwagger.Config{

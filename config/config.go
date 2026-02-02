@@ -32,7 +32,7 @@ type Config struct {
 
 type Server struct {
 	Port                        int           `envconfig:"HTTP_PORT" default:"8080"`
-	Host                        string        `envconfig:"HTTP_HOST" default:"localhost"`
+	SwaggerHost                 string        `envconfig:"SWAGGER_HOST" default:"localhost"`
 	SwaggerScheme               StringSlice   `envconfig:"SWAGGER_SCHEME" default:"http,https"`
 	PostBodyLimit               int           `envconfig:"HTTP_POST_BODY_LIMIT" default:"4096"` // 4096 = 4KB
 	ReadTimeout                 time.Duration `envconfig:"HTTP_READ_TIMEOUT" default:"10s"`
