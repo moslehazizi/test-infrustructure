@@ -34,6 +34,7 @@ type Server struct {
 	Port                        int           `envconfig:"HTTP_PORT" default:"8080"`
 	SwaggerHost                 string        `envconfig:"SWAGGER_HOST" default:"localhost"`
 	SwaggerScheme               StringSlice   `envconfig:"SWAGGER_SCHEME" default:"http,https"`
+	SwaggerDocJSON              string        `envconfig:"SWAGGER_DOC_JSON" default:"doc.json"`
 	PostBodyLimit               int           `envconfig:"HTTP_POST_BODY_LIMIT" default:"4096"` // 4096 = 4KB
 	ReadTimeout                 time.Duration `envconfig:"HTTP_READ_TIMEOUT" default:"10s"`
 	WriteTimeout                time.Duration `envconfig:"HTTP_WRITE_TIMEOUT" default:"20s"`

@@ -17,6 +17,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedPort := 8080
 		expectedHost := "localhost"
 		expectedSwaggerScheme := []string{"http", "https"}
+		expectedSwaggerDocJSON := "doc.json"
 		expectedPostBodyLimit := 4 * 1024
 		expectedReadTimeout := time.Second * 10
 		expectedWriteTimeout := time.Second * 20
@@ -33,6 +34,7 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("HTTP_SHUTDOWN_TIMEOUT", fmt.Sprintf("%v", expectedShutdownTimeout))
 		os.Setenv("SWAGGER_HOST", expectedHost)
 		os.Setenv("SWAGGER_SCHEME", "http,https")
+		os.Setenv("SWAGGER_DOC_JSON", "doc.json")
 
 		cfg, err := LoadConfig()
 
@@ -44,6 +46,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Server.RateLimitMaxRequest, expectedRateLimitMaxRequest)
 		assert.Equal(t, cfg.Server.SwaggerHost, expectedHost)
 		assert.Equal(t, []string(cfg.Server.SwaggerScheme), expectedSwaggerScheme)
+		assert.Equal(t, cfg.Server.SwaggerDocJSON, expectedSwaggerDocJSON)
 		assert.Equal(t, cfg.Server.RateLimitExpirationDuration, expectedRateLimitExpirationDuration)
 		assert.Equal(t, cfg.Server.ShutdownTimeout, expectedShutdownTimeout)
 	})
@@ -150,6 +153,7 @@ func TestLoadConfig(t *testing.T) {
 	t.Run("check default values config", func(t *testing.T) {
 		expectedDefaultPort := 8080
 		expectedDefaultHTTPHost := "localhost"
+		expectedDefaultSwaggerDocJSON := "doc.json"
 		expectedDefaultPostBodyLimit := 4 * 1024
 		expectedDefaultReadTimeout := time.Second * 10
 		expectedDefaultWriteTimeout := time.Second * 20
@@ -179,6 +183,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Server.Port, expectedDefaultPort)
 		assert.Equal(t, cfg.Server.SwaggerHost, expectedDefaultHTTPHost)
 		assert.Equal(t, []string(cfg.Server.SwaggerScheme), []string{"http", "https"})
+		assert.Equal(t, cfg.Server.SwaggerDocJSON, expectedDefaultSwaggerDocJSON)
 		assert.Equal(t, cfg.Server.PostBodyLimit, expectedDefaultPostBodyLimit)
 		assert.Equal(t, cfg.Server.ReadTimeout, expectedDefaultReadTimeout)
 		assert.Equal(t, cfg.Server.WriteTimeout, expectedDefaultWriteTimeout)
