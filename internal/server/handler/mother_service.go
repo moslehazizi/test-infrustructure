@@ -11,10 +11,11 @@ import (
 	"strconv"
 	"strings"
 
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-    "fmt"
 )
 
 type MotherService struct {

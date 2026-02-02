@@ -3,10 +3,26 @@ package config
 import (
 	"control-panel-service/pkg"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
+
+type StringSlice []string
+
+func (ss *StringSlice) Set(value string) error {
+	if value == "" {
+		*ss = []string{"http", "https"}
+	} else {
+		parts := strings.Split(value, ",")
+		for i := range parts {
+			parts[i] = strings.TrimSpace(parts[i])
+		}
+		*ss = parts
+	}
+	return nil
+}
 
 type Config struct {
 	ServiceName string `envconfig:"SERVICE_NAME"`
@@ -14,6 +30,7 @@ type Config struct {
 	Kafka       Kafka
 	Postgres    Postgres
 	Otlp        Otlp
+	Logger      Logger
 }
 
 type Otlp struct {
@@ -23,6 +40,9 @@ type Otlp struct {
 
 type Server struct {
 	Port                        int           `envconfig:"HTTP_PORT" default:"8080"`
+	SwaggerHost                 string        `envconfig:"SWAGGER_HOST" default:"localhost"`
+	SwaggerScheme               StringSlice   `envconfig:"SWAGGER_SCHEME" default:"http,https"`
+	SwaggerDocJSON              string        `envconfig:"SWAGGER_DOC_JSON" default:"doc.json"`
 	PostBodyLimit               int           `envconfig:"HTTP_POST_BODY_LIMIT" default:"4096"` // 4096 = 4KB
 	ReadTimeout                 time.Duration `envconfig:"HTTP_READ_TIMEOUT" default:"10s"`
 	WriteTimeout                time.Duration `envconfig:"HTTP_WRITE_TIMEOUT" default:"20s"`
@@ -56,6 +76,12 @@ type Postgres struct {
 	MaxIdleConnections int           `envconfig:"POSTGRES_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `envconfig:"POSTGRES_CONN_MAX_LIFETIME"`
 	ConnMaxIdleTime    time.Duration `envconfig:"POSTGRES_CONN_MAX_IDLE_TIME"`
+}
+
+type Logger struct {
+	Level  string `envconfig:"LOG_LEVEL" default:"info"`
+	Format string `envconfig:"LOG_FORMAT" default:"json"` // json or console
+	Output string `envconfig:"LOG_OUTPUT" default:"stdout"`
 }
 
 // var GlobalConfigInstance *Config
