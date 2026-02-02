@@ -7,6 +7,7 @@ import (
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
 	"fmt"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 
@@ -31,7 +32,7 @@ func (srv *testCategoryService) GetAll(ctx context.Context) ([]entity.TestCatego
 	_, span := tracer.Start(ctx, "get_test_categories")
 	defer span.End()
 
-		requestID := logger.GetRequestID(ctx)
+	requestID := logger.GetRequestID(ctx)
 
 	items, err := srv.testCategoryRepo.GetAll(ctx)
 	if err != nil {
@@ -65,7 +66,7 @@ func (srv *testCategoryService) GetByID(ctx context.Context, id uint64) (*entity
 	item, err := srv.testCategoryRepo.GetByID(ctx, id)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "get_by_id_error"), attribute.String("error.message", err.Error()))
-	
+
 		zap.L().Error("failed to get test category by ID",
 			zap.String(logger.FieldRequestID, requestID),
 			zap.Uint64("id", id),

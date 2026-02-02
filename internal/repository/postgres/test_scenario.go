@@ -119,7 +119,7 @@ func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entit
 	_, span := tracer.Start(ctx, "set_test_scenario_status")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("database.operation", "update"), attribute.String("test_scenario.id", fmt.Sprintf("%d", id)), attribute.String("test_scenario.status", fmt.Sprintf("%d", status)))
+	span.SetAttributes(attribute.String("database.operation", "update"), attribute.String("test_scenario.id", fmt.Sprintf("%d", id)), attribute.String("test_scenario.status", fmt.Sprintf("%s", status)))
 
 	err := postgres.QueryBuilder(ctx, repo.db).
 		Omit(clause.Associations).

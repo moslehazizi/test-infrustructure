@@ -78,7 +78,6 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 	if err != nil {
 		if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
 			span.SetAttributes(attribute.String("error.type", "already_exists"))
-			
 			zap.L().Warn("mother service already exists",
 				zap.String(logger.FieldRequestID, requestID),
 				zap.String("name", motherService.Name),
@@ -177,7 +176,7 @@ func (service *motherService) GetPaginated(ctx context.Context, paginationReques
 	result, err := service.motherServiceRepo.GetPaginated(ctx, paginationRequest)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
-	
+
 		zap.L().Error("failed to get paginated mother services",
 			zap.String(logger.FieldRequestID, requestID),
 			zap.Int("page", paginationRequest.Page),

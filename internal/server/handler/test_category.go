@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"fmt"
 )
 
 func NewTestCategoryHandler(cfg *config.Config, testCategoryService usecase.TestCategoryService) *TestCategoryHandler {
