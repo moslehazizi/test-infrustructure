@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -39,6 +40,7 @@ func NewMotherServiceHandler(motherService usecase.MotherService) *MotherService
 //	@Router			/api/v1/mother-services [post]
 func (handler *MotherService) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		time.Sleep(500 * time.Millisecond)
 		req := new(request.MotherService)
 
 		if err := ctx.BodyParser(req); err != nil {
