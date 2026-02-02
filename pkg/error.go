@@ -49,6 +49,7 @@ func ToHTTPError(err error) *HTTPError {
 	}
 }
 
+// nolint
 func toHTTPError(err error) *HTTPError {
 	var status int
 	var msg string
