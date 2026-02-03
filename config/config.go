@@ -25,10 +25,17 @@ func (ss *StringSlice) Set(value string) error {
 }
 
 type Config struct {
-	Server   Server
-	Kafka    Kafka
-	Postgres Postgres
-	Logger   Logger
+	ServiceName string `envconfig:"SERVICE_NAME"`
+	Server      Server
+	Kafka       Kafka
+	Postgres    Postgres
+	Otlp        Otlp
+	Logger      Logger
+}
+
+type Otlp struct {
+	GRPCPort int    `envconfig:"OTLP_GRPC_PORT"`
+	GRPCHost string `envconfig:"OTLP_GRPC_HOST"`
 }
 
 type Server struct {

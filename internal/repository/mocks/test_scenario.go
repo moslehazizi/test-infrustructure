@@ -47,7 +47,7 @@ func (m *MockTestScenario) GetByID(ctx context.Context, id uint64) (*entity.Test
 	return result, args.Error(1)
 }
 
-func (m *MockTestScenario) GetPaginated(ctx context.Context, pagRequest entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, error) {
+func (m *MockTestScenario) GetPaginated(ctx context.Context, pagRequest entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error) {
 	args := m.Called(ctx, pagRequest)
 
 	var result []*entity.TestScenario
@@ -55,7 +55,7 @@ func (m *MockTestScenario) GetPaginated(ctx context.Context, pagRequest entity.T
 		result = args.Get(0).([]*entity.TestScenario)
 	}
 
-	return result, args.Error(1)
+	return result, args.Get(1).(int64), args.Error(2)
 }
 
 func (m *MockTestScenario) SetStatus(ctx context.Context, id uint64, status entity.ScenarioStatus) error {

@@ -13,6 +13,22 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
+	t.Run("success fetch otlp config", func(t *testing.T) {
+		expectedPort := 8080
+		exportedHost := "localhost"
+		expectedServiceName := "control-panel"
+
+		os.Setenv("OTLP_GRPC_PORT", strconv.Itoa(expectedPort))
+		os.Setenv("OTLP_GRPC_HOST", exportedHost)
+		os.Setenv("SERVICE_NAME", expectedServiceName)
+
+		cfg, err := LoadConfig()
+
+		assert.NoError(t, err)
+		assert.Equal(t, cfg.Otlp.GRPCPort, expectedPort)
+		assert.Equal(t, cfg.Otlp.GRPCHost, exportedHost)
+		assert.Equal(t, cfg.ServiceName, expectedServiceName)
+	})
 	t.Run("success fetch http config", func(t *testing.T) {
 		expectedPort := 8080
 		expectedHost := "localhost"

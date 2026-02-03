@@ -315,6 +315,31 @@ func TestGetByID(t *testing.T) {
 }
 
 func TestGetPaginated(t *testing.T) {
+	t.Run("failed case - failed to get database records count", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewTestScenarioRepository(db)
+
+		paginationRequest := entity.TestScenarioPaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		} // LIMIT 2 (no OFFSET because offset=0)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WillReturnError(errors.New("error happened"))
+
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get test scenario records total count")
+		assert.Nil(t, result)
+		assert.Equal(t, count, int64(0))
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 	t.Run("success case - page 1 per page 2", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
@@ -382,6 +407,13 @@ func TestGetPaginated(t *testing.T) {
 			Page:    1,
 			PerPage: 2,
 		} // LIMIT 2 (no OFFSET because offset=0)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(2),
+			)
 
 		mock.MatchExpectationsInOrder(false)
 		mock.ExpectQuery(regexp.QuoteMeta(
@@ -460,10 +492,11 @@ func TestGetPaginated(t *testing.T) {
 			false,
 		))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
+		assert.Equal(t, count, int64(2))
 		assert.Len(t, result, 2)
 		assert.Equal(t, expectedTestScenarios, result)
 		assert.NoError(t, mock.ExpectationsWereMet())
@@ -536,6 +569,13 @@ func TestGetPaginated(t *testing.T) {
 			Page:    2,
 			PerPage: 2,
 		} // LIMIT 2 OFFSET 2
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(2),
+			)
 
 		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
@@ -613,10 +653,11 @@ func TestGetPaginated(t *testing.T) {
 			false,
 		))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
+		assert.Equal(t, count, int64(2))
 		assert.Len(t, result, 2)
 
 		assert.Equal(t, expectedTestScenarios, result)
@@ -665,6 +706,13 @@ func TestGetPaginated(t *testing.T) {
 			Page:    2,
 			PerPage: 1,
 		} // LIMIT 1 OFFSET 1
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(1),
+			)
 
 		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
@@ -717,11 +765,12 @@ func TestGetPaginated(t *testing.T) {
 			false,
 		))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 1)
+		assert.Equal(t, count, int64(1))
 
 		assert.Equal(t, expectedTestScenarios, result)
 
@@ -875,6 +924,13 @@ func TestGetPaginated(t *testing.T) {
 		} // LIMIT 5 OFFSET 10
 
 		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(5),
+			)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
 			WithArgs(5, 10).
 			WillReturnRows(sqlmock.NewRows([]string{
@@ -977,11 +1033,12 @@ func TestGetPaginated(t *testing.T) {
 			false,
 		))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 5)
+		assert.Equal(t, count, int64(5))
 
 		assert.Equal(t, expectedTestScenarios, result)
 
@@ -1135,6 +1192,13 @@ func TestGetPaginated(t *testing.T) {
 		} // no limit no offset - return all records
 
 		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(10),
+			)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL ORDER BY id DESC`)).
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
@@ -1236,11 +1300,12 @@ func TestGetPaginated(t *testing.T) {
 			false,
 		))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 5)
+		assert.Equal(t, count, int64(10))
 
 		assert.Equal(t, expectedTestScenarios, result)
 
@@ -1259,6 +1324,13 @@ func TestGetPaginated(t *testing.T) {
 		} // big number page - LIMIT 10 OFFSET 990
 
 		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(0),
+			)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
 			WithArgs(10, 990).
 			WillReturnRows(sqlmock.NewRows([]string{
@@ -1268,11 +1340,12 @@ func TestGetPaginated(t *testing.T) {
 				"auto_step_change_rate",
 			}))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 0)
+		assert.Equal(t, count, int64(0))
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -1288,14 +1361,22 @@ func TestGetPaginated(t *testing.T) {
 		}
 
 		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(0),
+			)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
 			WithArgs(2, 2).
 			WillReturnError(errors.New("database connection failed"))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, count, int64(0))
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenarios)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -1311,7 +1392,7 @@ func TestGetPaginated(t *testing.T) {
 			PerPage: 2,
 		}
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, _, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -1329,7 +1410,7 @@ func TestGetPaginated(t *testing.T) {
 			PerPage: -2,
 		}
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, _, err := repo.GetPaginated(context.Background(), paginationRequest)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)

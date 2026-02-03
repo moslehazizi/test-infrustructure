@@ -769,6 +769,7 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 			Page:    2,
 			PerPage: 2,
 		}
+		count := int64(2)
 		expectedResult := []*entity.TestScenario{
 			{
 				ID:              uint64(2),
@@ -820,12 +821,13 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 			},
 		}
 
-		mockRepo.On("GetPaginated", mock.Anything, pagReq).Return(expectedResult, nil)
+		mockRepo.On("GetPaginated", mock.Anything, pagReq).Return(expectedResult, count, nil)
 
-		result, err := service.GetPaginated(ctx, pagReq)
+		result, total, err := service.GetPaginated(ctx, pagReq)
 
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
+		assert.Equal(t, total, count)
 		assert.Equal(t, len(result), 2)
 
 		assert.Equal(t, expectedResult, result)
@@ -848,12 +850,13 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 			PerPage: 2,
 		}
 
-		mockRepo.On("GetPaginated", mock.Anything, pagReq).Return(nil, errors.New("error happened"))
+		mockRepo.On("GetPaginated", mock.Anything, pagReq).Return(nil, int64(0), errors.New("error happened"))
 
-		result, err := service.GetPaginated(ctx, pagReq)
+		result, count, err := service.GetPaginated(ctx, pagReq)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, count, int64(0))
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenarios)
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, pagReq)
 		mockRepo.AssertExpectations(t)

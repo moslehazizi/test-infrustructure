@@ -5,10 +5,15 @@ import (
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/logger"
 	"net/http"
 	"strconv"
 
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 func NewTestCategoryHandler(cfg *config.Config, testCategoryService usecase.TestCategoryService) *TestCategoryHandler {
@@ -35,8 +40,16 @@ type TestCategoryHandler struct {
 //	@Router			/api/v1/test-categories [get]
 func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		svcResults, err := handler.testCategoryService.GetAll(ctx.Context())
+		tracer := otel.Tracer("test-category-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "get_test_categories")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
+		svcResults, err := handler.testCategoryService.GetAll(traceCtx)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "get_all_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
@@ -73,18 +86,30 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 //	@Router			/api/v1/test-categories/{id} [get]
 func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("test-category-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "get_test_category_by_id")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
 		idParam := ctx.Params("id")
 		if idParam == "" {
+			span.SetAttributes(attribute.String("error.type", "missing_id"))
 			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
 		}
 
 		id, err := strconv.ParseUint(idParam, 10, 64)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
 			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
-		svcResult, err := handler.testCategoryService.GetByID(ctx.Context(), id)
+		span.SetAttributes(attribute.String("test_category.id", fmt.Sprintf("%d", id)))
+
+		svcResult, err := handler.testCategoryService.GetByID(traceCtx, id)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "get_by_id_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
