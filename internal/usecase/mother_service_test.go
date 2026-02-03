@@ -286,6 +286,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		}
 		serviceAddress1 := "http://service1.example.com"
 		serviceAddress2 := "http://service2.example.com"
+		count := int64(2)
 
 		expectedMotherServices := []*entity.MotherService{
 			{
@@ -314,12 +315,13 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 			},
 		}
 
-		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(expectedMotherServices, nil)
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(expectedMotherServices, count, nil)
 
-		result, err := service.GetPaginated(ctx, paginationRequest)
+		result, total, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
+		assert.Equal(t, total, count)
 		assert.Equal(t, expectedMotherServices, result)
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
@@ -335,12 +337,13 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 			PerPage: 2,
 		}
 
-		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, int64(0), errors.New("failed to get mother services"))
 
-		result, err := service.GetPaginated(ctx, paginationRequest)
+		result, count, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, count, int64(0))
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
@@ -356,12 +359,13 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 			PerPage: 2,
 		}
 
-		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, int64(0), errors.New("failed to get mother services"))
 
-		result, err := service.GetPaginated(ctx, paginationRequest)
+		result, count, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, count, int64(0))
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})

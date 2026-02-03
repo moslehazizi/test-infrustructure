@@ -639,6 +639,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 			Page:    1,
 			PerPage: 2,
 		}
+		count := int64(2)
 		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.UTC)
 
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
@@ -693,7 +694,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 			},
 		}
 
-		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, nil)
+		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, count, nil)
 
 		expected := response.PaginatedTestScenario{
 			Page:    1,
@@ -744,6 +745,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 					MotherService: nil,
 				},
 			},
+			Total: count,
 		}
 
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
@@ -759,6 +761,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		assert.Equal(t, expected.Page, got.Page)
+		assert.Equal(t, got.Total, count)
 		assert.Len(t, got.Data, 2)
 		assert.Equal(t, expected, got)
 
@@ -786,7 +789,6 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		// 	}
 		// }
 	})
-
 	t.Run("error: invalid request body", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
@@ -826,7 +828,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
 		var serviceResult []*entity.TestScenario
 
-		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, errors.New("something went wrong"))
+		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, int64(0), errors.New("something went wrong"))
 
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
