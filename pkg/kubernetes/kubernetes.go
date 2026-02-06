@@ -2,10 +2,11 @@ package kubernetese
 
 import (
 	"context"
-	"control-panel-service/pkg/kubernetese/domain/entity"
+	"control-panel-service/pkg/kubernetes/domain/entity"
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -15,25 +16,31 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+const (
+	Config = "-config"
+	Secret = "-secret"
+	Wait   = 2 * time.Second
+)
+
 type Kubernetese interface {
-	ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec) error
-	ApplyService(ctx context.Context, spec entity.ServiceSpec) error
+	ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec, configMap, Secret map[string]string) error
+	ApplyService(ctx context.Context, spec entity.ServiceSpec, configMap, Secret map[string]string) error
 	WaitForDeployment(ctx context.Context, name string, timeout time.Duration) error
+	Client() *kubernetes.Clientset
 }
 
 type KubernConfig struct {
 	NameSpace  string
 	kubeConfig string
-	ConfigMap  map[string]string
-	Secret     map[string]string
 }
 
 type Kuber struct {
 	cfg       *KubernConfig
 	Clientset *kubernetes.Clientset
+	mtx       sync.Mutex
 }
 
-func NewKubernetes(ctx context.Context, config *KubernConfig) (Kubernetese, error) {
+func New(ctx context.Context, config *KubernConfig) (Kubernetese, error) {
 	if config.kubeConfig == "" {
 		config.kubeConfig = filepath.Join(os.Getenv("HOME"), ".kube", "config")
 	}
@@ -48,33 +55,24 @@ func NewKubernetes(ctx context.Context, config *KubernConfig) (Kubernetese, erro
 		return nil, fmt.Errorf("failed to create clientset: %w", err)
 	}
 
-	k := &Kuber{
+	return &Kuber{
 		cfg:       config,
 		Clientset: clientset,
-	}
-
-	// Apply ConfigMap
-	if err := k.applyConfigMap(ctx); err != nil {
-		return nil, fmt.Errorf("apply configmap: %w", err)
-	}
-
-	// Apply Secret
-	if err := k.applySecret(ctx); err != nil {
-		return nil, fmt.Errorf("apply secret: %w", err)
-	}
-
-	return k, nil
+		mtx:       sync.Mutex{},
+	}, nil
 }
 
-// applyConfigMap creates or updates the ConfigMap
-func (k *Kuber) applyConfigMap(ctx context.Context) error {
+// applyConfigMap creates or updates the configMap
+func (k *Kuber) applyConfigMap(ctx context.Context, configMap map[string]string, app string) error {
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: k.cfg.NameSpace + "-config",
+			Name: app + Config,
 		},
-		Data: k.cfg.ConfigMap,
+		Data: configMap,
 	}
 
+	k.mtx.Lock()
+	defer k.mtx.Unlock()
 	_, err := k.Clientset.CoreV1().ConfigMaps(k.cfg.NameSpace).Get(ctx, cm.Name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		fmt.Println("creating configmap ...")
@@ -91,14 +89,16 @@ func (k *Kuber) applyConfigMap(ctx context.Context) error {
 }
 
 // applySecret creates or updates the Secret
-func (k *Kuber) applySecret(ctx context.Context) error {
+func (k *Kuber) applySecret(ctx context.Context, secretMap map[string]string, app string) error {
 	sec := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: k.cfg.NameSpace + "-secret",
+			Name: app + Secret,
 		},
-		StringData: k.cfg.Secret,
+		StringData: secretMap,
 	}
 
+	k.mtx.Lock()
+	defer k.mtx.Unlock()
 	_, err := k.Clientset.CoreV1().Secrets(k.cfg.NameSpace).Get(ctx, sec.Name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		fmt.Println("creating secret ...")
@@ -115,7 +115,17 @@ func (k *Kuber) applySecret(ctx context.Context) error {
 }
 
 // applyDeployment creates a deployment if it doesn't exist, otherwise updates it
-func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec) error {
+func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec, configMap, secretMap map[string]string) error {
+	err := k.applyConfigMap(ctx, configMap, spec.Name)
+	if err != nil {
+		return err
+	}
+
+	err = k.applySecret(ctx, secretMap, spec.Name)
+	if err != nil {
+		return err
+	}
+
 	existing, err := k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Get(ctx, spec.Name, metav1.GetOptions{})
 
 	if apierrors.IsNotFound(err) {
@@ -135,7 +145,17 @@ func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec)
 }
 
 // applyService creates a service if it doesn't exist, otherwise updates it
-func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec) error {
+func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec, configMap, secretMap map[string]string) error {
+	err := k.applyConfigMap(ctx, configMap, spec.Name)
+	if err != nil {
+		return err
+	}
+
+	err = k.applySecret(ctx, secretMap, spec.Name)
+	if err != nil {
+		return err
+	}
+
 	existing, err := k.Clientset.CoreV1().Services(k.cfg.NameSpace).Get(ctx, spec.Name, metav1.GetOptions{})
 
 	if apierrors.IsNotFound(err) {
@@ -176,9 +196,13 @@ func (k *Kuber) WaitForDeployment(ctx context.Context, name string, timeout time
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case <-time.After(2 * time.Second):
+		case <-time.After(Wait):
 		}
 	}
 
 	return fmt.Errorf("%s did not become ready within %v", name, timeout)
+}
+
+func (k *Kuber) Client() *kubernetes.Clientset {
+	return k.Clientset
 }

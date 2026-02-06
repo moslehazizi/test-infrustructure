@@ -232,6 +232,7 @@ var (
 	ErrFailedToGetTestCategory         = errors.New("failed to get test category record")
 	ErrFailedToValidateTestSvcCfg      = errors.New("failed to validate test service config data")
 	ErrInvalidIDInParams               = errors.New("invalid id in params")
+	ErrFailedToDeployMotherService     = errors.New("failed to deploy mother service")
 
 	// Validation errors.
 	ErrInvalidMotherServiceName                = errors.New("mother service name is required")

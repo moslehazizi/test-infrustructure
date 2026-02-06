@@ -11,6 +11,7 @@ import (
 	"log"
 
 	pslq "control-panel-service/pkg/database/postgres"
+	kuber "control-panel-service/pkg/kubernetes"
 
 	_ "control-panel-service/docs"
 
@@ -70,7 +71,12 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		return fmt.Errorf("could not connect to postgres: %w", err)
 	}
 
-	motherService := usecase.NewMotherService(db, postgres.NewMotherServiceRepository(db), eventProducer)
+	kubernetes, err := kuber.New(ctx, &kuber.KubernConfig{NameSpace: cfg.Kubernetese.NameSpace})
+	if err != nil {
+		return fmt.Errorf("could not connect to kubernetes: %w", err)
+	}
+
+	motherService := usecase.NewMotherService(cfg, db, postgres.NewMotherServiceRepository(db), eventProducer, kubernetes)
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(db, postgres.NewTestScenarioRepository(db), postgres.NewTestCategoryRepository(db), postgres.NewTestServiceConfigRepository(db), postgres.NewMotherServiceRepository(db))

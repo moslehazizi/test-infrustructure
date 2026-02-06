@@ -38,3 +38,9 @@ func (m *MockMotherService) GetPaginated(ctx context.Context, paginationRequest 
 
 	return result, args.Error(1)
 }
+
+func (m *MockMotherService) DeployMotherService(ctx context.Context, motherService *entity.MotherService) error {
+	args := m.Called(ctx, motherService)
+
+	return args.Error(0)
+}

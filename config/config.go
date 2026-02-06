@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	Server   Server
-	Kafka    Kafka
-	Postgres Postgres
+	Server      Server
+	Kafka       Kafka
+	Postgres    Postgres
+	Kubernetese Kubernetese
 }
 
 type Server struct {
@@ -49,6 +50,22 @@ type Postgres struct {
 	MaxIdleConnections int           `envconfig:"POSTGRES_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `envconfig:"POSTGRES_CONN_MAX_LIFETIME"`
 	ConnMaxIdleTime    time.Duration `envconfig:"POSTGRES_CONN_MAX_IDLE_TIME"`
+}
+
+type Kubernetese struct {
+	NameSpace                      string        `envconfig:"KUBERNETES_NAMESPACE" default:"control-panel-service"`
+	MotherServiceImage             string        `envconfig:"MOTHER_SERVICE_IMAGE" default:"challenge-mother-service:0.1"`
+	MotherServiceAPPServe          string        `envconfig:"MOTHER_SERVICE_APP_SERVE" default:"mother-service-serve"`
+	MotherServiceAPPServeNodePort  int           `envconfig:"MOTHER_SERVICE_APP_SERVE_NODE_PORT" default:"30080"`
+	MotherServiceAPPServeWaitReady time.Duration `envconfig:"MOTHER_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
+	MotherServiceAPPJobs           string        `envconfig:"MOTHER_SERVICE_APP_JOBS" default:"mother-service-jobs"`
+	MotherServiceAPPJobsWaitReady  time.Duration `envconfig:"MOTHER_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
+	MotherServiceLogLevel          string        `envconfig:"MOTHER_SERVICE_LOG_LEVEL" default:"info"`
+	MotherServiceLogFormat         string        `envconfig:"MOTHER_SERVICE_LOG_FORMAT" default:"json"`
+	MotherServicelogOutput         string        `envconfig:"MOTHER_SERVICE_LOG_OUTPUT" default:"stdout"`
+	MotherServiceKafkaDbTopic      string        `envconfig:"MOTHER_SERVICE_KAFKA_DATABASE_TOPIC" default:"mother-db"`
+	MotherServiceKafkaDbGroup      string        `envconfig:"MOTHER_SERVICE_KAFKA_CONSUMER_GROUP" default:"mother-db-consumer-group"`
+	MotherServiceLiveFeedTopic     string        `envconfig:"MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"mother-live-feed"`
 }
 
 // var GlobalConfigInstance *Config
