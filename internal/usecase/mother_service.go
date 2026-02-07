@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
@@ -22,18 +21,16 @@ type MotherService interface {
 	GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, int64, error)
 }
 
-func NewMotherService(db database.Database, motherServiceRepo repository.MotherServiceRepository, eventProducer provider.EventProducer) MotherService {
+func NewMotherService(db database.Database, motherServiceRepo repository.MotherServiceRepository) MotherService {
 	return &motherService{
 		db,
 		motherServiceRepo,
-		eventProducer,
 	}
 }
 
 type motherService struct {
 	db                database.Database
 	motherServiceRepo repository.MotherServiceRepository
-	eventProducer     provider.EventProducer
 }
 
 func (service *motherService) Create(ctx context.Context, motherService *entity.MotherService) (e error) {

@@ -134,7 +134,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		return fmt.Errorf("could not connect to postgres: %w", err)
 	}
 
-	motherService := usecase.NewMotherService(db, postgres.NewMotherServiceRepository(db), eventProducer)
+	motherService := usecase.NewMotherService(db, postgres.NewMotherServiceRepository(db))
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
