@@ -792,6 +792,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "started_at": {
+                    "type": "string"
+                },
                 "status": {
                     "$ref": "#/definitions/entity.ScenarioStatus"
                 },
