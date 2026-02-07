@@ -31,8 +31,6 @@ func (repo *testServiceConfig) Create(ctx context.Context, testSvcCfg *entity.Te
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("database.operation", "insert"), attribute.Int64("test_config.test_scenario_id", int64(testSvcCfg.TestScenarioID)))
-
 	err := postgres.QueryBuilder(ctx, repo.db).Create(testSvcCfg).Error
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
