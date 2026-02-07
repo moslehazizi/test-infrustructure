@@ -229,6 +229,8 @@ definitions:
         $ref: '#/definitions/response.MotherService'
       name:
         type: string
+      started_at:
+        type: string
       status:
         $ref: '#/definitions/entity.ScenarioStatus'
       test_category:

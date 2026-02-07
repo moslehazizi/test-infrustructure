@@ -9,6 +9,7 @@ type TestScenario struct {
 	ID                  uint64                `json:"id"`
 	CreatedAt           time.Time             `json:"created_at"`
 	UpdatedAt           time.Time             `json:"updated_at"`
+	StartedAt           *time.Time            `json:"started_at"`
 	Name                string                `json:"name"`
 	TestCategory        *TestCategory         `json:"test_category"`
 	MotherService       *MotherService        `json:"mother_service"`

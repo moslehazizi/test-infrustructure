@@ -33,6 +33,7 @@ type TestScenario struct {
 	ExecutionDuration   *int               `gorm:"column:execution_duration"`
 	AutoStepChangeRate  *int               `gorm:"column:auto_step_change_rate"`
 	TestServiceConfig   *TestServiceConfig `gorm:"ForeignKey:TestScenarioID"`
+	StartedAt           *time.Time         `gorm:"column:started_at"`
 }
 
 func (TestScenario) TableName() string {

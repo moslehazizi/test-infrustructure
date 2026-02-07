@@ -37,7 +37,8 @@ create table if not exists test_scenarios (
 
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP,
-    deleted_at timestamptz
+    deleted_at timestamptz,
+    started_at timestamptz
 );
 
 -- migrate:down

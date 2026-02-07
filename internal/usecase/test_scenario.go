@@ -4,6 +4,7 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
+	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/logger"
@@ -29,7 +30,7 @@ func NewTestScenarioUsecase(
 	testCategoryRepository repository.TestCategory,
 	testServiceConfigRepository repository.TestServiceConfigRepository,
 	motherService repository.MotherServiceRepository,
-	scenarioExecutorEngine ScenarioExecutorEngine,
+	scenarioExecutorBox interfaces.ScenarioExecutorBox,
 ) TestScenario {
 	return &testScenario{
 		db:                          db,
@@ -37,7 +38,7 @@ func NewTestScenarioUsecase(
 		testCategoryRepository:      testCategoryRepository,
 		testServiceConfigRepository: testServiceConfigRepository,
 		motherService:               motherService,
-		scenarioExecutorEngine:      scenarioExecutorEngine,
+		scenarioExecutorBox:         scenarioExecutorBox,
 	}
 }
 
@@ -47,7 +48,7 @@ type testScenario struct {
 	testCategoryRepository      repository.TestCategory
 	testServiceConfigRepository repository.TestServiceConfigRepository
 	motherService               repository.MotherServiceRepository
-	scenarioExecutorEngine      ScenarioExecutorEngine
+	scenarioExecutorBox         interfaces.ScenarioExecutorBox
 }
 
 func (service *testScenario) Create(
@@ -289,7 +290,7 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	}
 
 	// add scenario to executor.
-	service.scenarioExecutorEngine.Add(scenario)
+	service.scenarioExecutorBox.Add(NewScenarioExecutor(*scenario))
 
 	return nil
 }
