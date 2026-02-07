@@ -527,9 +527,6 @@ const docTemplate = `{
                 },
                 "response_delay_rate": {
                     "type": "integer"
-                },
-                "service_deployment_address": {
-                    "type": "string"
                 }
             }
         },

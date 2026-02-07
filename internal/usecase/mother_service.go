@@ -8,7 +8,6 @@ import (
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/logger"
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -94,30 +93,6 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 		)
 
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateMotherService, err)
-	}
-
-	// send kafka event for provisioning purpose
-	bts, err := json.Marshal(&motherService)
-	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "marshal_error"))
-		zap.L().Error("failed to marshal mother service for event",
-			zap.String(logger.FieldRequestID, requestID),
-			zap.Uint64("id", motherService.ID),
-			zap.Error(err),
-		)
-
-		return fmt.Errorf("failed to marshal mother service data to send event: %w", err)
-	}
-	err = service.eventProducer.SendEvent(ctx, bts, "provisioning")
-	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "event_send_error"))
-		zap.L().Error("failed to send provisioning event",
-			zap.String(logger.FieldRequestID, requestID),
-			zap.Uint64("id", motherService.ID),
-			zap.Error(err),
-		)
-
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToSendProvisioningEvent, err)
 	}
 
 	_ = tx.Commit()
