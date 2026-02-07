@@ -89,9 +89,8 @@ func (handler *MotherService) Create() fiber.Handler {
 
 				return nil
 			}(),
-			ServiceDeploymentAddress: req.ServiceDeploymentAddress,
-			DatabaseName:             req.DatabaseName,
-			DatabaseTableName:        req.DatabaseTableName,
+			DatabaseName:      req.DatabaseName,
+			DatabaseTableName: req.DatabaseTableName,
 		}
 
 		err := handler.motherService.Create(traceCtx, reqService)
