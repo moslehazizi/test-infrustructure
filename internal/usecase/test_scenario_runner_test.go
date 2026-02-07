@@ -66,6 +66,7 @@ func Test_inMemoryScenarioExecutorBox_HasExecutor(t *testing.T) {
 		mockExe := new(mocks.MockScenarioExecutor)
 		mockExe.On("GetID").Return(uint64(1))
 		mockExe.On("GetScenario").Return(&entity.TestScenario{ID: 1})
+		mockExe.On("ResumeOrStart", mock.Anything)
 		eng := NewInMemoryScenarioExecutorBox()
 		eng.Add(mockExe)
 
