@@ -8,6 +8,7 @@ import (
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"fmt"
+	"math"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -57,6 +58,9 @@ func (r *scenarioTypeRunnerGroupA) Run(ctx context.Context, scenario *entity.Tes
 	remaining := *scenario.MaxTestServiceCount - cnt
 	// no more test service to provision and we are done here.
 	if remaining > 0 {
+		if remaining > math.MaxInt32 || remaining < math.MinInt32 {
+			return fmt.Errorf("cnt out of int32 range: %d", cnt)
+		}
 		err = r.provisioningService.ProvisionTestService(ctx, scenario, int32(remaining))
 		if err != nil {
 			zap.L().Error("failed to provision remaining test services",
@@ -93,6 +97,10 @@ func (r *scenarioTypeRunnerGroupA) Run(ctx context.Context, scenario *entity.Tes
 		return fmt.Errorf("%w: %w", pkg.ErrGettingRunningTestServicesByScenario, err)
 	}
 	_ = items
+
+	if cnt > math.MaxInt32 || cnt < math.MinInt32 {
+		return fmt.Errorf("cnt out of int32 range: %d", cnt)
+	}
 
 	err = r.provisioningService.DeprovisionTestService(ctx, scenario, int32(cnt))
 	if err != nil {
