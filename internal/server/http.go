@@ -141,7 +141,11 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		return fmt.Errorf("could not connect to kubernetes: %w", err)
 	}
 
-	motherService := usecase.NewMotherService(cfg, db, postgres.NewMotherServiceRepository(db), kubernetes)
+	motherService := usecase.NewMotherService(
+		db,
+		postgres.NewMotherServiceRepository(db),
+		provider.NewProvisioningService(cfg, kubernetes),
+	)
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
@@ -152,7 +156,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewMotherServiceRepository(db),
 		usecase.NewInMemoryScenarioExecutorBox(),
 		postgres.NewTestServiceRepository(db),
-		provider.NewProvisioningService(cfg),
+		provider.NewProvisioningService(cfg, kubernetes),
 	)
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
 

@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
 	prvMock "control-panel-service/internal/provider/mocks"
 	"control-panel-service/internal/repository/mocks"
@@ -1285,23 +1284,4 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-}
-
-func deployTestScenarioServiceConfig() *config.Config {
-	return &config.Config{
-		Server: config.Server{Port: 8080},
-		Kafka:  config.Kafka{Port: 9092},
-		Postgres: config.Postgres{
-			Port:               5432,
-			SSLMode:            "disable",
-			MaxOpenConnections: 10,
-			MaxIdleConnections: 5,
-		},
-		// Kubernetese: config.Kubernetese{
-		// 	MotherServiceAPPServe:          "mother-service-serve",
-		// 	MotherServiceAPPJobs:           "mother-service-jobs",
-		// 	MotherServiceAPPServeWaitReady: 10 * time.Second,
-		// 	MotherServiceAPPJobsWaitReady:  10 * time.Second,
-		// },
-	}
 }
