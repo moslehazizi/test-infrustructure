@@ -14,7 +14,7 @@ const (
 	MotherServiceStatusRunning MotherServiceStatus = "running" // test is running on application level (sending level)
 	MotherServiceStatusPaused  MotherServiceStatus = "paused"  // application level pause on sending request
 	MotherServiceStatusStopped MotherServiceStatus = "stopped" // stop container but can start scenario again.
-	MotherServiceStatusAborted MotherServiceStatus = "aborted" //stop and delete containers. can not start again.
+	MotherServiceStatusAborted MotherServiceStatus = "aborted" // stop and delete containers. can not start again.
 )
 
 type MotherService struct {

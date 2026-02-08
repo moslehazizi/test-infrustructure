@@ -99,7 +99,7 @@ func (eventProducer *kafkaEventProducer) Close() error {
 	if err != nil {
 		log.Printf("error closing Kafka producer: %v", err)
 
-		return fmt.Errorf("%w", err)
+		return err
 	}
 	log.Println("Kafka producer closed successfully")
 
@@ -194,7 +194,7 @@ func (eventConsumer *kafkaConsumer) Close() error {
 	if err != nil {
 		log.Printf("error closing Kafka consumer: %v", err)
 
-		return fmt.Errorf("%w", err)
+		return err
 	}
 	log.Println("Kafka consumer closed successfully")
 

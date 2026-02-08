@@ -24,18 +24,20 @@ func NewMotherServiceRepository(db database.Database) repository.MotherServiceRe
 	}
 }
 
-func (m *motherServiceRepository) Create(ctx context.Context, motherService *entity.MotherService) error {
+func (m *motherServiceRepository) Create(ctx context.Context, motherService *entity.MotherService) (uint64, error) {
 	err := postgres.QueryBuilder(ctx, m.db).Create(motherService).Error
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return pkg.ErrMotherServiceAlreadyExist
+			return 0, pkg.ErrMotherServiceAlreadyExist
 		}
 
-		return fmt.Errorf("failed to create mother service record: %w", err)
+		return 0, fmt.Errorf("failed to create mother service record: %w", err)
 	}
 
-	return nil
+	id := motherService.ID
+
+	return id, nil
 }
 
 func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {

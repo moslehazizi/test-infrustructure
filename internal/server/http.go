@@ -13,10 +13,6 @@ import (
 	pslq "control-panel-service/pkg/database/postgres"
 	kuber "control-panel-service/pkg/kubernetes"
 
-	_ "control-panel-service/docs"
-
-	_ "control-panel-service/docs"
-
 	fiberSwagger "github.com/arsmn/fiber-swagger/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"

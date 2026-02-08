@@ -56,7 +56,6 @@ type Kubernetese struct {
 	NameSpace                      string        `envconfig:"KUBERNETES_NAMESPACE" default:"control-panel-service"`
 	MotherServiceImage             string        `envconfig:"MOTHER_SERVICE_IMAGE" default:"challenge-mother-service:0.1"`
 	MotherServiceAPPServe          string        `envconfig:"MOTHER_SERVICE_APP_SERVE" default:"mother-service-serve"`
-	MotherServiceAPPServeNodePort  int           `envconfig:"MOTHER_SERVICE_APP_SERVE_NODE_PORT" default:"30080"`
 	MotherServiceAPPServeWaitReady time.Duration `envconfig:"MOTHER_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
 	MotherServiceAPPJobs           string        `envconfig:"MOTHER_SERVICE_APP_JOBS" default:"mother-service-jobs"`
 	MotherServiceAPPJobsWaitReady  time.Duration `envconfig:"MOTHER_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
@@ -66,6 +65,8 @@ type Kubernetese struct {
 	MotherServiceKafkaDbTopic      string        `envconfig:"MOTHER_SERVICE_KAFKA_DATABASE_TOPIC" default:"mother-db"`
 	MotherServiceKafkaDbGroup      string        `envconfig:"MOTHER_SERVICE_KAFKA_CONSUMER_GROUP" default:"mother-db-consumer-group"`
 	MotherServiceLiveFeedTopic     string        `envconfig:"MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"mother-live-feed"`
+	MotherServiceKafkaHost         string        `envconfig:"MOTHER_SERVICE_KAFKA_HOST" default:"kafka"`
+	MotherServicePostgresHost      string        `envconfig:"MOTHER_SERVICE_POSTGRES_HOST" default:"postgres"`
 }
 
 // var GlobalConfigInstance *Config

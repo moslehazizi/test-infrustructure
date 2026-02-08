@@ -3,6 +3,7 @@ package kubernetese
 import (
 	"context"
 	"control-panel-service/pkg/kubernetes/domain/entity"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -20,6 +21,10 @@ const (
 	Config = "-config"
 	Secret = "-secret"
 	Wait   = 2 * time.Second
+)
+
+var (
+	ErrDeploymentNotReady = errors.New("deployment did not become ready within timeout")
 )
 
 type Kubernetese interface {
@@ -62,7 +67,7 @@ func New(ctx context.Context, config *KubernConfig) (Kubernetese, error) {
 	}, nil
 }
 
-// applyConfigMap creates or updates the configMap
+// applyConfigMap creates or updates the configMap.
 func (k *Kuber) applyConfigMap(ctx context.Context, configMap map[string]string, app string) error {
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -77,6 +82,7 @@ func (k *Kuber) applyConfigMap(ctx context.Context, configMap map[string]string,
 	if apierrors.IsNotFound(err) {
 		fmt.Println("creating configmap ...")
 		_, err = k.Clientset.CoreV1().ConfigMaps(k.cfg.NameSpace).Create(ctx, cm, metav1.CreateOptions{})
+
 		return err
 	}
 	if err != nil {
@@ -85,10 +91,11 @@ func (k *Kuber) applyConfigMap(ctx context.Context, configMap map[string]string,
 
 	fmt.Println("updating configmap ...")
 	_, err = k.Clientset.CoreV1().ConfigMaps(k.cfg.NameSpace).Update(ctx, cm, metav1.UpdateOptions{})
+
 	return err
 }
 
-// applySecret creates or updates the Secret
+// applySecret creates or updates the Secret.
 func (k *Kuber) applySecret(ctx context.Context, secretMap map[string]string, app string) error {
 	sec := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -103,6 +110,7 @@ func (k *Kuber) applySecret(ctx context.Context, secretMap map[string]string, ap
 	if apierrors.IsNotFound(err) {
 		fmt.Println("creating secret ...")
 		_, err = k.Clientset.CoreV1().Secrets(k.cfg.NameSpace).Create(ctx, sec, metav1.CreateOptions{})
+
 		return err
 	}
 	if err != nil {
@@ -111,10 +119,11 @@ func (k *Kuber) applySecret(ctx context.Context, secretMap map[string]string, ap
 
 	fmt.Println("updating secret ...")
 	_, err = k.Clientset.CoreV1().Secrets(k.cfg.NameSpace).Update(ctx, sec, metav1.UpdateOptions{})
+
 	return err
 }
 
-// applyDeployment creates a deployment if it doesn't exist, otherwise updates it
+// applyDeployment creates a deployment if it doesn't exist, otherwise updates it.
 func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec, configMap, secretMap map[string]string) error {
 	err := k.applyConfigMap(ctx, configMap, spec.Name)
 	if err != nil {
@@ -131,6 +140,7 @@ func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec,
 	if apierrors.IsNotFound(err) {
 		fmt.Printf("creating deployment %s...\n", spec.Name)
 		_, err = k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Create(ctx, spec.Deployment, metav1.CreateOptions{})
+
 		return err
 	}
 
@@ -141,6 +151,7 @@ func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec,
 	fmt.Printf("updating deployment %s...\n", spec.Name)
 	spec.Deployment.ResourceVersion = existing.ResourceVersion
 	_, err = k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Update(ctx, spec.Deployment, metav1.UpdateOptions{})
+
 	return err
 }
 
@@ -161,6 +172,7 @@ func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec, confi
 	if apierrors.IsNotFound(err) {
 		fmt.Printf("creating service %s...\n", spec.Name)
 		_, err = k.Clientset.CoreV1().Services(k.cfg.NameSpace).Create(ctx, spec.Service, metav1.CreateOptions{})
+
 		return err
 	}
 
@@ -172,6 +184,7 @@ func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec, confi
 	spec.Service.ResourceVersion = existing.ResourceVersion
 	spec.Service.Spec.ClusterIP = existing.Spec.ClusterIP
 	_, err = k.Clientset.CoreV1().Services(k.cfg.NameSpace).Update(ctx, spec.Service, metav1.UpdateOptions{})
+
 	return err
 }
 
@@ -190,17 +203,18 @@ func (k *Kuber) WaitForDeployment(ctx context.Context, name string, timeout time
 
 		if dep.Status.ReadyReplicas > 0 && dep.Status.ReadyReplicas == *dep.Spec.Replicas {
 			fmt.Printf("%s is ready!\n", name)
+
 			return nil
 		}
 
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("%w", ctx.Err())
 		case <-time.After(Wait):
 		}
 	}
 
-	return fmt.Errorf("%s did not become ready within %v", name, timeout)
+	return fmt.Errorf("%w: name=%s timeout=%v", ErrDeploymentNotReady, name, timeout)
 }
 
 func (k *Kuber) Client() *kubernetes.Clientset {

@@ -24,5 +24,4 @@ func CalcRange(cntPtr, minPtr, maxPtr *int) (minVal, maxVal int) {
 	}
 
 	return minVal, maxVal
-
 }

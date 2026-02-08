@@ -4,7 +4,6 @@ import (
 	"context"
 	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
-	inEntity "control-panel-service/internal/domain/entity"
 	providerMock "control-panel-service/internal/provider/mocks"
 	"control-panel-service/internal/repository/mocks"
 
@@ -47,7 +46,14 @@ func TestNewMotherService(t *testing.T) {
 func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
+		cfg := &config.Config{
+			Kubernetese: config.Kubernetese{
+				MotherServiceAPPServe:          "mother-service-serve",
+				MotherServiceAPPJobs:           "mother-service-jobs",
+				MotherServiceAPPServeWaitReady: 10 * time.Second,
+				MotherServiceAPPJobsWaitReady:  10 * time.Second,
+			},
+		}
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
@@ -59,19 +65,28 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Create", mock.Anything, sampleMS).Return(nil)
-
-		mockEventProducer.On("SendEvent", mock.Anything, mock.Anything, "provisioning").Return(nil)
+		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(1), nil)
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
+		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs", 10*time.Second).Return(nil).Once()
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.NoError(t, err)
 		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
-		mockEventProducer.AssertCalled(t, "SendEvent", mock.Anything, mock.Anything, "provisioning")
+		mockKubernetes.AssertExpectations(t)
 	})
-	t.Run("failed to send kafka event => database should be rolled back", func(t *testing.T) {
+	t.Run("failed DeployMotherService => returns ErrFailedToDeployMotherService", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
+		cfg := &config.Config{
+			Kubernetese: config.Kubernetese{
+				MotherServiceAPPServe:          "mother-service-serve",
+				MotherServiceAPPJobs:           "mother-service-jobs",
+				MotherServiceAPPServeWaitReady: 10 * time.Second,
+				MotherServiceAPPJobsWaitReady:  10 * time.Second,
+			},
+		}
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
@@ -83,18 +98,15 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Create", mock.Anything, sampleMS).Return(nil)
-
-		mockEventProducer.On("SendEvent", mock.Anything, mock.Anything, "provisioning").Return(errors.New("something went wrong"))
+		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(1), nil)
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply deployment failed")).Once()
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrFailedToSendProvisioningEvent)
-
+		assert.ErrorIs(t, err, pkg.ErrFailedToDeployMotherService)
 		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
-
-		mockEventProducer.AssertCalled(t, "SendEvent", mock.Anything, mock.Anything, "provisioning")
+		mockKubernetes.AssertExpectations(t)
 	})
 
 	t.Run("failed case", func(t *testing.T) {
@@ -111,7 +123,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Create", mock.Anything, sampleMS).Return(pkg.ErrFailedToCreateMotherService)
+		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(0), pkg.ErrFailedToCreateMotherService)
 
 		err := service.Create(ctx, sampleMS)
 
@@ -134,7 +146,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Create", mock.Anything, sampleMS).Return(pkg.ErrMotherServiceAlreadyExist)
+		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(0), pkg.ErrMotherServiceAlreadyExist)
 
 		err := service.Create(ctx, sampleMS)
 
@@ -401,6 +413,25 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 	})
 }
 
+func deployTestConfig() *config.Config {
+	return &config.Config{
+		Server: config.Server{Port: 8080},
+		Kafka:  config.Kafka{Port: 9092},
+		Postgres: config.Postgres{
+			Port:               5432,
+			SSLMode:            "disable",
+			MaxOpenConnections: 10,
+			MaxIdleConnections: 5,
+		},
+		Kubernetese: config.Kubernetese{
+			MotherServiceAPPServe:          "mother-service-serve",
+			MotherServiceAPPJobs:           "mother-service-jobs",
+			MotherServiceAPPServeWaitReady: 10 * time.Second,
+			MotherServiceAPPJobsWaitReady:  10 * time.Second,
+		},
+	}
+}
+
 func TestDeployMotherService(t *testing.T) {
 	t.Run("mother_service_is_nil", func(t *testing.T) {
 		ctx := context.Background()
@@ -408,12 +439,161 @@ func TestDeployMotherService(t *testing.T) {
 		mockRepo := new(mocks.MockMotherService)
 		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		var motherService *inEntity.MotherService
+		var motherService *entity.MotherService
 
 		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
 
 		err := service.DeployMotherService(ctx, motherService)
-		assert.NotNil(t, err)
+		assert.Error(t, err)
 	})
 
+	t.Run("success case", func(t *testing.T) {
+		ctx := context.Background()
+		cfg := deployTestConfig()
+		mockRepo := new(mocks.MockMotherService)
+		mockEventProducer := new(providerMock.KafkaMock)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+
+		motherService := &entity.MotherService{
+			ID:                1,
+			Name:              "mother1",
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
+		}
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
+		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs", 10*time.Second).Return(nil).Once()
+
+		err := service.DeployMotherService(ctx, motherService)
+
+		assert.NoError(t, err)
+		mockKubernetes.AssertExpectations(t)
+	})
+
+	t.Run("failed ApplyDeployment serve", func(t *testing.T) {
+		ctx := context.Background()
+		cfg := deployTestConfig()
+		mockRepo := new(mocks.MockMotherService)
+		mockEventProducer := new(providerMock.KafkaMock)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+
+		motherService := &entity.MotherService{
+			ID:                1,
+			Name:              "mother1",
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
+		}
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply deployment failed")).Once()
+
+		err := service.DeployMotherService(ctx, motherService)
+
+		assert.Error(t, err)
+		mockKubernetes.AssertExpectations(t)
+	})
+
+	t.Run("failed ApplyService serve", func(t *testing.T) {
+		ctx := context.Background()
+		cfg := deployTestConfig()
+		mockRepo := new(mocks.MockMotherService)
+		mockEventProducer := new(providerMock.KafkaMock)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+
+		motherService := &entity.MotherService{
+			ID:                1,
+			Name:              "mother1",
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
+		}
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply service failed")).Once()
+
+		err := service.DeployMotherService(ctx, motherService)
+
+		assert.Error(t, err)
+		mockKubernetes.AssertExpectations(t)
+	})
+
+	t.Run("failed WaitForDeployment serve", func(t *testing.T) {
+		ctx := context.Background()
+		cfg := deployTestConfig()
+		mockRepo := new(mocks.MockMotherService)
+		mockEventProducer := new(providerMock.KafkaMock)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+
+		motherService := &entity.MotherService{
+			ID:                1,
+			Name:              "mother1",
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
+		}
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(errors.New("timeout waiting for deployment")).Once()
+
+		err := service.DeployMotherService(ctx, motherService)
+
+		assert.Error(t, err)
+		mockKubernetes.AssertExpectations(t)
+	})
+
+	t.Run("failed ApplyDeployment jobs", func(t *testing.T) {
+		ctx := context.Background()
+		cfg := deployTestConfig()
+		mockRepo := new(mocks.MockMotherService)
+		mockEventProducer := new(providerMock.KafkaMock)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+
+		motherService := &entity.MotherService{
+			ID:                1,
+			Name:              "mother1",
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
+		}
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once() // serve
+		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply jobs deployment failed")).Once() // jobs
+
+		err := service.DeployMotherService(ctx, motherService)
+
+		assert.Error(t, err)
+		mockKubernetes.AssertExpectations(t)
+	})
+
+	t.Run("failed WaitForDeployment jobs", func(t *testing.T) {
+		ctx := context.Background()
+		cfg := deployTestConfig()
+		mockRepo := new(mocks.MockMotherService)
+		mockEventProducer := new(providerMock.KafkaMock)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+
+		motherService := &entity.MotherService{
+			ID:                1,
+			Name:              "mother1",
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
+		}
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
+		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs", 10*time.Second).Return(errors.New("timeout waiting for jobs")).Once()
+
+		err := service.DeployMotherService(ctx, motherService)
+
+		assert.Error(t, err)
+		mockKubernetes.AssertExpectations(t)
+	})
 }

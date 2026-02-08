@@ -65,9 +65,9 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 		mock.ExpectCommit()
 
-		err = repo.Create(context.Background(), motherService)
-
+		id, err := repo.Create(context.Background(), motherService)
 		assert.NoError(t, err)
+		assert.Equal(t, id, uint64(1))
 		assert.Equal(t, uint64(1), motherService.ID)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -110,8 +110,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			WillReturnError(errors.New("insert failed"))
 		mock.ExpectRollback()
 
-		err = repo.Create(context.Background(), motherService)
-
+		id, err := repo.Create(context.Background(), motherService)
+		assert.Equal(t, id, uint64(0))
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to create mother service record")
 		assert.NoError(t, mock.ExpectationsWereMet())
@@ -162,8 +162,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			WillReturnError(duplicateError)
 		mock.ExpectRollback()
 
-		err = repo.Create(context.Background(), motherService)
-
+		id, err := repo.Create(context.Background(), motherService)
+		assert.Equal(t, id, uint64(0))
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMotherServiceAlreadyExist)
 

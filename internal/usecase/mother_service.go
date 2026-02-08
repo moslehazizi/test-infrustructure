@@ -121,7 +121,7 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 		}
 	}()
 
-	err = service.motherServiceRepo.Create(dbCtx, motherService)
+	id, err := service.motherServiceRepo.Create(dbCtx, motherService)
 	if err != nil {
 		if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
 			return pkg.ErrMotherServiceAlreadyExist
@@ -131,6 +131,7 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 	}
 	_ = tx.Commit()
 
+	motherService.ID = id
 	err = service.DeployMotherService(ctx, motherService)
 	if err != nil {
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToDeployMotherService, err)
@@ -167,13 +168,13 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 	// Mother service serve deployment logic here
 	// chekc mother service
 	if motherService == nil {
-		return fmt.Errorf("motherService struct is empty")
+		return fmt.Errorf("%w", pkg.ErrMotherServiceIsNil)
 	}
 
 	// Create config map
 	randomResponseDelayMin, randomResponseDelayMax := number.CalcRange(motherService.ResponseDelayDuration, motherService.RandomResponseDelayMin, motherService.RandomResponseDelayMax)
 	configMap := map[string]string{
-		ServiceId:                       fmt.Sprintf("%v", motherService.ID),
+		ServiceId:                       strconv.FormatUint(motherService.ID, 10),
 		HTTPPort:                        strconv.Itoa(s.cfg.Server.Port),
 		HTTPPostBodyLimit:               strconv.Itoa(s.cfg.Server.PostBodyLimit),
 		HTTPReadTimeout:                 s.cfg.Server.ReadTimeout.String(),
@@ -188,7 +189,8 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 		LogLevel:                        s.cfg.Kubernetese.MotherServiceLogLevel,
 		LogFormat:                       s.cfg.Kubernetese.MotherServiceLogFormat,
 		LogOutput:                       s.cfg.Kubernetese.MotherServicelogOutput,
-		KafkaPort:                       s.cfg.Kafka.Host,
+		KafkaHost:                       s.cfg.Kubernetese.MotherServiceKafkaHost,
+		KafkaPort:                       strconv.Itoa(s.cfg.Kafka.Port),
 		KafkaDialerTimeout:              s.cfg.Kafka.DialerTimeout.String(),
 		KafkaMaxBytes:                   strconv.Itoa(s.cfg.Kafka.MaxBytes),
 		KafkaBatchTimeout:               s.cfg.Kafka.BatchTimeout.String(),
@@ -197,7 +199,7 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 		KafkaDatabaseTopic:              fmt.Sprintf("%s-%v", s.cfg.Kubernetese.MotherServiceKafkaDbTopic, motherService.ID),
 		KafkaConsumerGroup:              fmt.Sprintf("%s-%v", s.cfg.Kubernetese.MotherServiceKafkaDbGroup, motherService.ID),
 		KafkaLiveFeedTopic:              s.cfg.Kubernetese.MotherServiceLiveFeedTopic,
-		PostgresHost:                    s.cfg.Postgres.Host,
+		PostgresHost:                    s.cfg.Kubernetese.MotherServicePostgresHost,
 		PostgresPort:                    strconv.Itoa(s.cfg.Postgres.Port),
 		PostgresDatabase:                motherService.DatabaseName,
 		PostgresTable:                   motherService.DatabaseTableName,
@@ -218,10 +220,10 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 
 	// Serve :
 	// Create deploy spec
-	serveDepSpec := motherServDepSpec(s.cfg, Replication)
+	serveDepSpec := motherServDepSpec(s.cfg, Replication, motherService.ID)
 
 	// Create service spec
-	serveSvcSpec := motherServeSvcSpec(s.cfg)
+	serveSvcSpec := motherServeSvcSpec(s.cfg, motherService.ID)
 
 	// Call ApplyDeployment from kubernetese interface
 	err := s.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
@@ -238,7 +240,8 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 	}
 
 	// Wait for deployment to be ready
-	err = s.kubernetes.WaitForDeployment(ctx, s.cfg.Kubernetese.MotherServiceAPPServe, s.cfg.Kubernetese.MotherServiceAPPServeWaitReady)
+	serveSvcName := fmt.Sprintf("%s-%v", s.cfg.Kubernetese.MotherServiceAPPServe, motherService.ID)
+	err = s.kubernetes.WaitForDeployment(ctx, serveSvcName, s.cfg.Kubernetese.MotherServiceAPPServeWaitReady)
 	if err != nil {
 		// TODO: log error
 		return err
@@ -256,7 +259,8 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 	}
 
 	// Wait for deployment to be ready
-	err = s.kubernetes.WaitForDeployment(ctx, s.cfg.Kubernetese.MotherServiceAPPJobs, s.cfg.Kubernetese.MotherServiceAPPJobsWaitReady)
+	jobsSvcName := s.cfg.Kubernetese.MotherServiceAPPJobs
+	err = s.kubernetes.WaitForDeployment(ctx, jobsSvcName, s.cfg.Kubernetese.MotherServiceAPPJobsWaitReady)
 	if err != nil {
 		// TODO: log error
 		return err
@@ -265,14 +269,15 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 	return nil
 }
 
-func motherServDepSpec(cfg *config.Config, replica int) inEntity.DeploymentSpec {
-	replicas := int32(replica)
-	labels := map[string]string{App: cfg.Kubernetese.MotherServiceAPPServe}
+func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
+	replicas := replica
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
+	labels := map[string]string{App: appName}
 
 	return inEntity.DeploymentSpec{
-		Name: cfg.Kubernetese.MotherServiceAPPServe,
+		Name: appName,
 		Deployment: &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Name: cfg.Kubernetese.MotherServiceAPPServe},
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
 			Spec: appsv1.DeploymentSpec{
 				Replicas: &replicas,
 				Selector: &metav1.LabelSelector{MatchLabels: labels},
@@ -287,8 +292,8 @@ func motherServDepSpec(cfg *config.Config, replica int) inEntity.DeploymentSpec 
 								Command:         []string{Main, Serve},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}},
 								EnvFrom: []corev1.EnvFromSource{
-									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: cfg.Kubernetese.MotherServiceAPPServe + Config}}},
-									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: cfg.Kubernetese.MotherServiceAPPJobs + Secret}}},
+									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: appName + Config}}},
+									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: appName + Secret}}},
 								},
 								Env: []corev1.EnvVar{
 									{Name: KafkaUsername, Value: cfg.Kafka.Username},
@@ -303,28 +308,32 @@ func motherServDepSpec(cfg *config.Config, replica int) inEntity.DeploymentSpec 
 	}
 }
 
-func motherServeSvcSpec(cfg *config.Config) inEntity.ServiceSpec {
+func motherServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
+
 	return inEntity.ServiceSpec{
-		Name: cfg.Kubernetese.MotherServiceAPPServe,
+		Name: appName,
 		Service: &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{Name: cfg.Kubernetese.MotherServiceAPPServe},
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
 			Spec: corev1.ServiceSpec{
-				Selector: map[string]string{App: cfg.Kubernetese.MotherServiceAPPServe},
-				Type:     corev1.ServiceTypeNodePort,
-				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port), NodePort: int32(cfg.Kubernetese.MotherServiceAPPServeNodePort)}},
+				Selector: map[string]string{App: appName},
+				Type:     corev1.ServiceTypeClusterIP,
+				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}},
 			},
 		},
 	}
 }
 
-func motherJobsDepSpec(cfg *config.Config, replica int) inEntity.DeploymentSpec {
-	replicas := int32(replica)
-	labels := map[string]string{App: cfg.Kubernetese.MotherServiceAPPJobs}
+func motherJobsDepSpec(cfg *config.Config, replica int32) inEntity.DeploymentSpec {
+	replicas := replica
+	// appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPJobs, appId)
+	appName := cfg.Kubernetese.MotherServiceAPPJobs
+	labels := map[string]string{App: appName}
 
 	return inEntity.DeploymentSpec{
-		Name: cfg.Kubernetese.MotherServiceAPPJobs,
+		Name: appName,
 		Deployment: &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Name: cfg.Kubernetese.MotherServiceAPPJobs},
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
 			Spec: appsv1.DeploymentSpec{
 				Replicas: &replicas,
 				Selector: &metav1.LabelSelector{MatchLabels: labels},
@@ -339,8 +348,8 @@ func motherJobsDepSpec(cfg *config.Config, replica int) inEntity.DeploymentSpec 
 								Command:         []string{Main, Jobs},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}},
 								EnvFrom: []corev1.EnvFromSource{
-									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: cfg.Kubernetese.MotherServiceAPPJobs + Config}}},
-									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: cfg.Kubernetese.MotherServiceAPPJobs + Secret}}},
+									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: appName + Config}}},
+									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: appName + Secret}}},
 								},
 								Env: []corev1.EnvVar{
 									{Name: KafkaUsername, Value: cfg.Kafka.Username},
