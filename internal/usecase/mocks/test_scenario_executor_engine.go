@@ -40,7 +40,7 @@ func (m *MockScenarioExecutor) GetScenario() *entity.TestScenario {
 }
 
 func (m *MockScenarioExecutor) ResumeOrStart(ctx context.Context) error {
-	args := m.Called()
+	args := m.Called(ctx)
 
 	return args.Error(0)
 }
@@ -64,7 +64,7 @@ func (m *MockScenarioExecutorWithWG) GetScenario() *entity.TestScenario {
 }
 
 func (m *MockScenarioExecutorWithWG) ResumeOrStart(ctx context.Context) error {
-	args := m.Called()
+	args := m.Called(ctx)
 	m.WG.Done()
 
 	return args.Error(0)
