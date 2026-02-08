@@ -2,11 +2,13 @@ package usecase
 
 import (
 	"context"
+	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
+	kubernetese "control-panel-service/pkg/kubernetes"
 	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
@@ -22,39 +24,43 @@ type TestScenario interface {
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error)
 	Start(ctx context.Context, id uint64) error
+	DeployTestScenarioService(ctx context.Context, testService *entity.TestScenario) error
 }
 
 func NewTestScenarioUsecase(
+	cfg *config.Config,
 	db database.Database,
 	testScenarioRepository repository.TestScenarioRepository,
 	testCategoryRepository repository.TestCategory,
 	testServiceConfigRepository repository.TestServiceConfigRepository,
 	motherService repository.MotherServiceRepository,
 	scenarioExecutorBox interfaces.ScenarioExecutorBox,
+	kubernetes kubernetese.Kubernetese,
 ) TestScenario {
 	return &testScenario{
-		db:                          db,
-		testScenarioRepository:      testScenarioRepository,
-		testCategoryRepository:      testCategoryRepository,
-		testServiceConfigRepository: testServiceConfigRepository,
-		motherService:               motherService,
-		scenarioExecutorBox:         scenarioExecutorBox,
+		cfg,
+		db,
+		testScenarioRepository,
+		testCategoryRepository,
+		testServiceConfigRepository,
+		motherService,
+		scenarioExecutorBox,
+		kubernetes,
 	}
 }
 
 type testScenario struct {
+	cfg                         *config.Config
 	db                          database.Database
 	testScenarioRepository      repository.TestScenarioRepository
 	testCategoryRepository      repository.TestCategory
 	testServiceConfigRepository repository.TestServiceConfigRepository
 	motherService               repository.MotherServiceRepository
 	scenarioExecutorBox         interfaces.ScenarioExecutorBox
+	kubernetes                  kubernetese.Kubernetese
 }
 
-func (service *testScenario) Create(
-	ctx context.Context,
-	testScenario *entity.TestScenario,
-) (e error) {
+func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) (e error) {
 	tracer := otel.Tracer("test-scenario-usecase")
 	_, span := tracer.Start(ctx, "create_test_scenario")
 	defer span.End()
@@ -175,6 +181,7 @@ func (service *testScenario) Create(
 	}
 
 	_ = tx.Commit()
+
 	span.SetAttributes(attribute.String("transaction.status", "committed"))
 	zap.L().Info("test scenario created successfully",
 		zap.String(logger.FieldRequestID, requestID),
@@ -292,5 +299,9 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	// add scenario to executor.
 	service.scenarioExecutorBox.Add(NewScenarioExecutor(*scenario))
 
+	return nil
+}
+
+func (service *testScenario) DeployTestScenarioService(ctx context.Context, motherService *entity.TestScenario) error {
 	return nil
 }

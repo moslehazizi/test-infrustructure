@@ -401,7 +401,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 	})
 }
 
-func deployTestConfig() *config.Config {
+func deployMotherServiceConfig() *config.Config {
 	return &config.Config{
 		Server: config.Server{Port: 8080},
 		Kafka:  config.Kafka{Port: 9092},
@@ -436,7 +436,7 @@ func TestDeployMotherService(t *testing.T) {
 
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := deployTestConfig()
+		cfg := deployMotherServiceConfig()
 		mockRepo := new(mocks.MockMotherService)
 		mockKubernetes := new(kubermock.KuberneteseMock)
 		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
@@ -461,7 +461,7 @@ func TestDeployMotherService(t *testing.T) {
 
 	t.Run("failed ApplyDeployment serve", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := deployTestConfig()
+		cfg := deployMotherServiceConfig()
 		mockRepo := new(mocks.MockMotherService)
 		mockKubernetes := new(kubermock.KuberneteseMock)
 		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
@@ -483,7 +483,7 @@ func TestDeployMotherService(t *testing.T) {
 
 	t.Run("failed ApplyService serve", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := deployTestConfig()
+		cfg := deployMotherServiceConfig()
 		mockRepo := new(mocks.MockMotherService)
 		mockKubernetes := new(kubermock.KuberneteseMock)
 		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
@@ -506,7 +506,7 @@ func TestDeployMotherService(t *testing.T) {
 
 	t.Run("failed WaitForDeployment serve", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := deployTestConfig()
+		cfg := deployMotherServiceConfig()
 		mockRepo := new(mocks.MockMotherService)
 		mockKubernetes := new(kubermock.KuberneteseMock)
 		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
@@ -530,7 +530,7 @@ func TestDeployMotherService(t *testing.T) {
 
 	t.Run("failed ApplyDeployment jobs", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := deployTestConfig()
+		cfg := deployMotherServiceConfig()
 		mockRepo := new(mocks.MockMotherService)
 		mockKubernetes := new(kubermock.KuberneteseMock)
 		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
@@ -555,7 +555,7 @@ func TestDeployMotherService(t *testing.T) {
 
 	t.Run("failed WaitForDeployment jobs", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := deployTestConfig()
+		cfg := deployMotherServiceConfig()
 		mockRepo := new(mocks.MockMotherService)
 		mockKubernetes := new(kubermock.KuberneteseMock)
 		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)

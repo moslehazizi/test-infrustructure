@@ -2,10 +2,12 @@ package usecase
 
 import (
 	"context"
+	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository/mocks"
 	svcMock "control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
+	kubermock "control-panel-service/pkg/kubernetes/mocks"
 	"errors"
 	"fmt"
 	"testing"
@@ -16,19 +18,23 @@ import (
 )
 
 func TestTestScenarioUsecase_Init(t *testing.T) {
+	cfg := &config.Config{}
 	mockRepo := new(mocks.MockTestScenario)
 	mockTestCatRepo := new(mocks.MockTestCategory)
 	mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 	mockMotherService := new(mocks.MockMotherService)
 	mockExecutor := new(svcMock.MockScenarioExecutorBox)
+	mockKubernetes := new(kubermock.KuberneteseMock)
 
 	service := NewTestScenarioUsecase(
+		cfg,
 		getMockDB(t),
 		mockRepo,
 		mockTestCatRepo,
 		mockTestServiceConfig,
 		mockMotherService,
 		mockExecutor,
+		mockKubernetes,
 	)
 	assert.NotNil(t, service)
 
@@ -40,12 +46,24 @@ func TestTestScenarioUsecase_Init(t *testing.T) {
 
 func TestTestScenarioUsecase_Create(t *testing.T) {
 	t.Run("failed case - when create test service config", func(t *testing.T) {
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
 
 		sampleInt := 1
 		expectedID := uint64(1)
@@ -100,12 +118,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockMotherService.AssertExpectations(t)
 	})
 	t.Run("failed case - test service config could not be null", func(t *testing.T) {
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := 1
 
 		testSci := &entity.TestScenario{
@@ -146,12 +177,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 	})
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := 1
 		expectedID := uint64(1)
 
@@ -204,12 +248,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 	})
 	t.Run("failed case - when create test scenario", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := 1
 		testServiceCfg := &entity.TestServiceConfig{
 			MaxRequests:          1,
@@ -258,12 +315,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - validation error - max test service count less than one", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := -1
 		testSci := &entity.TestScenario{
 			Name:                "load1",
@@ -300,12 +370,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - validation error -  execution duration less than one", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := -1
 		testSci := &entity.TestScenario{
 			Name:              "load1",
@@ -342,12 +425,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - validation error -  auto step change less than one", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := -1
 		testSci := &entity.TestScenario{
 			Name:               "load1",
@@ -384,12 +480,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - error get test category - not found", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := -1
 		testSci := &entity.TestScenario{
 			Name:               "load1",
@@ -419,12 +528,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - error get test category - unknown", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := -1
 		testSci := &entity.TestScenario{
 			Name:               "load1",
@@ -454,12 +576,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - validation error - max service count not set", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		testSci := &entity.TestScenario{
 			Name:            "load1",
 			TestCategoryID:  uint64(2),
@@ -493,12 +628,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 	})
 	t.Run("failed case - validation error - no need to auto step change rate", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := 1
 		testSci := &entity.TestScenario{
 			Name:               "load1",
@@ -534,12 +682,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 	})
 	t.Run("failed case - validation error - test service config", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := 1
 		testSci := &entity.TestScenario{
 			Name:               "load1",
@@ -581,12 +742,24 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - mother service not found", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockMotherService := new(mocks.MockMotherService)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
 
 		sampleInt := 1
 		expectedID := uint64(1)
@@ -623,12 +796,25 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 func TestTestScenarioUsecase_GetByID(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Now().Location())
 		num := 10
 		sampleInt := 1
@@ -693,12 +879,24 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 
 	t.Run("failed case - not found", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
 		sampleID := uint64(4)
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, pkg.ErrTestScenarioNotFound)
@@ -714,12 +912,25 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 
 	t.Run("failed case - repository unknown error", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleID := uint64(4)
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, errors.New("error happened"))
@@ -735,12 +946,24 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 
 	t.Run("failed case - repository unknown error", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
 		sampleID := uint64(4)
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, errors.New("error happened"))
@@ -758,12 +981,25 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		sampleInt := 2
 		pagReq := entity.TestScenarioPaginationRequest{
 			Page:    2,
@@ -838,13 +1074,25 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 
 	t.Run("failed case", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutor)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockKubernetes,
+		)
+
 		pagReq := entity.TestScenarioPaginationRequest{
 			Page:    2,
 			PerPage: 2,
@@ -866,12 +1114,25 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 func TestTestScenarioUsecase_Start(t *testing.T) {
 	t.Run("failed case - not found", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutorBox,
+			mockKubernetes,
+		)
+
 		sampleID := uint64(4)
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, pkg.ErrTestScenarioNotFound)
@@ -886,12 +1147,25 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 	t.Run("failed case - repository unknown error", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutorBox,
+			mockKubernetes,
+		)
+
 		sampleID := uint64(4)
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, errors.New("error happened"))
@@ -906,12 +1180,25 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 	t.Run("failed case - scenario status is not pending", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutorBox,
+			mockKubernetes,
+		)
+
 		sampleID := uint64(4)
 
 		scenario := &entity.TestScenario{
@@ -929,12 +1216,25 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 	})
 	t.Run("failed case - repository error on marking as running", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutorBox,
+			mockKubernetes,
+		)
+
 		sampleID := uint64(4)
 
 		scenario := &entity.TestScenario{
@@ -954,13 +1254,25 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 	})
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
+		cfg := &config.Config{}
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
 		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
+		mockKubernetes := new(kubermock.KuberneteseMock)
 
-		service := NewTestScenarioUsecase(getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox)
+		service := NewTestScenarioUsecase(
+			cfg,
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutorBox,
+			mockKubernetes,
+		)
+
 		sampleID := uint64(4)
 
 		scenario := &entity.TestScenario{
@@ -982,4 +1294,42 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
+}
+
+func deployTestScenarioServiceConfig() *config.Config {
+	return &config.Config{
+		Server: config.Server{Port: 8080},
+		Kafka:  config.Kafka{Port: 9092},
+		Postgres: config.Postgres{
+			Port:               5432,
+			SSLMode:            "disable",
+			MaxOpenConnections: 10,
+			MaxIdleConnections: 5,
+		},
+		// Kubernetese: config.Kubernetese{
+		// 	MotherServiceAPPServe:          "mother-service-serve",
+		// 	MotherServiceAPPJobs:           "mother-service-jobs",
+		// 	MotherServiceAPPServeWaitReady: 10 * time.Second,
+		// 	MotherServiceAPPJobsWaitReady:  10 * time.Second,
+		// },
+	}
+}
+
+func TestDeployTestScenarioService(t *testing.T) {
+	t.Run("test_scenario_is_nil", func(t *testing.T) {
+		ctx := context.Background()
+		cfg := &config.Config{}
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockExecutorBox := new(svcMock.MockScenarioExecutorBox)
+		mockKubernetes := new(kubermock.KuberneteseMock)
+		var testScenario *entity.TestScenario
+
+		service := NewTestScenarioUsecase(cfg, getMockDB(t), mockRepo, mockTestCatRepo, mockTestServiceConfig, mockMotherService, mockExecutorBox, mockKubernetes)
+
+		err := service.DeployTestScenarioService(ctx, testScenario)
+		assert.Error(t, err)
+	})
 }
