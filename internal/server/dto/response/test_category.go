@@ -11,4 +11,5 @@ type TestCategory struct {
 	HasMaxTestServiceCount bool      `json:"has_max_test_service_count"`
 	HasExecutionDuration   bool      `json:"has_execution_duration"`
 	HasAutoStepChangeRate  bool      `json:"has_auto_step_change_rate"`
+	Active                 bool      `json:"active"`
 }

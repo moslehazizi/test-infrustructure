@@ -29,6 +29,7 @@ type Config struct {
 	Server      Server
 	Kafka       Kafka
 	Postgres    Postgres
+	Kubernetese Kubernetese
 	Otlp        Otlp
 	Logger      Logger
 }
@@ -82,6 +83,23 @@ type Logger struct {
 	Level  string `envconfig:"LOG_LEVEL" default:"info"`
 	Format string `envconfig:"LOG_FORMAT" default:"json"` // json or console
 	Output string `envconfig:"LOG_OUTPUT" default:"stdout"`
+}
+
+type Kubernetese struct {
+	NameSpace                      string        `envconfig:"KUBERNETES_NAMESPACE" default:"control-panel-service"`
+	MotherServiceImage             string        `envconfig:"MOTHER_SERVICE_IMAGE" default:"challenge-mother-service:0.1"`
+	MotherServiceAPPServe          string        `envconfig:"MOTHER_SERVICE_APP_SERVE" default:"mother-service-serve"`
+	MotherServiceAPPServeWaitReady time.Duration `envconfig:"MOTHER_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
+	MotherServiceAPPJobs           string        `envconfig:"MOTHER_SERVICE_APP_JOBS" default:"mother-service-jobs"`
+	MotherServiceAPPJobsWaitReady  time.Duration `envconfig:"MOTHER_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
+	MotherServiceLogLevel          string        `envconfig:"MOTHER_SERVICE_LOG_LEVEL" default:"info"`
+	MotherServiceLogFormat         string        `envconfig:"MOTHER_SERVICE_LOG_FORMAT" default:"json"`
+	MotherServicelogOutput         string        `envconfig:"MOTHER_SERVICE_LOG_OUTPUT" default:"stdout"`
+	MotherServiceKafkaDbTopic      string        `envconfig:"MOTHER_SERVICE_KAFKA_DATABASE_TOPIC" default:"mother-db"`
+	MotherServiceKafkaDbGroup      string        `envconfig:"MOTHER_SERVICE_KAFKA_CONSUMER_GROUP" default:"mother-db-consumer-group"`
+	MotherServiceLiveFeedTopic     string        `envconfig:"MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"mother-live-feed"`
+	MotherServiceKafkaHost         string        `envconfig:"MOTHER_SERVICE_KAFKA_HOST" default:"kafka"`
+	MotherServicePostgresHost      string        `envconfig:"MOTHER_SERVICE_POSTGRES_HOST" default:"postgres"`
 }
 
 // var GlobalConfigInstance *Config

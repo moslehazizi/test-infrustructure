@@ -64,6 +64,7 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 				HasMaxTestServiceCount: svcResult.HasMaxTestServiceCount,
 				HasExecutionDuration:   svcResult.HasExecutionDuration,
 				HasAutoStepChangeRate:  svcResult.HasAutoStepChangeRate,
+				Active:                 svcResult.Active,
 			})
 		}
 
@@ -122,6 +123,7 @@ func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 			HasMaxTestServiceCount: svcResult.HasMaxTestServiceCount,
 			HasExecutionDuration:   svcResult.HasExecutionDuration,
 			HasAutoStepChangeRate:  svcResult.HasAutoStepChangeRate,
+			Active:                 svcResult.Active,
 		}
 
 		return ctx.Status(http.StatusOK).JSON(responses)

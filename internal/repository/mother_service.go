@@ -6,7 +6,7 @@ import (
 )
 
 type MotherServiceRepository interface {
-	Create(ctx context.Context, motherService *entity.MotherService) error
+	Create(ctx context.Context, motherService *entity.MotherService) (uint64, error)
 	GetByID(ctx context.Context, id uint64) (*entity.MotherService, error)
 	GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, int64, error)
 }

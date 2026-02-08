@@ -739,6 +739,9 @@ const docTemplate = `{
         "response.TestCategory": {
             "type": "object",
             "properties": {
+                "active": {
+                    "type": "boolean"
+                },
                 "created_at": {
                     "type": "string"
                 },
