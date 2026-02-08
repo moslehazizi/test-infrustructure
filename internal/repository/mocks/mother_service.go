@@ -11,10 +11,10 @@ type MockMotherService struct {
 	mock.Mock
 }
 
-func (m *MockMotherService) Create(ctx context.Context, motherService *entity.MotherService) error {
+func (m *MockMotherService) Create(ctx context.Context, motherService *entity.MotherService) (uint64, error) {
 	args := m.Called(ctx, motherService)
 
-	return args.Error(0)
+	return args.Get(0).(uint64), args.Error(1)
 }
 
 func (m *MockMotherService) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {

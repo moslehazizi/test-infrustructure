@@ -27,7 +27,7 @@ func NewMotherServiceRepository(db database.Database) repository.MotherServiceRe
 	}
 }
 
-func (m *motherServiceRepository) Create(ctx context.Context, motherService *entity.MotherService) error {
+func (m *motherServiceRepository) Create(ctx context.Context, motherService *entity.MotherService) (uint64, error) {
 	tracer := otel.Tracer("mother-service-repository")
 	_, span := tracer.Start(ctx, "create_mother_service")
 	defer span.End()
@@ -42,15 +42,17 @@ func (m *motherServiceRepository) Create(ctx context.Context, motherService *ent
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			span.SetAttributes(attribute.String("error.type", "constraint_violation"), attribute.String("postgres.error_code", pgErr.Code))
-			return pkg.ErrMotherServiceAlreadyExist
+			return 0, pkg.ErrMotherServiceAlreadyExist
 		}
 
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
-		return fmt.Errorf("failed to create mother service record: %w", err)
+		return 0, fmt.Errorf("failed to create mother service record: %w", err)
 	}
 
+	id := motherService.ID
+
 	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", motherService.ID)))
-	return nil
+	return id, nil
 }
 
 func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {

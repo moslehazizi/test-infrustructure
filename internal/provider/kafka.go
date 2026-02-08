@@ -122,7 +122,7 @@ func (eventProducer *kafkaEventProducer) Close() error {
 	if err != nil {
 		zap.L().Error("error closing Kafka producer", zap.Error(err))
 
-		return fmt.Errorf("%w", err)
+		return err
 	}
 	zap.L().Info("Kafka producer closed successfully")
 
@@ -241,7 +241,7 @@ func (eventConsumer *kafkaConsumer) Close() error {
 	if err != nil {
 		zap.L().Error("error closing Kafka consumer", zap.Error(err))
 
-		return fmt.Errorf("%w", err)
+		return err
 	}
 	zap.L().Info("Kafka consumer closed successfully")
 
