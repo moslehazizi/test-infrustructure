@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -80,7 +81,7 @@ func (k *Kuber) applyConfigMap(ctx context.Context, configMap map[string]string,
 	defer k.mtx.Unlock()
 	_, err := k.Clientset.CoreV1().ConfigMaps(k.cfg.NameSpace).Get(ctx, cm.Name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
-		fmt.Println("creating configmap ...")
+		zap.L().Info("creating configmap ...", zap.String("apllication", app))
 		_, err = k.Clientset.CoreV1().ConfigMaps(k.cfg.NameSpace).Create(ctx, cm, metav1.CreateOptions{})
 
 		return err
@@ -89,7 +90,7 @@ func (k *Kuber) applyConfigMap(ctx context.Context, configMap map[string]string,
 		return err
 	}
 
-	fmt.Println("updating configmap ...")
+	zap.L().Info("updating configmap ...", zap.String("apllication", app))
 	_, err = k.Clientset.CoreV1().ConfigMaps(k.cfg.NameSpace).Update(ctx, cm, metav1.UpdateOptions{})
 
 	return err
@@ -108,7 +109,7 @@ func (k *Kuber) applySecret(ctx context.Context, secretMap map[string]string, ap
 	defer k.mtx.Unlock()
 	_, err := k.Clientset.CoreV1().Secrets(k.cfg.NameSpace).Get(ctx, sec.Name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
-		fmt.Println("creating secret ...")
+		zap.L().Info("creating secret ...", zap.String("apllication", app))
 		_, err = k.Clientset.CoreV1().Secrets(k.cfg.NameSpace).Create(ctx, sec, metav1.CreateOptions{})
 
 		return err
@@ -117,7 +118,7 @@ func (k *Kuber) applySecret(ctx context.Context, secretMap map[string]string, ap
 		return err
 	}
 
-	fmt.Println("updating secret ...")
+	zap.L().Info("updating secret ...", zap.String("apllication", app))
 	_, err = k.Clientset.CoreV1().Secrets(k.cfg.NameSpace).Update(ctx, sec, metav1.UpdateOptions{})
 
 	return err
@@ -138,7 +139,7 @@ func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec,
 	existing, err := k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Get(ctx, spec.Name, metav1.GetOptions{})
 
 	if apierrors.IsNotFound(err) {
-		fmt.Printf("creating deployment %s...\n", spec.Name)
+		zap.L().Info("creating deployment ...", zap.String("apllication", spec.Name))
 		_, err = k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Create(ctx, spec.Deployment, metav1.CreateOptions{})
 
 		return err
@@ -148,7 +149,7 @@ func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec,
 		return err
 	}
 
-	fmt.Printf("updating deployment %s...\n", spec.Name)
+	zap.L().Info("updating deployment ...", zap.String("apllication", spec.Name))
 	spec.Deployment.ResourceVersion = existing.ResourceVersion
 	_, err = k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Update(ctx, spec.Deployment, metav1.UpdateOptions{})
 
@@ -170,7 +171,7 @@ func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec, confi
 	existing, err := k.Clientset.CoreV1().Services(k.cfg.NameSpace).Get(ctx, spec.Name, metav1.GetOptions{})
 
 	if apierrors.IsNotFound(err) {
-		fmt.Printf("creating service %s...\n", spec.Name)
+		zap.L().Info("creating service ...", zap.String("apllication", spec.Name))
 		_, err = k.Clientset.CoreV1().Services(k.cfg.NameSpace).Create(ctx, spec.Service, metav1.CreateOptions{})
 
 		return err
@@ -180,7 +181,7 @@ func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec, confi
 		return err
 	}
 
-	fmt.Printf("updating service %s...\n", spec.Name)
+	zap.L().Info("updating service ...", zap.String("apllication", spec.Name))
 	spec.Service.ResourceVersion = existing.ResourceVersion
 	spec.Service.Spec.ClusterIP = existing.Spec.ClusterIP
 	_, err = k.Clientset.CoreV1().Services(k.cfg.NameSpace).Update(ctx, spec.Service, metav1.UpdateOptions{})
@@ -197,12 +198,10 @@ func (k *Kuber) WaitForDeployment(ctx context.Context, name string, timeout time
 		if err != nil {
 			return err
 		}
-
-		fmt.Printf("%s dep status - ready replica: %v, spec replica: %v\n",
-			name, dep.Status.ReadyReplicas, *dep.Spec.Replicas)
+		zap.L().Info("waiting ...", zap.String("apllication", name), zap.Int32("ready_replica", dep.Status.ReadyReplicas), zap.Int32("spec_replica", *dep.Spec.Replicas))
 
 		if dep.Status.ReadyReplicas > 0 && dep.Status.ReadyReplicas == *dep.Spec.Replicas {
-			fmt.Printf("%s is ready!\n", name)
+			zap.L().Info("ready!", zap.String("apllication", name))
 
 			return nil
 		}

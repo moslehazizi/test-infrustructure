@@ -315,14 +315,22 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 	// Call ApplyDeployment from kubernetese interface
 	err := s.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
-		// TODO: log error
+		zap.L().Error("apply deployment fail",
+			zap.String("apllication", serveDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
 		return err
 	}
 
 	// Call ApplyService from kubernetese interface
 	err = s.kubernetes.ApplyService(ctx, serveSvcSpec, configMap, secretMap)
 	if err != nil {
-		// TODO: log error
+		zap.L().Error("apply serive fail",
+			zap.String("apllication", serveDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
 		return err
 	}
 
@@ -330,7 +338,11 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 	serveSvcName := fmt.Sprintf("%s-%v", s.cfg.Kubernetese.MotherServiceAPPServe, motherService.ID)
 	err = s.kubernetes.WaitForDeployment(ctx, serveSvcName, s.cfg.Kubernetese.MotherServiceAPPServeWaitReady)
 	if err != nil {
-		// TODO: log error
+		zap.L().Error("create pod fail",
+			zap.String("apllication", serveDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
 		return err
 	}
 
@@ -341,7 +353,11 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 	// Call ApplyDeployment from kubernetese interface
 	err = s.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
 	if err != nil {
-		// TODO: log error
+		zap.L().Error("apply deployment fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
 		return err
 	}
 
@@ -349,7 +365,11 @@ func (s *motherService) DeployMotherService(ctx context.Context, motherService *
 	jobsSvcName := s.cfg.Kubernetese.MotherServiceAPPJobs
 	err = s.kubernetes.WaitForDeployment(ctx, jobsSvcName, s.cfg.Kubernetese.MotherServiceAPPJobsWaitReady)
 	if err != nil {
-		// TODO: log error
+		zap.L().Error("create pod fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
 		return err
 	}
 
@@ -413,7 +433,6 @@ func motherServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
 
 func motherJobsDepSpec(cfg *config.Config, replica int32) inEntity.DeploymentSpec {
 	replicas := replica
-	// appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPJobs, appId)
 	appName := cfg.Kubernetese.MotherServiceAPPJobs
 	labels := map[string]string{App: appName}
 
