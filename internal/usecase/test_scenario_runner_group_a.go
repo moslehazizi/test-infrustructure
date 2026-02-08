@@ -57,7 +57,7 @@ func (r *scenarioTypeRunnerGroupA) Run(ctx context.Context, scenario *entity.Tes
 	remaining := *scenario.MaxTestServiceCount - cnt
 	// no more test service to provision and we are done here.
 	if remaining > 0 {
-		err = r.provisioningService.ProvisionTestService(ctx, scenario.TestServiceConfig, remaining)
+		err = r.provisioningService.ProvisionTestService(ctx, scenario, int32(remaining))
 		if err != nil {
 			zap.L().Error("failed to provision remaining test services",
 				zap.Uint64("scenarioID", scenario.ID),
@@ -94,7 +94,7 @@ func (r *scenarioTypeRunnerGroupA) Run(ctx context.Context, scenario *entity.Tes
 	}
 	_ = items
 
-	err = r.provisioningService.DeprovisionTestService(ctx)
+	err = r.provisioningService.DeprovisionTestService(ctx, scenario, int32(cnt))
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToDeprovisionTestServices, err)
 	}
