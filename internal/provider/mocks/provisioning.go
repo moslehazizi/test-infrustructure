@@ -12,8 +12,8 @@ type MockProvisioningService struct {
 	mock.Mock
 }
 
-func (mck *MockProvisioningService) ProvisionTestService(ctx context.Context, testServiceConfig *entity.TestServiceConfig, count int) error {
-	args := mck.Called(ctx, testServiceConfig, count)
+func (mck *MockProvisioningService) ProvisionTestService(ctx context.Context, testScenario *entity.TestScenario, replica int32) error {
+	args := mck.Called(ctx, testScenario, replica)
 
 	if args.Error(0) != nil {
 		return fmt.Errorf("%w", args.Error(0))
@@ -22,8 +22,28 @@ func (mck *MockProvisioningService) ProvisionTestService(ctx context.Context, te
 	return nil
 }
 
-func (mck *MockProvisioningService) DeprovisionTestService(ctx context.Context) error {
-	args := mck.Called(ctx)
+func (mck *MockProvisioningService) DeprovisionTestService(ctx context.Context, testScenario *entity.TestScenario, replica int32) error {
+	args := mck.Called(ctx, testScenario, replica)
+
+	if args.Error(0) != nil {
+		return fmt.Errorf("%w", args.Error(0))
+	}
+
+	return nil
+}
+
+func (mck *MockProvisioningService) ProvisionMotherService(ctx context.Context, motherService *entity.MotherService) error {
+	args := mck.Called(ctx, motherService)
+
+	if args.Error(0) != nil {
+		return fmt.Errorf("%w", args.Error(0))
+	}
+
+	return nil
+}
+
+func (mck *MockProvisioningService) DeprovisionMotherService(ctx context.Context, motherService *entity.MotherService) error {
+	args := mck.Called(ctx, motherService)
 
 	if args.Error(0) != nil {
 		return fmt.Errorf("%w", args.Error(0))
