@@ -11,6 +11,7 @@ import (
 func TestTestScenarioValidation(t *testing.T) {
 	t.Run("success case - test category config matches inputs", func(t *testing.T) {
 		sampleInt := 2
+		dur := time.Millisecond * 2
 		testSci := TestScenario{
 			ID:                  uint64(1),
 			CreatedAt:           time.Now(),
@@ -21,7 +22,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:     uint64(5),
 			Status:              ScenarioStatusPending,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &sampleInt,
+			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
 		}
 
@@ -93,7 +94,7 @@ func TestTestScenarioValidation(t *testing.T) {
 	})
 
 	t.Run("failed case - execution duration should be more than 1", func(t *testing.T) {
-		sampleIntLessThanOne := -1
+		dur := time.Millisecond * -1
 		testSci := TestScenario{
 			ID:                uint64(1),
 			CreatedAt:         time.Now(),
@@ -103,7 +104,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			TestCategoryID:    uint64(4),
 			MotherServiceID:   uint64(5),
 			Status:            ScenarioStatusPending,
-			ExecutionDuration: &sampleIntLessThanOne,
+			ExecutionDuration: &dur,
 		}
 		TestCategory := &TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -150,6 +151,7 @@ func TestTestScenarioValidation(t *testing.T) {
 
 	t.Run("failed case - max test service count not set", func(t *testing.T) {
 		sampleInt := 2
+		dur := time.Millisecond * 2
 		testSci := TestScenario{
 			ID:                 uint64(1),
 			CreatedAt:          time.Now(),
@@ -159,7 +161,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			TestCategoryID:     uint64(4),
 			MotherServiceID:    uint64(5),
 			Status:             ScenarioStatusPending,
-			ExecutionDuration:  &sampleInt,
+			ExecutionDuration:  &dur,
 			AutoStepChangeRate: &sampleInt,
 		}
 
@@ -180,6 +182,7 @@ func TestTestScenarioValidation(t *testing.T) {
 
 	t.Run("failed case - no need to max test service count", func(t *testing.T) {
 		sampleInt := 2
+		dur := time.Millisecond * 2
 		testSci := TestScenario{
 			ID:                  uint64(1),
 			CreatedAt:           time.Now(),
@@ -190,7 +193,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:     uint64(5),
 			Status:              ScenarioStatusPending,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &sampleInt,
+			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
 		}
 
@@ -240,6 +243,7 @@ func TestTestScenarioValidation(t *testing.T) {
 
 	t.Run("failed case - no need execution duration", func(t *testing.T) {
 		sampleInt := 2
+		dur := time.Millisecond * 2
 		testSci := TestScenario{
 			ID:                 uint64(1),
 			CreatedAt:          time.Now(),
@@ -249,7 +253,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			TestCategoryID:     uint64(4),
 			MotherServiceID:    uint64(5),
 			Status:             ScenarioStatusPending,
-			ExecutionDuration:  &sampleInt,
+			ExecutionDuration:  &dur,
 			AutoStepChangeRate: &sampleInt,
 		}
 

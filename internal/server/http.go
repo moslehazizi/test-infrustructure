@@ -145,14 +145,14 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
-		cfg,
 		db,
 		postgres.NewTestScenarioRepository(db),
 		postgres.NewTestCategoryRepository(db),
 		postgres.NewTestServiceConfigRepository(db),
 		postgres.NewMotherServiceRepository(db),
 		usecase.NewInMemoryScenarioExecutorBox(),
-		kubernetes,
+		postgres.NewTestServiceRepository(db),
+		provider.NewProvisioningService(cfg),
 	)
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
 

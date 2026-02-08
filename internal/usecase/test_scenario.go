@@ -2,13 +2,12 @@ package usecase
 
 import (
 	"context"
-	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
-	kubernetese "control-panel-service/pkg/kubernetes"
 	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
@@ -28,36 +27,36 @@ type TestScenario interface {
 }
 
 func NewTestScenarioUsecase(
-	cfg *config.Config,
 	db database.Database,
 	testScenarioRepository repository.TestScenarioRepository,
 	testCategoryRepository repository.TestCategory,
 	testServiceConfigRepository repository.TestServiceConfigRepository,
 	motherService repository.MotherServiceRepository,
 	scenarioExecutorBox interfaces.ScenarioExecutorBox,
-	kubernetes kubernetese.Kubernetese,
+	testServiceRepo repository.TestServiceRepository,
+	provisioningService provider.ProvisioningService,
 ) TestScenario {
 	return &testScenario{
-		cfg,
-		db,
-		testScenarioRepository,
-		testCategoryRepository,
-		testServiceConfigRepository,
-		motherService,
-		scenarioExecutorBox,
-		kubernetes,
+		db:                          db,
+		testScenarioRepository:      testScenarioRepository,
+		testCategoryRepository:      testCategoryRepository,
+		testServiceConfigRepository: testServiceConfigRepository,
+		motherService:               motherService,
+		scenarioExecutorBox:         scenarioExecutorBox,
+		testServiceRepo:             testServiceRepo,
+		provisioningService:         provisioningService,
 	}
 }
 
 type testScenario struct {
-	cfg                         *config.Config
 	db                          database.Database
 	testScenarioRepository      repository.TestScenarioRepository
 	testCategoryRepository      repository.TestCategory
 	testServiceConfigRepository repository.TestServiceConfigRepository
 	motherService               repository.MotherServiceRepository
 	scenarioExecutorBox         interfaces.ScenarioExecutorBox
-	kubernetes                  kubernetese.Kubernetese
+	testServiceRepo             repository.TestServiceRepository
+	provisioningService         provider.ProvisioningService
 }
 
 func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) (e error) {
@@ -297,7 +296,14 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	}
 
 	// add scenario to executor.
-	service.scenarioExecutorBox.Add(NewScenarioExecutor(*scenario))
+	service.scenarioExecutorBox.Add(
+		NewScenarioExecutor(
+			*scenario,
+			NewScenarioTypeRunnerGroupA(
+				service.testServiceRepo,
+				service.provisioningService,
+			),
+		))
 
 	return nil
 }
