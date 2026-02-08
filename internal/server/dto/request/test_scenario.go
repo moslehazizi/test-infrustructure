@@ -5,7 +5,7 @@ type TestScenario struct {
 	TestCategoryID      uint64                    `json:"test_category_id"`
 	MotherServiceID     uint64                    `json:"mother_service_id"`
 	MaxTestServiceCount *int                      `json:"max_test_service_count"`
-	ExecutionDuration   *int                      `json:"execution_duration"`
+	ExecutionDuration   *int64                    `json:"execution_duration"`
 	AutoStepChangeRate  *int                      `json:"auto_step_change_rate"`
 	Config              *TestServiceConfigRequest `json:"test_service_config"`
 }

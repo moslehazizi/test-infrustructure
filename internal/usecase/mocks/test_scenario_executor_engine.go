@@ -39,8 +39,10 @@ func (m *MockScenarioExecutor) GetScenario() *entity.TestScenario {
 	return args.Get(0).(*entity.TestScenario)
 }
 
-func (m *MockScenarioExecutor) ResumeOrStart(ctx context.Context) {
-	m.Called()
+func (m *MockScenarioExecutor) ResumeOrStart(ctx context.Context) error {
+	args := m.Called()
+
+	return args.Error(0)
 }
 
 type MockScenarioExecutorWithWG struct {
@@ -61,7 +63,19 @@ func (m *MockScenarioExecutorWithWG) GetScenario() *entity.TestScenario {
 	return args.Get(0).(*entity.TestScenario)
 }
 
-func (m *MockScenarioExecutorWithWG) ResumeOrStart(ctx context.Context) {
-	m.Called()
+func (m *MockScenarioExecutorWithWG) ResumeOrStart(ctx context.Context) error {
+	args := m.Called()
 	m.WG.Done()
+
+	return args.Error(0)
+}
+
+type MockScenarioTypeRunner struct {
+	mock.Mock
+}
+
+func (m *MockScenarioTypeRunner) Run(ctx context.Context, scenario *entity.TestScenario) error {
+	args := m.Called(ctx, scenario)
+
+	return args.Error(0)
 }

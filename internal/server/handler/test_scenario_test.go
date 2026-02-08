@@ -69,12 +69,13 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt := 1
 		min := 10
 		max := 20
+		dur := time.Millisecond * 1
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &sampleInt,
+			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:           sampleInt,
@@ -149,12 +150,13 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt := 1
 		min := 10
 		max := 20
+		dur := time.Millisecond * 1
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &sampleInt,
+			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:           sampleInt,
@@ -222,12 +224,13 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt := 1
 		min := 10
 		max := 20
+		dur := time.Millisecond * 1
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &sampleInt,
+			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:           sampleInt,
@@ -292,12 +295,13 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 
 		sampleUin64 := uint64(1)
 		sampleInt := 1
+		dur := time.Millisecond * 1
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &sampleInt,
+			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
@@ -452,12 +456,13 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 
 		sampleUin64 := uint64(1)
 		sampleInt := 1
+		dur := time.Millisecond * 1
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &sampleInt,
+			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
@@ -521,12 +526,13 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 
 		sampleUin64 := uint64(1)
 		sampleInt := 1
+		dur := time.Millisecond * 1
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &sampleInt,
+			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
@@ -591,12 +597,13 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleUin64 := uint64(1)
 		sampleInt := 1
 		ncnt := -1
+		dur := time.Millisecond * 1
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &ncnt,
-			ExecutionDuration:   &sampleInt,
+			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
@@ -646,7 +653,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 
 		cnt := 100
 		rate := 50
-		exe := 500000
+		dur := time.Millisecond * 500000
 		serviceResult := []*entity.TestScenario{
 			{
 				ID:                  1,
@@ -657,7 +664,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: &cnt,
 				AutoStepChangeRate:  &rate,
-				ExecutionDuration:   &exe,
+				ExecutionDuration:   &dur,
 				TestCategoryID:      100,
 				TestCategory: &entity.TestCategory{
 					ID:                     100,
@@ -709,7 +716,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 					Status:              entity.ScenarioStatusPending,
 					MaxTestServiceCount: &cnt,
 					AutoStepChangeRate:  &rate,
-					ExecutionDuration:   &exe,
+					ExecutionDuration:   &dur,
 					StartedAt:           &someTime,
 					TestCategory: &response.TestCategory{
 						ID:                     100,
@@ -933,7 +940,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := 100
 		rate := 50
-		exe := 500000
+		exe := time.Millisecond * 500000
 		num := 10
 
 		srv := new(mocks.MockTestScenario)
@@ -1083,7 +1090,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := 100
 		rate := 50
-		exe := 500000
+		exe := time.Millisecond * 500000
 
 		srv := new(mocks.MockTestScenario)
 		item := &entity.TestScenario{

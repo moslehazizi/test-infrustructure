@@ -21,10 +21,17 @@ type ScenarioExecutor interface {
 	// - stop(Action): Scenario stopped by the Tester and this function will update
 	// 		scenario status and can not be started again.
 	// - abort(Action): same as stopped.
-	ResumeOrStart(ctx context.Context)
+	ResumeOrStart(ctx context.Context) error
 }
 
 type ScenarioExecutorBox interface {
 	Add(exe ScenarioExecutor)
 	HasExecutor(id uint64) bool
+}
+
+// ScenarioTypeRunner is called in heat of ResumeOrStart.
+// it will run the final scenario based on groups
+// mentioned at: https://github.com/farbodan/challenge-control-panel-service/blob/main/internal/usecase/test_scenario_runner.md.
+type ScenarioTypeRunner interface {
+	Run(ctx context.Context, scenario *entity.TestScenario) error
 }

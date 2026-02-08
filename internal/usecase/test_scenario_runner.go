@@ -4,7 +4,18 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/usecase/interfaces"
+	"control-panel-service/pkg"
+	"fmt"
 	"sync"
+	"time"
+
+	"go.opentelemetry.io/otel"
+	"go.uber.org/zap"
+)
+
+const (
+	defaultExecutorWaitingTime = time.Millisecond * 100
+	countUnlimited             = -1
 )
 
 // What is ScenarioExecutorBox?
@@ -28,7 +39,17 @@ type inMemoryScenarioExecutorBox struct {
 
 func (e *inMemoryScenarioExecutorBox) Add(exe interfaces.ScenarioExecutor) {
 	e.runningScenarios.Store(exe.GetID(), exe.GetScenario())
-	go exe.ResumeOrStart(context.Background())
+	go func() {
+		err := exe.ResumeOrStart(context.Background())
+		if err != nil {
+			zap.L().Error("failed to resume or start scenario",
+				zap.Uint64("scenarioID", exe.GetID()),
+				zap.Error(err),
+			)
+
+			return
+		}
+	}()
 }
 
 func (e *inMemoryScenarioExecutorBox) HasExecutor(id uint64) bool {
@@ -42,12 +63,17 @@ func (e *inMemoryScenarioExecutorBox) HasExecutor(id uint64) bool {
 //#region ScenarioExecutor
 
 type scenarioExecutor struct {
-	scenario entity.TestScenario
+	scenario     entity.TestScenario
+	runnerGroupA interfaces.ScenarioTypeRunner
 }
 
-func NewScenarioExecutor(scenario entity.TestScenario) interfaces.ScenarioExecutor {
+func NewScenarioExecutor(
+	scenario entity.TestScenario,
+	runnerGroupA interfaces.ScenarioTypeRunner,
+) interfaces.ScenarioExecutor {
 	return &scenarioExecutor{
 		scenario,
+		runnerGroupA,
 	}
 }
 
@@ -59,8 +85,32 @@ func (ex *scenarioExecutor) GetScenario() *entity.TestScenario {
 	return &ex.scenario
 }
 
-func (ex *scenarioExecutor) ResumeOrStart(ctx context.Context) {
+func (ex *scenarioExecutor) ResumeOrStart(ctx context.Context) error {
+	// Test scenario categorization based on how it should be executed:
+	// A: (total test service + total execution time): smoke, load, soak, spike.
+	// B: (step execution + increase rate): stress.
+	// C: (total test service + step execution + increase rate): scalability.
+	// D: (total test service + step execution + increase rate + decrease rate): recovery.
 
+	tracer := otel.Tracer("scenarioExecutor")
+	_, span := tracer.Start(ctx, "ResumeOrStart")
+	defer span.End()
+
+	cat := ex.scenario.TestCategory
+	switch {
+	// Group A
+	case cat.HasExecutionDuration && cat.HasMaxTestServiceCount && !cat.HasAutoStepChangeRate:
+		{
+			err := ex.runnerGroupA.Run(ctx, &ex.scenario)
+			if err != nil {
+				return fmt.Errorf("failed to run executor runner: %w", err)
+			}
+		}
+	default:
+		return pkg.ErrNotImplemented
+	}
+
+	return nil
 }
 
-//#endregion ScenarioExecutor
+// #endregion ScenarioExecutor

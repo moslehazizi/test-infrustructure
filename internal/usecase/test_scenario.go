@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
@@ -31,6 +32,8 @@ func NewTestScenarioUsecase(
 	testServiceConfigRepository repository.TestServiceConfigRepository,
 	motherService repository.MotherServiceRepository,
 	scenarioExecutorBox interfaces.ScenarioExecutorBox,
+	testServiceRepo repository.TestServiceRepository,
+	provisioningService provider.ProvisioningService,
 ) TestScenario {
 	return &testScenario{
 		db:                          db,
@@ -39,6 +42,8 @@ func NewTestScenarioUsecase(
 		testServiceConfigRepository: testServiceConfigRepository,
 		motherService:               motherService,
 		scenarioExecutorBox:         scenarioExecutorBox,
+		testServiceRepo:             testServiceRepo,
+		provisioningService:         provisioningService,
 	}
 }
 
@@ -49,6 +54,8 @@ type testScenario struct {
 	testServiceConfigRepository repository.TestServiceConfigRepository
 	motherService               repository.MotherServiceRepository
 	scenarioExecutorBox         interfaces.ScenarioExecutorBox
+	testServiceRepo             repository.TestServiceRepository
+	provisioningService         provider.ProvisioningService
 }
 
 func (service *testScenario) Create(
@@ -290,7 +297,14 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	}
 
 	// add scenario to executor.
-	service.scenarioExecutorBox.Add(NewScenarioExecutor(*scenario))
+	service.scenarioExecutorBox.Add(
+		NewScenarioExecutor(
+			*scenario,
+			NewScenarioTypeRunnerGroupA(
+				service.testServiceRepo,
+				service.provisioningService,
+			),
+		))
 
 	return nil
 }
