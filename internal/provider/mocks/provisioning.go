@@ -22,8 +22,8 @@ func (mck *MockProvisioningService) ProvisionTestService(ctx context.Context, te
 	return nil
 }
 
-func (mck *MockProvisioningService) DeprovisionTestService(ctx context.Context, ids []uint64) error {
-	args := mck.Called(ctx, ids)
+func (mck *MockProvisioningService) DeprovisionTestService(ctx context.Context) error {
+	args := mck.Called(ctx)
 
 	if args.Error(0) != nil {
 		return fmt.Errorf("%w", args.Error(0))

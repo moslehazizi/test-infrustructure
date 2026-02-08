@@ -221,6 +221,7 @@ func toHTTPError(err error) *HTTPError {
 }
 
 var (
+	ErrNotImplemented                  = errors.New("NOT IMPLEMENTED")
 	ErrInternalServerError             = errors.New("internal server error")
 	ErrBadRequest                      = errors.New("bad request")
 	ErrPageNotFound                    = errors.New("404 page not found")
@@ -285,4 +286,6 @@ var (
 	ErrTestServiceConfigIsRequired             = errors.New("test service config is required")
 	ErrOnlyPendingScenariosCanBeStarted        = errors.New("only pending scenarios can be started")
 	ErrFailedToSetScenarioStatusAsRunning      = errors.New("failed to set scenario status as running")
+	ErrGettingRunningTestServicesByScenario    = errors.New("failed to get running test services by scenario")
+	ErrFailedToDeprovisionTestServices         = errors.New("failed to deprovision test services")
 )

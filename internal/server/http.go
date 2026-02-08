@@ -144,6 +144,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewTestServiceConfigRepository(db),
 		postgres.NewMotherServiceRepository(db),
 		usecase.NewInMemoryScenarioExecutorBox(),
+		postgres.NewTestServiceRepository(db),
+		provider.NewProvisioningService(),
 	)
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
 

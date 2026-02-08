@@ -3,12 +3,11 @@ package usecase
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	prvMock "control-panel-service/internal/provider/mocks"
-	repomock "control-panel-service/internal/repository/mocks"
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -17,23 +16,21 @@ import (
 func TestNewScenarioExecutor(t *testing.T) {
 	ex := NewScenarioExecutor(
 		entity.TestScenario{ID: 1},
-		new(repomock.MockTestServiceRepository),
-		new(prvMock.MockProvisioningService),
+
+		new(mocks.MockScenarioTypeRunner),
 	)
 	assert.NotNil(t, ex)
 
 	e, ok := ex.(*scenarioExecutor)
 	assert.True(t, ok)
 	assert.NotNil(t, e.scenario)
-	assert.NotNil(t, e.testServiceRepo)
-	assert.NotNil(t, e.provisioningService)
+	assert.NotNil(t, e.runnerGroupA)
 }
 
 func Test_scenarioExecutor_GetID(t *testing.T) {
 	ex := NewScenarioExecutor(
 		entity.TestScenario{ID: 1},
-		new(repomock.MockTestServiceRepository),
-		new(prvMock.MockProvisioningService),
+		new(mocks.MockScenarioTypeRunner),
 	)
 	assert.NotNil(t, ex)
 
@@ -44,8 +41,7 @@ func Test_scenarioExecutor_GetScenario(t *testing.T) {
 	sc := entity.TestScenario{ID: 1}
 	ex := NewScenarioExecutor(
 		sc,
-		new(repomock.MockTestServiceRepository),
-		new(prvMock.MockProvisioningService),
+		new(mocks.MockScenarioTypeRunner),
 	)
 	assert.NotNil(t, ex)
 
@@ -99,79 +95,88 @@ func Test_inMemoryScenarioExecutorBox_HasExecutor(t *testing.T) {
 	})
 }
 
-func Test_scenarioExecutor_runGroupA(t *testing.T) {
-	t.Run("failed case: scenario max service count is null", func(t *testing.T) {
-		scenario := entity.TestScenario{
-			MaxTestServiceCount: nil,
-		}
-
-		scRepo := new(repomock.MockTestServiceRepository)
-		provisioningService := new(prvMock.MockProvisioningService)
-
-		ex := NewScenarioExecutor(scenario, scRepo, provisioningService).(*scenarioExecutor)
-
-		err := ex.runGroupA(context.Background())
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountNotSet)
-	})
-
-	t.Run("failed case: error on getting running services count", func(t *testing.T) {
-		serviceCnt := 10
-		scenario := entity.TestScenario{
-			MaxTestServiceCount: &serviceCnt,
-		}
-
-		scRepo := new(repomock.MockTestServiceRepository)
-		scRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(0), errors.New("something went wrong"))
-
-		provisioningService := new(prvMock.MockProvisioningService)
-
-		ex := NewScenarioExecutor(scenario, scRepo, provisioningService).(*scenarioExecutor)
-
-		err := ex.runGroupA(context.Background())
-		assert.Error(t, err)
-		scRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
-	})
-
-	t.Run("failed case: failed to provision remaining test services", func(t *testing.T) {
-		serviceCnt := 20
-		scenario := entity.TestScenario{
-			MaxTestServiceCount: &serviceCnt,
-		}
-
-		scRepo := new(repomock.MockTestServiceRepository)
-		scRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(10), nil)
-
-		provisioningService := new(prvMock.MockProvisioningService)
-		provisioningService.On("ProvisionTestService", mock.Anything, mock.Anything, 10).Return(errors.New("something went wrong"))
-
-		ex := NewScenarioExecutor(scenario, scRepo, provisioningService).(*scenarioExecutor)
-
-		err := ex.runGroupA(context.Background())
-
-		assert.Error(t, err)
-		scRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
-		provisioningService.AssertCalled(t, "ProvisionTestService", mock.Anything, mock.Anything, 10)
-	})
-
-	t.Run("success case", func(t *testing.T) {
+func Test_scenarioExecutor_ResumeOrStart(t *testing.T) {
+	t.Run("success case: group A", func(t *testing.T) {
 		serviceCnt := 3
-		scenario := entity.TestScenario{
+		dur := time.Millisecond * 2000
+		scenario := &entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
+			ExecutionDuration:   &dur,
+			StartedAt:           nil,
+			TestCategoryID:      1,
+			TestCategory: &entity.TestCategory{
+				ID:                     1,
+				Name:                   "load",
+				Label:                  "load",
+				HasMaxTestServiceCount: true,
+				HasExecutionDuration:   true,
+				HasAutoStepChangeRate:  false,
+			},
 		}
 
-		scRepo := new(repomock.MockTestServiceRepository)
-		scRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(3), nil)
+		runner := new(mocks.MockScenarioTypeRunner)
+		runner.
+			On("Run", mock.Anything, scenario).
+			Return(nil)
 
-		provisioningService := new(prvMock.MockProvisioningService)
-		provisioningService.On("DeprovisionTestService", mock.Anything, []uint64{1, 2, 3}).Return(nil)
-
-		ex := NewScenarioExecutor(scenario, scRepo, provisioningService).(*scenarioExecutor)
-
-		err := ex.runGroupA(context.Background())
+		ex := NewScenarioExecutor(*scenario, runner)
+		err := ex.ResumeOrStart(context.Background())
 		assert.NoError(t, err)
-		scRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
-		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, []uint64{1, 2, 3})
+
+		runner.AssertCalled(t, "Run", mock.Anything, scenario)
+	})
+	t.Run("failed case: group A", func(t *testing.T) {
+		serviceCnt := 3
+		dur := time.Millisecond * 2000
+		scenario := &entity.TestScenario{
+			MaxTestServiceCount: &serviceCnt,
+			ExecutionDuration:   &dur,
+			StartedAt:           nil,
+			TestCategoryID:      1,
+			TestCategory: &entity.TestCategory{
+				ID:                     1,
+				Name:                   "load",
+				Label:                  "load",
+				HasMaxTestServiceCount: true,
+				HasExecutionDuration:   true,
+				HasAutoStepChangeRate:  false,
+			},
+		}
+
+		runner := new(mocks.MockScenarioTypeRunner)
+		runner.
+			On("Run", mock.Anything, scenario).
+			Return(errors.New("something went wrong"))
+
+		ex := NewScenarioExecutor(*scenario, runner)
+		err := ex.ResumeOrStart(context.Background())
+		assert.Error(t, err)
+
+		runner.AssertCalled(t, "Run", mock.Anything, scenario)
+	})
+	t.Run("failed case: group not implemented yet", func(t *testing.T) {
+		serviceCnt := 3
+		dur := time.Millisecond * 2000
+		scenario := &entity.TestScenario{
+			MaxTestServiceCount: &serviceCnt,
+			ExecutionDuration:   &dur,
+			StartedAt:           nil,
+			TestCategoryID:      1,
+			TestCategory: &entity.TestCategory{
+				ID:                     1,
+				Name:                   "load",
+				Label:                  "load",
+				HasMaxTestServiceCount: false,
+				HasExecutionDuration:   true,
+				HasAutoStepChangeRate:  true,
+			},
+		}
+
+		runner := new(mocks.MockScenarioTypeRunner)
+
+		ex := NewScenarioExecutor(*scenario, runner)
+		err := ex.ResumeOrStart(context.Background())
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrNotImplemented)
 	})
 }

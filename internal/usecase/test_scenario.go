@@ -300,8 +300,10 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	service.scenarioExecutorBox.Add(
 		NewScenarioExecutor(
 			*scenario,
-			service.testServiceRepo,
-			service.provisioningService,
+			NewScenarioTypeRunnerGroupA(
+				service.testServiceRepo,
+				service.provisioningService,
+			),
 		))
 
 	return nil

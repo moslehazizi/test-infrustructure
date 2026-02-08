@@ -9,6 +9,7 @@ import (
 	"control-panel-service/pkg/logger"
 	"net/http"
 	"strconv"
+	"time"
 
 	"fmt"
 
@@ -56,15 +57,26 @@ func (handler *TestScenario) Create() fiber.Handler {
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
-		span.SetAttributes(attribute.String("test_scenario.name", req.Name), attribute.String("test_category.id", fmt.Sprintf("%d", req.TestCategoryID)), attribute.String("mother_service.id", fmt.Sprintf("%d", req.MotherServiceID)))
+		span.SetAttributes(
+			attribute.String("test_scenario.name", req.Name),
+			attribute.String("test_category.id", strconv.FormatUint(req.TestCategoryID, 10)),
+			attribute.String("mother_service.id", strconv.FormatUint(req.MotherServiceID, 10)))
 
 		testScenario := &entity.TestScenario{
 			Name:                req.Name,
 			TestCategoryID:      req.TestCategoryID,
 			MotherServiceID:     req.MotherServiceID,
 			MaxTestServiceCount: req.MaxTestServiceCount,
-			ExecutionDuration:   req.ExecutionDuration,
-			AutoStepChangeRate:  req.AutoStepChangeRate,
+			ExecutionDuration: func() *time.Duration {
+				if req.ExecutionDuration == nil {
+					return nil
+				}
+
+				dur := time.Duration(*req.ExecutionDuration) * time.Millisecond
+
+				return &dur
+			}(),
+			AutoStepChangeRate: req.AutoStepChangeRate,
 			TestServiceConfig: func() *entity.TestServiceConfig {
 				if req.Config == nil {
 					return nil
