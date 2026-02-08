@@ -398,6 +398,56 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/test-scenarios/{id}/start": {
+            "post": {
+                "description": "Retrieve a specific test scenario by its ID and start the scenario.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test-scenarios"
+                ],
+                "summary": "Start a test scenario.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Test scenario ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -477,9 +527,6 @@ const docTemplate = `{
                 },
                 "response_delay_rate": {
                     "type": "integer"
-                },
-                "service_deployment_address": {
-                    "type": "string"
                 }
             }
         },
@@ -655,6 +702,9 @@ const docTemplate = `{
                 },
                 "per_page": {
                     "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -672,6 +722,9 @@ const docTemplate = `{
                 },
                 "per_page": {
                     "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -686,6 +739,9 @@ const docTemplate = `{
         "response.TestCategory": {
             "type": "object",
             "properties": {
+                "active": {
+                    "type": "boolean"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -734,6 +790,9 @@ const docTemplate = `{
                     "$ref": "#/definitions/response.MotherService"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "started_at": {
                     "type": "string"
                 },
                 "status": {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
-	providerMock "control-panel-service/internal/provider/mocks"
 	"control-panel-service/internal/repository/mocks"
 
 	"control-panel-service/pkg"
@@ -31,16 +30,15 @@ func getMockDB(t *testing.T) database.Database {
 func TestNewMotherService(t *testing.T) {
 	cfg := &config.Config{}
 	mockRepo := new(mocks.MockMotherService)
-	mockEventProducer := new(providerMock.KafkaMock)
+
 	mockKubernetes := new(kubermock.KuberneteseMock)
-	service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+	service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 	assert.NotNil(t, service)
 
 	s, ok := service.(*motherService)
 	assert.True(t, ok)
 	assert.NotNil(t, s.motherServiceRepo)
-	assert.NotNil(t, s.eventProducer)
 }
 
 func TestMotherServiceUsecase_Create(t *testing.T) {
@@ -55,9 +53,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			},
 		}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -88,9 +85,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			},
 		}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -113,9 +109,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -136,9 +131,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -159,9 +153,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		sampleMS := &entity.MotherService{
 			DatabaseName:      "db1",
@@ -178,9 +171,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -199,9 +191,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -220,9 +211,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 		duration := 100
 
 		sampleMS := &entity.MotherService{
@@ -246,9 +236,8 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		inputID := uint64(1)
 		expectedResult := &entity.MotherService{
@@ -276,9 +265,8 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		inputID := uint64(1)
 
@@ -296,9 +284,8 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		inputID := uint64(1)
 
@@ -318,9 +305,8 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
@@ -328,6 +314,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		}
 		serviceAddress1 := "http://service1.example.com"
 		serviceAddress2 := "http://service2.example.com"
+		count := int64(2)
 
 		expectedMotherServices := []*entity.MotherService{
 			{
@@ -356,12 +343,13 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 			},
 		}
 
-		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(expectedMotherServices, nil)
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(expectedMotherServices, count, nil)
 
-		result, err := service.GetPaginated(ctx, paginationRequest)
+		result, total, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
+		assert.Equal(t, total, count)
 		assert.Equal(t, expectedMotherServices, result)
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
@@ -370,21 +358,21 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
 			PerPage: 2,
 		}
 
-		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, int64(0), errors.New("failed to get mother services"))
 
-		result, err := service.GetPaginated(ctx, paginationRequest)
+		result, count, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, count, int64(0))
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
@@ -393,21 +381,21 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    -1,
 			PerPage: 2,
 		}
 
-		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, errors.New("failed to get mother services"))
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, int64(0), errors.New("failed to get mother services"))
 
-		result, err := service.GetPaginated(ctx, paginationRequest)
+		result, count, err := service.GetPaginated(ctx, paginationRequest)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, count, int64(0))
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
@@ -437,11 +425,10 @@ func TestDeployMotherService(t *testing.T) {
 		ctx := context.Background()
 		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
 		var motherService *entity.MotherService
 
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		err := service.DeployMotherService(ctx, motherService)
 		assert.Error(t, err)
@@ -451,9 +438,8 @@ func TestDeployMotherService(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployTestConfig()
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		motherService := &entity.MotherService{
 			ID:                1,
@@ -477,9 +463,8 @@ func TestDeployMotherService(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployTestConfig()
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		motherService := &entity.MotherService{
 			ID:                1,
@@ -500,9 +485,8 @@ func TestDeployMotherService(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployTestConfig()
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		motherService := &entity.MotherService{
 			ID:                1,
@@ -524,9 +508,8 @@ func TestDeployMotherService(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployTestConfig()
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		motherService := &entity.MotherService{
 			ID:                1,
@@ -549,9 +532,8 @@ func TestDeployMotherService(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployTestConfig()
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		motherService := &entity.MotherService{
 			ID:                1,
@@ -575,9 +557,8 @@ func TestDeployMotherService(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployTestConfig()
 		mockRepo := new(mocks.MockMotherService)
-		mockEventProducer := new(providerMock.KafkaMock)
 		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockEventProducer, mockKubernetes)
+		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
 
 		motherService := &entity.MotherService{
 			ID:                1,

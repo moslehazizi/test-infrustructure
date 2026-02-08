@@ -1,15 +1,14 @@
 package request
 
 type MotherService struct {
-	Name                     string  `json:"name"`
-	ExceptionRate            int     `json:"exception_rate"`
-	ResponseDelayRate        int     `json:"response_delay_rate"`
-	ResponseDelayDuration    *int    `json:"response_delay_duration"`
-	RandomResponseDelayMin   *int    `json:"random_response_delay_min"`
-	RandomResponseDelayMax   *int    `json:"random_response_delay_max"`
-	ServiceDeploymentAddress *string `json:"service_deployment_address"`
-	DatabaseName             string  `json:"database_name"`
-	DatabaseTableName        string  `json:"database_table_name"`
+	Name                   string `json:"name"`
+	ExceptionRate          int    `json:"exception_rate"`
+	ResponseDelayRate      int    `json:"response_delay_rate"`
+	ResponseDelayDuration  *int   `json:"response_delay_duration"`
+	RandomResponseDelayMin *int   `json:"random_response_delay_min"`
+	RandomResponseDelayMax *int   `json:"random_response_delay_max"`
+	DatabaseName           string `json:"database_name"`
+	DatabaseTableName      string `json:"database_table_name"`
 }
 
 type PaginationRequest struct {

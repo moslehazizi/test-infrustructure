@@ -283,6 +283,31 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 }
 
 func TestMotherServiceRepository_GetPaginated(t *testing.T) {
+	t.Run("failed case - failed to get database record count", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewMotherServiceRepository(db)
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`,
+		)).
+			WillReturnError(errors.New("database records count failed"))
+
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get mother service records count")
+		assert.Nil(t, result)
+		assert.Len(t, result, 0)
+		assert.Equal(t, count, int64(0))
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 	t.Run("success case with pagination - page 1", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
@@ -324,6 +349,13 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 			Page:    1,
 			PerPage: 2,
 		} // LIMIT 2 (no OFFSET because offset=0)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(2),
+			)
 
 		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1`)).
@@ -368,10 +400,11 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[1].DatabaseTableName,
 				))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 2)
+		assert.Equal(t, count, int64(2))
 
 		assert.Equal(t, uint64(5), result[0].ID)
 		assert.Equal(t, "mother5", result[0].Name)
@@ -424,6 +457,13 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		} // LIMIT 2 OFFSET 2
 
 		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(2),
+			)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
 			WithArgs(2, 2).
 			WillReturnRows(sqlmock.NewRows([]string{
@@ -466,10 +506,11 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[1].DatabaseTableName,
 				))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 2)
+		assert.Equal(t, count, int64(2))
 
 		assert.Equal(t, uint64(3), result[0].ID)
 		assert.Equal(t, "mother3", result[0].Name)
@@ -507,6 +548,13 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		} // Page 3, perPage 10: LIMIT 10 OFFSET 20
 
 		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(1),
+			)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
 			WithArgs(10, 20).
 			WillReturnRows(sqlmock.NewRows([]string{
@@ -533,11 +581,12 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherService.DatabaseTableName,
 				))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 1)
 		assert.Equal(t, uint64(25), result[0].ID)
+		assert.Equal(t, count, int64(1))
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -597,6 +646,13 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		} // No LIMIT or OFFSET
 
 		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(3),
+			)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC`)).
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
@@ -654,10 +710,11 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 					expectedMotherServices[2].DatabaseTableName,
 				))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 3)
+		assert.Equal(t, count, int64(3))
 		assert.Equal(t, uint64(3), result[0].ID)
 		assert.Equal(t, uint64(2), result[1].ID)
 		assert.Equal(t, uint64(1), result[2].ID)
@@ -676,6 +733,13 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		} // LIMIT 10 OFFSET 990
 
 		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(0),
+			)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
 			WithArgs(10, 990).
 			WillReturnRows(sqlmock.NewRows([]string{
@@ -686,10 +750,11 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 				"database_name", "database_table_name",
 			}))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 0)
+		assert.Equal(t, count, int64(0))
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -703,15 +768,23 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 			Page:    2,
 			PerPage: 10,
 		}
+		
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT count(*) FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`,
+		)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"count"}).AddRow(0),
+			)
 
 		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1 OFFSET $2`)).
 			WithArgs(10, 10).
 			WillReturnError(errors.New("database connection failed"))
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, count, int64(0))
 		assert.Contains(t, err.Error(), "failed to get mother service records")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -727,7 +800,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 			PerPage: 10,
 		}
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, _, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)
@@ -745,7 +818,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 			PerPage: -10,
 		}
 
-		result, err := repo.GetPaginated(context.Background(), paginationRequest)
+		result, _, err := repo.GetPaginated(context.Background(), paginationRequest)
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)

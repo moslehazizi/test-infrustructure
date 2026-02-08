@@ -9,6 +9,7 @@ type TestScenario struct {
 	ID                  uint64                `json:"id"`
 	CreatedAt           time.Time             `json:"created_at"`
 	UpdatedAt           time.Time             `json:"updated_at"`
+	StartedAt           *time.Time            `json:"started_at"`
 	Name                string                `json:"name"`
 	TestCategory        *TestCategory         `json:"test_category"`
 	MotherService       *MotherService        `json:"mother_service"`
@@ -44,6 +45,7 @@ type PaginatedTestScenario struct {
 	Page    int            `json:"page"`
 	PerPage int            `json:"per_page"`
 	Data    []TestScenario `json:"data"`
+	Total   int64          `json:"total"`
 }
 
 type TestScenarioResponseByID struct {

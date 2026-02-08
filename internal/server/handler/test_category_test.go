@@ -65,6 +65,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 				HasMaxTestServiceCount: true,
 				HasExecutionDuration:   true,
 				HasAutoStepChangeRate:  false,
+				Active:                 true,
 			},
 			{
 				ID:                     2,
@@ -75,6 +76,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 				HasMaxTestServiceCount: true,
 				HasExecutionDuration:   true,
 				HasAutoStepChangeRate:  false,
+				Active:                 true,
 			},
 		}
 		srv.On("GetAll", mock.Anything).Return(items, nil)
@@ -102,6 +104,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 				HasMaxTestServiceCount: true,
 				HasExecutionDuration:   true,
 				HasAutoStepChangeRate:  false,
+				Active:                 true,
 			},
 			{
 				ID:                     2,
@@ -112,6 +115,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 				HasMaxTestServiceCount: true,
 				HasExecutionDuration:   true,
 				HasAutoStepChangeRate:  false,
+				Active:                 true,
 			},
 		}
 
@@ -208,7 +212,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.TestCategoryNotFound)
 	})
 	t.Run("success case", func(t *testing.T) {
-		theTime := time.Date(2026, 01, 13, 10, 06, 30, 0, time.Local)
+		theTime := time.Date(2026, 01, 13, 10, 06, 30, 0, time.UTC)
 		srv := new(mocks.MockTestCategoryService)
 		item := &entity.TestCategory{
 			ID:                     1,
@@ -219,6 +223,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 			HasMaxTestServiceCount: true,
 			HasExecutionDuration:   true,
 			HasAutoStepChangeRate:  false,
+			Active:                 true,
 		}
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
 		h := NewTestCategoryHandler(&cfg, srv)
@@ -244,6 +249,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 			HasMaxTestServiceCount: true,
 			HasExecutionDuration:   true,
 			HasAutoStepChangeRate:  false,
+			Active:                 true,
 		}
 		var got response.TestCategory
 		err = json.Unmarshal(bts, &got)

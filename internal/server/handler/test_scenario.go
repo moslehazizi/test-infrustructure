@@ -6,10 +6,15 @@ import (
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/logger"
 	"net/http"
 	"strconv"
 
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type TestScenario struct {
@@ -37,11 +42,21 @@ func NewTestScenarioHandler(testScenario usecase.TestScenario) *TestScenario {
 //	@Router			/api/v1/test-scenarios [post]
 func (handler *TestScenario) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		requestID := logger.GetRequestID(ctx.Context())
+		tracer := otel.Tracer("test-scenario-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "create_test_scenario")
+		defer span.End()
+
+		span.SetAttributes(attribute.String("request_id", requestID))
+
 		req := new(request.TestScenario)
 
 		if err := ctx.BodyParser(req); err != nil {
+			span.SetAttributes(attribute.String("error.type", "bad_request"))
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
+
+		span.SetAttributes(attribute.String("test_scenario.name", req.Name), attribute.String("test_category.id", fmt.Sprintf("%d", req.TestCategoryID)), attribute.String("mother_service.id", fmt.Sprintf("%d", req.MotherServiceID)))
 
 		testScenario := &entity.TestScenario{
 			Name:                req.Name,
@@ -75,8 +90,9 @@ func (handler *TestScenario) Create() fiber.Handler {
 			}(),
 		}
 
-		err := handler.testScenario.Create(ctx.Context(), testScenario)
+		err := handler.testScenario.Create(traceCtx, testScenario)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "create_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
@@ -101,16 +117,27 @@ func (handler *TestScenario) Create() fiber.Handler {
 //	@Router			/api/v1/test-scenarios/search [post]
 func (handler *TestScenario) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("test-scenario-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "get_paginated_test_scenarios")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
 		req := new(request.TestScenarioPaginationRequest)
 		if err := ctx.BodyParser(req); err != nil {
+			span.SetAttributes(attribute.String("error.type", "bad_request"))
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
-		items, err := handler.testScenario.GetPaginated(ctx.Context(), entity.TestScenarioPaginationRequest{
+		span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", req.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", req.PerPage)))
+
+		items, count, err := handler.testScenario.GetPaginated(traceCtx, entity.TestScenarioPaginationRequest{
 			Page:    req.Page,
 			PerPage: req.PerPage,
 		})
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
@@ -121,6 +148,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 				Name:                item.Name,
 				CreatedAt:           item.CreatedAt,
 				UpdatedAt:           item.UpdatedAt,
+				StartedAt:           item.StartedAt,
 				Status:              item.Status,
 				MaxTestServiceCount: item.MaxTestServiceCount,
 				AutoStepChangeRate:  item.AutoStepChangeRate,
@@ -169,6 +197,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 			Page:    req.Page,
 			PerPage: req.PerPage,
 			Data:    responses,
+			Total:   count,
 		})
 	}
 }
@@ -188,18 +217,30 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 //	@Router			/api/v1/test-scenarios/{id} [get]
 func (handler *TestScenario) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("test-scenario-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "get_test_scenario_by_id")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
 		idParam := ctx.Params("id")
 		if idParam == "" {
+			span.SetAttributes(attribute.String("error.type", "missing_id"))
 			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
 		}
 
 		id, err := strconv.ParseUint(idParam, 10, 64)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
 			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
-		svcResult, err := handler.testScenario.GetByID(ctx.Context(), id)
+		span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
+
+		svcResult, err := handler.testScenario.GetByID(traceCtx, id)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "get_by_id_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
@@ -207,6 +248,7 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 			ID:                  svcResult.ID,
 			CreatedAt:           svcResult.CreatedAt,
 			UpdatedAt:           svcResult.UpdatedAt,
+			StartedAt:           svcResult.StartedAt,
 			Name:                svcResult.Name,
 			Status:              svcResult.Status,
 			MaxTestServiceCount: svcResult.MaxTestServiceCount,
@@ -279,6 +321,54 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 
 		return ctx.Status(http.StatusOK).JSON(&response.TestScenarioResponseByID{
 			Data: result,
+		})
+	}
+}
+
+// Start godoc
+//
+//	@Summary		Start a test scenario.
+//	@Description	Retrieve a specific test scenario by its ID and start the scenario.
+//	@Tags			test-scenarios
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Test scenario ID"
+//	@Success		200	{object}	response.SuccessResponse
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		404	{object}	response.ErrorResponse
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/api/v1/test-scenarios/{id}/start [post]
+func (handler *TestScenario) Start() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("test-scenario-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "start_test_scenario")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
+		idParam := ctx.Params("id")
+		if idParam == "" {
+			span.SetAttributes(attribute.String("error.type", "missing_id"))
+			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
+		}
+
+		id, err := strconv.ParseUint(idParam, 10, 64)
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
+			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
+		}
+
+		span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
+
+		err = handler.testScenario.Start(traceCtx, id)
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "start_error"), attribute.String("error.message", err.Error()))
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
+
+		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
+			Message: pkg.TestScenarioStarted,
 		})
 	}
 }

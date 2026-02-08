@@ -639,7 +639,8 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 			Page:    1,
 			PerPage: 2,
 		}
-		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.Local)
+		count := int64(2)
+		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.UTC)
 
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
 
@@ -652,6 +653,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 				Name:                "load test 123",
 				CreatedAt:           someTime,
 				UpdatedAt:           someTime,
+				StartedAt:           &someTime,
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: &cnt,
 				AutoStepChangeRate:  &rate,
@@ -693,7 +695,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 			},
 		}
 
-		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, nil)
+		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, count, nil)
 
 		expected := response.PaginatedTestScenario{
 			Page:    1,
@@ -708,6 +710,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 					MaxTestServiceCount: &cnt,
 					AutoStepChangeRate:  &rate,
 					ExecutionDuration:   &exe,
+					StartedAt:           &someTime,
 					TestCategory: &response.TestCategory{
 						ID:                     100,
 						Name:                   "load",
@@ -744,6 +747,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 					MotherService: nil,
 				},
 			},
+			Total: count,
 		}
 
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
@@ -759,6 +763,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		assert.Equal(t, expected.Page, got.Page)
+		assert.Equal(t, got.Total, count)
 		assert.Len(t, got.Data, 2)
 		assert.Equal(t, expected, got)
 
@@ -786,7 +791,6 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		// 	}
 		// }
 	})
-
 	t.Run("error: invalid request body", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
@@ -826,7 +830,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
 		var serviceResult []*entity.TestScenario
 
-		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, errors.New("something went wrong"))
+		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, int64(0), errors.New("something went wrong"))
 
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
@@ -926,7 +930,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
 	})
 	t.Run("success case", func(t *testing.T) {
-		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.Local)
+		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := 100
 		rate := 50
 		exe := 500000
@@ -938,6 +942,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 			Name:                "load test 123",
 			CreatedAt:           someTime,
 			UpdatedAt:           someTime,
+			StartedAt:           &someTime,
 			Status:              entity.ScenarioStatusPending,
 			MaxTestServiceCount: &cnt,
 			AutoStepChangeRate:  &rate,
@@ -1015,6 +1020,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 			CreatedAt:           someTime,
 			UpdatedAt:           someTime,
 			Status:              entity.ScenarioStatusPending,
+			StartedAt:           &someTime,
 			MaxTestServiceCount: &cnt,
 			AutoStepChangeRate:  &rate,
 			ExecutionDuration:   &exe,
@@ -1074,7 +1080,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.Equal(t, expected, got.Data)
 	})
 	t.Run("success case => category and mother service are null", func(t *testing.T) {
-		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.Local)
+		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := 100
 		rate := 50
 		exe := 500000
@@ -1129,4 +1135,111 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected, got.Data)
 	})
+}
+
+func TestTestScenario_Start(t *testing.T) {
+	_, err := config.LoadConfig()
+	assert.Nil(t, err)
+
+	t.Run("error: missing id in param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+	t.Run("error: invalid id data in param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/start", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
+	})
+
+	t.Run("error on getting data from service layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Start", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+	t.Run("error item not found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Start", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
+	})
+
+	t.Run("success case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Start", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/start", h.Start())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.SuccessResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, response.Message, pkg.TestScenarioStarted)
+	})
+
 }

@@ -3,10 +3,11 @@ package cmd
 import (
 	"control-panel-service/config"
 	"control-panel-service/pkg/database/postgres"
+	"control-panel-service/pkg/logger"
 	"fmt"
+	"os"
 
 	"errors"
-	"log"
 	"net/url"
 
 	"control-panel-service/migrations"
@@ -15,6 +16,7 @@ import (
 	_ "github.com/amacneil/dbmate/v2/pkg/driver/postgres"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var ErrMigrationFileNameRequired = errors.New("migration name is required")
@@ -56,7 +58,14 @@ func migrateCmd() *cobra.Command {
 
 			cfg, err := config.LoadConfig()
 			if err != nil {
+				_, _ = os.Stderr.WriteString("failed to load config: " + err.Error() + "\n")
+
 				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Initialize logger
+			if err := initLogger(&cfg); err != nil {
+				return err
 			}
 
 			return makeMigration(args[0], cfg)
@@ -71,7 +80,14 @@ func migrateCmd() *cobra.Command {
 
 			cfg, err := config.LoadConfig()
 			if err != nil {
+				_, _ = os.Stderr.WriteString("failed to load config: " + err.Error() + "\n")
+
 				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Initialize logger
+			if err := initLogger(&cfg); err != nil {
+				return err
 			}
 
 			return migrate(cfg)
@@ -86,7 +102,14 @@ func migrateCmd() *cobra.Command {
 
 			cfg, err := config.LoadConfig()
 			if err != nil {
+				_, _ = os.Stderr.WriteString("failed to load config: " + err.Error() + "\n")
+
 				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Initialize logger
+			if err := initLogger(&cfg); err != nil {
+				return err
 			}
 
 			return migrateRollback(cfg)
@@ -101,7 +124,14 @@ func migrateCmd() *cobra.Command {
 
 			cfg, err := config.LoadConfig()
 			if err != nil {
+				_, _ = os.Stderr.WriteString("failed to load config: " + err.Error() + "\n")
+
 				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Initialize logger
+			if err := initLogger(&cfg); err != nil {
+				return err
 			}
 
 			return migrateStatus(cfg)
@@ -117,16 +147,24 @@ func migrateCmd() *cobra.Command {
 }
 
 func migrateStatus(cfg config.Config) error {
-	log.Println("Migrations:")
+	zap.L().Info("checking migration status")
 	migrations, err := dbmateDB(cfg).FindMigrations()
 	if err != nil {
+		zap.L().Error("failed to load migrations", zap.Error(err))
+
 		return fmt.Errorf("failed to load migrations: %w", err)
 	}
 	for _, m := range migrations {
 		if m.Applied {
-			log.Println("[✅]", m.Version, m.FilePath)
+			zap.L().Info("migration applied",
+				zap.String("version", m.Version),
+				zap.String("file_path", m.FilePath),
+			)
 		} else {
-			log.Println("[❌]", m.Version, m.FilePath)
+			zap.L().Info("migration pending",
+				zap.String("version", m.Version),
+				zap.String("file_path", m.FilePath),
+			)
 		}
 	}
 
@@ -134,34 +172,73 @@ func migrateStatus(cfg config.Config) error {
 }
 
 func migrate(cfg config.Config) error {
-	log.Println("Applying Migrations:")
+	zap.L().Info("applying migrations")
 	err := dbmateDB(cfg).CreateAndMigrate()
 	if err != nil {
+		zap.L().Error("failed to apply migrations", zap.Error(err))
+
 		return fmt.Errorf("failed to apply migrations: %w", err)
 	}
+	zap.L().Info("migrations applied successfully")
 
 	return nil
 }
 
 func migrateRollback(cfg config.Config) error {
+	zap.L().Info("rolling back migration")
 	err := dbmateDB(cfg).Rollback()
 	if err != nil {
+		zap.L().Error("failed to rollback migration", zap.Error(err))
+
 		return fmt.Errorf("failed to rollback migration: %w", err)
 	}
+	zap.L().Info("migration rolled back successfully")
 
 	return nil
 }
 
 func makeMigration(name string, cfg config.Config) error {
+	zap.L().Info("creating new migration",
+		zap.String("name", name),
+	)
 	db := dbmateDB(cfg)
 	db.MigrationsDir = []string{"migrations"}
 
 	err := db.NewMigration(name)
 	if err != nil {
+		zap.L().Error("failed to create database migration",
+			zap.String("name", name),
+			zap.Error(err),
+		)
+
 		return fmt.Errorf("failed to create database migration: %w", err)
 	}
 
-	log.Println("new migration created: ", name)
+	zap.L().Info("new migration created successfully",
+		zap.String("name", name),
+	)
+
+	return nil
+}
+
+func initLogger(cfg *config.Config) error {
+	loggerConfig := &logger.Config{
+		Level:  cfg.Logger.Level,
+		Format: cfg.Logger.Format,
+		Output: cfg.Logger.Output,
+	}
+	zapLogger, err := logger.New(loggerConfig, logger.DefaultServiceName)
+	if err != nil {
+		_, _ = os.Stderr.WriteString("could not initialize logger: " + err.Error() + "\n")
+
+		return fmt.Errorf("could not initialize logger: %w", err)
+	}
+	zap.ReplaceGlobals(zapLogger)
+	defer func() {
+		if syncErr := zap.L().Sync(); syncErr != nil {
+			_ = syncErr
+		}
+	}()
 
 	return nil
 }

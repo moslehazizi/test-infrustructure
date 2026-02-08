@@ -6,12 +6,17 @@ import (
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/logger"
 	"errors"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type MotherService struct {
@@ -39,11 +44,25 @@ func NewMotherServiceHandler(motherService usecase.MotherService) *MotherService
 //	@Router			/api/v1/mother-services [post]
 func (handler *MotherService) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("mother-service-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "create_mother_service")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
 		req := new(request.MotherService)
 
 		if err := ctx.BodyParser(req); err != nil {
+			span.SetAttributes(attribute.String("error.type", "bad_request"))
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
+
+		span.SetAttributes(
+			attribute.String("service.name", req.Name),
+			attribute.Float64("service.exception_rate", float64(req.ExceptionRate)),
+			attribute.Float64("service.response_delay_rate", float64(req.ResponseDelayRate)),
+		)
 
 		reqService := &entity.MotherService{
 			Name:              req.Name,
@@ -70,15 +89,20 @@ func (handler *MotherService) Create() fiber.Handler {
 
 				return nil
 			}(),
-			ServiceDeploymentAddress: req.ServiceDeploymentAddress,
-			DatabaseName:             req.DatabaseName,
-			DatabaseTableName:        req.DatabaseTableName,
+			DatabaseName:      req.DatabaseName,
+			DatabaseTableName: req.DatabaseTableName,
 		}
 
-		err := handler.motherService.Create(ctx.Context(), reqService)
+		err := handler.motherService.Create(traceCtx, reqService)
 		if err != nil {
+			span.SetAttributes(
+				attribute.String("error.type", "create_error"),
+				attribute.String("error.message", err.Error()),
+			)
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
+
+		span.SetAttributes(attribute.String("status", "success"))
 
 		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
 			Message: pkg.CreateMotherServiceSuccessfully,
@@ -101,14 +125,24 @@ func (handler *MotherService) Create() fiber.Handler {
 //	@Router			/api/v1/mother-services/{id} [get]
 func (handler *MotherService) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("mother-service-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "get_mother_service-by-id")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
 		strID := strings.TrimSpace(ctx.Params("id"))
 
 		id, err := strconv.ParseUint(strID, 10, 64)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
 			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
-		svcResult, err := handler.motherService.GetByID(ctx.Context(), id)
+		span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", id)))
+
+		svcResult, err := handler.motherService.GetByID(traceCtx, id)
 		if err != nil {
 			if errors.Is(err, pkg.ErrMotherServiceNotFound) {
 				return pkg.ToHTTPError(pkg.ErrMotherServiceNotFound).AsFiber(ctx)
@@ -153,23 +187,35 @@ func (handler *MotherService) GetByID() fiber.Handler {
 //	@Router			/api/v1/mother-services/search [post]
 func (handler *MotherService) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("mother-service-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "get_paginated_mother_services")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
 		req := new(request.PaginationRequest)
 
 		if err := ctx.BodyParser(req); err != nil {
+			span.SetAttributes(attribute.String("error.type", "bad_request"))
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
 		if req.Page < 0 || req.PerPage < 0 {
+			span.SetAttributes(attribute.String("error.type", "invalid_pagination"))
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
+
+		span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", req.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", req.PerPage)))
 
 		reqSvc := entity.PaginationRequest{
 			Page:    req.Page,
 			PerPage: req.PerPage,
 		}
 
-		svcResults, err := handler.motherService.GetPaginated(ctx.Context(), reqSvc)
+		svcResults, count, err := handler.motherService.GetPaginated(traceCtx, reqSvc)
 		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
@@ -196,6 +242,7 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 			Data:    responses,
 			Page:    req.Page,
 			PerPage: req.PerPage,
+			Total:   count,
 		})
 	}
 }

@@ -7,14 +7,21 @@ import (
 	"context"
 	"control-panel-service/config"
 	"control-panel-service/internal/server"
+	"control-panel-service/pkg/logger"
+	"control-panel-service/pkg/telemetry"
+	"fmt"
 
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // serveCmd represents the serve command.
@@ -32,14 +39,81 @@ to quickly create a Cobra application.`,
 
 		cfg, err := config.LoadConfig()
 		if err != nil {
-			log.Fatal("could not load config:", err)
-
-			return
+			// Use standard log for config loading errors since logger isn't initialized yet
+			_, _ = os.Stderr.WriteString("could not load config: " + err.Error() + "\n")
+			os.Exit(1)
 		}
+
+		// Initialize logger early
+		loggerConfig := &logger.Config{
+			Level:  cfg.Logger.Level,
+			Format: cfg.Logger.Format,
+			Output: cfg.Logger.Output,
+		}
+		zapLogger, err := logger.New(loggerConfig, logger.DefaultServiceName)
+		if err != nil {
+			_, _ = os.Stderr.WriteString("could not initialize logger: " + err.Error() + "\n")
+			os.Exit(1)
+		}
+		// Replace global logger so zap.L() can be used throughout the application
+		zap.ReplaceGlobals(zapLogger)
+		defer func() {
+			if syncErr := zap.L().Sync(); syncErr != nil {
+				// Ignore sync errors on stderr/stdout in some cases
+				_ = syncErr
+			}
+		}()
+
+		zap.L().Info("application starting",
+			zap.String("log_level", cfg.Logger.Level),
+			zap.String("log_format", cfg.Logger.Format),
+		)
 
 		// Create a context that can be cancelled
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
+
+		conn, err := initConn()
+		if err != nil {
+			_, _ = os.Stderr.WriteString("could not initialize grpc conn to otel collector: " + err.Error() + "\n")
+			os.Exit(1)
+		}
+
+		serviceName := semconv.ServiceNameKey.String(cfg.ServiceName)
+
+		res, err := resource.New(ctx,
+			resource.WithAttributes(
+				serviceName,
+			),
+		)
+		if err != nil {
+			_, _ = os.Stderr.WriteString("could not create new resource to otel collector: " + err.Error() + "\n")
+			os.Exit(1)
+		}
+
+		shutdownTracerProvider, err := telemetry.InitTracerProvider(ctx, res, conn)
+		if err != nil {
+			_, _ = os.Stderr.WriteString("could not init tracer provider: " + err.Error() + "\n")
+			os.Exit(1)
+		}
+		defer func() {
+			if err := shutdownTracerProvider(ctx); err != nil {
+				_, _ = os.Stderr.WriteString("failed to shutdown TracerProvider: " + err.Error() + "\n")
+				os.Exit(1)
+			}
+		}()
+
+		shutdownMeterProvider, err := telemetry.InitMeterProvider(ctx, res, conn)
+		if err != nil {
+			_, _ = os.Stderr.WriteString("could not init metric provider: " + err.Error() + "\n")
+			os.Exit(1)
+		}
+		defer func() {
+			if err := shutdownMeterProvider(ctx); err != nil {
+				_, _ = os.Stderr.WriteString("failed to shutdown MeterProvider: " + err.Error() + "\n")
+				os.Exit(1)
+			}
+		}()
 
 		// Set up signal handling for graceful shutdown
 		sigChan := make(chan os.Signal, 1)
@@ -48,9 +122,9 @@ to quickly create a Cobra application.`,
 		// Run the server in a goroutine
 		serverDone := make(chan struct{})
 		go func() {
-			log.Println("starting server serve")
+			zap.L().Info("starting server")
 			if err := server.Serve(ctx, &cfg); err != nil {
-				log.Println("could not serve:", err)
+				zap.L().Error("server error", zap.Error(err))
 			}
 			close(serverDone)
 		}()
@@ -58,7 +132,9 @@ to quickly create a Cobra application.`,
 		// Wait for shutdown signal or server completion
 		select {
 		case sig := <-sigChan:
-			log.Printf("Received signal: %v. Initiating graceful shutdown...", sig)
+			zap.L().Info("received shutdown signal, initiating graceful shutdown",
+				zap.String("signal", sig.String()),
+			)
 			cancel() // Cancel the context to stop the server
 
 			// Give the server some time to finish gracefully
@@ -67,14 +143,34 @@ to quickly create a Cobra application.`,
 
 			select {
 			case <-serverDone:
-				log.Println("Server completed gracefully")
+				zap.L().Info("server completed gracefully")
 			case <-shutdownCtx.Done():
-				log.Println("Shutdown timeout reached, forcing exit")
+				zap.L().Warn("shutdown timeout reached, forcing exit")
 			}
 		case <-serverDone:
-			log.Println("Server completed")
+			zap.L().Info("server completed")
 		}
 	},
+}
+
+func initConn() (*grpc.ClientConn, error) {
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		zap.L().Error("could not load config:", zap.Error(err))
+
+		return nil, nil
+	}
+
+	url := fmt.Sprintf("%s:%d", cfg.Otlp.GRPCHost, cfg.Otlp.GRPCPort)
+
+	conn, err := grpc.NewClient(url,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gRPC connection to collector: %w", err)
+	}
+
+	return conn, err
 }
 
 func init() {
@@ -90,3 +186,5 @@ func init() {
 	// is called directly, e.g.:
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
+
+var serviceName = semconv.ServiceNameKey.String("test-service")
