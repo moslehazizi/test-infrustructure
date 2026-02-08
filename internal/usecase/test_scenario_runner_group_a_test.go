@@ -71,7 +71,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		scRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(10), nil)
 
 		provisioningService := new(prvMock.MockProvisioningService)
-		provisioningService.On("ProvisionTestService", mock.Anything, mock.Anything, 10).Return(errors.New("something went wrong"))
+		provisioningService.On("ProvisionTestService", mock.Anything, &scenario, int32(10)).Return(errors.New("something went wrong"))
 
 		ex := NewScenarioTypeRunnerGroupA(scRepo, provisioningService)
 
@@ -79,7 +79,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 
 		assert.Error(t, err)
 		scRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
-		provisioningService.AssertCalled(t, "ProvisionTestService", mock.Anything, mock.Anything, 10)
+		provisioningService.AssertCalled(t, "ProvisionTestService", mock.Anything, &scenario, int32(10))
 	})
 
 	t.Run("failed case: error getting running test services by scenario", func(t *testing.T) {
@@ -128,7 +128,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		}, nil)
 
 		provisioningService := new(prvMock.MockProvisioningService)
-		provisioningService.On("DeprovisionTestService", mock.Anything).Return(errors.New("something went wrong"))
+		provisioningService.On("DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt)).Return(errors.New("something went wrong"))
 
 		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
 
@@ -137,7 +137,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToDeprovisionTestServices)
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
 		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, -1)
-		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything)
+		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt))
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})
 	t.Run("success case: waiting for execution duration to be spent", func(t *testing.T) {
@@ -159,7 +159,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		}, nil)
 
 		provisioningService := new(prvMock.MockProvisioningService)
-		provisioningService.On("DeprovisionTestService", mock.Anything).Return(nil)
+		provisioningService.On("DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt)).Return(nil)
 
 		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
 
@@ -167,7 +167,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		assert.NoError(t, err)
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
 		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, -1)
-		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything)
+		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt))
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})
 	t.Run("success case: start time and exec duration is null", func(t *testing.T) {
@@ -188,7 +188,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		}, nil)
 
 		provisioningService := new(prvMock.MockProvisioningService)
-		provisioningService.On("DeprovisionTestService", mock.Anything).Return(nil)
+		provisioningService.On("DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt)).Return(nil)
 
 		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
 
@@ -196,7 +196,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		assert.NoError(t, err)
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
 		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, -1)
-		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything)
+		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt))
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})
 }
