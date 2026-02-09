@@ -74,6 +74,8 @@ func toHTTPError(err error) *HTTPError {
 		errors.Is(err, ErrFailedToGetTestCategoriesFromRepository),
 		errors.Is(err, ErrFailedToCreateMotherService),
 		errors.Is(err, ErrFailedToSendProvisioningEvent),
+		errors.Is(err, ErrFailedToGetTablesOfDatabase),
+		errors.Is(err, ErrFailedToGetDatabases),
 		errors.Is(err, ErrFailedToSendEventData):
 		status = http.StatusInternalServerError
 		msg = InternalServerErrorMessage
@@ -244,6 +246,8 @@ var (
 	ErrFailedToValidateTestSvcCfg      = errors.New("failed to validate test service config data")
 	ErrInvalidIDInParams               = errors.New("invalid id in params")
 	ErrFailedToDeployMotherService     = errors.New("failed to deploy mother service")
+	ErrFailedToGetTablesOfDatabase     = errors.New("failed to get tables of database")
+	ErrFailedToGetDatabases            = errors.New("failed to get databases")
 
 	// Validation errors.
 	ErrInvalidMotherServiceName                = errors.New("mother service name is required")

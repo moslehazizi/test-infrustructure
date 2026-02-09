@@ -155,6 +155,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		provider.NewProvisioningService(cfg),
 	)
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
+	databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db))
+	databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
 
 	apiV1 := app.Group("/api/v1")
 
@@ -172,6 +174,10 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
 	apiV1.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
 	apiV1.Post("/test-scenarios/:id/start", testScenarioHandler.Start())
+
+	// database-metadata
+	apiV1.Get("/databases", databaseMetadataHandler.GetAll())
+	apiV1.Post("/databases/tables", databaseMetadataHandler.GetTablesByDBNamePost())
 
 	// swagger endpoint
 	apiV1.Get("/docs/*", swaggerHandler)

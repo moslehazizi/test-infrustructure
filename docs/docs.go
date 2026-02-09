@@ -15,6 +15,81 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/databases": {
+            "get": {
+                "description": "Get list of all non-template PostgreSQL databases",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "database-metadata"
+                ],
+                "summary": "Get all databases",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.DatabaseMetadataDatabasesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/databases/tables": {
+            "post": {
+                "description": "Get list of tables inside a specific database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "database-metadata"
+                ],
+                "summary": "Get tables by database name",
+                "parameters": [
+                    {
+                        "description": "Database name request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetTablesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.DatabaseMetadataTablesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/mother-services": {
             "post": {
                 "description": "Create a new mother service",
@@ -501,6 +576,14 @@ const docTemplate = `{
                 "ScenarioStatusSucceed"
             ]
         },
+        "request.GetTablesRequest": {
+            "type": "object",
+            "properties": {
+                "database_name": {
+                    "type": "string"
+                }
+            }
+        },
         "request.MotherService": {
             "type": "object",
             "properties": {
@@ -625,6 +708,28 @@ const docTemplate = `{
                 },
                 "zero_value_rate": {
                     "type": "integer"
+                }
+            }
+        },
+        "response.DatabaseMetadataDatabasesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "response.DatabaseMetadataTablesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -778,7 +883,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "execution_duration": {
-                    "type": "integer"
+                    "$ref": "#/definitions/time.Duration"
                 },
                 "id": {
                     "type": "integer"
@@ -875,6 +980,30 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "time.Duration": {
+            "type": "integer",
+            "format": "int64",
+            "enum": [
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000
+            ],
+            "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour"
+            ]
         }
     }
 }`

@@ -103,6 +103,14 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrFailedToGetTestCategoryFromRepository,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
+		{
+			err:    ErrFailedToGetTablesOfDatabase,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
+		{
+			err:    ErrFailedToGetDatabases,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
 
 		// Other
 		{
