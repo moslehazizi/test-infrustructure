@@ -11,13 +11,13 @@ type MockTestServiceRepository struct {
 	mock.Mock
 }
 
-func (m *MockTestServiceRepository) GetCountAllRunningByScenario(ctx context.Context, scenarioID uint64) (int, error) {
+func (m *MockTestServiceRepository) GetCountAllRunningByScenario(ctx context.Context, scenarioID uint64) (int64, error) {
 	args := m.Called(ctx, scenarioID)
 
-	return args.Get(0).(int), args.Error(1)
+	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *MockTestServiceRepository) GetRunningByScenario(ctx context.Context, scenarioID uint64, limit int) ([]entity.TestService, error) {
+func (m *MockTestServiceRepository) GetRunningByScenario(ctx context.Context, scenarioID uint64, limit int64) ([]entity.TestService, error) {
 	args := m.Called(ctx, scenarioID, limit)
 
 	var result []entity.TestService

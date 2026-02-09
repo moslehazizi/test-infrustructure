@@ -44,13 +44,13 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 	})
 
 	t.Run("failed case: error on getting running services count", func(t *testing.T) {
-		serviceCnt := 10
+		serviceCnt := int64(10)
 		scenario := entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
 		}
 
 		scRepo := new(repomock.MockTestServiceRepository)
-		scRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(0), errors.New("something went wrong"))
+		scRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int64(0), errors.New("something went wrong"))
 
 		provisioningService := new(prvMock.MockProvisioningService)
 
@@ -62,13 +62,13 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 	})
 
 	t.Run("failed case: failed to provision remaining test services", func(t *testing.T) {
-		serviceCnt := 20
+		serviceCnt := int64(20)
 		scenario := entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
 		}
 
 		scRepo := new(repomock.MockTestServiceRepository)
-		scRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(10), nil)
+		scRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int64(10), nil)
 
 		provisioningService := new(prvMock.MockProvisioningService)
 		provisioningService.On("ProvisionTestService", mock.Anything, &scenario, int32(10)).Return(errors.New("something went wrong"))
@@ -83,7 +83,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 	})
 
 	t.Run("failed case: error getting running test services by scenario", func(t *testing.T) {
-		serviceCnt := 3
+		serviceCnt := int64(3)
 		dur := time.Millisecond * 2000
 		start := time.Now()
 		scenario := entity.TestScenario{
@@ -93,9 +93,9 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		}
 
 		testServiceRepo := new(repomock.MockTestServiceRepository)
-		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(3), nil)
+		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int64(3), nil)
 		var r []entity.TestService
-		testServiceRepo.On("GetRunningByScenario", mock.Anything, scenario.ID, -1).Return(r, errors.New("something went wrong"))
+		testServiceRepo.On("GetRunningByScenario", mock.Anything, scenario.ID, int64(-1)).Return(r, errors.New("something went wrong"))
 
 		provisioningService := new(prvMock.MockProvisioningService)
 
@@ -105,12 +105,12 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrGettingRunningTestServicesByScenario)
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
-		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, -1)
+		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, int64(-1))
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})
 
 	t.Run("failed case: unable to deprovision test services", func(t *testing.T) {
-		serviceCnt := 3
+		serviceCnt := int64(3)
 		dur := time.Millisecond * 20
 		start := time.Now()
 		scenario := entity.TestScenario{
@@ -120,8 +120,8 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		}
 
 		testServiceRepo := new(repomock.MockTestServiceRepository)
-		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(3), nil)
-		testServiceRepo.On("GetRunningByScenario", mock.Anything, scenario.ID, -1).Return([]entity.TestService{
+		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int64(3), nil)
+		testServiceRepo.On("GetRunningByScenario", mock.Anything, scenario.ID, int64(-1)).Return([]entity.TestService{
 			{ID: 1},
 			{ID: 2},
 			{ID: 3},
@@ -136,12 +136,12 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToDeprovisionTestServices)
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
-		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, -1)
+		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, int64(-1))
 		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt))
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})
 	t.Run("success case: waiting for execution duration to be spent", func(t *testing.T) {
-		serviceCnt := 3
+		serviceCnt := int64(3)
 		dur := time.Millisecond * 2000
 		start := time.Now()
 		scenario := entity.TestScenario{
@@ -151,8 +151,8 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		}
 
 		testServiceRepo := new(repomock.MockTestServiceRepository)
-		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(3), nil)
-		testServiceRepo.On("GetRunningByScenario", mock.Anything, scenario.ID, -1).Return([]entity.TestService{
+		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int64(3), nil)
+		testServiceRepo.On("GetRunningByScenario", mock.Anything, scenario.ID, int64(-1)).Return([]entity.TestService{
 			{ID: 1},
 			{ID: 2},
 			{ID: 3},
@@ -166,12 +166,12 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		err := ex.Run(context.Background(), &scenario)
 		assert.NoError(t, err)
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
-		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, -1)
+		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, int64(-1))
 		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt))
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})
 	t.Run("success case: start time and exec duration is null", func(t *testing.T) {
-		serviceCnt := 3
+		serviceCnt := int64(3)
 		start := time.Now()
 		scenario := entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
@@ -180,8 +180,8 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		}
 
 		testServiceRepo := new(repomock.MockTestServiceRepository)
-		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int(3), nil)
-		testServiceRepo.On("GetRunningByScenario", mock.Anything, scenario.ID, -1).Return([]entity.TestService{
+		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int64(3), nil)
+		testServiceRepo.On("GetRunningByScenario", mock.Anything, scenario.ID, int64(-1)).Return([]entity.TestService{
 			{ID: 1},
 			{ID: 2},
 			{ID: 3},
@@ -195,7 +195,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		err := ex.Run(context.Background(), &scenario)
 		assert.NoError(t, err)
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
-		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, -1)
+		testServiceRepo.AssertCalled(t, "GetRunningByScenario", mock.Anything, scenario.ID, int64(-1))
 		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt))
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})

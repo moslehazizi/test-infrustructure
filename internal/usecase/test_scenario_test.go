@@ -67,6 +67,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		)
 
 		sampleInt := 1
+		sampleInt64 := int64(1)
 		expectedID := uint64(1)
 		dur := time.Millisecond * 1
 
@@ -82,9 +83,9 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			Name:                "load1",
 			TestCategoryID:      uint64(2),
 			MotherServiceID:     uint64(1),
-			MaxTestServiceCount: &sampleInt,
+			MaxTestServiceCount: &sampleInt64,
 			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt,
+			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig:   testServiceConfig,
 		}
 		testCat := &entity.TestCategory{
@@ -138,16 +139,17 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			mockTestServiceRepo,
 			provisioningService,
 		)
-		sampleInt := 1
+
+		sampleInt64 := int64(1)
 		dur := time.Millisecond * 1
 
 		testSci := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      uint64(2),
 			MotherServiceID:     uint64(1),
-			MaxTestServiceCount: &sampleInt,
+			MaxTestServiceCount: &sampleInt64,
 			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt,
+			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig:   nil,
 		}
 		testCat := &entity.TestCategory{
@@ -198,6 +200,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			provisioningService,
 		)
 		sampleInt := 1
+		sampleInt64 := int64(1)
 		expectedID := uint64(1)
 		dur := time.Millisecond * 1
 
@@ -212,9 +215,9 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			Name:                "load1",
 			TestCategoryID:      uint64(2),
 			MotherServiceID:     uint64(1),
-			MaxTestServiceCount: &sampleInt,
+			MaxTestServiceCount: &sampleInt64,
 			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt,
+			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig:   testServiceConfig,
 		}
 		testCat := &entity.TestCategory{
@@ -269,6 +272,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			provisioningService,
 		)
 		sampleInt := 1
+		sampleInt64 := int64(1)
 		dur := time.Millisecond * 1
 		testServiceCfg := &entity.TestServiceConfig{
 			MaxRequests:          1,
@@ -280,9 +284,9 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			Name:                "load1",
 			TestCategoryID:      uint64(2),
 			MotherServiceID:     uint64(1),
-			MaxTestServiceCount: &sampleInt,
+			MaxTestServiceCount: &sampleInt64,
 			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt,
+			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig:   testServiceCfg,
 		}
 		testCat := &entity.TestCategory{
@@ -335,12 +339,13 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			mockTestServiceRepo,
 			provisioningService,
 		)
-		sampleInt := -1
+
+		sampleInt64 := int64(-1)
 		testSci := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      uint64(2),
 			MotherServiceID:     uint64(1),
-			MaxTestServiceCount: &sampleInt,
+			MaxTestServiceCount: &sampleInt64,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -444,12 +449,13 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			mockTestServiceRepo,
 			provisioningService,
 		)
-		sampleInt := -1
+
+		sampleInt64 := int64(-1)
 		testSci := &entity.TestScenario{
 			Name:               "load1",
 			TestCategoryID:     uint64(2),
 			MotherServiceID:    uint64(1),
-			AutoStepChangeRate: &sampleInt,
+			AutoStepChangeRate: &sampleInt64,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -498,12 +504,13 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			mockTestServiceRepo,
 			provisioningService,
 		)
-		sampleInt := -1
+
+		sampleInt64 := int64(-1)
 		testSci := &entity.TestScenario{
 			Name:               "load1",
 			TestCategoryID:     uint64(2),
 			MotherServiceID:    uint64(1),
-			AutoStepChangeRate: &sampleInt,
+			AutoStepChangeRate: &sampleInt64,
 		}
 		motherService := &entity.MotherService{
 			ID:                testSci.MotherServiceID,
@@ -545,12 +552,12 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			mockTestServiceRepo,
 			provisioningService,
 		)
-		sampleInt := -1
+		sampleInt64 := int64(-1)
 		testSci := &entity.TestScenario{
 			Name:               "load1",
 			TestCategoryID:     uint64(2),
 			MotherServiceID:    uint64(1),
-			AutoStepChangeRate: &sampleInt,
+			AutoStepChangeRate: &sampleInt64,
 		}
 		motherService := &entity.MotherService{
 			ID:                testSci.MotherServiceID,
@@ -643,12 +650,12 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			mockTestServiceRepo,
 			provisioningService,
 		)
-		sampleInt := 1
+		sampleInt64 := int64(1)
 		testSci := &entity.TestScenario{
 			Name:               "load1",
 			TestCategoryID:     uint64(2),
 			MotherServiceID:    uint64(1),
-			AutoStepChangeRate: &sampleInt,
+			AutoStepChangeRate: &sampleInt64,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -696,12 +703,13 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			mockTestServiceRepo,
 			provisioningService,
 		)
-		sampleInt := 1
+
+		sampleInt64 := int64(1)
 		testSci := &entity.TestScenario{
 			Name:               "load1",
 			TestCategoryID:     uint64(2),
 			MotherServiceID:    uint64(1),
-			AutoStepChangeRate: &sampleInt,
+			AutoStepChangeRate: &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:  1,
 				MaxDuration:  0,
@@ -757,6 +765,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		)
 
 		sampleInt := 1
+		sampleInt64 := int64(1)
 		expectedID := uint64(1)
 		dur := time.Millisecond * 1
 
@@ -771,9 +780,9 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			Name:                "load1",
 			TestCategoryID:      uint64(2),
 			MotherServiceID:     0,
-			MaxTestServiceCount: &sampleInt,
+			MaxTestServiceCount: &sampleInt64,
 			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt,
+			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig:   testServiceConfig,
 		}
 
@@ -812,7 +821,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		)
 		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Now().Location())
 		num := 10
-		sampleInt := 1
+		sampleInt64 := int64(1)
 		sampleID := uint64(4)
 		dur := time.Millisecond * 1
 
@@ -836,9 +845,9 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 				Name: "m2",
 			},
 			Status:              entity.ScenarioStatusSucceed,
-			MaxTestServiceCount: &sampleInt,
+			MaxTestServiceCount: &sampleInt64,
 			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt,
+			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                    100,
 				TestScenarioID:        1,
@@ -995,7 +1004,8 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 			mockTestServiceRepo,
 			provisioningService,
 		)
-		sampleInt := 2
+
+		sampleInt64 := int64(2)
 		dur := time.Millisecond * 2
 		pagReq := entity.TestScenarioPaginationRequest{
 			Page:    2,
@@ -1023,9 +1033,9 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 					Name: "m2",
 				},
 				Status:              entity.ScenarioStatusSucceed,
-				MaxTestServiceCount: &sampleInt,
+				MaxTestServiceCount: &sampleInt64,
 				ExecutionDuration:   &dur,
-				AutoStepChangeRate:  &sampleInt,
+				AutoStepChangeRate:  &sampleInt64,
 			},
 			{
 				ID:              uint64(1),
@@ -1047,9 +1057,9 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 					Name: "m2",
 				},
 				Status:              entity.ScenarioStatusSucceed,
-				MaxTestServiceCount: &sampleInt,
+				MaxTestServiceCount: &sampleInt64,
 				ExecutionDuration:   &dur,
-				AutoStepChangeRate:  &sampleInt,
+				AutoStepChangeRate:  &sampleInt64,
 			},
 		}
 
