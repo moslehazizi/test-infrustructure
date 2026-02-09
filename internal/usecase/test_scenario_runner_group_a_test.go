@@ -7,6 +7,7 @@ import (
 	repomock "control-panel-service/internal/repository/mocks"
 	"control-panel-service/pkg"
 	"errors"
+	"math"
 	"testing"
 	"time"
 
@@ -105,6 +106,52 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToDeprovisionTestServices)
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
 		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt))
+		assert.GreaterOrEqual(t, time.Now(), start)
+	})
+	t.Run("failed case: service count out of range", func(t *testing.T) {
+		serviceCnt := int64(math.MaxInt64)
+		dur := time.Millisecond * 20
+		start := time.Now()
+		scenario := entity.TestScenario{
+			MaxTestServiceCount: &serviceCnt,
+			ExecutionDuration:   &dur,
+			StartedAt:           &start,
+		}
+
+		testServiceRepo := new(repomock.MockTestServiceRepository)
+		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int64(3), nil)
+
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
+
+		err := ex.Run(context.Background(), &scenario)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInt32OutOfRange)
+		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
+		assert.GreaterOrEqual(t, time.Now(), start)
+	})
+	t.Run("failed case: service count out of range on deprovisioning", func(t *testing.T) {
+		serviceCnt := int64(math.MaxInt32) + 1
+		dur := time.Millisecond * 20
+		start := time.Now()
+		scenario := entity.TestScenario{
+			MaxTestServiceCount: &serviceCnt,
+			ExecutionDuration:   &dur,
+			StartedAt:           &start,
+		}
+
+		testServiceRepo := new(repomock.MockTestServiceRepository)
+		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(serviceCnt, nil)
+
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
+
+		err := ex.Run(context.Background(), &scenario)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInt32OutOfRange)
+		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})
 	t.Run("success case: waiting for execution duration to be spent", func(t *testing.T) {

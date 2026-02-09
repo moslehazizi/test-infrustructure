@@ -100,7 +100,7 @@ timeRecheck:
 	}
 
 	if cnt > math.MaxInt32 || cnt < math.MinInt32 {
-		return fmt.Errorf("scenario test service count error: %w: %d", pkg.ErrInt32OutOfRange, cnt)
+		return fmt.Errorf("deprovisioning test service count error: %w: %d", pkg.ErrInt32OutOfRange, cnt)
 	}
 
 	err = r.provisioningService.DeprovisionTestService(ctx, scenario, int32(cnt))
