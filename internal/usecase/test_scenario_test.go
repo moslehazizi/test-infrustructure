@@ -1306,6 +1306,8 @@ func TestTestScenarioUsecase_RestOrphanedScenarios(t *testing.T) {
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
 		mockMotherService := new(repoMocks.MockMotherService)
 		mockExecutor := new(svcMocks.MockScenarioExecutorBox)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
 
 		service := NewTestScenarioUsecase(
 			getMockDB(t),
@@ -1314,6 +1316,8 @@ func TestTestScenarioUsecase_RestOrphanedScenarios(t *testing.T) {
 			mockTestServiceConfig,
 			mockMotherService,
 			mockExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
 		)
 
 		mockRepo.On("GetByStatus", mock.Anything, entity.ScenarioStatusRunning).Return(nil, errors.New("db failure"))
@@ -1330,6 +1334,8 @@ func TestTestScenarioUsecase_RestOrphanedScenarios(t *testing.T) {
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
 		mockMotherService := new(repoMocks.MockMotherService)
 		mockExecutor := new(svcMocks.MockScenarioExecutorBox)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
 
 		service := NewTestScenarioUsecase(
 			getMockDB(t),
@@ -1338,6 +1344,8 @@ func TestTestScenarioUsecase_RestOrphanedScenarios(t *testing.T) {
 			mockTestServiceConfig,
 			mockMotherService,
 			mockExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
 		)
 
 		sc := &entity.TestScenario{ID: 2, Status: entity.ScenarioStatusRunning}
@@ -1358,6 +1366,8 @@ func TestTestScenarioUsecase_RestOrphanedScenarios(t *testing.T) {
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
 		mockMotherService := new(repoMocks.MockMotherService)
 		mockExecutor := new(svcMocks.MockScenarioExecutorBox)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
 
 		service := NewTestScenarioUsecase(
 			getMockDB(t),
@@ -1366,6 +1376,8 @@ func TestTestScenarioUsecase_RestOrphanedScenarios(t *testing.T) {
 			mockTestServiceConfig,
 			mockMotherService,
 			mockExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
 		)
 
 		sc := &entity.TestScenario{ID: 1, Status: entity.ScenarioStatusRunning}
