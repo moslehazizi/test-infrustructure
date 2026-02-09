@@ -295,4 +295,5 @@ var (
 	ErrFailedToSetScenarioStatusAsRunning      = errors.New("failed to set scenario status as running")
 	ErrGettingRunningTestServicesByScenario    = errors.New("failed to get running test services by scenario")
 	ErrFailedToDeprovisionTestServices         = errors.New("failed to deprovision test services")
+	ErrInt32OutOfRange                         = errors.New("out of int32 range")
 )

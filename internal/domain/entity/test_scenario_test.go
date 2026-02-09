@@ -10,7 +10,7 @@ import (
 
 func TestTestScenarioValidation(t *testing.T) {
 	t.Run("success case - test category config matches inputs", func(t *testing.T) {
-		sampleInt := 2
+		sampleInt := int64(2)
 		dur := time.Millisecond * 2
 		testSci := TestScenario{
 			ID:                  uint64(1),
@@ -66,7 +66,7 @@ func TestTestScenarioValidation(t *testing.T) {
 	})
 
 	t.Run("failed case - max test service count less than one", func(t *testing.T) {
-		sampleIntLessThanOne := -1
+		sampleIntLessThanOne := int64(-1)
 		testSci := TestScenario{
 			ID:                  uint64(1),
 			CreatedAt:           time.Now(),
@@ -122,7 +122,7 @@ func TestTestScenarioValidation(t *testing.T) {
 	})
 
 	t.Run("failed case - auto step change rate should be more than 1", func(t *testing.T) {
-		sampleIntLessThanOne := -1
+		sampleIntLessThanOne := int64(-1)
 		testSci := TestScenario{
 			ID:                 uint64(1),
 			CreatedAt:          time.Now(),
@@ -150,7 +150,7 @@ func TestTestScenarioValidation(t *testing.T) {
 	})
 
 	t.Run("failed case - max test service count not set", func(t *testing.T) {
-		sampleInt := 2
+		sampleInt := int64(2)
 		dur := time.Millisecond * 2
 		testSci := TestScenario{
 			ID:                 uint64(1),
@@ -181,7 +181,7 @@ func TestTestScenarioValidation(t *testing.T) {
 	})
 
 	t.Run("failed case - no need to max test service count", func(t *testing.T) {
-		sampleInt := 2
+		sampleInt := int64(2)
 		dur := time.Millisecond * 2
 		testSci := TestScenario{
 			ID:                  uint64(1),
@@ -213,7 +213,7 @@ func TestTestScenarioValidation(t *testing.T) {
 	})
 
 	t.Run("failed case - execution duration not set", func(t *testing.T) {
-		sampleInt := 2
+		sampleInt := int64(2)
 		testSci := TestScenario{
 			ID:                 uint64(1),
 			CreatedAt:          time.Now(),
@@ -242,7 +242,7 @@ func TestTestScenarioValidation(t *testing.T) {
 	})
 
 	t.Run("failed case - no need execution duration", func(t *testing.T) {
-		sampleInt := 2
+		sampleInt := int64(2)
 		dur := time.Millisecond * 2
 		testSci := TestScenario{
 			ID:                 uint64(1),
@@ -299,7 +299,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrAutoStepChangeNotSet)
 	})
 	t.Run("failed case - no need to auto step change", func(t *testing.T) {
-		sampleInt := 1
+		sampleInt := int64(1)
 		testSci := TestScenario{
 			ID:                 uint64(1),
 			CreatedAt:          time.Now(),

@@ -23,7 +23,7 @@ type testService struct {
 	db database.Database
 }
 
-func (repo *testService) GetRunningByScenario(ctx context.Context, scenarioID uint64, limit int) ([]entity.TestService, error) {
+func (repo *testService) GetRunningByScenario(ctx context.Context, scenarioID uint64, limit int64) ([]entity.TestService, error) {
 	tracer := otel.Tracer("test-service-repository")
 	_, span := tracer.Start(ctx, "GetRunningByScenario")
 	defer span.End()
@@ -33,7 +33,7 @@ func (repo *testService) GetRunningByScenario(ctx context.Context, scenarioID ui
 
 	qry := postgres.QueryBuilder(ctx, repo.db)
 	if limit >= 0 {
-		qry = qry.Limit(limit)
+		qry = qry.Limit(int(limit))
 	}
 	var items []entity.TestService
 	err := qry.
@@ -48,7 +48,7 @@ func (repo *testService) GetRunningByScenario(ctx context.Context, scenarioID ui
 	return items, nil
 }
 
-func (repo *testService) GetCountAllRunningByScenario(ctx context.Context, scenarioID uint64) (int, error) {
+func (repo *testService) GetCountAllRunningByScenario(ctx context.Context, scenarioID uint64) (int64, error) {
 	tracer := otel.Tracer("test-service-repository")
 	_, span := tracer.Start(ctx, "GetCountAllRunningByScenario")
 	defer span.End()
@@ -67,5 +67,5 @@ func (repo *testService) GetCountAllRunningByScenario(ctx context.Context, scena
 		return 0, fmt.Errorf("failed to get test services count: %w", err)
 	}
 
-	return int(cnt), nil
+	return cnt, nil
 }
