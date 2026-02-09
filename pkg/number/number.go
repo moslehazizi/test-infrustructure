@@ -25,3 +25,10 @@ func CalcRange(cntPtr, minPtr, maxPtr *int) (minVal, maxVal int) {
 
 	return minVal, maxVal
 }
+
+func NumValue(input *int) int {
+	if input == nil {
+		return Zero
+	}
+	return *input
+}

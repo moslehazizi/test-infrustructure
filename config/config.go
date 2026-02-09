@@ -92,14 +92,23 @@ type Kubernetese struct {
 	MotherServiceAPPServeWaitReady time.Duration `envconfig:"MOTHER_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
 	MotherServiceAPPJobs           string        `envconfig:"MOTHER_SERVICE_APP_JOBS" default:"mother-service-jobs"`
 	MotherServiceAPPJobsWaitReady  time.Duration `envconfig:"MOTHER_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
-	MotherServiceLogLevel          string        `envconfig:"MOTHER_SERVICE_LOG_LEVEL" default:"info"`
-	MotherServiceLogFormat         string        `envconfig:"MOTHER_SERVICE_LOG_FORMAT" default:"json"`
-	MotherServicelogOutput         string        `envconfig:"MOTHER_SERVICE_LOG_OUTPUT" default:"stdout"`
 	MotherServiceKafkaDbTopic      string        `envconfig:"MOTHER_SERVICE_KAFKA_DATABASE_TOPIC" default:"mother-db"`
 	MotherServiceKafkaDbGroup      string        `envconfig:"MOTHER_SERVICE_KAFKA_CONSUMER_GROUP" default:"mother-db-consumer-group"`
 	MotherServiceLiveFeedTopic     string        `envconfig:"MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"mother-live-feed"`
 	MotherServiceKafkaHost         string        `envconfig:"MOTHER_SERVICE_KAFKA_HOST" default:"kafka"`
 	MotherServicePostgresHost      string        `envconfig:"MOTHER_SERVICE_POSTGRES_HOST" default:"postgres"`
+	TestServiceImage               string        `envconfig:"TEST_SERVICE_IMAGE" default:"challenge-test-service:0.1"`
+	TestServiceAPPServe            string        `envconfig:"TEST_SERVICE_APP_SERVE" default:"test-service-serve"`
+	TestServiceAPPServeWaitReady   time.Duration `envconfig:"TEST_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
+	TestServiceAPPJobs             string        `envconfig:"TEST_SERVICE_APP_JOBS" default:"test-service-jobs"`
+	TestServiceAPPJobsWaitReady    time.Duration `envconfig:"TEST_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
+	TestServicePostgresDatabase    string        `envconfig:"TEST_SERVICE_POSTGRES_DATABASE" default:"test-db"`
+	TestServicePostgresTable       string        `envconfig:"TEST_SERVICE_POSTGRES_TABLE" default:"test-table"`
+	TestServicePostgresHost        string        `envconfig:"TEST_SERVICE_POSTGRES_HOST" default:"localhost"`
+	TestServiceKafkaHost           string        `envconfig:"TEST_SERVICE_KAFKA_HOST" default:"localhost"`
+	TestServiceKafkaDatabaseTopic  string        `envconfig:"TEST_SERVICE_KAFKA_DATABASE_TOPIC" default:"test-db"`
+	TestServiceKafkaCounsumerGroup string        `envconfig:"TEST_SERVICE_KAFKA_CONSUMER_GROUP" default:"test-db-consumer-group"`
+	TestServiceLiveFeedTopic       string        `envconfig:"TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"test-live-feed"`
 }
 
 // var GlobalConfigInstance *Config
