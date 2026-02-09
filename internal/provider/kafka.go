@@ -27,6 +27,7 @@ func NewKafkaEventProducer(ctx context.Context, cfg *config.Config) (EventProduc
 	)
 
 	var transport *kafka.Transport
+	dialer := &kafka.Dialer{}
 	if cfg.Kafka.Username != "" && cfg.Kafka.Password != "" {
 		zap.L().Info("configuring SASL authentication for Kafka producer")
 		mechanism := plain.Mechanism{
@@ -34,7 +35,7 @@ func NewKafkaEventProducer(ctx context.Context, cfg *config.Config) (EventProduc
 			Password: cfg.Kafka.Password,
 		}
 
-		dialer := &kafka.Dialer{
+		dialer = &kafka.Dialer{
 			Timeout:       cfg.Kafka.DialerTimeout,
 			DualStack:     true,
 			SASLMechanism: mechanism,
@@ -61,6 +62,10 @@ func NewKafkaEventProducer(ctx context.Context, cfg *config.Config) (EventProduc
 			SASL: mechanism,
 		}
 	} else {
+		dialer = &kafka.Dialer{
+			Timeout:   cfg.Kafka.DialerTimeout,
+			DualStack: true,
+		}
 		zap.L().Info("no authentication configured for Kafka producer")
 	}
 
