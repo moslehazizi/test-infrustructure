@@ -165,6 +165,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	}
 
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
+	databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db))
+	databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
 
 	// NOTE: do not call ResetOrphanedScenarios here in a way that creates
 	// another executor box. Ensure the box is created once and passed into
@@ -187,6 +189,10 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
 	apiV1.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
 	apiV1.Post("/test-scenarios/:id/start", testScenarioHandler.Start())
+
+	// database-metadata
+	apiV1.Get("/databases", databaseMetadataHandler.GetAll())
+	apiV1.Post("/databases/tables", databaseMetadataHandler.GetTablesByDBNamePost())
 
 	// swagger endpoint
 	apiV1.Get("/docs/*", swaggerHandler)

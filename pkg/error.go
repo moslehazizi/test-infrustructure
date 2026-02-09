@@ -74,6 +74,8 @@ func toHTTPError(err error) *HTTPError {
 		errors.Is(err, ErrFailedToGetTestCategoriesFromRepository),
 		errors.Is(err, ErrFailedToCreateMotherService),
 		errors.Is(err, ErrFailedToSendProvisioningEvent),
+		errors.Is(err, ErrFailedToGetTablesOfDatabase),
+		errors.Is(err, ErrFailedToGetDatabases),
 		errors.Is(err, ErrFailedToSendEventData),
 		errors.Is(err, ErrFailedToGetTestScenariosByStatus):
 		status = http.StatusInternalServerError
@@ -222,6 +224,8 @@ func toHTTPError(err error) *HTTPError {
 }
 
 var (
+	ErrFailedToGetTablesOfDatabase     = errors.New("failed to get tables of database")
+	ErrFailedToGetDatabases            = errors.New("failed to get databases")
 	ErrNotImplemented                   = errors.New("NOT IMPLEMENTED")
 	ErrInternalServerError              = errors.New("internal server error")
 	ErrBadRequest                       = errors.New("bad request")
