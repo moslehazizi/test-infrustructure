@@ -26,7 +26,7 @@ func Test_testService_GetRunningByScenario(t *testing.T) {
 			}))
 
 		repo := NewTestServiceRepository(db)
-		result, err := repo.GetRunningByScenario(context.Background(), uint64(1), -1)
+		result, err := repo.GetRunningByScenario(context.Background(), uint64(1), int64(-1))
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 0)
@@ -45,7 +45,7 @@ func Test_testService_GetRunningByScenario(t *testing.T) {
 			}).AddRow(1).AddRow(2).AddRow(3))
 
 		repo := NewTestServiceRepository(db)
-		result, err := repo.GetRunningByScenario(context.Background(), uint64(1), -1)
+		result, err := repo.GetRunningByScenario(context.Background(), uint64(1), int64(-1))
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 3)
@@ -63,7 +63,7 @@ func Test_testService_GetRunningByScenario(t *testing.T) {
 			}).AddRow(1).AddRow(2).AddRow(3))
 
 		repo := NewTestServiceRepository(db)
-		result, err := repo.GetRunningByScenario(context.Background(), uint64(1), 3)
+		result, err := repo.GetRunningByScenario(context.Background(), uint64(1), int64(3))
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
 		assert.Len(t, result, 3)
@@ -79,7 +79,7 @@ func Test_testService_GetRunningByScenario(t *testing.T) {
 			WillReturnError(errors.New("something went wrong"))
 
 		repo := NewTestServiceRepository(db)
-		result, err := repo.GetRunningByScenario(context.Background(), uint64(1), 3)
+		result, err := repo.GetRunningByScenario(context.Background(), uint64(1), int64(3))
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.NoError(t, mock.ExpectationsWereMet())
@@ -95,7 +95,7 @@ func Test_testService_GetCountAllRunningByScenario(t *testing.T) {
 		repo := NewTestServiceRepository(db)
 		result, err := repo.GetCountAllRunningByScenario(context.Background(), uint64(1))
 		assert.Error(t, err)
-		assert.Equal(t, result, 0)
+		assert.Equal(t, result, int64(0))
 	})
 
 	t.Run("success case", func(t *testing.T) {
@@ -110,7 +110,7 @@ func Test_testService_GetCountAllRunningByScenario(t *testing.T) {
 		repo := NewTestServiceRepository(db)
 		result, err := repo.GetCountAllRunningByScenario(context.Background(), uint64(1))
 		assert.NoError(t, err)
-		assert.Equal(t, result, 3)
+		assert.Equal(t, result, int64(3))
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }

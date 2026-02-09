@@ -76,7 +76,8 @@ func toHTTPError(err error) *HTTPError {
 		errors.Is(err, ErrFailedToSendProvisioningEvent),
 		errors.Is(err, ErrFailedToGetTablesOfDatabase),
 		errors.Is(err, ErrFailedToGetDatabases),
-		errors.Is(err, ErrFailedToSendEventData):
+		errors.Is(err, ErrFailedToSendEventData),
+		errors.Is(err, ErrFailedToGetTestScenariosByStatus):
 		status = http.StatusInternalServerError
 		msg = InternalServerErrorMessage
 	case errors.Is(err, ErrMotherServiceNotFound):
@@ -223,35 +224,41 @@ func toHTTPError(err error) *HTTPError {
 }
 
 var (
-	ErrNotImplemented                  = errors.New("NOT IMPLEMENTED")
-	ErrInternalServerError             = errors.New("internal server error")
-	ErrBadRequest                      = errors.New("bad request")
-	ErrPageNotFound                    = errors.New("404 page not found")
-	ErrFailedToSendEventData           = errors.New("failed to send event data")
-	ErrFailedToConsumeData             = errors.New("failed to consume data")
-	ErrFailedToUnmarshalEventData      = errors.New("failed to unmarshal factorial event")
-	ErrFailedToLoadConfig              = errors.New("failed to load config from env")
-	ErrFailedToCreateMotherService     = errors.New("failed to create mother service item")
-	ErrMotherServiceNotFound           = errors.New("mother service not found")
-	ErrFailedToGetMotherService        = errors.New("failed to get mother service instance")
-	ErrFailedToGetMotherServices       = errors.New("failed to get mother service instances")
-	ErrMotherServiceAlreadyExist       = errors.New("mother service already exist")
-	ErrNegativePageOrPerPageNotAllowed = errors.New("negative value for page or per page are not allowed")
-	ErrTestScenarioNotFound            = errors.New("test scenario not found")
-	ErrFailedToGetTestScenario         = errors.New("failed to get test scenario")
-	ErrFailedToGetTestScenarios        = errors.New("failed to get test scenarios")
-	ErrFailedToCreateTestScenario      = errors.New("failed to create test scenario")
-	ErrTestCategoryNotFound            = errors.New("test category not found")
-	ErrFailedToGetTestCategory         = errors.New("failed to get test category record")
-	ErrFailedToValidateTestSvcCfg      = errors.New("failed to validate test service config data")
-	ErrInvalidIDInParams               = errors.New("invalid id in params")
-	ErrFailedToDeployMotherService     = errors.New("failed to deploy mother service")
 	ErrFailedToGetTablesOfDatabase     = errors.New("failed to get tables of database")
 	ErrFailedToGetDatabases            = errors.New("failed to get databases")
+	ErrNotImplemented                   = errors.New("NOT IMPLEMENTED")
+	ErrInternalServerError              = errors.New("internal server error")
+	ErrBadRequest                       = errors.New("bad request")
+	ErrPageNotFound                     = errors.New("404 page not found")
+	ErrFailedToSendEventData            = errors.New("failed to send event data")
+	ErrFailedToConsumeData              = errors.New("failed to consume data")
+	ErrFailedToUnmarshalEventData       = errors.New("failed to unmarshal factorial event")
+	ErrFailedToLoadConfig               = errors.New("failed to load config from env")
+	ErrFailedToCreateMotherService      = errors.New("failed to create mother service item")
+	ErrMotherServiceNotFound            = errors.New("mother service not found")
+	ErrFailedToGetMotherService         = errors.New("failed to get mother service instance")
+	ErrFailedToGetTestScenariosByStatus = errors.New("failed to get test scenarios by status")
+	ErrFailedToGetMotherServices        = errors.New("failed to get mother service instances")
+	ErrMotherServiceAlreadyExist        = errors.New("mother service already exist")
+	ErrNegativePageOrPerPageNotAllowed  = errors.New("negative value for page or per page are not allowed")
+	ErrTestScenarioNotFound             = errors.New("test scenario not found")
+	ErrFailedToGetTestScenario          = errors.New("failed to get test scenario")
+	ErrFailedToGetTestScenarios         = errors.New("failed to get test scenarios")
+	ErrFailedToCreateTestScenario       = errors.New("failed to create test scenario")
+	ErrTestCategoryNotFound             = errors.New("test category not found")
+	ErrFailedToGetTestCategory          = errors.New("failed to get test category record")
+	ErrFailedToValidateTestSvcCfg       = errors.New("failed to validate test service config data")
+	ErrInvalidIDInParams                = errors.New("invalid id in params")
+	ErrFailedToDeployMotherService      = errors.New("failed to deploy mother service")
+	ErrFailedToDeployTestService        = errors.New("failed to deploy test service")
+	ErrFailedToDeProvisionMotherService = errors.New("failed to deprovision mother service")
+	ErrFailedToDeProvisionTestService   = errors.New("failed to deprovision test service")
 
 	// Validation errors.
 	ErrInvalidMotherServiceName                = errors.New("mother service name is required")
 	ErrMotherServiceIsNil                      = errors.New("mother service is nil")
+	ErrTestScenarioServiceIsNil                = errors.New("test scenario service is nil")
+	ErrTestServiceConfigIsNil                  = errors.New("test service config is nil")
 	ErrInvalidExceptionRate                    = errors.New("exception rate must be between 0 and 100")
 	ErrInvalidResponseDelayRate                = errors.New("response delay rate must be between 0 and 100")
 	ErrInvalidDelayConfiguration               = errors.New("invalid delay configuration: must be either no delay, fixed delay, or random delay")
@@ -294,4 +301,5 @@ var (
 	ErrFailedToSetScenarioStatusAsRunning      = errors.New("failed to set scenario status as running")
 	ErrGettingRunningTestServicesByScenario    = errors.New("failed to get running test services by scenario")
 	ErrFailedToDeprovisionTestServices         = errors.New("failed to deprovision test services")
+	ErrInt32OutOfRange                         = errors.New("out of int32 range")
 )

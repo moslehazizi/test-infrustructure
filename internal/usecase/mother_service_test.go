@@ -2,14 +2,13 @@ package usecase
 
 import (
 	"context"
-	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository/mocks"
 
+	provisionPrvider "control-panel-service/internal/provider/mocks"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	connmock "control-panel-service/pkg/database/postgres/mocks"
-	kubermock "control-panel-service/pkg/kubernetes/mocks"
 	"errors"
 	"testing"
 	"time"
@@ -28,11 +27,10 @@ func getMockDB(t *testing.T) database.Database {
 }
 
 func TestNewMotherService(t *testing.T) {
-	cfg := &config.Config{}
 	mockRepo := new(mocks.MockMotherService)
 
-	mockKubernetes := new(kubermock.KuberneteseMock)
-	service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+	mockProvision := new(provisionPrvider.MockProvisioningService)
+	service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 	assert.NotNil(t, service)
 
@@ -44,17 +42,9 @@ func TestNewMotherService(t *testing.T) {
 func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{
-			Kubernetese: config.Kubernetese{
-				MotherServiceAPPServe:          "mother-service-serve",
-				MotherServiceAPPJobs:           "mother-service-jobs",
-				MotherServiceAPPServeWaitReady: 10 * time.Second,
-				MotherServiceAPPJobsWaitReady:  10 * time.Second,
-			},
-		}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -63,30 +53,19 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		}
 
 		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(1), nil)
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs", 10*time.Second).Return(nil).Once()
+		mockProvision.On("ProvisionMotherService", mock.Anything, mock.Anything).Return(nil)
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.NoError(t, err)
 		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
-		mockKubernetes.AssertExpectations(t)
+		mockProvision.AssertExpectations(t)
 	})
 	t.Run("failed DeployMotherService => returns ErrFailedToDeployMotherService", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{
-			Kubernetese: config.Kubernetese{
-				MotherServiceAPPServe:          "mother-service-serve",
-				MotherServiceAPPJobs:           "mother-service-jobs",
-				MotherServiceAPPServeWaitReady: 10 * time.Second,
-				MotherServiceAPPJobsWaitReady:  10 * time.Second,
-			},
-		}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -95,22 +74,21 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		}
 
 		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(1), nil)
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply deployment failed")).Once()
+		mockProvision.On("ProvisionMotherService", mock.Anything, mock.Anything).Return(errors.New("apply deployment failed"))
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToDeployMotherService)
 		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
-		mockKubernetes.AssertExpectations(t)
+		mockProvision.AssertExpectations(t)
 	})
 
 	t.Run("failed case", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -129,10 +107,9 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - duplicate", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -151,10 +128,9 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - validation error service name is missing", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		sampleMS := &entity.MotherService{
 			DatabaseName:      "db1",
@@ -169,10 +145,9 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - validation error response delay rete not be negative", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -187,12 +162,12 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrInvalidResponseDelayRate)
 	})
+
 	t.Run("failed case - validation error exception rate is negative", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -209,10 +184,9 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 
 	t.Run("failed case - validation error fixed delay is set but rate is 0", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 		duration := 100
 
 		sampleMS := &entity.MotherService{
@@ -234,10 +208,9 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 func TestMotherServiceUsecase_GetByID(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		inputID := uint64(1)
 		expectedResult := &entity.MotherService{
@@ -263,10 +236,9 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 
 	t.Run("failed case - not found", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		inputID := uint64(1)
 
@@ -282,10 +254,9 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 
 	t.Run("failed case", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		inputID := uint64(1)
 
@@ -303,10 +274,9 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
@@ -356,10 +326,9 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 
 	t.Run("failed case", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
@@ -379,10 +348,9 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 
 	t.Run("failed case - negative page", func(t *testing.T) {
 		ctx := context.Background()
-		cfg := &config.Config{}
 		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    -1,
@@ -398,183 +366,5 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		assert.Equal(t, count, int64(0))
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherServices)
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
-	})
-}
-
-func deployTestConfig() *config.Config {
-	return &config.Config{
-		Server: config.Server{Port: 8080},
-		Kafka:  config.Kafka{Port: 9092},
-		Postgres: config.Postgres{
-			Port:               5432,
-			SSLMode:            "disable",
-			MaxOpenConnections: 10,
-			MaxIdleConnections: 5,
-		},
-		Kubernetese: config.Kubernetese{
-			MotherServiceAPPServe:          "mother-service-serve",
-			MotherServiceAPPJobs:           "mother-service-jobs",
-			MotherServiceAPPServeWaitReady: 10 * time.Second,
-			MotherServiceAPPJobsWaitReady:  10 * time.Second,
-		},
-	}
-}
-
-func TestDeployMotherService(t *testing.T) {
-	t.Run("mother_service_is_nil", func(t *testing.T) {
-		ctx := context.Background()
-		cfg := &config.Config{}
-		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		var motherService *entity.MotherService
-
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
-
-		err := service.DeployMotherService(ctx, motherService)
-		assert.Error(t, err)
-	})
-
-	t.Run("success case", func(t *testing.T) {
-		ctx := context.Background()
-		cfg := deployTestConfig()
-		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
-
-		motherService := &entity.MotherService{
-			ID:                1,
-			Name:              "mother1",
-			DatabaseName:      "db1",
-			DatabaseTableName: "factorial",
-		}
-
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs", 10*time.Second).Return(nil).Once()
-
-		err := service.DeployMotherService(ctx, motherService)
-
-		assert.NoError(t, err)
-		mockKubernetes.AssertExpectations(t)
-	})
-
-	t.Run("failed ApplyDeployment serve", func(t *testing.T) {
-		ctx := context.Background()
-		cfg := deployTestConfig()
-		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
-
-		motherService := &entity.MotherService{
-			ID:                1,
-			Name:              "mother1",
-			DatabaseName:      "db1",
-			DatabaseTableName: "factorial",
-		}
-
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply deployment failed")).Once()
-
-		err := service.DeployMotherService(ctx, motherService)
-
-		assert.Error(t, err)
-		mockKubernetes.AssertExpectations(t)
-	})
-
-	t.Run("failed ApplyService serve", func(t *testing.T) {
-		ctx := context.Background()
-		cfg := deployTestConfig()
-		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
-
-		motherService := &entity.MotherService{
-			ID:                1,
-			Name:              "mother1",
-			DatabaseName:      "db1",
-			DatabaseTableName: "factorial",
-		}
-
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply service failed")).Once()
-
-		err := service.DeployMotherService(ctx, motherService)
-
-		assert.Error(t, err)
-		mockKubernetes.AssertExpectations(t)
-	})
-
-	t.Run("failed WaitForDeployment serve", func(t *testing.T) {
-		ctx := context.Background()
-		cfg := deployTestConfig()
-		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
-
-		motherService := &entity.MotherService{
-			ID:                1,
-			Name:              "mother1",
-			DatabaseName:      "db1",
-			DatabaseTableName: "factorial",
-		}
-
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(errors.New("timeout waiting for deployment")).Once()
-
-		err := service.DeployMotherService(ctx, motherService)
-
-		assert.Error(t, err)
-		mockKubernetes.AssertExpectations(t)
-	})
-
-	t.Run("failed ApplyDeployment jobs", func(t *testing.T) {
-		ctx := context.Background()
-		cfg := deployTestConfig()
-		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
-
-		motherService := &entity.MotherService{
-			ID:                1,
-			Name:              "mother1",
-			DatabaseName:      "db1",
-			DatabaseTableName: "factorial",
-		}
-
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once() // serve
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply jobs deployment failed")).Once() // jobs
-
-		err := service.DeployMotherService(ctx, motherService)
-
-		assert.Error(t, err)
-		mockKubernetes.AssertExpectations(t)
-	})
-
-	t.Run("failed WaitForDeployment jobs", func(t *testing.T) {
-		ctx := context.Background()
-		cfg := deployTestConfig()
-		mockRepo := new(mocks.MockMotherService)
-		mockKubernetes := new(kubermock.KuberneteseMock)
-		service := NewMotherService(cfg, getMockDB(t), mockRepo, mockKubernetes)
-
-		motherService := &entity.MotherService{
-			ID:                1,
-			Name:              "mother1",
-			DatabaseName:      "db1",
-			DatabaseTableName: "factorial",
-		}
-
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs", 10*time.Second).Return(errors.New("timeout waiting for jobs")).Once()
-
-		err := service.DeployMotherService(ctx, motherService)
-
-		assert.Error(t, err)
-		mockKubernetes.AssertExpectations(t)
 	})
 }

@@ -15,9 +15,6 @@ import (
 	"time"
 
 	pslq "control-panel-service/pkg/database/postgres"
-
-	_ "control-panel-service/docs"
-
 	kuber "control-panel-service/pkg/kubernetes"
 
 	fiberSwagger "github.com/arsmn/fiber-swagger/v2"
@@ -65,6 +62,7 @@ func MetricsMiddleware() fiber.Handler {
 		responseSizeBytes := int64(len(c.Response().Header.String()) + len(c.Response().Body()))
 		responseSize.Record(c.Context(), responseSizeBytes, metric.WithAttributeSet(attrs))
 
+		// nolint
 		return err
 	}
 }
@@ -79,6 +77,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	// Global middlewares
 	app.Use(cors.New())
 
+	// nolint
 	app.Use(MetricsMiddleware())
 
 	// �🔒 Rate Limiter (GLOBAL)
@@ -141,7 +140,11 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		return fmt.Errorf("could not connect to kubernetes: %w", err)
 	}
 
-	motherService := usecase.NewMotherService(cfg, db, postgres.NewMotherServiceRepository(db), kubernetes)
+	motherService := usecase.NewMotherService(
+		db,
+		postgres.NewMotherServiceRepository(db),
+		provider.NewProvisioningService(cfg, kubernetes),
+	)
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
@@ -152,11 +155,23 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewMotherServiceRepository(db),
 		usecase.NewInMemoryScenarioExecutorBox(),
 		postgres.NewTestServiceRepository(db),
-		provider.NewProvisioningService(cfg),
+		provider.NewProvisioningService(cfg, kubernetes),
 	)
+	err = testScenarioUsecase.ResetOrphanedScenarios(ctx)
+	if err != nil {
+		zap.L().Error("failed to reset orphaned scenarios", zap.Error(err))
+
+		return fmt.Errorf("failed to reset orphaned scenarios: %w", err)
+	}
+
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
 	databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db))
 	databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
+
+	// NOTE: do not call ResetOrphanedScenarios here in a way that creates
+	// another executor box. Ensure the box is created once and passed into
+	// `NewTestScenarioUsecase(...)` and call `testScenarioUsecase.ResetOrphanedScenarios`
+	// (once implemented) using this same `testScenarioUsecase` instance.
 
 	apiV1 := app.Group("/api/v1")
 

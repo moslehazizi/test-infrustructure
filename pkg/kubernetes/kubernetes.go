@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -30,7 +29,13 @@ var (
 
 type Kubernetese interface {
 	ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec, configMap, Secret map[string]string) error
+	GetDeploymentReplicas(ctx context.Context, name string) (int32, error)
+	ScaleDeployment(ctx context.Context, name string, replicas int32) error
+	DeleteDeployment(ctx context.Context, name string) error
 	ApplyService(ctx context.Context, spec entity.ServiceSpec, configMap, Secret map[string]string) error
+	DeleteService(ctx context.Context, name string) error
+	DeleteConfigMap(ctx context.Context, name string) error
+	DeleteSecret(ctx context.Context, name string) error
 	WaitForDeployment(ctx context.Context, name string, timeout time.Duration) error
 	Client() *kubernetes.Clientset
 }
@@ -43,7 +48,6 @@ type KubernConfig struct {
 type Kuber struct {
 	cfg       *KubernConfig
 	Clientset *kubernetes.Clientset
-	mtx       sync.Mutex
 }
 
 func New(ctx context.Context, config *KubernConfig) (Kubernetese, error) {
@@ -64,7 +68,6 @@ func New(ctx context.Context, config *KubernConfig) (Kubernetese, error) {
 	return &Kuber{
 		cfg:       config,
 		Clientset: clientset,
-		mtx:       sync.Mutex{},
 	}, nil
 }
 
@@ -77,8 +80,6 @@ func (k *Kuber) applyConfigMap(ctx context.Context, configMap map[string]string,
 		Data: configMap,
 	}
 
-	k.mtx.Lock()
-	defer k.mtx.Unlock()
 	_, err := k.Clientset.CoreV1().ConfigMaps(k.cfg.NameSpace).Get(ctx, cm.Name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		zap.L().Info("creating configmap ...", zap.String("apllication", app))
@@ -105,8 +106,6 @@ func (k *Kuber) applySecret(ctx context.Context, secretMap map[string]string, ap
 		StringData: secretMap,
 	}
 
-	k.mtx.Lock()
-	defer k.mtx.Unlock()
 	_, err := k.Clientset.CoreV1().Secrets(k.cfg.NameSpace).Get(ctx, sec.Name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		zap.L().Info("creating secret ...", zap.String("apllication", app))
@@ -214,6 +213,65 @@ func (k *Kuber) WaitForDeployment(ctx context.Context, name string, timeout time
 	}
 
 	return fmt.Errorf("%w: name=%s timeout=%v", ErrDeploymentNotReady, name, timeout)
+}
+
+// GetDeploymentReplicas returns the current desired replicas of a deployment.
+func (k *Kuber) GetDeploymentReplicas(ctx context.Context, name string) (int32, error) {
+	dep, err := k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return 0, err
+	}
+	if dep.Spec.Replicas == nil {
+		return 0, nil
+	}
+	return *dep.Spec.Replicas, nil
+}
+
+// ScaleDeployment sets the number of replicas for a deployment.
+func (k *Kuber) ScaleDeployment(ctx context.Context, name string, replicas int32) error {
+	dep, err := k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	dep.Spec.Replicas = &replicas
+	_, err = k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Update(ctx, dep, metav1.UpdateOptions{})
+	return err
+}
+
+// DeleteDeployment deletes a deployment (pods are removed by cascade).
+func (k *Kuber) DeleteDeployment(ctx context.Context, name string) error {
+	err := k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Delete(ctx, name, metav1.DeleteOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
+// DeleteService deletes a service.
+func (k *Kuber) DeleteService(ctx context.Context, name string) error {
+	err := k.Clientset.CoreV1().Services(k.cfg.NameSpace).Delete(ctx, name, metav1.DeleteOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
+// DeleteConfigMap deletes a configmap.
+func (k *Kuber) DeleteConfigMap(ctx context.Context, name string) error {
+	err := k.Clientset.CoreV1().ConfigMaps(k.cfg.NameSpace).Delete(ctx, name, metav1.DeleteOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
+// DeleteSecret deletes a secret.
+func (k *Kuber) DeleteSecret(ctx context.Context, name string) error {
+	err := k.Clientset.CoreV1().Secrets(k.cfg.NameSpace).Delete(ctx, name, metav1.DeleteOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
 }
 
 func (k *Kuber) Client() *kubernetes.Clientset {

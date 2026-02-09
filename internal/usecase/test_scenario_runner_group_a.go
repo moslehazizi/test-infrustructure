@@ -59,7 +59,7 @@ func (r *scenarioTypeRunnerGroupA) Run(ctx context.Context, scenario *entity.Tes
 	// no more test service to provision and we are done here.
 	if remaining > 0 {
 		if remaining > math.MaxInt32 || remaining < math.MinInt32 {
-			return fmt.Errorf("cnt out of int32 range: %d", cnt)
+			return fmt.Errorf("scenario test service count error: %w: %d", pkg.ErrInt32OutOfRange, cnt)
 		}
 		err = r.provisioningService.ProvisionTestService(ctx, scenario, int32(remaining))
 		if err != nil {
@@ -86,20 +86,21 @@ func (r *scenarioTypeRunnerGroupA) Run(ctx context.Context, scenario *entity.Tes
 		scenario.ExecutionDuration = &defaultWait
 	}
 
-	// wait until execution time is over.
-	deadLine := scenario.StartedAt.Add(*scenario.ExecutionDuration)
-	for deadLine.After(time.Now()) {
-		time.Sleep(defaultExecutorWaitingTime)
-	}
+timeRecheck:
 
-	items, err := r.testServiceRepo.GetRunningByScenario(ctx, scenario.ID, countUnlimited)
-	if err != nil {
-		return fmt.Errorf("%w: %w", pkg.ErrGettingRunningTestServicesByScenario, err)
+	spentTime := time.Since(*scenario.StartedAt)
+	remainingDuration := *scenario.ExecutionDuration - spentTime
+
+	// still need to let tests to be executed.
+	if remainingDuration > 0 {
+		// wait until execution time is over.
+		time.Sleep(remainingDuration)
+
+		goto timeRecheck
 	}
-	_ = items
 
 	if cnt > math.MaxInt32 || cnt < math.MinInt32 {
-		return fmt.Errorf("cnt out of int32 range: %d", cnt)
+		return fmt.Errorf("deprovisioning test service count error: %w: %d", pkg.ErrInt32OutOfRange, cnt)
 	}
 
 	err = r.provisioningService.DeprovisionTestService(ctx, scenario, int32(cnt))

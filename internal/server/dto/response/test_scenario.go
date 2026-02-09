@@ -14,9 +14,9 @@ type TestScenario struct {
 	TestCategory        *TestCategory         `json:"test_category"`
 	MotherService       *MotherService        `json:"mother_service"`
 	Status              entity.ScenarioStatus `json:"status"`
-	MaxTestServiceCount *int                  `json:"max_test_service_count"`
+	MaxTestServiceCount *int64                `json:"max_test_service_count"`
 	ExecutionDuration   *time.Duration        `json:"execution_duration"`
-	AutoStepChangeRate  *int                  `json:"auto_step_change_rate"`
+	AutoStepChangeRate  *int64                `json:"auto_step_change_rate"`
 	TestServiceConfig   *TestServiceConfig    `json:"test_service_config"`
 }
 

@@ -23,6 +23,9 @@ type TestScenario interface {
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error)
 	Start(ctx context.Context, id uint64) error
+	// ResetOrphanedScenarios recovers scenarios that were in running state
+	// when the service crashed and ensures they're added to the in-memory executor box.
+	ResetOrphanedScenarios(ctx context.Context) error
 }
 
 func NewTestScenarioUsecase(
@@ -58,10 +61,7 @@ type testScenario struct {
 	provisioningService         provider.ProvisioningService
 }
 
-func (service *testScenario) Create(
-	ctx context.Context,
-	testScenario *entity.TestScenario,
-) (e error) {
+func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) (e error) {
 	tracer := otel.Tracer("test-scenario-usecase")
 	_, span := tracer.Start(ctx, "create_test_scenario")
 	defer span.End()
@@ -182,6 +182,7 @@ func (service *testScenario) Create(
 	}
 
 	_ = tx.Commit()
+
 	span.SetAttributes(attribute.String("transaction.status", "committed"))
 	zap.L().Info("test scenario created successfully",
 		zap.String(logger.FieldRequestID, requestID),
@@ -305,6 +306,37 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 				service.provisioningService,
 			),
 		))
+
+	return nil
+}
+
+func (service *testScenario) ResetOrphanedScenarios(ctx context.Context) error {
+	tracer := otel.Tracer("test-scenario-usecase")
+	_, span := tracer.Start(ctx, "reset_orphaned_scenarios")
+	defer span.End()
+
+	runningScenarios, err := service.testScenarioRepository.GetByStatus(ctx, entity.ScenarioStatusRunning)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "get_by_status_error"), attribute.String("error.message", err.Error()))
+		zap.L().Error("failed to get running test scenarios", zap.Error(err))
+
+		return fmt.Errorf("failed to get running test scenarios: %w", err)
+	}
+
+	for _, sc := range runningScenarios {
+		if service.scenarioExecutorBox.HasExecutor(sc.ID) {
+			continue
+		}
+
+		service.scenarioExecutorBox.Add(NewScenarioExecutor(
+			*sc,
+			NewScenarioTypeRunnerGroupA(
+				service.testServiceRepo,
+				service.provisioningService,
+			),
+		))
+		zap.L().Info("recovered running scenario and added to executor box", zap.Uint64("id", sc.ID))
+	}
 
 	return nil
 }
