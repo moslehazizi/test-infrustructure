@@ -44,6 +44,36 @@ func (kuberneteseMock *KuberneteseMock) WaitForDeployment(ctx context.Context, n
 	return nil
 }
 
+func (kuberneteseMock *KuberneteseMock) GetDeploymentReplicas(ctx context.Context, name string) (int32, error) {
+	args := kuberneteseMock.Called(ctx, name)
+	return int32(args.Int(0)), args.Error(1)
+}
+
+func (kuberneteseMock *KuberneteseMock) ScaleDeployment(ctx context.Context, name string, replicas int32) error {
+	args := kuberneteseMock.Called(ctx, name, replicas)
+	return args.Error(0)
+}
+
+func (kuberneteseMock *KuberneteseMock) DeleteDeployment(ctx context.Context, name string) error {
+	args := kuberneteseMock.Called(ctx, name)
+	return args.Error(0)
+}
+
+func (kuberneteseMock *KuberneteseMock) DeleteService(ctx context.Context, name string) error {
+	args := kuberneteseMock.Called(ctx, name)
+	return args.Error(0)
+}
+
+func (kuberneteseMock *KuberneteseMock) DeleteConfigMap(ctx context.Context, name string) error {
+	args := kuberneteseMock.Called(ctx, name)
+	return args.Error(0)
+}
+
+func (kuberneteseMock *KuberneteseMock) DeleteSecret(ctx context.Context, name string) error {
+	args := kuberneteseMock.Called(ctx, name)
+	return args.Error(0)
+}
+
 func (kuberneteseMock *KuberneteseMock) Client() *kubernetes.Clientset {
 	args := kuberneteseMock.Called()
 

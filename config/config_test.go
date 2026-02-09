@@ -165,7 +165,6 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Postgres.MaxIdleConnections, expectedPostgresMaxIdleConnections)
 		assert.Equal(t, cfg.Postgres.ConnMaxLifetime, expectedPostgresConnMaxLifetime)
 	})
-
 	t.Run("success fetch logger config", func(t *testing.T) {
 		expectedLogLevel := "debug"
 		expectedLogFormat := "console"
@@ -190,14 +189,24 @@ func TestLoadConfig(t *testing.T) {
 		expectedKubernetesMotherSvcAPPServeWaitReady := 10 * time.Second
 		expectedKubernetesMotherSvcAPPJobs := "mother-service-jobs"
 		expectedKubernetesMotherSvcAPPJobsWaitReady := 10 * time.Second
-		expectedKubernetesMotherServiceLogLevel := "info"
-		expectedKubernetesMotherServiceLogFormat := "json"
-		expectedKubernetesMotherServiceLogOutput := "stdout"
 		expectedKubernetesMotherServiceKafkaDbTopic := "mother-db"
 		expectedKubernetesMotherServiceKafkaConsumerGroup := "mother-db-consumer-group"
 		expectedKubernetesMotherServiceLiveFeedTopic := "mother-live-feed"
 		expectedKubernetesMotherServiceKafkaHost := "kafka"
 		expectedKubernetesMotherServicePostgresHost := "postgres"
+		expectedKubernetesTestSvcImage := "challenge-test-service:0.1"
+		expectedKubernetesTestSvcAPPServe := "test-service-serve"
+		expectedKubernetesTestSvcAPPServeWaitReady := 10 * time.Second
+		expectedKubernetesTestSvcAPPJobs := "test-service-jobs"
+		expectedKubernetesTestSvcAPPJobsWaitReady := 10 * time.Second
+		expectedKubernetesTestServiceInputLimitCount := 100
+		expectedKubernetesTestServicePostgresDatabase := "test-db"
+		expectedKubernetesTestServicePostgresTable := "test-table"
+		expectedKubernetesTestServicePostgresHost := "localhost"
+		expectedKubernetesTestServiceKafkaHost := "localhost"
+		expectedKubernetesTestServiceKafkaDatabaseTopic := "test-db-1"
+		expectedKubernetesTestServiceKafkaConsumerGroup := "test-consumer-group-1"
+		expectedKubernetesTestServiceKafkaLiveFeedTopic := "test-live-feed"
 
 		os.Setenv("KUBERNETES_NAMESPACE", expectedKubernetesNameSpace)
 		os.Setenv("MOTHER_SERVICE_IMAGE", expectedKubernetesMotherSvcImage)
@@ -205,14 +214,24 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("MOTHER_SERVICE_APP_SERVE_WAIT_READY", expectedKubernetesMotherSvcAPPServeWaitReady.String())
 		os.Setenv("MOTHER_SERVICE_APP_JOBS", expectedKubernetesMotherSvcAPPJobs)
 		os.Setenv("MOTHER_SERVICE_APP_JOBS_WAIT_READY", expectedKubernetesMotherSvcAPPJobsWaitReady.String())
-		os.Setenv("MOTHER_SERVICE_LOG_LEVEL", expectedKubernetesMotherServiceLogLevel)
-		os.Setenv("MOTHER_SERVICE_LOG_FORMAT", expectedKubernetesMotherServiceLogFormat)
-		os.Setenv("MOTHER_SERVICE_LOG_OUTPUT", expectedKubernetesMotherServiceLogOutput)
 		os.Setenv("MOTHER_SERVICE_KAFKA_DATABASE_TOPIC", expectedKubernetesMotherServiceKafkaDbTopic)
 		os.Setenv("MOTHER_SERVICE_KAFKA_CONSUMER_GROUP", expectedKubernetesMotherServiceKafkaConsumerGroup)
 		os.Setenv("MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC", expectedKubernetesMotherServiceLiveFeedTopic)
 		os.Setenv("MOTHER_SERVICE_KAFKA_HOST", expectedKubernetesMotherServiceKafkaHost)
 		os.Setenv("MOTHER_SERVICE_POSTGRES_HOST", expectedKubernetesMotherServicePostgresHost)
+		os.Setenv("TEST_SERVICE_IMAGE", expectedKubernetesTestSvcImage)
+		os.Setenv("TEST_SERVICE_APP_SERVE", expectedKubernetesTestSvcAPPServe)
+		os.Setenv("TEST_SERVICE_APP_SERVE_WAIT_READY", expectedKubernetesTestSvcAPPServeWaitReady.String())
+		os.Setenv("TEST_SERVICE_APP_JOBS", expectedKubernetesTestSvcAPPJobs)
+		os.Setenv("TEST_SERVICE_APP_JOBS_WAIT_READY", expectedKubernetesTestSvcAPPJobsWaitReady.String())
+		os.Setenv("TEST_SERVICE_INPUT_LIMIT_COUNT", strconv.Itoa(expectedKubernetesTestServiceInputLimitCount))
+		os.Setenv("TEST_SERVICE_POSTGRES_DATABASE", expectedKubernetesTestServicePostgresDatabase)
+		os.Setenv("TEST_SERVICE_POSTGRES_TABLE", expectedKubernetesTestServicePostgresTable)
+		os.Setenv("TEST_SERVICE_POSTGRES_HOST", expectedKubernetesTestServicePostgresHost)
+		os.Setenv("TEST_SERVICE_KAFKA_HOST", expectedKubernetesTestServiceKafkaHost)
+		os.Setenv("TEST_SERVICE_KAFKA_DATABASE_TOPIC", expectedKubernetesTestServiceKafkaDatabaseTopic)
+		os.Setenv("TEST_SERVICE_KAFKA_CONSUMER_GROUP", expectedKubernetesTestServiceKafkaConsumerGroup)
+		os.Setenv("TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC", expectedKubernetesTestServiceKafkaLiveFeedTopic)
 
 		cfg, err := LoadConfig()
 		assert.NoError(t, err)
@@ -223,14 +242,23 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServeWaitReady, expectedKubernetesMotherSvcAPPServeWaitReady)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobs, expectedKubernetesMotherSvcAPPJobs)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobsWaitReady, expectedKubernetesMotherSvcAPPJobsWaitReady)
-		assert.Equal(t, cfg.Kubernetese.MotherServiceLogLevel, expectedKubernetesMotherServiceLogLevel)
-		assert.Equal(t, cfg.Kubernetese.MotherServiceLogFormat, expectedKubernetesMotherServiceLogFormat)
-		assert.Equal(t, cfg.Kubernetese.MotherServicelogOutput, expectedKubernetesMotherServiceLogOutput)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDbTopic, expectedKubernetesMotherServiceKafkaDbTopic)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDbGroup, expectedKubernetesMotherServiceKafkaConsumerGroup)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceLiveFeedTopic, expectedKubernetesMotherServiceLiveFeedTopic)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaHost, expectedKubernetesMotherServiceKafkaHost)
 		assert.Equal(t, cfg.Kubernetese.MotherServicePostgresHost, expectedKubernetesMotherServicePostgresHost)
+		assert.Equal(t, cfg.Kubernetese.TestServiceImage, expectedKubernetesTestSvcImage)
+		assert.Equal(t, cfg.Kubernetese.TestServiceAPPServe, expectedKubernetesTestSvcAPPServe)
+		assert.Equal(t, cfg.Kubernetese.TestServiceAPPServeWaitReady, expectedKubernetesTestSvcAPPServeWaitReady)
+		assert.Equal(t, cfg.Kubernetese.TestServiceAPPJobs, expectedKubernetesTestSvcAPPJobs)
+		assert.Equal(t, cfg.Kubernetese.TestServiceAPPJobsWaitReady, expectedKubernetesTestSvcAPPJobsWaitReady)
+		assert.Equal(t, cfg.Kubernetese.TestServicePostgresDatabase, expectedKubernetesTestServicePostgresDatabase)
+		assert.Equal(t, cfg.Kubernetese.TestServicePostgresTable, expectedKubernetesTestServicePostgresTable)
+		assert.Equal(t, cfg.Kubernetese.TestServicePostgresHost, expectedKubernetesTestServicePostgresHost)
+		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaHost, expectedKubernetesTestServiceKafkaHost)
+		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaDatabaseTopic, expectedKubernetesTestServiceKafkaDatabaseTopic)
+		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaCounsumerGroup, expectedKubernetesTestServiceKafkaConsumerGroup)
+		assert.Equal(t, cfg.Kubernetese.TestServiceLiveFeedTopic, expectedKubernetesTestServiceKafkaLiveFeedTopic)
 
 	})
 
@@ -259,14 +287,23 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKubernetesMotherSvcAPPServeWaitReady := 10 * time.Second
 		expectedDefaultKubernetesMotherSvcAPPJobs := "mother-service-jobs"
 		expectedDefaultKubernetesMotherSvcAPPJobsWaitReady := 10 * time.Second
-		expectedDefaultKubernetesMotherServiceLogLevel := "info"
-		expectedDefaultKubernetesMotherServiceLogFormat := "json"
-		expectedDefaultKubernetesMotherServiceLogOutput := "stdout"
 		expectedDefaultKubernetesMotherServiceKafkaDbTopic := "mother-db"
 		expectedDefaultKubernetesMotherServiceKafkaConsumerGroup := "mother-db-consumer-group"
 		expectedDefaultKubernetesMotherServiceLiveFeedTopic := "mother-live-feed"
 		expectedDefaultKubernetesMotherServiceKafkaHost := "kafka"
 		expectedDefaultKubernetesMotherServicePostgresHost := "postgres"
+		expectedDefaultKubernetesTestSvcImage := "challenge-test-service:0.1"
+		expectedDefaultKubernetesTestSvcAPPServe := "test-service-serve"
+		expectedDefaultKubernetesTestSvcAPPServeWaitReady := 10 * time.Second
+		expectedDefaultKubernetesTestSvcAPPJobs := "test-service-jobs"
+		expectedDefaultKubernetesTestSvcAPPJobsWaitReady := 10 * time.Second
+		expectedDefaultKubernetesTestServicePostgresDatabase := "test-db"
+		expectedDefaultKubernetesTestServicePostgresTable := "test-table"
+		expectedDefaultKubernetesTestServicePostgresHost := "localhost"
+		expectedDefaultKubernetesTestServiceKafkaHost := "localhost"
+		expectedDefaultKubernetesTestServiceKafkaDatabaseTopic := "test-db"
+		expectedDefaultKubernetesTestServiceKafkaConsumerGroup := "test-db-consumer-group"
+		expectedDefaultKubernetesTestServiceKafkaLiveFeedTopic := "test-live-feed"
 
 		// Unset Kafka environment variables to test defaults
 		os.Unsetenv("KAFKA_DIALER_TIMEOUT")
@@ -287,14 +324,24 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("MOTHER_SERVICE_APP_SERVE_WAIT_READY")
 		os.Unsetenv("MOTHER_SERVICE_APP_JOBS")
 		os.Unsetenv("MOTHER_SERVICE_APP_JOBS_WAIT_READY")
-		os.Unsetenv("MOTHER_SERVICE_LOG_LEVEL")
-		os.Unsetenv("MOTHER_SERVICE_LOG_FORMAT")
-		os.Unsetenv("MOTHER_SERVICE_LOG_OUTPUT")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_DATABASE_TOPIC")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_CONSUMER_GROUP")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_HOST")
 		os.Unsetenv("MOTHER_SERVICE_POSTGRES_HOST")
+		os.Unsetenv("TEST_SERVICE_IMAGE")
+		os.Unsetenv("TEST_SERVICE_APP_SERVE")
+		os.Unsetenv("TEST_SERVICE_APP_SERVE_WAIT_READY")
+		os.Unsetenv("TEST_SERVICE_APP_JOBS")
+		os.Unsetenv("TEST_SERVICE_APP_JOBS_WAIT_READY")
+		os.Unsetenv("TEST_SERVICE_INPUT_LIMIT_COUNT")
+		os.Unsetenv("TEST_SERVICE_POSTGRES_DATABASE")
+		os.Unsetenv("TEST_SERVICE_POSTGRES_TABLE")
+		os.Unsetenv("TEST_SERVICE_POSTGRES_HOST")
+		os.Unsetenv("TEST_SERVICE_KAFKA_HOST")
+		os.Unsetenv("TEST_SERVICE_KAFKA_DATABASE_TOPIC")
+		os.Unsetenv("TEST_SERVICE_KAFKA_CONSUMER_GROUP")
+		os.Unsetenv("TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC")
 
 		cfg, err := LoadConfig()
 		assert.NoError(t, err)
@@ -324,14 +371,23 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServeWaitReady, expectedDefaultKubernetesMotherSvcAPPServeWaitReady)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobs, expectedDefaultKubernetesMotherSvcAPPJobs)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobsWaitReady, expectedDefaultKubernetesMotherSvcAPPJobsWaitReady)
-		assert.Equal(t, cfg.Kubernetese.MotherServiceLogLevel, expectedDefaultKubernetesMotherServiceLogLevel)
-		assert.Equal(t, cfg.Kubernetese.MotherServiceLogFormat, expectedDefaultKubernetesMotherServiceLogFormat)
-		assert.Equal(t, cfg.Kubernetese.MotherServicelogOutput, expectedDefaultKubernetesMotherServiceLogOutput)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDbTopic, expectedDefaultKubernetesMotherServiceKafkaDbTopic)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDbGroup, expectedDefaultKubernetesMotherServiceKafkaConsumerGroup)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceLiveFeedTopic, expectedDefaultKubernetesMotherServiceLiveFeedTopic)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaHost, expectedDefaultKubernetesMotherServiceKafkaHost)
 		assert.Equal(t, cfg.Kubernetese.MotherServicePostgresHost, expectedDefaultKubernetesMotherServicePostgresHost)
+		assert.Equal(t, cfg.Kubernetese.TestServiceImage, expectedDefaultKubernetesTestSvcImage)
+		assert.Equal(t, cfg.Kubernetese.TestServiceAPPServe, expectedDefaultKubernetesTestSvcAPPServe)
+		assert.Equal(t, cfg.Kubernetese.TestServiceAPPServeWaitReady, expectedDefaultKubernetesTestSvcAPPServeWaitReady)
+		assert.Equal(t, cfg.Kubernetese.TestServiceAPPJobs, expectedDefaultKubernetesTestSvcAPPJobs)
+		assert.Equal(t, cfg.Kubernetese.TestServiceAPPJobsWaitReady, expectedDefaultKubernetesTestSvcAPPJobsWaitReady)
+		assert.Equal(t, cfg.Kubernetese.TestServicePostgresDatabase, expectedDefaultKubernetesTestServicePostgresDatabase)
+		assert.Equal(t, cfg.Kubernetese.TestServicePostgresTable, expectedDefaultKubernetesTestServicePostgresTable)
+		assert.Equal(t, cfg.Kubernetese.TestServicePostgresHost, expectedDefaultKubernetesTestServicePostgresHost)
+		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaHost, expectedDefaultKubernetesTestServiceKafkaHost)
+		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaDatabaseTopic, expectedDefaultKubernetesTestServiceKafkaDatabaseTopic)
+		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaCounsumerGroup, expectedDefaultKubernetesTestServiceKafkaConsumerGroup)
+		assert.Equal(t, cfg.Kubernetese.TestServiceLiveFeedTopic, expectedDefaultKubernetesTestServiceKafkaLiveFeedTopic)
 	})
 
 	t.Run("error - invalid environment variable value", func(t *testing.T) {

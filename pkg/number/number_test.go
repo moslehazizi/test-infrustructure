@@ -140,3 +140,26 @@ func TestCalcRange(t *testing.T) {
 	})
 
 }
+
+func TestNumValue(t *testing.T) {
+	t.Run("input is nil", func(t *testing.T) {
+		var (
+			inputPtr  *int
+			excpected int = 0
+		)
+
+		actual := NumValue(inputPtr)
+		assert.Equal(t, excpected, actual)
+	})
+
+	t.Run("input is not nil", func(t *testing.T) {
+		var (
+			inputVal      = 10
+			inputPtr      = &inputVal
+			excpected int = 10
+		)
+
+		actual := NumValue(inputPtr)
+		assert.Equal(t, excpected, actual)
+	})
+}

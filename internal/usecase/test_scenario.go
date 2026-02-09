@@ -23,6 +23,7 @@ type TestScenario interface {
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error)
 	Start(ctx context.Context, id uint64) error
+	DeployTestScenarioService(ctx context.Context, testService *entity.TestScenario) error
 }
 
 func NewTestScenarioUsecase(
@@ -58,10 +59,7 @@ type testScenario struct {
 	provisioningService         provider.ProvisioningService
 }
 
-func (service *testScenario) Create(
-	ctx context.Context,
-	testScenario *entity.TestScenario,
-) (e error) {
+func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) (e error) {
 	tracer := otel.Tracer("test-scenario-usecase")
 	_, span := tracer.Start(ctx, "create_test_scenario")
 	defer span.End()
@@ -182,6 +180,7 @@ func (service *testScenario) Create(
 	}
 
 	_ = tx.Commit()
+
 	span.SetAttributes(attribute.String("transaction.status", "committed"))
 	zap.L().Info("test scenario created successfully",
 		zap.String(logger.FieldRequestID, requestID),
@@ -306,5 +305,9 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 			),
 		))
 
+	return nil
+}
+
+func (service *testScenario) DeployTestScenarioService(ctx context.Context, motherService *entity.TestScenario) error {
 	return nil
 }

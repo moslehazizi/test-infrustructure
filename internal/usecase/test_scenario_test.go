@@ -1084,7 +1084,6 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		mockTestCatRepo := new(mocks.MockTestCategory)
 		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
 		mockMotherService := new(mocks.MockMotherService)
-
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 		provisioningService := new(prvMock.MockProvisioningService)
