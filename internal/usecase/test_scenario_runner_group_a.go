@@ -99,12 +99,6 @@ timeRecheck:
 		goto timeRecheck
 	}
 
-	items, err := r.testServiceRepo.GetRunningByScenario(ctx, scenario.ID, countUnlimited)
-	if err != nil {
-		return fmt.Errorf("%w: %w", pkg.ErrGettingRunningTestServicesByScenario, err)
-	}
-	_ = items
-
 	if cnt > math.MaxInt32 || cnt < math.MinInt32 {
 		return fmt.Errorf("scenario test service count error: %w: %d", pkg.ErrInt32OutOfRange, cnt)
 	}
