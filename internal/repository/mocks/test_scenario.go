@@ -63,3 +63,14 @@ func (m *MockTestScenario) SetStatus(ctx context.Context, id uint64, status enti
 
 	return args.Error(0)
 }
+
+func (m *MockTestScenario) GetByStatus(ctx context.Context, status entity.ScenarioStatus) ([]*entity.TestScenario, error) {
+	args := m.Called(ctx, status)
+
+	var result []*entity.TestScenario
+	if args.Get(0) != nil {
+		result = args.Get(0).([]*entity.TestScenario)
+	}
+
+	return result, args.Error(1)
+}

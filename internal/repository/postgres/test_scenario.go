@@ -156,3 +156,33 @@ func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entit
 
 	return nil
 }
+
+func (repo *testScenario) GetByStatus(ctx context.Context, status entity.ScenarioStatus) ([]*entity.TestScenario, error) {
+	tracer := otel.Tracer("test-scenario-repository")
+	_, span := tracer.Start(ctx, "get_by_status_test_scenarios")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
+	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("status", string(status)))
+
+	var testScenarios []*entity.TestScenario
+
+	query := postgres.QueryBuilder(ctx, repo.db).
+		Where("status = ?", status).
+		Preload("TestCategory").
+		Preload("MotherService").
+		Preload("TestServiceConfig").
+		Order("id DESC")
+
+	err := query.Find(&testScenarios).Error
+
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
+		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenariosByStatus, err)
+	}
+
+	return testScenarios, nil
+}

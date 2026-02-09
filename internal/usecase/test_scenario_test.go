@@ -5,7 +5,10 @@ import (
 	"control-panel-service/internal/domain/entity"
 	prvMock "control-panel-service/internal/provider/mocks"
 	"control-panel-service/internal/repository/mocks"
+	repoMocks "control-panel-service/internal/repository/mocks"
+	"control-panel-service/internal/usecase/interfaces"
 	svcMock "control-panel-service/internal/usecase/mocks"
+	svcMocks "control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
 	"errors"
 	"fmt"
@@ -1294,4 +1297,89 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
+}
+
+func TestTestScenarioUsecase_RestOrphanedScenarios(t *testing.T) {
+	t.Run("failed case - repo error", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockExecutor := new(svcMocks.MockScenarioExecutorBox)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+		)
+
+		mockRepo.On("GetByStatus", mock.Anything, entity.ScenarioStatusRunning).Return(nil, errors.New("db failure"))
+
+		err := service.ResetOrphanedScenarios(context.Background())
+
+		assert.Error(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("skip existing executor", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockExecutor := new(svcMocks.MockScenarioExecutorBox)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+		)
+
+		sc := &entity.TestScenario{ID: 2, Status: entity.ScenarioStatusRunning}
+
+		mockRepo.On("GetByStatus", mock.Anything, entity.ScenarioStatusRunning).Return([]*entity.TestScenario{sc}, nil)
+		mockExecutor.On("HasExecutor", sc.ID).Return(true)
+
+		err := service.ResetOrphanedScenarios(context.Background())
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockExecutor.AssertExpectations(t)
+	})
+
+	t.Run("success case - add missing executors", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockExecutor := new(svcMocks.MockScenarioExecutorBox)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+		)
+
+		sc := &entity.TestScenario{ID: 1, Status: entity.ScenarioStatusRunning}
+
+		mockRepo.On("GetByStatus", mock.Anything, entity.ScenarioStatusRunning).Return([]*entity.TestScenario{sc}, nil)
+		mockExecutor.On("HasExecutor", sc.ID).Return(false)
+		mockExecutor.On("Add", mock.MatchedBy(func(ex interfaces.ScenarioExecutor) bool {
+			return ex.GetID() == sc.ID
+		})).Return()
+
+		err := service.ResetOrphanedScenarios(context.Background())
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockExecutor.AssertExpectations(t)
+	})
 }

@@ -74,7 +74,8 @@ func toHTTPError(err error) *HTTPError {
 		errors.Is(err, ErrFailedToGetTestCategoriesFromRepository),
 		errors.Is(err, ErrFailedToCreateMotherService),
 		errors.Is(err, ErrFailedToSendProvisioningEvent),
-		errors.Is(err, ErrFailedToSendEventData):
+		errors.Is(err, ErrFailedToSendEventData),
+		errors.Is(err, ErrFailedToGetTestScenariosByStatus):
 		status = http.StatusInternalServerError
 		msg = InternalServerErrorMessage
 	case errors.Is(err, ErrMotherServiceNotFound):
@@ -232,6 +233,7 @@ var (
 	ErrFailedToCreateMotherService      = errors.New("failed to create mother service item")
 	ErrMotherServiceNotFound            = errors.New("mother service not found")
 	ErrFailedToGetMotherService         = errors.New("failed to get mother service instance")
+	ErrFailedToGetTestScenariosByStatus = errors.New("failed to get test scenarios by status")
 	ErrFailedToGetMotherServices        = errors.New("failed to get mother service instances")
 	ErrMotherServiceAlreadyExist        = errors.New("mother service already exist")
 	ErrNegativePageOrPerPageNotAllowed  = errors.New("negative value for page or per page are not allowed")

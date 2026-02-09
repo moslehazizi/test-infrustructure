@@ -10,4 +10,5 @@ type TestScenarioRepository interface {
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagRequest entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error)
 	SetStatus(ctx context.Context, id uint64, status entity.ScenarioStatus) error
+	GetByStatus(ctx context.Context, status entity.ScenarioStatus) ([]*entity.TestScenario, error)
 }

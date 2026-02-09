@@ -23,7 +23,9 @@ type TestScenario interface {
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error)
 	Start(ctx context.Context, id uint64) error
-	DeployTestScenarioService(ctx context.Context, testService *entity.TestScenario) error
+	// ResetOrphanedScenarios recovers scenarios that were in running state
+	// when the service crashed and ensures they're added to the in-memory executor box.
+	ResetOrphanedScenarios(ctx context.Context) error
 }
 
 func NewTestScenarioUsecase(
@@ -308,6 +310,33 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (service *testScenario) DeployTestScenarioService(ctx context.Context, motherService *entity.TestScenario) error {
+func (service *testScenario) ResetOrphanedScenarios(ctx context.Context) error {
+	tracer := otel.Tracer("test-scenario-usecase")
+	_, span := tracer.Start(ctx, "reset_orphaned_scenarios")
+	defer span.End()
+
+	runningScenarios, err := service.testScenarioRepository.GetByStatus(ctx, entity.ScenarioStatusRunning)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "get_by_status_error"), attribute.String("error.message", err.Error()))
+		zap.L().Error("failed to get running test scenarios", zap.Error(err))
+
+		return fmt.Errorf("failed to get running test scenarios: %w", err)
+	}
+
+	for _, sc := range runningScenarios {
+		if service.scenarioExecutorBox.HasExecutor(sc.ID) {
+			continue
+		}
+
+		service.scenarioExecutorBox.Add(NewScenarioExecutor(
+			*sc,
+			NewScenarioTypeRunnerGroupA(
+				service.testServiceRepo,
+				service.provisioningService,
+			),
+		))
+		zap.L().Info("recovered running scenario and added to executor box", zap.Uint64("id", sc.ID))
+	}
+
 	return nil
 }

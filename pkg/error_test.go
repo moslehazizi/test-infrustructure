@@ -20,6 +20,10 @@ func Test_toHTTPError(t *testing.T) {
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
 		{
+			err:    ErrFailedToGetTestScenariosByStatus,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
+		{
 			err:    ErrInternalServerError,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},

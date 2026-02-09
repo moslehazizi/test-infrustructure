@@ -47,6 +47,11 @@ func (m *MockTestScenario) Start(ctx context.Context, id uint64) error {
 
 func (m *MockTestScenario) DeployTestScenarioService(ctx context.Context, motherService *entity.TestScenario) error {
 	args := m.Called(ctx, motherService)
+	return args.Error(0)
+}
+
+func (m *MockTestScenario) ResetOrphanedScenarios(ctx context.Context) error {
+	args := m.Called(ctx)
 
 	return args.Error(0)
 }
