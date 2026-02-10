@@ -99,6 +99,15 @@ stages:
         kubernetesCluster: $(AKS_CLUSTER_NAME)
         command: login
 
+    - task: DownloadSecureFile@1
+      name: kubeconfig
+      inputs:
+        secureFile: kubeconfig
+    - script: |
+        kubectl create secret generic kubeconfig-secret \
+          --from-file=kubeconfig=$(kubeconfig.secureFilePath) \
+          --dry-run=client -n $(k8sNamespace) -o yaml | kubectl apply -f -
+
     - bash: |
         set -euo pipefail
 

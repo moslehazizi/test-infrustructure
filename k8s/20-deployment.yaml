@@ -16,6 +16,17 @@ spec:
       - name: ${IMAGE_NAME}
         image: ${CONTAINER_REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_TAG}
         imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: kubeconfig-volume
+          mountPath: /home/appuser/.kube
+          readOnly: true
+      volumes:
+      - name: kubeconfig-volume
+        secret:
+          secretName: kubeconfig-secret
+          items:
+            - key: kubeconfig
+              path: config
         ports:
         - containerPort: 8080
         envFrom:
