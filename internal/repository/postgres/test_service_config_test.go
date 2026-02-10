@@ -36,17 +36,22 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 		repo := NewTestServiceConfigRepository(db)
 		now := time.Now()
 
+		databaseName := "test_db"
+		databaseTableName := "test_table"
+
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID: uint64(1),
-			CreatedAt:      now,
-			UpdatedAt:      now,
-			MaxRequests:    12,
-			MaxDuration:    10,
+			TestScenarioID:    uint64(1),
+			CreatedAt:         now,
+			UpdatedAt:         now,
+			MaxRequests:       12,
+			MaxDuration:       10,
+			DatabaseName:      databaseName,
+			DatabaseTableName: databaseTableName,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING "id"`)).
+			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING "id"`)).
 			WithArgs(
 				testServiceConfig.TestScenarioID,
 				testServiceConfig.MaxRequests,
@@ -55,6 +60,8 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 				0, 0, 0, 0, 0, 0, 0,
 				testServiceConfig.CreatedAt,
 				testServiceConfig.UpdatedAt,
+				testServiceConfig.DatabaseName,
+				testServiceConfig.DatabaseTableName,
 			).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 		mock.ExpectCommit()
@@ -73,17 +80,22 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 		repo := NewTestServiceConfigRepository(db)
 		now := time.Now()
 
+		databaseName := "test_db"
+		databaseTableName := "test_table"
+
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID: uint64(1),
-			CreatedAt:      now,
-			UpdatedAt:      now,
-			MaxRequests:    12,
-			MaxDuration:    10,
+			TestScenarioID:    uint64(1),
+			CreatedAt:         now,
+			UpdatedAt:         now,
+			MaxRequests:       12,
+			MaxDuration:       10,
+			DatabaseName:      databaseName,
+			DatabaseTableName: databaseTableName,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING "id"`)).
+			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING "id"`)).
 			WithArgs(
 				testServiceConfig.TestScenarioID,
 				testServiceConfig.MaxRequests,
@@ -92,6 +104,8 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 				0, 0, 0, 0, 0, 0, 0,
 				testServiceConfig.CreatedAt,
 				testServiceConfig.UpdatedAt,
+				testServiceConfig.DatabaseName,
+				testServiceConfig.DatabaseTableName,
 			).
 			WillReturnError(errors.New("db connection failed"))
 

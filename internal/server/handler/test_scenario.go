@@ -98,6 +98,8 @@ func (handler *TestScenario) Create() fiber.Handler {
 					RealValueRate:         req.Config.RealValueRate,
 					LongStringValueRate:   req.Config.LongStringValueRate,
 					NullValueRate:         req.Config.NullValueRate,
+					DatabaseName:          req.Config.DatabaseName,
+					DatabaseTableName:     req.Config.DatabaseTableName,
 				}
 			}(),
 		}

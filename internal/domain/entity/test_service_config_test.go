@@ -94,6 +94,8 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	t.Run("success case: delay is 0 and random delays are null", func(t *testing.T) {
 		d := 0
 		n := 10
+		databaseName := "db1"
+		databaseTableName := "table1"
 		testSvcCfg := TestServiceConfig{
 			MaxRequests:           1,
 			MaxDuration:           0,
@@ -101,6 +103,8 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 			RandomRequestDelayMax: nil,
 			RandomRequestDelayMin: nil,
 			FixedTestNumber:       &n,
+			DatabaseName:          databaseName,
+			DatabaseTableName:     databaseTableName,
 		}
 
 		err := testSvcCfg.Validate()
@@ -271,6 +275,8 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	})
 	t.Run("success case", func(t *testing.T) {
 		sampleInt := 2
+		databaseName := "db1"
+		databaseTableName := "table1"
 		testSvcCfg := TestServiceConfig{
 			MaxRequests:          1,
 			MaxDuration:          0,
@@ -283,6 +289,8 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 			StringValueRate:      0,
 			LongStringValueRate:  0,
 			NullValueRate:        0,
+			DatabaseName:         databaseName,
+			DatabaseTableName:    databaseTableName,
 		}
 
 		err := testSvcCfg.Validate()
@@ -331,5 +339,51 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrInvalid100SumOfBadValues)
+	})
+
+	t.Run("failed case - database name is empty", func(t *testing.T) {
+		sampleInt := 2
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:          1,
+			MaxDuration:          0,
+			RequestDelayDuration: &sampleInt,
+			FixedTestNumber:      &sampleInt,
+			BadValueRate:         0,
+			NegativeValueRate:    0,
+			RealValueRate:        0,
+			ZeroValueRate:        0,
+			StringValueRate:      0,
+			LongStringValueRate:  0,
+			NullValueRate:        0,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidDatabaseName)
+	})
+
+	t.Run("failed case - table name is empty", func(t *testing.T) {
+		sampleInt := 2
+		databaseName := "db1"
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:          1,
+			MaxDuration:          0,
+			RequestDelayDuration: &sampleInt,
+			FixedTestNumber:      &sampleInt,
+			BadValueRate:         0,
+			NegativeValueRate:    0,
+			RealValueRate:        0,
+			ZeroValueRate:        0,
+			StringValueRate:      0,
+			LongStringValueRate:  0,
+			NullValueRate:        0,
+			DatabaseName:         databaseName,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrInvalidDatabaseTableName)
 	})
 }

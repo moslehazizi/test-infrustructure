@@ -252,8 +252,6 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.TestServiceAPPServeWaitReady, expectedKubernetesTestSvcAPPServeWaitReady)
 		assert.Equal(t, cfg.Kubernetese.TestServiceAPPJobs, expectedKubernetesTestSvcAPPJobs)
 		assert.Equal(t, cfg.Kubernetese.TestServiceAPPJobsWaitReady, expectedKubernetesTestSvcAPPJobsWaitReady)
-		assert.Equal(t, cfg.Kubernetese.TestServicePostgresDatabase, expectedKubernetesTestServicePostgresDatabase)
-		assert.Equal(t, cfg.Kubernetese.TestServicePostgresTable, expectedKubernetesTestServicePostgresTable)
 		assert.Equal(t, cfg.Kubernetese.TestServicePostgresHost, expectedKubernetesTestServicePostgresHost)
 		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaHost, expectedKubernetesTestServiceKafkaHost)
 		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaDatabaseTopic, expectedKubernetesTestServiceKafkaDatabaseTopic)
@@ -297,8 +295,6 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKubernetesTestSvcAPPServeWaitReady := 10 * time.Second
 		expectedDefaultKubernetesTestSvcAPPJobs := "test-service-jobs"
 		expectedDefaultKubernetesTestSvcAPPJobsWaitReady := 10 * time.Second
-		expectedDefaultKubernetesTestServicePostgresDatabase := "test-db"
-		expectedDefaultKubernetesTestServicePostgresTable := "test-table"
 		expectedDefaultKubernetesTestServicePostgresHost := "localhost"
 		expectedDefaultKubernetesTestServiceKafkaHost := "localhost"
 		expectedDefaultKubernetesTestServiceKafkaDatabaseTopic := "test-db"
@@ -381,8 +377,6 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.TestServiceAPPServeWaitReady, expectedDefaultKubernetesTestSvcAPPServeWaitReady)
 		assert.Equal(t, cfg.Kubernetese.TestServiceAPPJobs, expectedDefaultKubernetesTestSvcAPPJobs)
 		assert.Equal(t, cfg.Kubernetese.TestServiceAPPJobsWaitReady, expectedDefaultKubernetesTestSvcAPPJobsWaitReady)
-		assert.Equal(t, cfg.Kubernetese.TestServicePostgresDatabase, expectedDefaultKubernetesTestServicePostgresDatabase)
-		assert.Equal(t, cfg.Kubernetese.TestServicePostgresTable, expectedDefaultKubernetesTestServicePostgresTable)
 		assert.Equal(t, cfg.Kubernetese.TestServicePostgresHost, expectedDefaultKubernetesTestServicePostgresHost)
 		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaHost, expectedDefaultKubernetesTestServiceKafkaHost)
 		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaDatabaseTopic, expectedDefaultKubernetesTestServiceKafkaDatabaseTopic)

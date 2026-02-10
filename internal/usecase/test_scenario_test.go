@@ -73,6 +73,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		sampleInt64 := int64(1)
 		expectedID := uint64(1)
 		dur := time.Millisecond * 1
+		databaseName := "db1"
+		databaseTableName := "factorial"
 
 		testServiceConfig := &entity.TestServiceConfig{
 			TestScenarioID:       expectedID,
@@ -80,6 +82,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MaxDuration:          1,
 			RequestDelayDuration: &sampleInt,
 			FixedTestNumber:      &sampleInt,
+			DatabaseName:         databaseName,
+			DatabaseTableName:    databaseTableName,
 		}
 
 		testSci := &entity.TestScenario{
@@ -206,6 +210,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		sampleInt64 := int64(1)
 		expectedID := uint64(1)
 		dur := time.Millisecond * 1
+		databaseName := "db1"
+		databaseTableName := "factorial"
 
 		testServiceConfig := &entity.TestServiceConfig{
 			TestScenarioID:       expectedID,
@@ -213,6 +219,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MaxDuration:          1,
 			RequestDelayDuration: &sampleInt,
 			FixedTestNumber:      &sampleInt,
+			DatabaseName:         databaseName,
+			DatabaseTableName:    databaseTableName,
 		}
 		testSci := &entity.TestScenario{
 			Name:                "load1",
@@ -263,6 +271,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockExecutor := new(svcMock.MockScenarioExecutorBox)
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 		provisioningService := new(prvMock.MockProvisioningService)
+		databaseName := "db1"
+		databaseTableName := "factorial"
 
 		service := NewTestScenarioUsecase(
 			getMockDB(t),
@@ -282,6 +292,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MaxDuration:          1,
 			RequestDelayDuration: &sampleInt,
 			FixedTestNumber:      &sampleInt,
+			DatabaseName:         databaseName,
+			DatabaseTableName:    databaseTableName,
 		}
 		testSci := &entity.TestScenario{
 			Name:                "load1",
@@ -708,15 +720,19 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		)
 
 		sampleInt64 := int64(1)
+		databaseName := "db1"
+		databaseTableName := "factorial"
 		testSci := &entity.TestScenario{
 			Name:               "load1",
 			TestCategoryID:     uint64(2),
 			MotherServiceID:    uint64(1),
 			AutoStepChangeRate: &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
-				MaxRequests:  1,
-				MaxDuration:  0,
-				BadValueRate: -1,
+				MaxRequests:       1,
+				MaxDuration:       0,
+				BadValueRate:      -1,
+				DatabaseName:      databaseName,
+				DatabaseTableName: databaseTableName,
 			},
 		}
 		testCat := &entity.TestCategory{
@@ -771,6 +787,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		sampleInt64 := int64(1)
 		expectedID := uint64(1)
 		dur := time.Millisecond * 1
+		databaseName := "db1"
+		databaseTableName := "factorial"
 
 		testServiceConfig := &entity.TestServiceConfig{
 			TestScenarioID:       expectedID,
@@ -778,6 +796,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MaxDuration:          1,
 			RequestDelayDuration: &sampleInt,
 			FixedTestNumber:      &sampleInt,
+			DatabaseName:         databaseName,
+			DatabaseTableName:    databaseTableName,
 		}
 		testSci := &entity.TestScenario{
 			Name:                "load1",

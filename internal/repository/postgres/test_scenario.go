@@ -210,10 +210,7 @@ func (repo *testScenario) GetDeploymentNumberByScenarioID(
 		Where("id = ?", id).
 		Scan(&deploymentNumber)
 
-	fmt.Println(query)
-
 	err := query.Error
-	
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
