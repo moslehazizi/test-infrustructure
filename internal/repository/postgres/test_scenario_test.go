@@ -54,7 +54,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id"`)).
 			WithArgs(
 				testScenario.CreatedAt,
 				testScenario.UpdatedAt,
@@ -66,6 +66,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 				nil,
 				nil,
 				nil,
+				int32(0),
 				testScenario.StartedAt).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 		mock.ExpectCommit()
@@ -101,7 +102,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id"`)).
 			WithArgs(testScenario.CreatedAt,
 				testScenario.UpdatedAt,
 				testScenario.DeletedAt,
@@ -109,7 +110,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 				testScenario.TestCategoryID,
 				testScenario.MotherServiceID,
 				testScenario.Status,
-				nil, nil, nil, testScenario.StartedAt).
+				nil, nil, nil, int32(0), testScenario.StartedAt).
 			WillReturnError(errors.New("insert failed"))
 		mock.ExpectRollback()
 
@@ -1769,4 +1770,136 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 		assert.Nil(t, result)
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenariosByStatus)
 	})
+}
+
+func TestGetDeploymentNumberByScenarioID(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT "deployment_number" FROM "test_scenarios" WHERE id = $1 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(uint64(1)).
+			WillReturnRows(
+				sqlmock.NewRows([]string{"deployment_number"}).
+					AddRow(5),
+			)
+
+		result, err := repo.GetDeploymentNumberByScenarioID(context.Background(), 1)
+
+		require.NoError(t, mock.ExpectationsWereMet())
+		assert.NoError(t, err)
+		assert.Equal(t, int32(5), result)
+	})
+
+	t.Run("failed case - record not found", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT "deployment_number" FROM "test_scenarios" WHERE id = $1 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(uint64(999)).
+			WillReturnError(gorm.ErrRecordNotFound)
+
+		result, err := repo.GetDeploymentNumberByScenarioID(context.Background(), 999)
+
+		require.NoError(t, mock.ExpectationsWereMet())
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
+		assert.Equal(t, int32(0), result)
+	})
+
+	t.Run("failed case - database error", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`SELECT "deployment_number" FROM "test_scenarios" WHERE id = $1 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(uint64(1)).
+			WillReturnError(errors.New("db is down"))
+
+		result, err := repo.GetDeploymentNumberByScenarioID(context.Background(), 1)
+
+		require.NoError(t, mock.ExpectationsWereMet())
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenario)
+		assert.Equal(t, int32(0), result)
+	})
+}
+
+func TestUpdateDeploymentNumber(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET "deployment_number"=$1,"updated_at"=$2 WHERE id = $3 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(int32(42), sqlmock.AnyArg(), uint64(1)). // ✅ AnyArg for timestamp
+			WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
+
+		err = repo.UpdateDeploymentNumber(context.Background(), 1, 42)
+		require.NoError(t, err)
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("record not found", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET "deployment_number"=$1,"updated_at"=$2 WHERE id = $3 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(int32(42), sqlmock.AnyArg(), uint64(999)).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectCommit()
+
+		err = repo.UpdateDeploymentNumber(context.Background(), 999, 42)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("database error", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET "deployment_number"=$1,"updated_at"=$2 WHERE id = $3 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(int32(42), sqlmock.AnyArg(), uint64(1)).
+			WillReturnError(errors.New("db is down"))
+		mock.ExpectRollback()
+
+		err = repo.UpdateDeploymentNumber(context.Background(), 1, 42)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToUpdateTestScenario)
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+
 }

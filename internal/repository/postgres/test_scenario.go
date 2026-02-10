@@ -186,3 +186,85 @@ func (repo *testScenario) GetByStatus(ctx context.Context, status entity.Scenari
 
 	return testScenarios, nil
 }
+
+func (repo *testScenario) GetDeploymentNumberByScenarioID(
+	ctx context.Context,
+	id uint64,
+) (int32, error) {
+	tracer := otel.Tracer("test-scenario-repository")
+	_, span := tracer.Start(ctx, "get_deployment_number_by_scenario_id")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+	span.SetAttributes(
+		attribute.String("database.operation", "select"),
+		attribute.String("test_scenario.id", fmt.Sprintf("%d", id)),
+	)
+
+	var deploymentNumber int32
+
+	query := postgres.QueryBuilder(ctx, repo.db).
+		Model(&entity.TestScenario{}).
+		Select("deployment_number").
+		Where("id = ?", id).
+		Scan(&deploymentNumber)
+
+	fmt.Println(query)
+
+	err := query.Error
+	
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			span.SetAttributes(attribute.String("error.type", "not_found"))
+			return 0, pkg.ErrTestScenarioNotFound
+		}
+
+		span.SetAttributes(
+			attribute.String("error.type", "database_error"),
+			attribute.String("error.message", err.Error()),
+		)
+		return 0, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
+	}
+
+	return deploymentNumber, nil
+}
+
+func (repo *testScenario) UpdateDeploymentNumber(
+	ctx context.Context,
+	id uint64,
+	newDeploymentNumber int32,
+) error {
+	tracer := otel.Tracer("test-scenario-repository")
+	_, span := tracer.Start(ctx, "update_deployment_number")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+	span.SetAttributes(
+		attribute.String("database.operation", "update"),
+		attribute.String("test_scenario.id", fmt.Sprintf("%d", id)),
+	)
+
+	result := postgres.QueryBuilder(ctx, repo.db).
+		Model(&entity.TestScenario{}).
+		Where("id = ?", id).
+		Where(`"test_scenarios"."deleted_at" IS NULL`).
+		Update("deployment_number", newDeploymentNumber)
+
+	if result.Error != nil {
+		span.SetAttributes(
+			attribute.String("error.type", "database_error"),
+			attribute.String("error.message", result.Error.Error()),
+		)
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		span.SetAttributes(attribute.String("error.type", "not_found"))
+		return pkg.ErrTestScenarioNotFound
+	}
+
+	return nil
+}

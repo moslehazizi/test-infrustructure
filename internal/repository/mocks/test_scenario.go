@@ -74,3 +74,19 @@ func (m *MockTestScenario) GetByStatus(ctx context.Context, status entity.Scenar
 
 	return result, args.Error(1)
 }
+
+func (m *MockTestScenario) GetDeploymentNumberByScenarioID(ctx context.Context, id uint64) (int32, error) {
+	args := m.Called(ctx, id)
+
+	if v, ok := args.Get(0).(int32); ok {
+		return v, args.Error(1)
+	}
+
+	return 0, args.Error(1)
+}
+
+func (m *MockTestScenario) UpdateDeploymentNumber(ctx context.Context, id uint64, newDeploymentNumber int32) error {
+	args := m.Called(ctx, id, newDeploymentNumber)
+
+	return args.Error(0)
+}
