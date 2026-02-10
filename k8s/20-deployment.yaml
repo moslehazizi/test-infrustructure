@@ -16,6 +16,13 @@ spec:
       - name: ${IMAGE_NAME}
         image: ${CONTAINER_REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_TAG}
         imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: ${IMAGE_NAME}-config
+        - secretRef:
+            name: ${IMAGE_NAME}-secrets
         volumeMounts:
         - name: kubeconfig-volume
           mountPath: /home/appuser/.kube
@@ -27,10 +34,3 @@ spec:
           items:
             - key: kubeconfig
               path: config
-        ports:
-        - containerPort: 8080
-        envFrom:
-        - configMapRef:
-            name: ${IMAGE_NAME}-config
-        - secretRef:
-            name: ${IMAGE_NAME}-secrets
