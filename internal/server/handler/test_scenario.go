@@ -70,7 +70,7 @@ func (handler *TestScenario) Create() fiber.Handler {
 					return nil
 				}
 
-				dur := time.Duration(*req.ExecutionDuration)
+				dur := time.Duration(*req.ExecutionDuration) * time.Millisecond
 
 				return &dur
 			}(),
