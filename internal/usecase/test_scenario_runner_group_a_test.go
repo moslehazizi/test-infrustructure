@@ -19,12 +19,14 @@ func TestNewScenarioTypeRunnerGroupA(t *testing.T) {
 	r := NewScenarioTypeRunnerGroupA(
 		new(repomock.MockTestServiceRepository),
 		new(prvMock.MockProvisioningService),
+		new(repomock.MockTestScenario),
 	)
 
 	runner, ok := r.(*scenarioTypeRunnerGroupA)
 	assert.True(t, ok)
 	assert.NotNil(t, runner.provisioningService)
 	assert.NotNil(t, runner.testServiceRepo)
+	assert.NotNil(t, runner.testScenarioRepo)
 }
 
 func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
@@ -35,8 +37,9 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 
 		scRepo := new(repomock.MockTestServiceRepository)
 		provisioningService := new(prvMock.MockProvisioningService)
+		testScenarioRepo := new(repomock.MockTestScenario)
 
-		ex := NewScenarioTypeRunnerGroupA(scRepo, provisioningService)
+		ex := NewScenarioTypeRunnerGroupA(scRepo, provisioningService, testScenarioRepo)
 
 		err := ex.Run(context.Background(), &scenario)
 
@@ -55,7 +58,9 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 
 		provisioningService := new(prvMock.MockProvisioningService)
 
-		ex := NewScenarioTypeRunnerGroupA(scRepo, provisioningService)
+		testScenarioRepo := new(repomock.MockTestScenario)
+
+		ex := NewScenarioTypeRunnerGroupA(scRepo, provisioningService, testScenarioRepo)
 
 		err := ex.Run(context.Background(), &scenario)
 		assert.Error(t, err)
@@ -74,7 +79,9 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		provisioningService := new(prvMock.MockProvisioningService)
 		provisioningService.On("ProvisionTestService", mock.Anything, &scenario, int32(10)).Return(errors.New("something went wrong"))
 
-		ex := NewScenarioTypeRunnerGroupA(scRepo, provisioningService)
+		testScenarioRepo := new(repomock.MockTestScenario)
+
+		ex := NewScenarioTypeRunnerGroupA(scRepo, provisioningService, testScenarioRepo)
 
 		err := ex.Run(context.Background(), &scenario)
 
@@ -98,8 +105,9 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 
 		provisioningService := new(prvMock.MockProvisioningService)
 		provisioningService.On("DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt)).Return(errors.New("something went wrong"))
+		testScenarioRepo := new(repomock.MockTestScenario)
 
-		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
+		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService, testScenarioRepo)
 
 		err := ex.Run(context.Background(), &scenario)
 		assert.Error(t, err)
@@ -123,7 +131,9 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 
 		provisioningService := new(prvMock.MockProvisioningService)
 
-		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
+		testScenarioRepo := new(repomock.MockTestScenario)
+
+		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService, testScenarioRepo)
 
 		err := ex.Run(context.Background(), &scenario)
 		assert.Error(t, err)
@@ -145,8 +155,9 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(serviceCnt, nil)
 
 		provisioningService := new(prvMock.MockProvisioningService)
+		testScenarioRepo := new(repomock.MockTestScenario)
 
-		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
+		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService, testScenarioRepo)
 
 		err := ex.Run(context.Background(), &scenario)
 		assert.Error(t, err)
@@ -159,6 +170,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		dur := time.Millisecond * 2000
 		start := time.Now()
 		scenario := entity.TestScenario{
+			ID:                  1,
 			MaxTestServiceCount: &serviceCnt,
 			ExecutionDuration:   &dur,
 			StartedAt:           &start,
@@ -170,18 +182,27 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		provisioningService := new(prvMock.MockProvisioningService)
 		provisioningService.On("DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt)).Return(nil)
 
-		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
+		testScenarioRepo := new(repomock.MockTestScenario)
+		testScenarioRepo.On("GetDeploymentNumberByScenarioID", mock.Anything, scenario.ID).Return(int32(5), nil)
+		testScenarioRepo.On("UpdateDeploymentNumber", mock.Anything, scenario.ID, int32(2)).Return(nil) // 5 - 3 = 2
+
+		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService, testScenarioRepo)
 
 		err := ex.Run(context.Background(), &scenario)
 		assert.NoError(t, err)
+
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
 		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt))
+		testScenarioRepo.AssertCalled(t, "GetDeploymentNumberByScenarioID", mock.Anything, scenario.ID)
+		testScenarioRepo.AssertCalled(t, "UpdateDeploymentNumber", mock.Anything, scenario.ID, int32(2))
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})
+
 	t.Run("success case: start time and exec duration is null", func(t *testing.T) {
 		serviceCnt := int64(3)
 		start := time.Now()
 		scenario := entity.TestScenario{
+			ID:                  1,
 			MaxTestServiceCount: &serviceCnt,
 			ExecutionDuration:   nil,
 			StartedAt:           nil,
@@ -193,12 +214,72 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 		provisioningService := new(prvMock.MockProvisioningService)
 		provisioningService.On("DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt)).Return(nil)
 
-		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService)
+		testScenarioRepo := new(repomock.MockTestScenario)
+		testScenarioRepo.On("GetDeploymentNumberByScenarioID", mock.Anything, scenario.ID).Return(int32(5), nil)
+		testScenarioRepo.On("UpdateDeploymentNumber", mock.Anything, scenario.ID, int32(2)).Return(nil) // 5 - 3 = 2
+
+		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService, testScenarioRepo)
 
 		err := ex.Run(context.Background(), &scenario)
 		assert.NoError(t, err)
+
 		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
 		provisioningService.AssertCalled(t, "DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt))
+		testScenarioRepo.AssertCalled(t, "GetDeploymentNumberByScenarioID", mock.Anything, scenario.ID)
+		testScenarioRepo.AssertCalled(t, "UpdateDeploymentNumber", mock.Anything, scenario.ID, int32(2))
 		assert.GreaterOrEqual(t, time.Now(), start)
 	})
+
+	t.Run("fail case: get deployment number error", func(t *testing.T) {
+		serviceCnt := int64(3)
+		scenario := entity.TestScenario{
+			ID:                  1,
+			MaxTestServiceCount: &serviceCnt,
+		}
+
+		testServiceRepo := new(repomock.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int64(3), nil)
+		provisioningService.On("DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt)).Return(nil)
+
+		testScenarioRepo := new(repomock.MockTestScenario)
+		testScenarioRepo.On("GetDeploymentNumberByScenarioID", mock.Anything, scenario.ID).
+			Return(int32(0), errors.New("db is down")) // simulate error
+
+		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService, testScenarioRepo)
+
+		err := ex.Run(context.Background(), &scenario)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get deployment number")
+		testScenarioRepo.AssertCalled(t, "GetDeploymentNumberByScenarioID", mock.Anything, scenario.ID)
+		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
+	})
+
+	t.Run("fail case: update deployment number error", func(t *testing.T) {
+		serviceCnt := int64(3)
+		scenario := entity.TestScenario{
+			ID:                  1,
+			MaxTestServiceCount: &serviceCnt,
+		}
+
+		testServiceRepo := new(repomock.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+		testServiceRepo.On("GetCountAllRunningByScenario", mock.Anything, scenario.ID).Return(int64(3), nil)
+		provisioningService.On("DeprovisionTestService", mock.Anything, &scenario, int32(serviceCnt)).Return(nil)
+
+		testScenarioRepo := new(repomock.MockTestScenario)
+		testScenarioRepo.On("GetDeploymentNumberByScenarioID", mock.Anything, scenario.ID).Return(int32(5), nil)
+		testScenarioRepo.On("UpdateDeploymentNumber", mock.Anything, scenario.ID, int32(2)).
+			Return(errors.New("db is down")) // simulate error
+
+		ex := NewScenarioTypeRunnerGroupA(testServiceRepo, provisioningService, testScenarioRepo)
+
+		err := ex.Run(context.Background(), &scenario)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to update deployment number")
+		testServiceRepo.AssertCalled(t, "GetCountAllRunningByScenario", mock.Anything, scenario.ID)
+		testScenarioRepo.AssertCalled(t, "GetDeploymentNumberByScenarioID", mock.Anything, scenario.ID)
+		testScenarioRepo.AssertCalled(t, "UpdateDeploymentNumber", mock.Anything, scenario.ID, int32(2))
+	})
+
 }

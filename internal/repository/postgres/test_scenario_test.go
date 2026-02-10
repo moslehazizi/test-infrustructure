@@ -54,7 +54,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id"`)).
 			WithArgs(
 				testScenario.CreatedAt,
 				testScenario.UpdatedAt,
@@ -66,6 +66,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 				nil,
 				nil,
 				nil,
+				int32(0),
 				testScenario.StartedAt).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 		mock.ExpectCommit()
@@ -101,7 +102,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id"`)).
 			WithArgs(testScenario.CreatedAt,
 				testScenario.UpdatedAt,
 				testScenario.DeletedAt,
@@ -109,7 +110,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 				testScenario.TestCategoryID,
 				testScenario.MotherServiceID,
 				testScenario.Status,
-				nil, nil, nil, testScenario.StartedAt).
+				nil, nil, nil, int32(0), testScenario.StartedAt).
 			WillReturnError(errors.New("insert failed"))
 		mock.ExpectRollback()
 

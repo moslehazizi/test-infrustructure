@@ -304,6 +304,7 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 			NewScenarioTypeRunnerGroupA(
 				service.testServiceRepo,
 				service.provisioningService,
+				service.testScenarioRepository,
 			),
 		))
 
@@ -333,6 +334,7 @@ func (service *testScenario) ResetOrphanedScenarios(ctx context.Context) error {
 			NewScenarioTypeRunnerGroupA(
 				service.testServiceRepo,
 				service.provisioningService,
+				service.testScenarioRepository,
 			),
 		))
 		zap.L().Info("recovered running scenario and added to executor box", zap.Uint64("id", sc.ID))

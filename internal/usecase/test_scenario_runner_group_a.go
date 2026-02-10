@@ -18,16 +18,19 @@ import (
 func NewScenarioTypeRunnerGroupA(
 	testServiceRepo repository.TestServiceRepository,
 	provisioningService provider.ProvisioningService,
+	testScenarioRepo repository.TestScenarioRepository,
 ) interfaces.ScenarioTypeRunner {
 	return &scenarioTypeRunnerGroupA{
 		testServiceRepo,
 		provisioningService,
+		testScenarioRepo,
 	}
 }
 
 type scenarioTypeRunnerGroupA struct {
 	testServiceRepo     repository.TestServiceRepository
 	provisioningService provider.ProvisioningService
+	testScenarioRepo    repository.TestScenarioRepository
 }
 
 // runGroupA
@@ -70,6 +73,27 @@ func (r *scenarioTypeRunnerGroupA) Run(ctx context.Context, scenario *entity.Tes
 
 			return fmt.Errorf("failed to provision remaining test services: %w", err)
 		}
+
+		currentDeploymentNumber, err := r.testScenarioRepo.GetDeploymentNumberByScenarioID(ctx, scenario.ID)
+		if err != nil {
+			zap.L().Error("failed to get current deployment number",
+				zap.Uint64("scenarioID", scenario.ID),
+				zap.Error(err),
+			)
+			return fmt.Errorf("failed to get deployment number: %w", err)
+		}
+
+		newDeploymentNumber := currentDeploymentNumber + int32(remaining)
+
+		err = r.testScenarioRepo.UpdateDeploymentNumber(ctx, scenario.ID, newDeploymentNumber)
+		if err != nil {
+			zap.L().Error("failed to update deployment number",
+				zap.Uint64("scenarioID", scenario.ID),
+				zap.Int32("newDeploymentNumber", newDeploymentNumber),
+				zap.Error(err),
+			)
+			return fmt.Errorf("failed to update deployment number: %w", err)
+		}
 	}
 
 	zap.L().Debug("all test services already provisioned for scenario",
@@ -106,6 +130,29 @@ timeRecheck:
 	err = r.provisioningService.DeprovisionTestService(ctx, scenario, int32(cnt))
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToDeprovisionTestServices, err)
+	}
+	currentDeploymentNumber, err := r.testScenarioRepo.GetDeploymentNumberByScenarioID(ctx, scenario.ID)
+	if err != nil {
+		zap.L().Error("failed to get current deployment number",
+			zap.Uint64("scenarioID", scenario.ID),
+			zap.Error(err),
+		)
+		return fmt.Errorf("failed to get deployment number: %w", err)
+	}
+
+	newDeploymentNumber := currentDeploymentNumber - int32(cnt)
+	if newDeploymentNumber < 0 {
+		newDeploymentNumber = 0
+	}
+
+	err = r.testScenarioRepo.UpdateDeploymentNumber(ctx, scenario.ID, newDeploymentNumber)
+	if err != nil {
+		zap.L().Error("failed to update deployment number",
+			zap.Uint64("scenarioID", scenario.ID),
+			zap.Int32("newDeploymentNumber", newDeploymentNumber),
+			zap.Error(err),
+		)
+		return fmt.Errorf("failed to update deployment number: %w", err)
 	}
 
 	return nil
