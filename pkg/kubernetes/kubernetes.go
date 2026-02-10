@@ -57,12 +57,12 @@ func New(ctx context.Context, config *KubernConfig) (Kubernetese, error) {
 
 	cfg, err := clientcmd.BuildConfigFromFlags("", config.kubeConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build kubeconfig: %w", err)
+		// return nil, fmt.Errorf("failed to build kubeconfig: %w", err)
 	}
 
 	clientset, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create clientset: %w", err)
+		// return nil, fmt.Errorf("failed to create clientset: %w", err)
 	}
 
 	return &Kuber{

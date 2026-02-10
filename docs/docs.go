@@ -667,6 +667,12 @@ const docTemplate = `{
                 "bad_value_rate": {
                     "type": "integer"
                 },
+                "database_name": {
+                    "type": "string"
+                },
+                "database_table_name": {
+                    "type": "string"
+                },
                 "fixed_test_number": {
                     "type": "integer"
                 },
