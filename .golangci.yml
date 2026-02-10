@@ -52,7 +52,6 @@ linters:
     - nestif
     - nilerr
     - nilnil
-    - nlreturn
     - noctx
     - nosprintfhostport
     - paralleltest
@@ -77,7 +76,6 @@ linters:
     - usestdlibvars
     - wastedassign
     - whitespace
-    - wrapcheck
     - zerologlint
   disable:
     - cyclop
@@ -99,6 +97,8 @@ linters:
     - wsl
     - lll
     - govet
+    - wrapcheck
+    - nlreturn
   exclusions:
     generated: lax
     presets:

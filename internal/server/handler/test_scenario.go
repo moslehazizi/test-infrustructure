@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"time"
 
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -144,7 +142,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
-		span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", req.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", req.PerPage)))
+		span.SetAttributes(attribute.String("pagination.page", strconv.Itoa(req.Page)), attribute.String("pagination.per_page", strconv.Itoa(req.PerPage)))
 
 		items, count, err := handler.testScenario.GetPaginated(traceCtx, entity.TestScenarioPaginationRequest{
 			Page:    req.Page,
@@ -250,7 +248,7 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
-		span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
+		span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
 		svcResult, err := handler.testScenario.GetByID(traceCtx, id)
 		if err != nil {
@@ -373,7 +371,7 @@ func (handler *TestScenario) Start() fiber.Handler {
 			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
-		span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
+		span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
 		err = handler.testScenario.Start(traceCtx, id)
 		if err != nil {

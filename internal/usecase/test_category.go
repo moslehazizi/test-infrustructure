@@ -7,6 +7,7 @@ import (
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
 	"fmt"
+	"strconv"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -63,7 +64,7 @@ func (srv *testCategoryService) GetByID(ctx context.Context, id uint64) (*entity
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", id)))
+	span.SetAttributes(attribute.String("service.id", strconv.FormatUint(id, 10)))
 
 	item, err := srv.testCategoryRepo.GetByID(ctx, id)
 	if err != nil {

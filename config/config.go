@@ -21,6 +21,7 @@ func (ss *StringSlice) Set(value string) error {
 		}
 		*ss = parts
 	}
+
 	return nil
 }
 

@@ -155,7 +155,7 @@ func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec,
 	return err
 }
 
-// applyService creates a service if it doesn't exist, otherwise updates it
+// applyService creates a service if it doesn't exist, otherwise updates it.
 func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec, configMap, secretMap map[string]string) error {
 	err := k.applyConfigMap(ctx, configMap, spec.Name)
 	if err != nil {
@@ -188,7 +188,7 @@ func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec, confi
 	return err
 }
 
-// waitForDeploymentReady waits for a deployment to become ready within the timeout
+// waitForDeploymentReady waits for a deployment to become ready within the timeout.
 func (k *Kuber) WaitForDeployment(ctx context.Context, name string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 
@@ -224,6 +224,7 @@ func (k *Kuber) GetDeploymentReplicas(ctx context.Context, name string) (int32, 
 	if dep.Spec.Replicas == nil {
 		return 0, nil
 	}
+
 	return *dep.Spec.Replicas, nil
 }
 
@@ -235,6 +236,7 @@ func (k *Kuber) ScaleDeployment(ctx context.Context, name string, replicas int32
 	}
 	dep.Spec.Replicas = &replicas
 	_, err = k.Clientset.AppsV1().Deployments(k.cfg.NameSpace).Update(ctx, dep, metav1.UpdateOptions{})
+
 	return err
 }
 
@@ -244,6 +246,7 @@ func (k *Kuber) DeleteDeployment(ctx context.Context, name string) error {
 	if apierrors.IsNotFound(err) {
 		return nil
 	}
+
 	return err
 }
 
@@ -253,6 +256,7 @@ func (k *Kuber) DeleteService(ctx context.Context, name string) error {
 	if apierrors.IsNotFound(err) {
 		return nil
 	}
+
 	return err
 }
 
@@ -262,6 +266,7 @@ func (k *Kuber) DeleteConfigMap(ctx context.Context, name string) error {
 	if apierrors.IsNotFound(err) {
 		return nil
 	}
+
 	return err
 }
 
@@ -271,6 +276,7 @@ func (k *Kuber) DeleteSecret(ctx context.Context, name string) error {
 	if apierrors.IsNotFound(err) {
 		return nil
 	}
+
 	return err
 }
 

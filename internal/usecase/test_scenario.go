@@ -11,6 +11,7 @@ import (
 	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -69,7 +70,7 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("test_scenario.name", testScenario.Name), attribute.String("test_category.id", fmt.Sprintf("%d", testScenario.TestCategoryID)), attribute.String("mother_service.id", fmt.Sprintf("%d", testScenario.MotherServiceID)))
+	span.SetAttributes(attribute.String("test_scenario.name", testScenario.Name), attribute.String("test_category.id", strconv.FormatUint(testScenario.TestCategoryID, 10)), attribute.String("mother_service.id", strconv.FormatUint(testScenario.MotherServiceID, 10)))
 
 	_, err := service.motherService.GetByID(ctx, testScenario.MotherServiceID)
 	if err != nil {
@@ -92,6 +93,7 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 				zap.String(logger.FieldRequestID, requestID),
 				zap.Uint64("test_category_id", testScenario.TestCategoryID),
 			)
+
 			return pkg.ErrTestCategoryNotFound
 		}
 
@@ -201,7 +203,7 @@ func (service *testScenario) GetByID(ctx context.Context, id uint64) (*entity.Te
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
+	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
 	result, err := service.testScenarioRepository.GetByID(ctx, id)
 	if err != nil {
@@ -236,7 +238,7 @@ func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.Tes
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", pagReq.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", pagReq.PerPage)))
+	span.SetAttributes(attribute.String("pagination.page", strconv.Itoa(pagReq.Page)), attribute.String("pagination.per_page", strconv.Itoa(pagReq.PerPage)))
 
 	result, count, err := service.testScenarioRepository.GetPaginated(ctx, pagReq)
 	if err != nil {
@@ -269,12 +271,13 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
+	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
 	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
+
 			return pkg.ErrTestScenarioNotFound
 		}
 		span.SetAttributes(attribute.String("error.type", "get_error"), attribute.String("error.message", err.Error()))

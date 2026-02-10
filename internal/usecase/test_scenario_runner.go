@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	defaultExecutorWaitingTime = time.Millisecond * 100
-	countUnlimited             = -1
+	defaultExecutorWaitingTime = time.Millisecond * 100 //nolint:unused // for future use
+	countUnlimited             = -1                     //nolint:unused // for future use
 )
 
 // What is ScenarioExecutorBox?

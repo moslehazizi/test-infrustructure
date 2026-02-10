@@ -30,7 +30,7 @@ const (
 	Config      = "-config"
 	Secret      = "-secret"
 
-	// config map
+	// Config map.
 	ServiceId                       = "SERVICE_ID"
 	ServiceName                     = "SERVICE_NAME"
 	HTTPPort                        = "HTTP_PORT"
@@ -39,7 +39,7 @@ const (
 	SwaggerDocJson                  = "SWAGGER_DOC_JSON"
 	HTTPPostBodyLimit               = "HTTP_POST_BODY_LIMIT"
 	HTTPReadTimeout                 = "HTTP_READ_TIMEOUT"
-	HTTPWriteTimeout                = "HTTP_WRITE_TIMEOUT"
+	HTTPWriteTimeout                = "HTTP_WRITE_TIMEOUT" // #nosec G101 -- env key name
 	HTTPRateLimitMaxRequest         = "HTTP_RATE_LIMIT_MAX_REQUEST"
 	HTTPRateLimitExpirationduration = "HTTP_RATE_LIMIT_EXPIRATION_DURATION"
 	HTTPShutdownTimeout             = "HTTP_SHUTDOWN_TIMEOUT"
@@ -67,12 +67,12 @@ const (
 	PostgresMaxIdleConnection       = "POSTGRES_MAX_IDLE_CONNECTIONS"
 	PostgresConnMaxLifetime         = "POSTGRES_CONN_MAX_LIFETIME"
 	PostgresConnMaxIdleTime         = "POSTGRES_CONN_MAX_IDLE_TIME"
-	// mother service
+	// Mother service.
 	HTTPErrorInjectionRate        = "HTTP_ERROR_INJECTION_RATE"
 	HTTPDelayInjectionRate        = "HTTP_DELAY_INJECTION_RATE"
 	HTTPDelayInjectionDurationMin = "HTTP_DELAY_INJECTION_DURATION_MIN"
 	HTTPDelayInjectionDurationMax = "HTTP_DELAY_INJECTION_DURATION_MAX"
-	// test service
+	// Test service.
 	HttpMotherServiceBaseUrl = "HTTP_MOTHER_SERVICE_BASE_URL"
 	HttpMotherServiceId      = "HTTP_MOTHER_SERVICE_ID"
 	HttpMaxTxsCount          = "HTTP_MAX_TXS_COUNT"
@@ -89,11 +89,11 @@ const (
 	HttpLongStrErr           = "HTTP_LONG_STR_ERR"
 	HttpNilErr               = "HTTP_NIL_ERR"
 
-	// secret map
+	// Secret map.
 	KafkaUsername    = "KAFKA_USERNAME"
 	KafkaPassword    = "KAFKA_PASSWORD"
 	PostgresUser     = "POSTGRES_USER"
-	PostgresPassword = "POSTGRES_PASSWORD"
+	PostgresPassword = "POSTGRES_PASSWORD" // #nosec G101 -- env key name
 )
 
 func NewProvisioningService(cfg *config.Config, kubernetes kubernetese.Kubernetese) ProvisioningService {
@@ -485,7 +485,7 @@ func testServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 								Image:           cfg.Kubernetese.TestServiceImage,
 								ImagePullPolicy: corev1.PullIfNotPresent,
 								Command:         []string{Main, Serve},
-								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}},
+								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
 									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
 									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
@@ -513,7 +513,7 @@ func testServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
 			Spec: corev1.ServiceSpec{
 				Selector: map[string]string{App: appName},
 				Type:     corev1.ServiceTypeClusterIP,
-				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}},
+				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}}, // #nosec G115 -- port from config
 			},
 		},
 	}
@@ -542,7 +542,7 @@ func testJobsDepSpec(cfg *config.Config, replica int32) inEntity.DeploymentSpec 
 								Image:           cfg.Kubernetese.TestServiceImage,
 								ImagePullPolicy: corev1.PullIfNotPresent,
 								Command:         []string{Main, Jobs},
-								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}},
+								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
 									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
 									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
@@ -583,7 +583,7 @@ func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 								Image:           cfg.Kubernetese.MotherServiceImage,
 								ImagePullPolicy: corev1.PullIfNotPresent,
 								Command:         []string{Main, Serve},
-								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}},
+								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
 									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
 									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
@@ -611,7 +611,7 @@ func motherServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
 			Spec: corev1.ServiceSpec{
 				Selector: map[string]string{App: appName},
 				Type:     corev1.ServiceTypeClusterIP,
-				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}},
+				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}}, // #nosec G115 -- port from config
 			},
 		},
 	}
@@ -640,7 +640,7 @@ func motherJobsDepSpec(cfg *config.Config, replica int32) inEntity.DeploymentSpe
 								Image:           cfg.Kubernetese.MotherServiceImage,
 								ImagePullPolicy: corev1.PullIfNotPresent,
 								Command:         []string{Main, Jobs},
-								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}},
+								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
 									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
 									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},

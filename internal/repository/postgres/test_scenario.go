@@ -10,6 +10,7 @@ import (
 	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -50,7 +51,7 @@ func (repo *testScenario) Create(ctx context.Context, testSci *entity.TestScenar
 
 	id := testSci.ID
 
-	span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
+	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
 	return id, nil
 }
@@ -63,7 +64,7 @@ func (repo *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestS
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("test_scenario.id", fmt.Sprintf("%d", id)))
+	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
 	var testScenario entity.TestScenario
 	err := postgres.QueryBuilder(ctx, repo.db).
@@ -75,14 +76,17 @@ func (repo *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestS
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
+
 			return nil, pkg.ErrTestScenarioNotFound
 		}
 
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
 		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
 	}
 
-	span.SetAttributes(attribute.String("test_scenario.id", fmt.Sprintf("%d", testScenario.ID)))
+	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(testScenario.ID, 10)))
+
 	return &testScenario, nil
 }
 
@@ -94,11 +98,12 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("pagination.page", fmt.Sprintf("%d", pagRequest.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", pagRequest.PerPage)))
+	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("pagination.page", strconv.Itoa(pagRequest.Page)), attribute.String("pagination.per_page", strconv.Itoa(pagRequest.PerPage)))
 
 	var testScenarios []*entity.TestScenario
 	if pagRequest.Page < 0 || pagRequest.PerPage < 0 {
 		span.SetAttributes(attribute.String("error.type", "invalid_pagination"))
+
 		return nil, 0, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, pkg.ErrNegativePageOrPerPageNotAllowed)
 	}
 
@@ -125,6 +130,7 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
 		return nil, 0, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, err)
 	}
 
@@ -139,7 +145,7 @@ func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entit
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("database.operation", "update"), attribute.String("test_scenario.id", fmt.Sprintf("%d", id)), attribute.String("test_scenario.status", fmt.Sprintf("%s", status)))
+	span.SetAttributes(attribute.String("database.operation", "update"), attribute.String("test_scenario.id", strconv.FormatUint(id, 10)), attribute.String("test_scenario.status", string(status)))
 
 	err := postgres.QueryBuilder(ctx, repo.db).
 		Omit(clause.Associations).
@@ -151,6 +157,7 @@ func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entit
 		}).Error
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
 		return fmt.Errorf("failed to update test scenario status: %w", err)
 	}
 
@@ -199,7 +206,7 @@ func (repo *testScenario) GetDeploymentNumberByScenarioID(
 	span.SetAttributes(attribute.String("request_id", requestID))
 	span.SetAttributes(
 		attribute.String("database.operation", "select"),
-		attribute.String("test_scenario.id", fmt.Sprintf("%d", id)),
+		attribute.String("test_scenario.id", strconv.FormatUint(id, 10)),
 	)
 
 	var deploymentNumber int32
@@ -215,6 +222,7 @@ func (repo *testScenario) GetDeploymentNumberByScenarioID(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
+
 			return 0, pkg.ErrTestScenarioNotFound
 		}
 
@@ -222,6 +230,7 @@ func (repo *testScenario) GetDeploymentNumberByScenarioID(
 			attribute.String("error.type", "database_error"),
 			attribute.String("error.message", err.Error()),
 		)
+
 		return 0, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
 	}
 
@@ -241,7 +250,7 @@ func (repo *testScenario) UpdateDeploymentNumber(
 	span.SetAttributes(attribute.String("request_id", requestID))
 	span.SetAttributes(
 		attribute.String("database.operation", "update"),
-		attribute.String("test_scenario.id", fmt.Sprintf("%d", id)),
+		attribute.String("test_scenario.id", strconv.FormatUint(id, 10)),
 	)
 
 	result := postgres.QueryBuilder(ctx, repo.db).
@@ -255,11 +264,13 @@ func (repo *testScenario) UpdateDeploymentNumber(
 			attribute.String("error.type", "database_error"),
 			attribute.String("error.message", result.Error.Error()),
 		)
+
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, result.Error)
 	}
 
 	if result.RowsAffected == 0 {
 		span.SetAttributes(attribute.String("error.type", "not_found"))
+
 		return pkg.ErrTestScenarioNotFound
 	}
 

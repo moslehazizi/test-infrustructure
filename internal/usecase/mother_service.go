@@ -10,6 +10,7 @@ import (
 	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -86,6 +87,7 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 				zap.String(logger.FieldRequestID, requestID),
 				zap.String("name", motherService.Name),
 			)
+
 			return pkg.ErrMotherServiceAlreadyExist
 		}
 
@@ -124,7 +126,7 @@ func (service *motherService) GetByID(ctx context.Context, id uint64) (*entity.M
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", id)))
+	span.SetAttributes(attribute.String("service.id", strconv.FormatUint(id, 10)))
 
 	result, err := service.motherServiceRepo.GetByID(ctx, id)
 	if err != nil {
@@ -134,6 +136,7 @@ func (service *motherService) GetByID(ctx context.Context, id uint64) (*entity.M
 				zap.String(logger.FieldRequestID, requestID),
 				zap.Uint64("id", id),
 			)
+
 			return nil, pkg.ErrMotherServiceNotFound
 		}
 
@@ -159,7 +162,7 @@ func (service *motherService) GetPaginated(ctx context.Context, paginationReques
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", paginationRequest.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", paginationRequest.PerPage)))
+	span.SetAttributes(attribute.String("pagination.page", strconv.Itoa(paginationRequest.Page)), attribute.String("pagination.per_page", strconv.Itoa(paginationRequest.PerPage)))
 
 	result, count, err := service.motherServiceRepo.GetPaginated(ctx, paginationRequest)
 	if err != nil {

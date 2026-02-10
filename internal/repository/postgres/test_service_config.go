@@ -8,6 +8,7 @@ import (
 	"control-panel-service/pkg/database/postgres"
 	"control-panel-service/pkg/logger"
 	"fmt"
+	"strconv"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -40,7 +41,7 @@ func (repo *testServiceConfig) Create(ctx context.Context, testSvcCfg *entity.Te
 
 	id := testSvcCfg.ID
 
-	span.SetAttributes(attribute.String("test_config.id", fmt.Sprintf("%d", id)))
+	span.SetAttributes(attribute.String("test_config.id", strconv.FormatUint(id, 10)))
 
 	return nil
 }

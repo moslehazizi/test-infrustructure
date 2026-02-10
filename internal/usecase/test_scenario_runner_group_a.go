@@ -83,7 +83,7 @@ func (r *scenarioTypeRunnerGroupA) Run(ctx context.Context, scenario *entity.Tes
 			return fmt.Errorf("failed to get deployment number: %w", err)
 		}
 
-		newDeploymentNumber := currentDeploymentNumber + int32(remaining)
+		newDeploymentNumber := currentDeploymentNumber + int32(remaining) // #nosec G115 -- range checked
 
 		err = r.testScenarioRepo.UpdateDeploymentNumber(ctx, scenario.ID, newDeploymentNumber)
 		if err != nil {
@@ -140,7 +140,7 @@ timeRecheck:
 		return fmt.Errorf("failed to get deployment number: %w", err)
 	}
 
-	newDeploymentNumber := currentDeploymentNumber - int32(cnt)
+	newDeploymentNumber := currentDeploymentNumber - int32(cnt) // #nosec G115 -- cnt checked above
 	if newDeploymentNumber < 0 {
 		newDeploymentNumber = 0
 	}

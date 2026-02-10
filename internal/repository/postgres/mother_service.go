@@ -10,6 +10,7 @@ import (
 	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"go.opentelemetry.io/otel"
@@ -42,16 +43,19 @@ func (m *motherServiceRepository) Create(ctx context.Context, motherService *ent
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			span.SetAttributes(attribute.String("error.type", "constraint_violation"), attribute.String("postgres.error_code", pgErr.Code))
+
 			return 0, pkg.ErrMotherServiceAlreadyExist
 		}
 
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
 		return 0, fmt.Errorf("failed to create mother service record: %w", err)
 	}
 
 	id := motherService.ID
 
-	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", motherService.ID)))
+	span.SetAttributes(attribute.String("service.id", strconv.FormatUint(motherService.ID, 10)))
+
 	return id, nil
 }
 
@@ -63,21 +67,24 @@ func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*enti
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", fmt.Sprintf("%d", id)))
+	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", strconv.FormatUint(id, 10)))
 
 	var motherService entity.MotherService
 	err := postgres.QueryBuilder(ctx, m.db).First(&motherService, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
+
 			return nil, pkg.ErrMotherServiceNotFound
 		}
 
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
 		return nil, fmt.Errorf("failed to get mother service record: %w", err)
 	}
 
-	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", motherService.ID)))
+	span.SetAttributes(attribute.String("service.id", strconv.FormatUint(motherService.ID, 10)))
+
 	return &motherService, nil
 }
 
@@ -89,11 +96,12 @@ func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRe
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("pagination.page", fmt.Sprintf("%d", paginationRequest.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", paginationRequest.PerPage)))
+	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("pagination.page", strconv.Itoa(paginationRequest.Page)), attribute.String("pagination.per_page", strconv.Itoa(paginationRequest.PerPage)))
 
 	var motherServices []*entity.MotherService
 	if paginationRequest.Page < 0 || paginationRequest.PerPage < 0 {
 		span.SetAttributes(attribute.String("error.type", "invalid_pagination"))
+
 		return nil, 0, fmt.Errorf("failed to get mother service records: %w", pkg.ErrNegativePageOrPerPageNotAllowed)
 	}
 

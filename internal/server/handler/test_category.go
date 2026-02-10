@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -106,7 +104,7 @@ func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
-		span.SetAttributes(attribute.String("test_category.id", fmt.Sprintf("%d", id)))
+		span.SetAttributes(attribute.String("test_category.id", strconv.FormatUint(id, 10)))
 
 		svcResult, err := handler.testCategoryService.GetByID(traceCtx, id)
 		if err != nil {

@@ -46,7 +46,7 @@ func (kuberneteseMock *KuberneteseMock) WaitForDeployment(ctx context.Context, n
 
 func (kuberneteseMock *KuberneteseMock) GetDeploymentReplicas(ctx context.Context, name string) (int32, error) {
 	args := kuberneteseMock.Called(ctx, name)
-	return int32(args.Int(0)), args.Error(1)
+	return int32(args.Int(0)), args.Error(1) // #nosec G115 -- mock return
 }
 
 func (kuberneteseMock *KuberneteseMock) ScaleDeployment(ctx context.Context, name string, replicas int32) error {

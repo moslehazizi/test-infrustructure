@@ -87,6 +87,7 @@ func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName stri
 			attribute.String("error.type", "database_error"),
 			attribute.String("error.message", err.Error()),
 		)
+
 		return nil, fmt.Errorf("failed to load tables for database %s: %w", dbName, err)
 	}
 

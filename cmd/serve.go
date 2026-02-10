@@ -158,7 +158,7 @@ func initConn() (*grpc.ClientConn, error) {
 	if err != nil {
 		zap.L().Error("could not load config:", zap.Error(err))
 
-		return nil, nil
+		return nil, err
 	}
 
 	url := fmt.Sprintf("%s:%d", cfg.Otlp.GRPCHost, cfg.Otlp.GRPCPort)
@@ -187,4 +187,4 @@ func init() {
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-var serviceName = semconv.ServiceNameKey.String("test-service")
+var serviceName = semconv.ServiceNameKey.String("test-service") //nolint:unused // reserved for tracing

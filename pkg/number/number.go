@@ -30,5 +30,6 @@ func NumValue(input *int) int {
 	if input == nil {
 		return Zero
 	}
+
 	return *input
 }

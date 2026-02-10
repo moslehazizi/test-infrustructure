@@ -41,6 +41,7 @@ func (u *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
 			zap.String(logger.FieldRequestID, requestID),
 			zap.Error(err),
 		)
+
 		return nil, fmt.Errorf("%w, %w", pkg.ErrFailedToGetDatabases, err)
 	}
 
@@ -69,6 +70,7 @@ func (u *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName string)
 			zap.String("database", dbName),
 			zap.Error(err),
 		)
+
 		return nil, fmt.Errorf("%w, %w", pkg.ErrFailedToGetTablesOfDatabase, err)
 	}
 

@@ -10,6 +10,7 @@ import (
 	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -41,6 +42,7 @@ func (repo *testCategory) GetAll(ctx context.Context) ([]entity.TestCategory, er
 	err := postgres.QueryBuilder(ctx, repo.db).Order("id ASC").Find(&items).Error
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
 		return nil, fmt.Errorf("failed to load test categories from db: %w", err)
 	}
 
@@ -55,20 +57,23 @@ func (repo *testCategory) GetByID(ctx context.Context, id uint64) (*entity.TestC
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", fmt.Sprintf("%d", id)))
+	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", strconv.FormatUint(id, 10)))
 
 	var testCategory entity.TestCategory
 	err := postgres.QueryBuilder(ctx, repo.db).First(&testCategory, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
+
 			return nil, pkg.ErrTestCategoryNotFound
 		}
 
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
 		return nil, fmt.Errorf("failed to get test category record: %w", err)
 	}
 
-	span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", testCategory.ID)))
+	span.SetAttributes(attribute.String("service.id", strconv.FormatUint(testCategory.ID, 10)))
+
 	return &testCategory, nil
 }

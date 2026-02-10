@@ -12,8 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -140,7 +138,7 @@ func (handler *MotherService) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
-		span.SetAttributes(attribute.String("service.id", fmt.Sprintf("%d", id)))
+		span.SetAttributes(attribute.String("service.id", strconv.FormatUint(id, 10)))
 
 		svcResult, err := handler.motherService.GetByID(traceCtx, id)
 		if err != nil {
@@ -206,7 +204,7 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
-		span.SetAttributes(attribute.String("pagination.page", fmt.Sprintf("%d", req.Page)), attribute.String("pagination.per_page", fmt.Sprintf("%d", req.PerPage)))
+		span.SetAttributes(attribute.String("pagination.page", strconv.Itoa(req.Page)), attribute.String("pagination.per_page", strconv.Itoa(req.PerPage)))
 
 		reqSvc := entity.PaginationRequest{
 			Page:    req.Page,
