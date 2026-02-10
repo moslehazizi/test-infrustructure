@@ -12,6 +12,8 @@ services:
         image: challenge-control-panel-service:TAG_NAME
         container_name: challenge-control-panel-service
         restart: unless-stopped
+        volumes:
+            - /home/apprunner/.kube/config:/home/appuser/.kube/config
         ports:
             - "8082:8080"
         env_file:
@@ -19,7 +21,7 @@ services:
         networks:
             - backend
         depends_on:
-          - control-panel-service-migration
+            - control-panel-service-migration
 
 networks:
     backend:
