@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${IMAGE_NAME}-migration
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ${IMAGE_NAME}-migration
+          image: ${CONTAINER_REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_TAG}
+          command: ["./main", "migrate", "up"]
+          envFrom:
+            - configMapRef:
+                name: ${IMAGE_NAME}-config
+            - secretRef:
+                name: ${IMAGE_NAME}-secrets

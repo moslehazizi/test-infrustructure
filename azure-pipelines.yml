@@ -1,0 +1,140 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+- group: vg-docker-registry
+- group: vg-aks
+- group: vg-app-runtime
+
+- name: dockerRegistryServiceConnection
+  value: $(DOCKER_SERVICE_CONNECTION)
+
+- name: k8sNamespace
+  value: challenge
+
+- name: manifestsPath
+  value: k8s
+
+- name: IMAGE_NAME
+  value: ${{ lower(split(variables['Build.Repository.Name'], '/')[1]) }}
+
+stages:
+- stage: Test
+  displayName: Run unit tests
+  jobs:
+  - job: BuildTestDockerfile
+    displayName: Run unit tests inside docker
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - checkout: self
+    - task: Docker@2
+      displayName: Build test image
+      inputs:
+        command: build
+        Dockerfile: $(Build.SourcesDirectory)/test.Dockerfile
+        repository: $(IMAGE_NAME)-test
+        tags: |
+          $(Build.BuildId)
+    - script: |
+        docker run --rm $(IMAGE_NAME)-test:$(Build.BuildId)
+      displayName: Run tests container
+
+- stage: BuildAndPush
+  dependsOn: Test
+  condition: succeeded()
+  displayName: Build and Push Image
+  jobs:
+  - job: Build
+    displayName: Build on Microsoft-hosted agent
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - checkout: self
+      displayName: Set image tag
+    - bash: |
+        set -euo pipefail
+        SHORT_SHA="${BUILD_SOURCEVERSION:0:7}"
+        echo "##vso[task.setvariable variable=IMAGE_TAG]$SHORT_SHA"
+        echo "Image: $IMAGE_NAME:$SHORT_SHA"
+
+    - task: Docker@2
+      displayName: Build and Push to Docker registry
+      inputs:
+        command: buildAndPush
+        containerRegistry: $(dockerRegistryServiceConnection)
+        repository: $(IMAGE_NAME)
+        Dockerfile: $(Build.SourcesDirectory)/Dockerfile
+        buildContext: $(Build.SourcesDirectory)
+        tags: |
+          $(IMAGE_TAG)
+          latest
+
+- stage: Deploy
+  displayName: Deploy to AKS
+  dependsOn: BuildAndPush
+  condition: succeeded()
+  jobs:
+  - job: DeployToAKS
+    displayName: Deploy manifests to AKS
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - checkout: self
+      displayName: Set image tag
+    - bash: |
+        set -euo pipefail
+        SHORT_SHA="${BUILD_SOURCEVERSION:0:7}"
+        echo "##vso[task.setvariable variable=IMAGE_TAG]$SHORT_SHA"
+        echo "Image: $IMAGE_NAME:$SHORT_SHA"
+
+    - task: Kubernetes@1
+      displayName: login to aks (set kubeconfig)
+      inputs:
+        connectionType: Azure Resource Manager
+        azureSubscriptionEndpoint: $(AZURE_SERVICE_CONNECTION)
+        azureResourceGroup: $(AKS_RESOURCE_GROUP)
+        kubernetesCluster: $(AKS_CLUSTER_NAME)
+        command: login
+
+    - bash: |
+        set -euo pipefail
+
+        ENV_EXAMPLE_PATH="$(Build.SourcesDirectory)/.env.example"
+        if [ ! -f "$ENV_EXAMPLE_PATH" ]; then
+          echo "ERROR: .env.example not found at repo root"
+          exit 1
+        fi
+
+        kubectl -n "$(k8sNamespace)" create configmap $(IMAGE_NAME)-config \
+          --from-env-file="$ENV_EXAMPLE_PATH" \
+          --dry-run=client -o yaml | kubectl apply -f -
+      displayName: "Create/Update ConfigMap from .env.example"
+      env:
+        IMAGE_NAME: $(IMAGE_NAME)
+
+    - bash: |
+        set -euo pipefail
+        for f in k8s/*.yaml; do
+          echo "Applying $f"
+          envsubst < "$f" | kubectl apply -n "$(k8sNamespace)" -f -
+        done
+      displayName: Deploy manifests
+      env:
+        IMAGE_NAME: $(IMAGE_NAME)
+        IMAGE_TAG: $(IMAGE_TAG)
+        KAFKA_HOST: $(KAFKA_HOST)
+        KAFKA_PORT: $(KAFKA_PORT)
+        KAFKA_USERNAME: $(KAFKA_USERNAME)
+        KAFKA_PASSWORD: $(KAFKA_PASSWORD)
+        POSTGRES_HOST: $(POSTGRES_HOST)
+        POSTGRES_PORT: $(POSTGRES_PORT)
+        POSTGRES_USER: $(POSTGRES_USER)
+        POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)
+        POSTGRES_SSL_MODE: $(POSTGRES_SSL_MODE)
+        CONTAINER_REGISTRY_URL: $(CONTAINER_REGISTRY_URL)
+        OTLP_GRPC_HOST: $(OTLP_GRPC_HOST)
+        OTLP_GRPC_PORT: $(OTLP_GRPC_PORT)
+      name: BuildConfigPatch

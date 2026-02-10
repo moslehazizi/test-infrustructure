@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${IMAGE_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${IMAGE_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${IMAGE_NAME}
+    spec:
+      containers:
+      - name: ${IMAGE_NAME}
+        image: ${CONTAINER_REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_TAG}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: ${IMAGE_NAME}-config
+        - secretRef:
+            name: ${IMAGE_NAME}-secrets
