@@ -142,14 +142,14 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		HttpShortStrErr:          strconv.Itoa(testScenario.TestServiceConfig.StringValueRate),
 		HttpLongStrErr:           strconv.Itoa(testScenario.TestServiceConfig.LongStringValueRate),
 		HttpNilErr:               strconv.Itoa(testScenario.TestServiceConfig.NullValueRate),
+		PostgresDatabase:         testScenario.TestServiceConfig.DatabaseName,
+		PostgresTable:            testScenario.TestServiceConfig.DatabaseTableName,
 
 		KafkaHost:          ps.cfg.Kubernetese.TestServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
 		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic, testScenario.ID),
 		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaCounsumerGroup, testScenario.ID),
-		PostgresDatabase:   ps.cfg.Kubernetese.TestServicePostgresDatabase,
-		PostgresTable:      ps.cfg.Kubernetese.TestServicePostgresTable,
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,

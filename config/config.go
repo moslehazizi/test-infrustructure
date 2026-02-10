@@ -102,8 +102,6 @@ type Kubernetese struct {
 	TestServiceAPPServeWaitReady   time.Duration `envconfig:"TEST_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
 	TestServiceAPPJobs             string        `envconfig:"TEST_SERVICE_APP_JOBS" default:"test-service-jobs"`
 	TestServiceAPPJobsWaitReady    time.Duration `envconfig:"TEST_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
-	TestServicePostgresDatabase    string        `envconfig:"TEST_SERVICE_POSTGRES_DATABASE" default:"test-db"`
-	TestServicePostgresTable       string        `envconfig:"TEST_SERVICE_POSTGRES_TABLE" default:"test-table"`
 	TestServicePostgresHost        string        `envconfig:"TEST_SERVICE_POSTGRES_HOST" default:"localhost"`
 	TestServiceKafkaHost           string        `envconfig:"TEST_SERVICE_KAFKA_HOST" default:"localhost"`
 	TestServiceKafkaDatabaseTopic  string        `envconfig:"TEST_SERVICE_KAFKA_DATABASE_TOPIC" default:"test-db"`

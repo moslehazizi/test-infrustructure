@@ -61,7 +61,9 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 40,
 				"string_value_rate": 10,
 				"long_string_value_rate": 10,
-				"null_value_rate": 10
+				"null_value_rate": 10 , 
+		        "database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
 			}
     	}`
 
@@ -71,6 +73,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		min := 10
 		max := 20
 		dur := time.Millisecond * 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
@@ -92,6 +96,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				StringValueRate:       10,
 				LongStringValueRate:   10,
 				NullValueRate:         10,
+				DatabaseName:          databaseName,
+				DatabaseTableName:     databaseTableName,
 			},
 		}
 
@@ -143,7 +149,9 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0
+				"null_value_rate": 0, 
+				"database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
 			}
     	}`
 
@@ -153,6 +161,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		min := 10
 		max := 20
 		dur := time.Millisecond * 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
@@ -167,6 +177,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				RandomRequestDelayMax: &max,
 				RandomTestNumberMin:   &min,
 				RandomTestNumberMax:   &max,
+				DatabaseName:          databaseName,
+				DatabaseTableName:     databaseTableName,
 			},
 		}
 
@@ -218,7 +230,9 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0
+				"null_value_rate": 0,
+				"database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
 			}
     	}`
 
@@ -228,6 +242,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		min := 10
 		max := 20
 		dur := time.Millisecond * 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
@@ -241,6 +257,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				RandomRequestDelayMin: &min,
 				RandomRequestDelayMax: &max,
 				FixedTestNumber:       &sampleInt,
+				DatabaseName:          databaseName,
+				DatabaseTableName:     databaseTableName,
 			},
 		}
 
@@ -292,7 +310,9 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0
+				"null_value_rate": 0,
+				"database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
 			}
     	}`
 
@@ -300,6 +320,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt := 1
 		sampleInt64 := int64(1)
 		dur := time.Millisecond * 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
@@ -312,6 +334,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				MaxDuration:          sampleInt,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
+				DatabaseName:         databaseName,
+				DatabaseTableName:    databaseTableName,
 			},
 		}
 
@@ -363,12 +387,16 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0
+				"null_value_rate": 0,
+				"database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
 			}
     	}`
 
 		sampleUin64 := uint64(1)
 		sampleInt := 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:            "load1",
 			TestCategoryID:  sampleUin64,
@@ -378,6 +406,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				MaxDuration:          sampleInt,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
+				DatabaseName:         databaseName,
+				DatabaseTableName:    databaseTableName,
 			},
 		}
 
@@ -454,7 +484,9 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0
+				"null_value_rate": 0, 
+				"database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
 			}
     	}`
 
@@ -462,6 +494,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt := 1
 		sampleInt64 := int64(1)
 		dur := time.Millisecond * 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
@@ -474,6 +508,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				MaxDuration:          sampleInt,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
+				DatabaseName:         databaseName,
+				DatabaseTableName:    databaseTableName,
 			},
 		}
 
@@ -525,7 +561,9 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0
+				"null_value_rate": 0, 
+				"database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
 			}
     	}`
 
@@ -533,6 +571,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt := 1
 		sampleInt64 := int64(1)
 		dur := time.Millisecond * 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
@@ -545,6 +585,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				MaxDuration:          sampleInt,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
+				DatabaseName:         databaseName,
+				DatabaseTableName:    databaseTableName,
 			},
 		}
 
@@ -596,7 +638,9 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0
+				"null_value_rate": 0, 
+				"database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
 			}
     	}`
 
@@ -605,6 +649,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt64 := int64(1)
 		ncnt := int64(-1)
 		dur := time.Millisecond * 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:                "load1",
 			TestCategoryID:      sampleUin64,
@@ -617,6 +663,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				MaxDuration:          sampleInt,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
+				DatabaseName:         databaseName,
+				DatabaseTableName:    databaseTableName,
 			},
 		}
 

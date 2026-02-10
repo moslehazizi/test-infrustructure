@@ -25,6 +25,8 @@ type TestServiceConfig struct {
 	NullValueRate         int       `gorm:"column:null_value_rate"`
 	CreatedAt             time.Time `gorm:"column:created_at"`
 	UpdatedAt             time.Time `gorm:"column:updated_at"`
+	DatabaseName          string    `gorm:"column:database_name"`
+	DatabaseTableName     string    `gorm:"column:database_table_name"`
 }
 
 func (TestServiceConfig) TableName() string {
@@ -113,6 +115,14 @@ func (t *TestServiceConfig) Validate() error {
 		if t.NegativeValueRate+t.RealValueRate+t.StringValueRate+t.NullValueRate+t.LongStringValueRate+t.ZeroValueRate != 100 {
 			return pkg.ErrInvalid100SumOfBadValues
 		}
+	}
+
+	if t.DatabaseName == "" {
+		return pkg.ErrInvalidDatabaseName
+	}
+
+	if t.DatabaseTableName == "" {
+		return pkg.ErrInvalidDatabaseTableName
 	}
 
 	return nil
