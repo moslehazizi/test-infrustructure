@@ -115,6 +115,10 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrFailedToGetDatabases,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
+		{
+			err:    ErrFailedToUpdateTestScenario,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
 
 		// Other
 		{

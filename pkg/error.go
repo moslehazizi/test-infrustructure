@@ -77,6 +77,7 @@ func toHTTPError(err error) *HTTPError {
 		errors.Is(err, ErrFailedToGetTablesOfDatabase),
 		errors.Is(err, ErrFailedToGetDatabases),
 		errors.Is(err, ErrFailedToSendEventData),
+		errors.Is(err, ErrFailedToUpdateTestScenario),
 		errors.Is(err, ErrFailedToGetTestScenariosByStatus):
 		status = http.StatusInternalServerError
 		msg = InternalServerErrorMessage
@@ -224,8 +225,8 @@ func toHTTPError(err error) *HTTPError {
 }
 
 var (
-	ErrFailedToGetTablesOfDatabase     = errors.New("failed to get tables of database")
-	ErrFailedToGetDatabases            = errors.New("failed to get databases")
+	ErrFailedToGetTablesOfDatabase      = errors.New("failed to get tables of database")
+	ErrFailedToGetDatabases             = errors.New("failed to get databases")
 	ErrNotImplemented                   = errors.New("NOT IMPLEMENTED")
 	ErrInternalServerError              = errors.New("internal server error")
 	ErrBadRequest                       = errors.New("bad request")
@@ -253,6 +254,7 @@ var (
 	ErrFailedToDeployTestService        = errors.New("failed to deploy test service")
 	ErrFailedToDeProvisionMotherService = errors.New("failed to deprovision mother service")
 	ErrFailedToDeProvisionTestService   = errors.New("failed to deprovision test service")
+	ErrFailedToUpdateTestScenario       = errors.New("failed to update test scenario")
 
 	// Validation errors.
 	ErrInvalidMotherServiceName                = errors.New("mother service name is required")
