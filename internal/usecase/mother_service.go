@@ -100,13 +100,13 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateMotherService, err)
 	}
-	_ = tx.Commit()
 
 	motherService.ID = id
-	err = service.provisioningService.ProvisionMotherService(ctx, motherService)
+	err = service.provisioningService.ProvisionMotherService(dbCtx, motherService)
 	if err != nil {
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToDeployMotherService, err)
 	}
+	_ = tx.Commit()
 
 	span.SetAttributes(attribute.String("transaction.status", "committed"))
 	zap.L().Info("mother service created successfully",
