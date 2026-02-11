@@ -72,7 +72,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		sampleInt := 1
 		sampleInt64 := int64(1)
 		expectedID := uint64(1)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "db1"
 		databaseTableName := "factorial"
 
@@ -148,7 +148,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		)
 
 		sampleInt64 := int64(1)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 
 		testSci := &entity.TestScenario{
 			Name:                "load1",
@@ -209,7 +209,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		sampleInt := 1
 		sampleInt64 := int64(1)
 		expectedID := uint64(1)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "db1"
 		databaseTableName := "factorial"
 
@@ -286,7 +286,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		)
 		sampleInt := 1
 		sampleInt64 := int64(1)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		testServiceCfg := &entity.TestServiceConfig{
 			MaxRequests:          1,
 			MaxDuration:          1,
@@ -410,7 +410,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			provisioningService,
 		)
 
-		dur := time.Millisecond * -1
+		dur := int64(-1)
 		testSci := &entity.TestScenario{
 			Name:              "load1",
 			TestCategoryID:    uint64(2),
@@ -786,7 +786,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		sampleInt := 1
 		sampleInt64 := int64(1)
 		expectedID := uint64(1)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "db1"
 		databaseTableName := "factorial"
 
@@ -846,7 +846,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		num := 10
 		sampleInt64 := int64(1)
 		sampleID := uint64(4)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 
 		expectedTestScenario := &entity.TestScenario{
 			ID:              sampleID,
@@ -1029,7 +1029,7 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		)
 
 		sampleInt64 := int64(2)
-		dur := time.Millisecond * 2
+		dur := int64(2)
 		pagReq := entity.TestScenarioPaginationRequest{
 			Page:    2,
 			PerPage: 2,

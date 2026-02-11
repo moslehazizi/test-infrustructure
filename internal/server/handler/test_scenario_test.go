@@ -72,7 +72,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt64 := int64(1)
 		min := 10
 		max := 20
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
@@ -160,7 +160,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt64 := int64(1)
 		min := 10
 		max := 20
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
@@ -241,7 +241,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt64 := int64(1)
 		min := 10
 		max := 20
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
@@ -319,7 +319,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleUin64 := uint64(1)
 		sampleInt := 1
 		sampleInt64 := int64(1)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
@@ -397,13 +397,14 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt := 1
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
+		dur := int64(1)
 		sampleTestScenarioRequest := &entity.TestScenario{
 			Name:            "load1",
 			TestCategoryID:  sampleUin64,
 			MotherServiceID: sampleUin64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
-				MaxDuration:          time.Millisecond * 1,
+				MaxDuration:          dur,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
 				DatabaseName:         databaseName,
@@ -493,7 +494,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleUin64 := uint64(1)
 		sampleInt := 1
 		sampleInt64 := int64(1)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
@@ -570,7 +571,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleUin64 := uint64(1)
 		sampleInt := 1
 		sampleInt64 := int64(1)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
@@ -648,7 +649,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		sampleInt := 1
 		sampleInt64 := int64(1)
 		ncnt := int64(-1)
-		dur := time.Millisecond * 1
+		dur := int64(1)
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
 		sampleTestScenarioRequest := &entity.TestScenario{
@@ -708,7 +709,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 
 		cnt := int64(100)
 		rate := int64(50)
-		dur := time.Millisecond * 500000
+		dur := int64(500000)
 		serviceResult := []*entity.TestScenario{
 			{
 				ID:                  1,
@@ -995,7 +996,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := int64(100)
 		rate := int64(50)
-		exe := time.Millisecond * 500000
+		exe := int64(500000)
 		num := 10
 
 		srv := new(mocks.MockTestScenario)
@@ -1145,7 +1146,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := int64(100)
 		rate := int64(50)
-		exe := time.Millisecond * 500000
+		exe := int64(500000)
 
 		srv := new(mocks.MockTestScenario)
 		item := &entity.TestScenario{

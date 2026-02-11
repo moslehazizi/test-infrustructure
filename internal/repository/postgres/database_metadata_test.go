@@ -105,11 +105,12 @@ func TestDatabaseMetadataRepository_GetTablesByDBName(t *testing.T) {
 		require.NoError(t, err)
 
 		mock.ExpectQuery(regexp.QuoteMeta(`
-		SELECT table_name
-		FROM information_schema.tables
-		WHERE table_schema = 'public'
-		ORDER BY table_name
-	`)).
+			SELECT table_name
+			FROM information_schema.tables
+			WHERE table_catalog = $1 AND table_schema = 'public'
+			ORDER BY table_name
+		`)).
+			WithArgs("load_test_db").
 			WillReturnRows(
 				sqlmock.NewRows([]string{"table_name"}).
 					AddRow("events").
@@ -132,11 +133,12 @@ func TestDatabaseMetadataRepository_GetTablesByDBName(t *testing.T) {
 		require.NoError(t, err)
 
 		mock.ExpectQuery(regexp.QuoteMeta(`
-		SELECT table_name
-		FROM information_schema.tables
-		WHERE table_schema = 'public'
-		ORDER BY table_name
-	`)).
+			SELECT table_name
+			FROM information_schema.tables
+			WHERE table_catalog = $1 AND table_schema = 'public'
+			ORDER BY table_name
+		`)).
+			WithArgs("load_test_db").
 			WillReturnRows(
 				sqlmock.NewRows([]string{"table_name"}),
 			)
@@ -156,11 +158,12 @@ func TestDatabaseMetadataRepository_GetTablesByDBName(t *testing.T) {
 		require.NoError(t, err)
 
 		mock.ExpectQuery(regexp.QuoteMeta(`
-		SELECT table_name
-		FROM information_schema.tables
-		WHERE table_schema = 'public'
-		ORDER BY table_name
-	`)).
+			SELECT table_name
+			FROM information_schema.tables
+			WHERE table_catalog = $1 AND table_schema = 'public'
+			ORDER BY table_name
+		`)).
+			WithArgs("load_test_db").
 			WillReturnError(errors.New("query failed"))
 
 		repo := NewDatabaseMetadataRepository(db)

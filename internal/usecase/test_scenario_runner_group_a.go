@@ -106,14 +106,15 @@ func (r *scenarioTypeRunnerGroupA) Run(ctx context.Context, scenario *entity.Tes
 	}
 
 	if scenario.ExecutionDuration == nil {
-		defaultWait := time.Millisecond
+		defaultWait := int64(1) // 1 ms
 		scenario.ExecutionDuration = &defaultWait
 	}
 
 timeRecheck:
 
 	spentTime := time.Since(*scenario.StartedAt)
-	remainingDuration := *scenario.ExecutionDuration - spentTime
+	execDur := time.Duration(*scenario.ExecutionDuration) * time.Millisecond
+	remainingDuration := execDur - spentTime
 
 	// still need to let tests to be executed.
 	if remainingDuration > 0 {

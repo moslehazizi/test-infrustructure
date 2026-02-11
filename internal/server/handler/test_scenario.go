@@ -9,7 +9,6 @@ import (
 	"control-panel-service/pkg/logger"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
@@ -65,16 +64,8 @@ func (handler *TestScenario) Create() fiber.Handler {
 			TestCategoryID:      req.TestCategoryID,
 			MotherServiceID:     req.MotherServiceID,
 			MaxTestServiceCount: req.MaxTestServiceCount,
-			ExecutionDuration: func() *time.Duration {
-				if req.ExecutionDuration == nil {
-					return nil
-				}
-
-				dur := time.Duration(*req.ExecutionDuration) * time.Millisecond
-
-				return &dur
-			}(),
-			AutoStepChangeRate: req.AutoStepChangeRate,
+			ExecutionDuration:   req.ExecutionDuration,
+			AutoStepChangeRate:  req.AutoStepChangeRate,
 			TestServiceConfig: func() *entity.TestServiceConfig {
 				if req.Config == nil {
 					return nil
@@ -82,7 +73,7 @@ func (handler *TestScenario) Create() fiber.Handler {
 
 				return &entity.TestServiceConfig{
 					MaxRequests:           req.Config.MaxRequests,
-					MaxDuration:           time.Duration(req.Config.MaxDuration) * time.Millisecond,
+					MaxDuration:           int64(req.Config.MaxDuration),
 					RequestDelayDuration:  req.Config.RequestDelayDuration,
 					RandomRequestDelayMin: req.Config.RandomRequestDelayMin,
 					RandomRequestDelayMax: req.Config.RandomRequestDelayMax,
