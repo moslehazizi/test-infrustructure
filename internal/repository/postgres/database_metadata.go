@@ -73,13 +73,15 @@ func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName stri
 
 	var tables []string
 
+	query := fmt.Sprintf(`
+		SELECT table_name
+		FROM information_schema.tables
+		WHERE table_catalog = '%s' AND table_schema = 'public'
+		ORDER BY table_name
+	`, dbName)
+
 	err := postgres.QueryBuilder(ctx, repo.db).
-		Raw(`
-			SELECT table_name
-			FROM information_schema.tables
-			WHERE table_catalog = ? AND table_schema = 'public'
-			ORDER BY table_name
-		`, dbName).
+		Raw(query).
 		Scan(&tables).Error
 
 	if err != nil {
