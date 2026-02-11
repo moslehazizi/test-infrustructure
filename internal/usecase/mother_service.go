@@ -62,7 +62,9 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 		return fmt.Errorf("failed to validate request: %w", err)
 	}
 
-	motherService.Status = entity.MotherServiceStatusPending
+	// for now when we create a mother service in database in the same time we send it to provision.
+	// this operation done in a transaction so if mother service created and provisioned it is in running status.
+	motherService.Status = entity.MotherServiceStatusRunning
 	span.SetAttributes(attribute.String("service.name", motherService.Name))
 
 	tx := service.db.Begin()
@@ -106,6 +108,7 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 	if err != nil {
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToDeployMotherService, err)
 	}
+
 	_ = tx.Commit()
 
 	span.SetAttributes(attribute.String("transaction.status", "committed"))
