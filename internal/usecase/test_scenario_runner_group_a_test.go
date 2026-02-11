@@ -92,7 +92,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 
 	t.Run("failed case: unable to deprovision test services", func(t *testing.T) {
 		serviceCnt := int64(3)
-		dur := time.Millisecond * 20
+		dur := int64(20)
 		start := time.Now()
 		scenario := entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
@@ -118,7 +118,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 	})
 	t.Run("failed case: service count out of range", func(t *testing.T) {
 		serviceCnt := int64(math.MaxInt64)
-		dur := time.Millisecond * 20
+		dur := int64(20)
 		start := time.Now()
 		scenario := entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
@@ -143,7 +143,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 	})
 	t.Run("failed case: service count out of range on deprovisioning", func(t *testing.T) {
 		serviceCnt := int64(math.MaxInt32) + 1
-		dur := time.Millisecond * 20
+		dur := int64(20)
 		start := time.Now()
 		scenario := entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
@@ -167,7 +167,7 @@ func Test_scenarioTypeRunnerGroupA_Run(t *testing.T) {
 	})
 	t.Run("success case: waiting for execution duration to be spent", func(t *testing.T) {
 		serviceCnt := int64(3)
-		dur := time.Millisecond * 2000
+		dur := int64(2000)
 		start := time.Now()
 		scenario := entity.TestScenario{
 			ID:                  1,

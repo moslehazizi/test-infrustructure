@@ -7,7 +7,6 @@ import (
 	"control-panel-service/pkg"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -98,7 +97,7 @@ func Test_inMemoryScenarioExecutorBox_HasExecutor(t *testing.T) {
 func Test_scenarioExecutor_ResumeOrStart(t *testing.T) {
 	t.Run("success case: group A", func(t *testing.T) {
 		serviceCnt := int64(3)
-		dur := time.Millisecond * 2000
+		dur := int64(2000)
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
 			ExecutionDuration:   &dur,
@@ -127,7 +126,7 @@ func Test_scenarioExecutor_ResumeOrStart(t *testing.T) {
 	})
 	t.Run("failed case: group A", func(t *testing.T) {
 		serviceCnt := int64(3)
-		dur := time.Millisecond * 2000
+		dur := int64(2000)
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
 			ExecutionDuration:   &dur,
@@ -156,7 +155,7 @@ func Test_scenarioExecutor_ResumeOrStart(t *testing.T) {
 	})
 	t.Run("failed case: group not implemented yet", func(t *testing.T) {
 		serviceCnt := int64(3)
-		dur := time.Millisecond * 2000
+		dur := int64(2000)
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: &serviceCnt,
 			ExecutionDuration:   &dur,
