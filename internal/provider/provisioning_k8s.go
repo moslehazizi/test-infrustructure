@@ -7,6 +7,7 @@ import (
 	"control-panel-service/pkg"
 	"fmt"
 	"strconv"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -94,6 +95,8 @@ const (
 	KafkaPassword    = "KAFKA_PASSWORD"
 	PostgresUser     = "POSTGRES_USER"
 	PostgresPassword = "POSTGRES_PASSWORD" // #nosec G101 -- env key name
+
+	DelayBetweenProvisioning = 10 * time.Second
 )
 
 func NewProvisioningService(cfg *config.Config, kubernetes kubernetese.Kubernetese) ProvisioningService {
@@ -127,7 +130,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	configMap := map[string]string{
 		ServiceId:                strconv.FormatUint(testScenario.ID, 10),
 		ServiceName:              testScenario.Name,
-		HttpMotherServiceBaseUrl: fmt.Sprintf("%s-%v:%v", ps.cfg.Kubernetese.MotherServiceAPPServe, testScenario.MotherServiceID, ps.cfg.Server.Port), // mother-service-serve-9:8080  // mother-service-serv-9.default.svc.cluster.local:8080
+		HttpMotherServiceBaseUrl: fmt.Sprintf("http://%s-%v:%v", ps.cfg.Kubernetese.MotherServiceAPPServe, testScenario.MotherServiceID, ps.cfg.Server.Port), // http://mother-service-serve-9:8080  // mother-service-serv-9.default.svc.cluster.local:8080
 		HttpMotherServiceId:      strconv.FormatUint(testScenario.MotherServiceID, 10),
 		HttpMaxTxsCount:          strconv.Itoa(testScenario.TestServiceConfig.MaxRequests),
 		HttpMaxTxsDuration:       fmt.Sprintf("%v%s", testScenario.TestServiceConfig.MaxDuration, "ms"),
@@ -229,9 +232,11 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		return err
 	}
 
+	time.Sleep(DelayBetweenProvisioning)
+
 	// jobs :
 	// Create deploy spec
-	jobsDepSpec := testJobsDepSpec(ps.cfg, Replication)
+	jobsDepSpec := testJobsDepSpec(ps.cfg, Replication, testScenario.ID)
 
 	// Call ApplyDeployment from kubernetese interface
 	err = ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
@@ -245,7 +250,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	}
 
 	// Wait for deployment to be ready
-	jobsSvcName := ps.cfg.Kubernetese.TestServiceAPPJobs
+	jobsSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID)
 	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.TestServiceAPPJobsWaitReady)
 	if err != nil {
 		zap.L().Error("create pod fail",
@@ -407,9 +412,11 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		return err
 	}
 
+	time.Sleep(DelayBetweenProvisioning)
+
 	// jobs :
 	// Create deploy spec
-	jobsDepSpec := motherJobsDepSpec(ps.cfg, Replication)
+	jobsDepSpec := motherJobsDepSpec(ps.cfg, Replication, motherService.ID)
 
 	// Call ApplyDeployment from kubernetese interface
 	err = ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
@@ -423,7 +430,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	}
 
 	// Wait for deployment to be ready
-	jobsSvcName := ps.cfg.Kubernetese.MotherServiceAPPJobs
+	jobsSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPJobs, motherService.ID)
 	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.MotherServiceAPPJobsWaitReady)
 	if err != nil {
 		zap.L().Error("create pod fail",
@@ -519,9 +526,9 @@ func testServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
 	}
 }
 
-func testJobsDepSpec(cfg *config.Config, replica int32) inEntity.DeploymentSpec {
+func testJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
 	replicas := replica
-	appName := cfg.Kubernetese.TestServiceAPPJobs
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.TestServiceAPPJobs, appId)
 	configName := appName + Config
 	secretName := appName + Secret
 	labels := map[string]string{App: appName}
@@ -617,9 +624,9 @@ func motherServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
 	}
 }
 
-func motherJobsDepSpec(cfg *config.Config, replica int32) inEntity.DeploymentSpec {
+func motherJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
 	replicas := replica
-	appName := cfg.Kubernetese.MotherServiceAPPJobs
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPJobs, appId)
 	configName := appName + Config
 	secretName := appName + Secret
 	labels := map[string]string{App: appName}
