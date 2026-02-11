@@ -165,13 +165,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	}
 
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
-	databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db))
+	databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db, cfg))
 	databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
-
-	// NOTE: do not call ResetOrphanedScenarios here in a way that creates
-	// another executor box. Ensure the box is created once and passed into
-	// `NewTestScenarioUsecase(...)` and call `testScenarioUsecase.ResetOrphanedScenarios`
-	// (once implemented) using this same `testScenarioUsecase` instance.
 
 	apiV1 := app.Group("/api/v1")
 
