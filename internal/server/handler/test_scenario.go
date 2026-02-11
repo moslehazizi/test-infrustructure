@@ -82,7 +82,7 @@ func (handler *TestScenario) Create() fiber.Handler {
 
 				return &entity.TestServiceConfig{
 					MaxRequests:           req.Config.MaxRequests,
-					MaxDuration:           req.Config.MaxDuration,
+					MaxDuration:           time.Duration(req.Config.MaxDuration) * time.Millisecond,
 					RequestDelayDuration:  req.Config.RequestDelayDuration,
 					RandomRequestDelayMin: req.Config.RandomRequestDelayMin,
 					RandomRequestDelayMax: req.Config.RandomRequestDelayMax,

@@ -947,7 +947,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "max_duration": {
-                    "type": "integer"
+                    "$ref": "#/definitions/time.Duration"
                 },
                 "max_requests": {
                     "type": "integer"
