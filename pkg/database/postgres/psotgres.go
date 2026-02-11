@@ -19,7 +19,7 @@ type DatabaseConfig struct {
 	Host               string
 	Port               int
 	User               string
-	Password           string
+	Password           string `json:"-"`
 	Database           string
 	SSLMode            string
 	LogLevel           LogLevel

@@ -57,7 +57,7 @@ type Kafka struct {
 	Host              string        `envconfig:"KAFKA_HOST"`
 	Port              int           `envconfig:"KAFKA_PORT"`
 	Username          string        `envconfig:"KAFKA_USERNAME"`
-	Password          string        `envconfig:"KAFKA_PASSWORD"`
+	Password          string        `envconfig:"KAFKA_PASSWORD" json:"-"`
 	ProvisioningTopic string        `envconfig:"KAFKA_PROVISIONING_TOPIC" default:"provisioning"`
 	DialerTimeout     time.Duration `envconfig:"KAFKA_DIALER_TIMEOUT" default:"10s"`
 	MaxBytes          int           `envconfig:"KAFKA_MAX_BYTES" default:"10485760"` // 10MB = 10 * 1024 * 1024
@@ -71,7 +71,7 @@ type Postgres struct {
 	Host               string        `envconfig:"POSTGRES_HOST"`
 	Port               int           `envconfig:"POSTGRES_PORT"`
 	User               string        `envconfig:"POSTGRES_USER"`
-	Password           string        `envconfig:"POSTGRES_PASSWORD"`
+	Password           string        `envconfig:"POSTGRES_PASSWORD" json:"-"`
 	Database           string        `envconfig:"POSTGRES_DATABASE"`
 	SSLMode            string        `envconfig:"POSTGRES_SSL_MODE"`
 	MaxOpenConnections int           `envconfig:"POSTGRES_MAX_OPEN_CONNECTIONS"`
