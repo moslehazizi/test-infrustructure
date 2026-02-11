@@ -84,7 +84,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:           sampleInt,
-				MaxDuration:           sampleInt,
+				MaxDuration:           dur,
 				RandomRequestDelayMin: &min,
 				RandomRequestDelayMax: &max,
 				RandomTestNumberMin:   &min,
@@ -172,7 +172,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:           sampleInt,
-				MaxDuration:           sampleInt,
+				MaxDuration:           dur,
 				RandomRequestDelayMin: &min,
 				RandomRequestDelayMax: &max,
 				RandomTestNumberMin:   &min,
@@ -253,7 +253,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:           sampleInt,
-				MaxDuration:           sampleInt,
+				MaxDuration:           dur,
 				RandomRequestDelayMin: &min,
 				RandomRequestDelayMax: &max,
 				FixedTestNumber:       &sampleInt,
@@ -331,7 +331,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
-				MaxDuration:          sampleInt,
+				MaxDuration:          dur,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
 				DatabaseName:         databaseName,
@@ -403,7 +403,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			MotherServiceID: sampleUin64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
-				MaxDuration:          sampleInt,
+				MaxDuration:          time.Millisecond * 1,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
 				DatabaseName:         databaseName,
@@ -505,7 +505,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
-				MaxDuration:          sampleInt,
+				MaxDuration:          dur,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
 				DatabaseName:         databaseName,
@@ -582,7 +582,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
-				MaxDuration:          sampleInt,
+				MaxDuration:          dur,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
 				DatabaseName:         databaseName,
@@ -660,7 +660,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			AutoStepChangeRate:  &sampleInt64,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
-				MaxDuration:          sampleInt,
+				MaxDuration:          dur,
 				RequestDelayDuration: &sampleInt,
 				FixedTestNumber:      &sampleInt,
 				DatabaseName:         databaseName,
