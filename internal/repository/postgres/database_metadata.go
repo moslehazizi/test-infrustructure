@@ -77,9 +77,9 @@ func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName stri
 		Raw(`
 			SELECT table_name
 			FROM information_schema.tables
-			WHERE table_schema = 'public'
+			WHERE table_catalog = ? AND table_schema = 'public'
 			ORDER BY table_name
-		`).
+		`, dbName).
 		Scan(&tables).Error
 
 	if err != nil {
