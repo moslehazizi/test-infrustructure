@@ -146,4 +146,5 @@ stages:
         CONTAINER_REGISTRY_URL: $(CONTAINER_REGISTRY_URL)
         OTLP_GRPC_HOST: $(OTLP_GRPC_HOST)
         OTLP_GRPC_PORT: $(OTLP_GRPC_PORT)
+        SWAGGER_HOST: $(SWAGGER_HOST)
       name: BuildConfigPatch
