@@ -211,13 +211,11 @@ func (repo *testScenario) GetDeploymentNumberByScenarioID(
 
 	var deploymentNumber int32
 
-	query := postgres.QueryBuilder(ctx, repo.db).
+	err := postgres.QueryBuilder(ctx, repo.db).
 		Model(&entity.TestScenario{}).
 		Select("deployment_number").
 		Where("id = ?", id).
-		Scan(&deploymentNumber)
-
-	err := query.Error
+		Scan(&deploymentNumber).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
