@@ -24,3 +24,7 @@ type TestService struct {
 	DeletedAt *gorm.DeletedAt   `gorm:"column:deleted_at"`
 	Status    TestServiceStatus `gorm:"column:status"`
 }
+
+func (TestService) TableName() string {
+	return "test_services"
+}

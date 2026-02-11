@@ -127,7 +127,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	configMap := map[string]string{
 		ServiceId:                strconv.FormatUint(testScenario.ID, 10),
 		ServiceName:              testScenario.Name,
-		HttpMotherServiceBaseUrl: fmt.Sprintf("%s-%v:%v", ps.cfg.Kubernetese.MotherServiceAPPServe, testScenario.MotherServiceID, ps.cfg.Server.Port), // mother-service-serve-1:8080
+		HttpMotherServiceBaseUrl: fmt.Sprintf("%s-%v:%v", ps.cfg.Kubernetese.MotherServiceAPPServe, testScenario.MotherServiceID, ps.cfg.Server.Port), // mother-service-serve-9:8080  // mother-service-serv-9.default.svc.cluster.local:8080
 		HttpMotherServiceId:      strconv.FormatUint(testScenario.MotherServiceID, 10),
 		HttpMaxTxsCount:          strconv.Itoa(testScenario.TestServiceConfig.MaxRequests),
 		HttpMaxTxsDuration:       fmt.Sprintf("%v%s", testScenario.TestServiceConfig.MaxDuration, "ms"),
