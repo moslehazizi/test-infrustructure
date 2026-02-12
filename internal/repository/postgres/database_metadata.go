@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"control-panel-service/config"
+	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
@@ -12,14 +14,16 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-func NewDatabaseMetadataRepository(db database.Database) repository.DatabaseMetadata {
+func NewDatabaseMetadataRepository(db database.Database, cfg *config.Config) repository.DatabaseMetadata {
 	return &databaseMetadata{
 		db,
+		cfg,
 	}
 }
 
 type databaseMetadata struct {
-	db database.Database
+	db  database.Database
+	cfg *config.Config
 }
 
 func (repo *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
@@ -59,43 +63,95 @@ func (repo *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
 	return databases, nil
 }
 
-func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName string) ([]string, error) {
+func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName string) (*entity.TablesByType, error) {
 	tracer := otel.Tracer("database-metadata-repository")
-	_, span := tracer.Start(ctx, "get_tables_by_db_name")
+	ctx, span := tracer.Start(ctx, "get_tables_by_db_name")
 	defer span.End()
-
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(
 		attribute.String("request_id", requestID),
 		attribute.String("database.name", dbName),
-		attribute.String("database.operation", "select"),
+		attribute.String("database.operation", "select_tables"),
 	)
 
-	var tables []string
-
-	query := fmt.Sprintf(`
-		SELECT table_name
-		FROM information_schema.tables
-		WHERE table_catalog = '%s' AND table_schema = 'public'
-		ORDER BY table_name
-	`, dbName)
-
-	err := postgres.QueryBuilder(ctx, repo.db).
-		Raw(query).
-		Scan(&tables).Error
-
+	db, err := postgres.New(&postgres.DatabaseConfig{
+		Host:               repo.cfg.Postgres.Host,
+		Port:               repo.cfg.Postgres.Port,
+		User:               repo.cfg.Postgres.User,
+		Password:           repo.cfg.Postgres.Password,
+		Database:           dbName,
+		MaxOpenConnections: repo.cfg.Postgres.MaxOpenConnections,
+		LogLevel:           postgres.Silent,
+	})
 	if err != nil {
-		span.SetAttributes(
-			attribute.String("error.type", "database_error"),
-			attribute.String("error.message", err.Error()),
-		)
+		span.RecordError(err)
+		span.SetAttributes(attribute.String("error.type", "connection_error"))
+		return nil, fmt.Errorf("failed to connect to database %s: %w", dbName, err)
+	}
+	defer db.Close()
 
+	// First get all table names
+	var tables []string
+	tableQuery := `
+		SELECT tablename
+		FROM pg_catalog.pg_tables
+		WHERE schemaname = 'public'
+		ORDER BY tablename;
+	`
+
+	err = postgres.QueryBuilder(ctx, db).
+		Raw(tableQuery).
+		Scan(&tables).Error
+	if err != nil {
+		span.RecordError(err)
+		span.SetAttributes(attribute.String("error.type", "query_error"))
 		return nil, fmt.Errorf("failed to load tables for database %s: %w", dbName, err)
 	}
 
-	if tables == nil {
-		tables = make([]string, 0)
+	result := &entity.TablesByType{
+		MotherTables: make([]string, 0),
+		TestTables:   make([]string, 0),
 	}
 
-	return tables, nil
+	for _, tableName := range tables {
+		columnQuery := `
+			SELECT column_name
+			FROM information_schema.columns
+			WHERE table_schema = 'public' 
+			AND table_name = $1
+			ORDER BY ordinal_position;
+		`
+
+		var columns []string
+		err = postgres.QueryBuilder(ctx, db).
+			Raw(columnQuery, tableName).
+			Scan(&columns).Error
+		if err != nil {
+			continue
+		}
+
+		if isTestScenarioTable(columns) {
+			result.TestTables = append(result.TestTables, tableName)
+		} else {
+			result.MotherTables = append(result.MotherTables, tableName)
+		}
+	}
+
+	return result, nil
+}
+
+func isTestScenarioTable(columns []string) bool {
+	requiredColumns := []string{"mother_service_id", "test_category_id"}
+
+	columnSet := make(map[string]bool)
+	for _, col := range columns {
+		columnSet[col] = true
+	}
+
+	for _, req := range requiredColumns {
+		if !columnSet[req] {
+			return false
+		}
+	}
+	return true
 }

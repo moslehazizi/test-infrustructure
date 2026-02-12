@@ -2,6 +2,7 @@ package mocks
 
 import (
 	"context"
+	"control-panel-service/internal/domain/entity"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -21,12 +22,12 @@ func (m *MockDatabaseMetadataUsecase) GetAll(ctx context.Context) ([]string, err
 	return result, args.Error(1)
 }
 
-func (m *MockDatabaseMetadataUsecase) GetTablesByDBName(ctx context.Context, dbName string) ([]string, error) {
+func (m *MockDatabaseMetadataUsecase) GetTablesByDBName(ctx context.Context, dbName string) (*entity.TablesByType, error) {
 	args := m.Called(ctx, dbName)
 
-	var result []string
+	var result *entity.TablesByType
 	if args.Get(0) != nil {
-		result = args.Get(0).([]string)
+		result = args.Get(0).(*entity.TablesByType)
 	}
 
 	return result, args.Error(1)

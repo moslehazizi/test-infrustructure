@@ -63,7 +63,7 @@ func (handler *DatabaseMetadataHandler) GetAll() fiber.Handler {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		request.GetTablesRequest	true	"Database name request"
-//	@Success		200		{object}	response.DatabaseMetadataTablesResponse
+//	@Success		200		{object}	response.TablesByType
 //	@Failure		400		{object}	response.ErrorResponse
 //	@Failure		500		{object}	response.ErrorResponse
 //	@Router			/api/v1/databases/tables [post]
@@ -96,8 +96,16 @@ func (handler *DatabaseMetadataHandler) GetTablesByDBNamePost() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
-		return ctx.Status(http.StatusOK).JSON(&response.DatabaseMetadataTablesResponse{
-			Data: result,
+		if result == nil {
+			return ctx.Status(http.StatusOK).JSON(&response.TablesByType{
+				MotherTables: []string{},
+				TestTables:   []string{},
+			})
+		}
+
+		return ctx.Status(http.StatusOK).JSON(&response.TablesByType{
+			MotherTables: result.MotherTables,
+			TestTables:   result.TestTables,
 		})
 	}
 }
