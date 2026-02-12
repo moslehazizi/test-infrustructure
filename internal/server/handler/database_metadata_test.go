@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase/mocks"
 	"encoding/json"
@@ -81,9 +82,13 @@ func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
 		app.Post("/databases/tables", handler.GetTablesByDBNamePost())
 
 		reqBody := `{"database_name": "testdb"}`
-		expectedTables := []string{"table1", "table2"}
+		expectedMotherTables := []string{"mother11", "mother2"}
+		expectedTestTables := []string{"test11", "test2"}
 
-		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").Return(expectedTables, nil)
+		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").Return(&entity.TablesByType{
+			MotherTables: expectedMotherTables,
+			TestTables:   expectedTestTables,
+		}, nil)
 
 		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
@@ -92,14 +97,47 @@ func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
 		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		var result response.DatabaseMetadataTablesResponse
+		var result response.TablesByType
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
 		err = json.Unmarshal(bts, &result)
 		assert.Nil(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, expectedTables, result.Data)
+		assert.Equal(t, expectedMotherTables, result.MotherTables)
+		assert.Equal(t, expectedTestTables, result.TestTables)
+
+		mockUC.AssertExpectations(t)
+	})
+
+	t.Run("success case - empty result", func(t *testing.T) {
+		mockUC := new(mocks.MockDatabaseMetadataUsecase)
+		handler := NewDatabaseMetadataHandler(mockUC)
+		app := fiber.New()
+		app.Post("/databases/tables", handler.GetTablesByDBNamePost())
+
+		reqBody := `{"database_name": "testdb"}`
+		expectedMotherTables := []string{}
+		expectedTestTables := []string{}
+
+		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").Return(nil, nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		var result response.TablesByType
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, expectedMotherTables, result.MotherTables)
+		assert.Equal(t, expectedTestTables, result.TestTables)
 
 		mockUC.AssertExpectations(t)
 	})
@@ -138,7 +176,7 @@ func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
 		app := fiber.New()
 		app.Post("/databases/tables", handler.GetTablesByDBNamePost())
 
-		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").Return([]string{}, errors.New("query failed"))
+		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").Return(nil, errors.New("query failed"))
 
 		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader(`{"database_name": "testdb"}`))
 		req.Header.Set("Content-Type", "application/json")

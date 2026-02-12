@@ -140,13 +140,6 @@ definitions:
           type: string
         type: array
     type: object
-  response.DatabaseMetadataTablesResponse:
-    properties:
-      data:
-        items:
-          type: string
-        type: array
-    type: object
   response.ErrorResponse:
     properties:
       error:
@@ -217,6 +210,17 @@ definitions:
       message:
         type: string
     type: object
+  response.TablesByType:
+    properties:
+      mother_tables:
+        items:
+          type: string
+        type: array
+      test_tables:
+        items:
+          type: string
+        type: array
+    type: object
   response.TestCategory:
     properties:
       active:
@@ -245,7 +249,7 @@ definitions:
       created_at:
         type: string
       execution_duration:
-        $ref: '#/definitions/time.Duration'
+        type: integer
       id:
         type: integer
       max_test_service_count:
@@ -283,7 +287,7 @@ definitions:
       long_string_value_rate:
         type: integer
       max_duration:
-        $ref: '#/definitions/time.Duration'
+        type: integer
       max_requests:
         type: integer
       negative_value_rate:
@@ -309,27 +313,6 @@ definitions:
       zero_value_rate:
         type: integer
     type: object
-  time.Duration:
-    enum:
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    format: int64
-    type: integer
-    x-enum-varnames:
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
 info:
   contact: {}
 paths:
@@ -370,7 +353,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.DatabaseMetadataTablesResponse'
+            $ref: '#/definitions/response.TablesByType'
         "400":
           description: Bad Request
           schema:
