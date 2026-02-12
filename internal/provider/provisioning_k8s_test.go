@@ -64,7 +64,7 @@ func TestDeployMotherService(t *testing.T) {
 		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
 		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs-1", 10*time.Second).Return(nil).Once()
 
 		err := service.ProvisionMotherService(ctx, motherService)
 
@@ -178,7 +178,7 @@ func TestDeployMotherService(t *testing.T) {
 		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
 		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs", 10*time.Second).Return(errors.New("timeout waiting for jobs")).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs-1", 10*time.Second).Return(errors.New("timeout waiting for jobs")).Once()
 
 		err := service.ProvisionMotherService(ctx, motherService)
 
@@ -269,7 +269,7 @@ func TestDeployTestScenarioService(t *testing.T) {
 		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
 		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-serve-1", 10*time.Second).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-jobs", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-jobs-1", 10*time.Second).Return(nil).Once()
 
 		err := service.ProvisionTestService(ctx, testScenarioService, replica)
 
@@ -301,6 +301,10 @@ func TestDeployTestScenarioService(t *testing.T) {
 				NullValueRate:       10,
 			},
 		}
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-jobs-1", 10*time.Second).Return(nil).Once()
 
 		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply deployment failed")).Once()
 
@@ -335,8 +339,11 @@ func TestDeployTestScenarioService(t *testing.T) {
 			},
 		}
 
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply service failed")).Once()
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
+
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-jobs-1", 10*time.Second).Return(nil).Once()
+
+		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("error happened"))
 
 		err := service.ProvisionTestService(ctx, testScenarioService, replica)
 
@@ -370,7 +377,13 @@ func TestDeployTestScenarioService(t *testing.T) {
 		}
 
 		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-jobs-1", 10*time.Second).Return(nil).Once()
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
 		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
 		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-serve-1", 10*time.Second).Return(errors.New("timeout waiting for deployment")).Once()
 
 		err := service.ProvisionTestService(ctx, testScenarioService, replica)
@@ -404,9 +417,6 @@ func TestDeployTestScenarioService(t *testing.T) {
 			},
 		}
 
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once() // serve
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-serve-1", 10*time.Second).Return(nil).Once()
 		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply jobs deployment failed")).Once() // jobs
 
 		err := service.ProvisionTestService(ctx, testScenarioService, replica)
@@ -440,17 +450,16 @@ func TestDeployTestScenarioService(t *testing.T) {
 			},
 		}
 
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-serve-1", 10*time.Second).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-jobs", 10*time.Second).Return(errors.New("timeout waiting for jobs")).Once()
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		// mockKubernetes.On("ApplyService", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		// mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-serve-1", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "test-service-jobs-1", 10*time.Second).Return(errors.New("timeout waiting for jobs")).Once()
 
 		err := service.ProvisionTestService(ctx, testScenarioService, replica)
 
 		assert.Error(t, err)
 		mockKubernetes.AssertExpectations(t)
 	})
-
 }
 
 func TestDeprovisionMotherService(t *testing.T) {
