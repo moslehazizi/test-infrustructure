@@ -474,7 +474,7 @@ func TestDeprovisionMotherService(t *testing.T) {
 		motherService := &entity.MotherService{ID: 1, Name: "mother1"}
 		serveName := "mother-service-serve-1"
 		configName := serveName + "-config"
-		secretName := serveName + "-secret"
+		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
@@ -551,7 +551,7 @@ func TestDeprovisionMotherService(t *testing.T) {
 		motherService := &entity.MotherService{ID: 1, Name: "mother1"}
 		serveName := "mother-service-serve-1"
 		configName := serveName + "-config"
-		secretName := serveName + "-secret"
+		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
@@ -658,7 +658,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		replicaToRemove := int32(4)
 		serveName := "test-service-serve-3"
 		configName := serveName + "-config"
-		secretName := serveName + "-secret"
+		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("GetDeploymentReplicas", mock.Anything, serveName).Return(4, nil).Once()
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
@@ -699,7 +699,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		replicaToRemove := int32(10)
 		serveName := "test-service-serve-2"
 		configName := serveName + "-config"
-		secretName := serveName + "-secret"
+		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("GetDeploymentReplicas", mock.Anything, serveName).Return(3, nil).Once()
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
@@ -923,7 +923,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		replicaToRemove := int32(5)
 		serveName := "test-service-serve-2"
 		configName := serveName + "-config"
-		secretName := serveName + "-secret"
+		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("GetDeploymentReplicas", mock.Anything, serveName).Return(5, nil).Once()
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()

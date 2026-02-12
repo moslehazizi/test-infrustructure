@@ -29,7 +29,7 @@ const (
 
 	Replication = 1
 	Config      = "-config"
-	Secret      = "-secret"
+	Secret      = "-secrets"
 
 	// Config map.
 	ServiceId                       = "SERVICE_ID"
@@ -96,7 +96,7 @@ const (
 	PostgresUser     = "POSTGRES_USER"
 	PostgresPassword = "POSTGRES_PASSWORD" // #nosec G101 -- env key name
 
-	DelayBetweenProvisioning = 10 * time.Second
+	DelayBetweenProvisioning = 5 * time.Second
 )
 
 func NewProvisioningService(cfg *config.Config, kubernetes kubernetese.Kubernetese) ProvisioningService {
@@ -191,6 +191,35 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		PostgresPassword: ps.cfg.Postgres.Password,
 	}
 
+	// jobs :
+	// Create deploy spec
+	jobsDepSpec := testJobsDepSpec(ps.cfg, Replication, testScenario.ID)
+
+	// Call ApplyDeployment from kubernetese interface
+	err := ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
+	if err != nil {
+		zap.L().Error("apply deployment fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Wait for deployment to be ready
+	jobsSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID)
+	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.TestServiceAPPJobsWaitReady)
+	if err != nil {
+		zap.L().Error("create pod fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	time.Sleep(DelayBetweenProvisioning)
+
 	// Serve :
 	// Create deploy spec
 	serveDepSpec := testServDepSpec(ps.cfg, replica, testScenario.ID)
@@ -199,7 +228,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	serveSvcSpec := testServeSvcSpec(ps.cfg, testScenario.ID)
 
 	// Call ApplyDeployment from kubernetese interface
-	err := ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
+	err = ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
 		zap.L().Error("apply deployment fail",
 			zap.String("apllication", serveDepSpec.Name),
@@ -226,35 +255,6 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	if err != nil {
 		zap.L().Error("create pod fail",
 			zap.String("apllication", serveDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	time.Sleep(DelayBetweenProvisioning)
-
-	// jobs :
-	// Create deploy spec
-	jobsDepSpec := testJobsDepSpec(ps.cfg, Replication, testScenario.ID)
-
-	// Call ApplyDeployment from kubernetese interface
-	err = ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
-	if err != nil {
-		zap.L().Error("apply deployment fail",
-			zap.String("apllication", jobsDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	// Wait for deployment to be ready
-	jobsSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID)
-	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.TestServiceAPPJobsWaitReady)
-	if err != nil {
-		zap.L().Error("create pod fail",
-			zap.String("apllication", jobsDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -473,7 +473,7 @@ func testServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 	replicas := replica
 	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.TestServiceAPPServe, appId)
 	configName := appName + Config
-	secretName := appName + Secret
+	secretName := cfg.Kubernetese.TestServiceAPPServe + Secret
 	labels := map[string]string{App: appName}
 
 	return inEntity.DeploymentSpec{
@@ -489,7 +489,7 @@ func testServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 						Containers: []corev1.Container{
 							{
 								Name:            App,
-								Image:           cfg.Kubernetese.TestServiceImage,
+								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
 								ImagePullPolicy: corev1.PullIfNotPresent,
 								Command:         []string{Main, Serve},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
@@ -530,7 +530,7 @@ func testJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 	replicas := replica
 	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.TestServiceAPPJobs, appId)
 	configName := appName + Config
-	secretName := appName + Secret
+	secretName := cfg.Kubernetese.TestServiceAPPServe + Secret
 	labels := map[string]string{App: appName}
 
 	return inEntity.DeploymentSpec{
@@ -546,7 +546,7 @@ func testJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 						Containers: []corev1.Container{
 							{
 								Name:            App,
-								Image:           cfg.Kubernetese.TestServiceImage,
+								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
 								ImagePullPolicy: corev1.PullIfNotPresent,
 								Command:         []string{Main, Jobs},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
@@ -571,7 +571,7 @@ func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 	replicas := replica
 	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
 	configName := appName + Config
-	secretName := appName + Secret
+	secretName := cfg.Kubernetese.MotherServiceAPPServe + Secret
 	labels := map[string]string{App: appName}
 
 	return inEntity.DeploymentSpec{
@@ -587,7 +587,7 @@ func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 						Containers: []corev1.Container{
 							{
 								Name:            App,
-								Image:           cfg.Kubernetese.MotherServiceImage,
+								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
 								ImagePullPolicy: corev1.PullIfNotPresent,
 								Command:         []string{Main, Serve},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
@@ -628,7 +628,7 @@ func motherJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 	replicas := replica
 	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPJobs, appId)
 	configName := appName + Config
-	secretName := appName + Secret
+	secretName := cfg.Kubernetese.MotherServiceAPPServe + Secret
 	labels := map[string]string{App: appName}
 
 	return inEntity.DeploymentSpec{
@@ -644,7 +644,7 @@ func motherJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 						Containers: []corev1.Container{
 							{
 								Name:            App,
-								Image:           cfg.Kubernetese.MotherServiceImage,
+								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
 								ImagePullPolicy: corev1.PullIfNotPresent,
 								Command:         []string{Main, Jobs},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
