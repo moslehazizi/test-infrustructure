@@ -490,7 +490,7 @@ func testServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
-								ImagePullPolicy: corev1.PullIfNotPresent,
+								ImagePullPolicy: corev1.PullAlways,
 								Command:         []string{Main, Serve},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
@@ -543,7 +543,7 @@ func testJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
-								ImagePullPolicy: corev1.PullIfNotPresent,
+								ImagePullPolicy: corev1.PullAlways,
 								Command:         []string{Main, Jobs},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
@@ -580,7 +580,7 @@ func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
-								ImagePullPolicy: corev1.PullIfNotPresent,
+								ImagePullPolicy: corev1.PullAlways,
 								Command:         []string{Main, Serve},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
@@ -633,7 +633,7 @@ func motherJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
-								ImagePullPolicy: corev1.PullIfNotPresent,
+								ImagePullPolicy: corev1.PullAlways,
 								Command:         []string{Main, Jobs},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
