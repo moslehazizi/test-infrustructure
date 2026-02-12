@@ -72,7 +72,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.DatabaseMetadataTablesResponse"
+                            "$ref": "#/definitions/response.TablesByType"
                         }
                     },
                     "400": {
@@ -728,17 +728,6 @@ const docTemplate = `{
                 }
             }
         },
-        "response.DatabaseMetadataTablesResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "response.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -847,6 +836,23 @@ const docTemplate = `{
                 }
             }
         },
+        "response.TablesByType": {
+            "type": "object",
+            "properties": {
+                "mother_tables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "test_tables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "response.TestCategory": {
             "type": "object",
             "properties": {
@@ -889,7 +895,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "execution_duration": {
-                    "$ref": "#/definitions/time.Duration"
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -947,7 +953,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "max_duration": {
-                    "$ref": "#/definitions/time.Duration"
+                    "type": "integer"
                 },
                 "max_requests": {
                     "type": "integer"
@@ -986,30 +992,6 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
-        },
-        "time.Duration": {
-            "type": "integer",
-            "format": "int64",
-            "enum": [
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
-            ],
-            "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
-            ]
         }
     }
 }`

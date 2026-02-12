@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository/mocks"
 	"errors"
 	"testing"
@@ -63,27 +64,33 @@ func TestDatabaseMetadataUsecase_GetAll(t *testing.T) {
 func TestStorageUsecase_GetTablesByDBName(t *testing.T) {
 	t.Run("success case - with result", func(t *testing.T) {
 		repo := new(mocks.MockDatabaseMetadata)
+		motherTables := []string{"mother1", "mother2"}
+		testTables := []string{"test1", "test2"}
 		repo.On("GetTablesByDBName", mock.Anything, "load_test_db").
-			Return([]string{"events", "logs"}, nil)
+			Return(&entity.TablesByType{
+				MotherTables: motherTables,
+				TestTables:   testTables,
+			}, nil)
 
 		uc := NewDatabaseMetadata(repo)
 		result, err := uc.GetTablesByDBName(context.Background(), "load_test_db")
 
 		assert.NoError(t, err)
-		assert.Equal(t, []string{"events", "logs"}, result)
+		assert.Equal(t, result.MotherTables, motherTables)
+		assert.Equal(t, result.TestTables, testTables)
 		repo.AssertExpectations(t)
 	})
 
 	t.Run("success case - with empty result", func(t *testing.T) {
 		repo := new(mocks.MockDatabaseMetadata)
 		repo.On("GetTablesByDBName", mock.Anything, "load_test_db").
-			Return([]string(nil), nil)
+			Return(nil, nil)
 
 		uc := NewDatabaseMetadata(repo)
 		result, err := uc.GetTablesByDBName(context.Background(), "load_test_db")
 
 		assert.NoError(t, err)
-		assert.Len(t, result, 0)
+		assert.Nil(t, result)
 		repo.AssertExpectations(t)
 	})
 

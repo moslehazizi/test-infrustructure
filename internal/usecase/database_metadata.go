@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
@@ -24,7 +25,7 @@ type databaseMetadata struct {
 
 type DatabaseMetadata interface {
 	GetAll(ctx context.Context) ([]string, error)
-	GetTablesByDBName(ctx context.Context, dbName string) ([]string, error)
+	GetTablesByDBName(ctx context.Context, dbName string) (*entity.TablesByType, error)
 }
 
 func (u *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
@@ -48,7 +49,7 @@ func (u *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
 	return result, nil
 }
 
-func (u *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName string) ([]string, error) {
+func (u *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName string) (*entity.TablesByType, error) {
 	tracer := otel.Tracer("storage-usecase")
 	_, span := tracer.Start(ctx, "get_tables_by_db_name")
 	defer span.End()
