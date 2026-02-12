@@ -497,10 +497,6 @@ func testServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
 									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
 								},
-								Env: []corev1.EnvVar{
-									{Name: KafkaUsername, Value: cfg.Kafka.Username},
-									{Name: KafkaPassword, Value: cfg.Kafka.Password},
-								},
 							},
 						},
 					},
@@ -554,10 +550,6 @@ func testJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
 									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
 								},
-								Env: []corev1.EnvVar{
-									{Name: KafkaUsername, Value: cfg.Kafka.Username},
-									{Name: KafkaPassword, Value: cfg.Kafka.Password},
-								},
 							},
 						},
 					},
@@ -594,10 +586,6 @@ func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 								EnvFrom: []corev1.EnvFromSource{
 									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
 									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
-								},
-								Env: []corev1.EnvVar{
-									{Name: KafkaUsername, Value: cfg.Kafka.Username},
-									{Name: KafkaPassword, Value: cfg.Kafka.Password},
 								},
 							},
 						},
@@ -651,10 +639,6 @@ func motherJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 								EnvFrom: []corev1.EnvFromSource{
 									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
 									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
-								},
-								Env: []corev1.EnvVar{
-									{Name: KafkaUsername, Value: cfg.Kafka.Username},
-									{Name: KafkaPassword, Value: cfg.Kafka.Password},
 								},
 							},
 						},
