@@ -184,6 +184,7 @@ func TestLoadConfig(t *testing.T) {
 
 	t.Run("success fetch kubernets config", func(t *testing.T) {
 		expectedKubernetesNameSpace := "control-panel-service"
+		expectedKubernetesContainerRegistryUrl := "chalenge.azurecr.io/"
 		expectedKubernetesMotherSvcImage := "challenge-mother-service:0.1"
 		expectedKubernetesMotherSvcAPPServe := "mother-service-serve"
 		expectedKubernetesMotherSvcAPPServeWaitReady := 10 * time.Second
@@ -209,6 +210,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedKubernetesTestServiceKafkaLiveFeedTopic := "test-live-feed"
 
 		os.Setenv("KUBERNETES_NAMESPACE", expectedKubernetesNameSpace)
+		os.Setenv("CONTAINER_REGISTRY_URL", expectedKubernetesContainerRegistryUrl)
 		os.Setenv("MOTHER_SERVICE_IMAGE", expectedKubernetesMotherSvcImage)
 		os.Setenv("MOTHER_SERVICE_APP_SERVE", expectedKubernetesMotherSvcAPPServe)
 		os.Setenv("MOTHER_SERVICE_APP_SERVE_WAIT_READY", expectedKubernetesMotherSvcAPPServeWaitReady.String())
@@ -237,6 +239,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, cfg.Kubernetese.NameSpace, expectedKubernetesNameSpace)
+		assert.Equal(t, cfg.Kubernetese.ContainerRegistryUrl, expectedKubernetesContainerRegistryUrl)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceImage, expectedKubernetesMotherSvcImage)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServe, expectedKubernetesMotherSvcAPPServe)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServeWaitReady, expectedKubernetesMotherSvcAPPServeWaitReady)
@@ -280,6 +283,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultLogFormat := "json"
 		expectedDefaultLogOutput := "stdout"
 		expectedDefaultKubernetesNameSpace := "control-panel-service"
+		expectedDefaultKubernetesContainerRegistryUrl := "chalenge.azurecr.io/"
 		expectedDefaultKubernetesMotherSvcImage := "challenge-mother-service:0.1"
 		expectedDefaultKubernetesMotherSvcAPPServe := "mother-service-serve"
 		expectedDefaultKubernetesMotherSvcAPPServeWaitReady := 10 * time.Second
@@ -315,6 +319,7 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("LOG_FORMAT")
 		os.Unsetenv("LOG_OUTPUT")
 		os.Unsetenv("KUBERNETES_NAMESPACE")
+		os.Unsetenv("CONTAINER_REGISTRY_URL")
 		os.Unsetenv("MOTHER_SERVICE_IMAGE")
 		os.Unsetenv("MOTHER_SERVICE_APP_SERVE")
 		os.Unsetenv("MOTHER_SERVICE_APP_SERVE_WAIT_READY")
@@ -362,6 +367,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Logger.Format, expectedDefaultLogFormat)
 		assert.Equal(t, cfg.Logger.Output, expectedDefaultLogOutput)
 		assert.Equal(t, cfg.Kubernetese.NameSpace, expectedDefaultKubernetesNameSpace)
+		assert.Equal(t, cfg.Kubernetese.ContainerRegistryUrl, expectedDefaultKubernetesContainerRegistryUrl)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceImage, expectedDefaultKubernetesMotherSvcImage)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServe, expectedDefaultKubernetesMotherSvcAPPServe)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServeWaitReady, expectedDefaultKubernetesMotherSvcAPPServeWaitReady)

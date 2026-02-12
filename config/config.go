@@ -88,6 +88,7 @@ type Logger struct {
 
 type Kubernetese struct {
 	NameSpace                      string        `envconfig:"KUBERNETES_NAMESPACE" default:"control-panel-service"`
+	ContainerRegistryUrl           string        `envconfig:"CONTAINER_REGISTRY_URL" default:"chalenge.azurecr.io/"`
 	MotherServiceImage             string        `envconfig:"MOTHER_SERVICE_IMAGE" default:"challenge-mother-service:0.1"`
 	MotherServiceAPPServe          string        `envconfig:"MOTHER_SERVICE_APP_SERVE" default:"mother-service-serve"`
 	MotherServiceAPPServeWaitReady time.Duration `envconfig:"MOTHER_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`

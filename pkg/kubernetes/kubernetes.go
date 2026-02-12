@@ -19,7 +19,7 @@ import (
 
 const (
 	Config = "-config"
-	Secret = "-secret"
+	Secret = "-secrets"
 	Wait   = 2 * time.Second
 )
 
