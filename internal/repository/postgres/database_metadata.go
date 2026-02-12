@@ -132,7 +132,7 @@ func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName stri
 
 		if isTestScenarioTable(columns) {
 			result.TestTables = append(result.TestTables, tableName)
-		} else {
+		} else if isMotherTable(columns) {
 			result.MotherTables = append(result.MotherTables, tableName)
 		}
 	}
@@ -142,6 +142,21 @@ func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName stri
 
 func isTestScenarioTable(columns []string) bool {
 	requiredColumns := []string{"mother_service_id", "test_category_id"}
+
+	columnSet := make(map[string]bool)
+	for _, col := range columns {
+		columnSet[col] = true
+	}
+
+	for _, req := range requiredColumns {
+		if !columnSet[req] {
+			return false
+		}
+	}
+	return true
+}
+func isMotherTable(columns []string) bool {
+	requiredColumns := []string{"service_deployment_address", "exception_rate"}
 
 	columnSet := make(map[string]bool)
 	for _, col := range columns {
