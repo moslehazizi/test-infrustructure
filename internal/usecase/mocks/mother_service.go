@@ -38,3 +38,9 @@ func (m *MockMotherService) GetPaginated(ctx context.Context, paginationRequest 
 
 	return result, args.Get(1).(int64), args.Error(2)
 }
+
+func (m *MockMotherService) DeprovisionAllPods(ctx context.Context) error {
+	args := m.Called(ctx)
+
+	return args.Error(0)
+}

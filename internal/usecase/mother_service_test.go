@@ -368,3 +368,43 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
 }
+
+func TestMotherServiceUsecase_DeprovisionAllPods(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+
+		paginationRequest := entity.PaginationRequest{
+			Page:    0,
+			PerPage: 0,
+		}
+
+		motherServices := []*entity.MotherService{
+			{
+				ID:                uint64(1),
+				Name:              "mother1",
+				Status:            entity.MotherServiceStatusRunning,
+				DatabaseName:      "db1",
+				DatabaseTableName: "factorial",
+			},
+			{
+				ID:                uint64(2),
+				Name:              "mother2",
+				Status:            entity.MotherServiceStatusRunning,
+				DatabaseName:      "db2",
+				DatabaseTableName: "factorial",
+			},
+		}
+		// mockProvision.On("DeprovisionAllMotherServicePods", mock.Anything).Return(nil)
+		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(motherServices, int64(2), nil)
+		mockProvision.On("DeprovisionMotherService", mock.Anything, mock.Anything).Return(nil).Times(len(motherServices))
+		mockRepo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(len(motherServices))
+
+		err := service.DeprovisionAllPods(ctx)
+
+		assert.NoError(t, err)
+		// mockProvision.AssertCalled(t, "DeprovisionAllMotherServicePods", mock.Anything)
+	})
+}

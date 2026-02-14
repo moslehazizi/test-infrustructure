@@ -768,7 +768,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 			Page:    2,
 			PerPage: 10,
 		}
-		
+
 		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT count(*) FROM "mother_services" WHERE "mother_services"."deleted_at" IS NULL`,
 		)).
@@ -824,4 +824,57 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
+}
+
+func TestMotherServiceRepository_SetStatus(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewMotherServiceRepository(db)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "mother_services" SET "status"=$1,"updated_at"=$2 WHERE "id" = $3 AND "mother_services"."deleted_at" IS NULL`,
+		)).
+			WithArgs(
+				entity.MotherServiceStatusRunning,
+				sqlmock.AnyArg(),
+				uint64(1),
+			).
+			WillReturnResult(sqlmock.NewResult(0, 1))
+
+		mock.ExpectCommit()
+
+		err = repo.SetStatus(context.Background(), uint64(1), entity.MotherServiceStatusRunning)
+
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+	t.Run("failed case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewMotherServiceRepository(db)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "mother_services" SET "status"=$1,"updated_at"=$2 WHERE "id" = $3 AND "mother_services"."deleted_at" IS NULL`,
+		)).
+			WithArgs(
+				entity.MotherServiceStatusRunning,
+				sqlmock.AnyArg(),
+				uint64(1),
+			).
+			WillReturnError(errors.New("something went wrong"))
+
+		mock.ExpectRollback()
+
+		err = repo.SetStatus(context.Background(), uint64(1), entity.MotherServiceStatusRunning)
+
+		assert.Error(t, err)
+	})
+
 }

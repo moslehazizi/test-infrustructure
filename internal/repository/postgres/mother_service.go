@@ -11,11 +11,13 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type motherServiceRepository struct {
@@ -129,4 +131,31 @@ func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRe
 	}
 
 	return motherServices, count, nil
+}
+
+func (m *motherServiceRepository) SetStatus(ctx context.Context, id uint64, status entity.MotherServiceStatus) error {
+	tracer := otel.Tracer("mother-service-repository")
+	_, span := tracer.Start(ctx, "set_mother_service_status")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
+	span.SetAttributes(attribute.String("database.operation", "update"), attribute.String("mother_service.id", strconv.FormatUint(id, 10)), attribute.String("mother_service.status", string(status)))
+
+	err := postgres.QueryBuilder(ctx, m.db).
+		Omit(clause.Associations).
+		Model(&entity.MotherService{}).
+		Where("id", id).
+		Updates(map[string]any{
+			"status":     status,
+			"updated_at": time.Now(),
+		}).Error
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("failed to update test scenario status: %w", err)
+	}
+
+	return nil
 }
