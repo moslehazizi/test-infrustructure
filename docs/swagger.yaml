@@ -365,6 +365,25 @@ paths:
       summary: Get tables by database name
       tags:
       - database-metadata
+  /api/v1/deprovision-all:
+    post:
+      consumes:
+      - application/json
+      description: Deprovision all pods in k8s
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Deprovision all pods
+      tags:
+      - mother-services
   /api/v1/mother-services:
     post:
       consumes:
