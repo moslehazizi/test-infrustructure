@@ -7,7 +7,7 @@ RUN echo "http://mirror1.hs-esslingen.de/pub/Mirrors/alpine/v3.22/main" > /etc/a
     echo "http://mirror1.hs-esslingen.de/pub/Mirrors/alpine/v3.22/community" >> /etc/apk/repositories
 
 # Install build dependencies only
-RUN apk update && apk add --no-cache make git librdkafka-dev build-base
+RUN apk update && apk add --no-cache make git librdkafka-dev build-base curl
 
 WORKDIR /app
 
