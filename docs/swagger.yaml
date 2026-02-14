@@ -367,8 +367,6 @@ paths:
       - database-metadata
   /api/v1/deprovision-all:
     post:
-      consumes:
-      - application/json
       description: Deprovision all pods in k8s
       produces:
       - application/json

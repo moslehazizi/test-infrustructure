@@ -93,9 +93,6 @@ const docTemplate = `{
         "/api/v1/deprovision-all": {
             "post": {
                 "description": "Deprovision all pods in k8s",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],

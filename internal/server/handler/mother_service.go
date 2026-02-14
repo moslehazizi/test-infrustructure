@@ -250,7 +250,6 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 //	@Summary		Deprovision all pods
 //	@Description	Deprovision all pods in k8s
 //	@Tags			mother-services
-//	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	response.SuccessResponse
 //	@Failure		500	{object}	response.ErrorResponse
