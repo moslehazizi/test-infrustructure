@@ -31,7 +31,7 @@ RUN echo "http://mirror1.hs-esslingen.de/pub/Mirrors/alpine/v3.22/main" > /etc/a
     echo "http://mirror1.hs-esslingen.de/pub/Mirrors/alpine/v3.22/community" >> /etc/apk/repositories
 
 # Install only runtime dependencies
-RUN apk update && apk add --no-cache ca-certificates && \
+RUN apk update && apk add --no-cache ca-certificates curl && \
     rm -rf /var/cache/apk/*
 
 # Create non-root user for security

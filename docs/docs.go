@@ -90,6 +90,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/deprovision-all": {
+            "post": {
+                "description": "Deprovision all pods in k8s",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mother-services"
+                ],
+                "summary": "Deprovision all pods",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/mother-services": {
             "post": {
                 "description": "Create a new mother service",
