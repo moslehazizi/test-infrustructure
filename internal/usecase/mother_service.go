@@ -221,7 +221,6 @@ func (service *motherService) DeprovisionAllPods(ctx context.Context) error {
 				continue
 			}
 		}
-
 	}
 
 	return nil
