@@ -300,7 +300,7 @@ var (
 	ErrInvalid100SumOfBadValues                = errors.New("sum of all bad values should be 100 if bad value field has value")
 	ErrTestServiceConfigIsRequired             = errors.New("test service config is required")
 	ErrOnlyPendingScenariosCanBeStarted        = errors.New("only pending scenarios can be started")
-	ErrFailedToSetScenarioStatusAsRunning      = errors.New("failed to set scenario status as running")
+	ErrFailedToSetScenarioStatus               = errors.New("failed to set scenario status")
 	ErrGettingRunningTestServicesByScenario    = errors.New("failed to get running test services by scenario")
 	ErrFailedToDeprovisionTestServices         = errors.New("failed to deprovision test services")
 	ErrInt32OutOfRange                         = errors.New("out of int32 range")
