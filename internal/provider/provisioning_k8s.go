@@ -275,6 +275,8 @@ func (ps *provisioningService) DeprovisionTestService(ctx context.Context, testS
 	}
 
 	serveName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceAPPServe, testScenario.ID)
+	jobsName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID)
+
 	currentReplicas, err := ps.kubernetes.GetDeploymentReplicas(ctx, serveName)
 	if err != nil {
 		return err
@@ -299,6 +301,14 @@ func (ps *provisioningService) DeprovisionTestService(ctx context.Context, testS
 	if err := ps.kubernetes.DeleteService(ctx, serveName); err != nil {
 		return err
 	}
+
+	if err := ps.kubernetes.DeleteDeployment(ctx, jobsName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteService(ctx, jobsName); err != nil {
+		return err
+	}
+
 	if err := ps.kubernetes.DeleteConfigMap(ctx, configName); err != nil {
 		return err
 	}
@@ -450,6 +460,7 @@ func (ps *provisioningService) DeprovisionMotherService(ctx context.Context, mot
 	}
 
 	serveName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPServe, motherService.ID)
+	jobsName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPJobs, motherService.ID)
 	configName := serveName + Config
 	secretName := serveName + Secret
 
@@ -459,6 +470,14 @@ func (ps *provisioningService) DeprovisionMotherService(ctx context.Context, mot
 	if err := ps.kubernetes.DeleteService(ctx, serveName); err != nil {
 		return err
 	}
+
+	if err := ps.kubernetes.DeleteDeployment(ctx, jobsName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteService(ctx, jobsName); err != nil {
+		return err
+	}
+
 	if err := ps.kubernetes.DeleteConfigMap(ctx, configName); err != nil {
 		return err
 	}

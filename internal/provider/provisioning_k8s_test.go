@@ -482,11 +482,14 @@ func TestDeprovisionMotherService(t *testing.T) {
 
 		motherService := &entity.MotherService{ID: 1, Name: "mother1"}
 		serveName := "mother-service-serve-1"
+		jobsName := "mother-service-jobs-1"
 		configName := serveName + "-config"
 		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
 		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(nil).Once()
 		mockKubernetes.On("DeleteSecret", mock.Anything, secretName).Return(nil).Once()
 
@@ -539,11 +542,14 @@ func TestDeprovisionMotherService(t *testing.T) {
 
 		motherService := &entity.MotherService{ID: 1, Name: "mother1"}
 		serveName := "mother-service-serve-1"
+		jobsName := "mother-service-jobs-1"
 		configName := serveName + "-config"
 
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
-		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(errors.New("delete service failed")).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(errors.New("delete config failed")).Once()
 
 		err := service.DeprovisionMotherService(ctx, motherService)
 
@@ -559,13 +565,16 @@ func TestDeprovisionMotherService(t *testing.T) {
 
 		motherService := &entity.MotherService{ID: 1, Name: "mother1"}
 		serveName := "mother-service-serve-1"
+		jobsName := "mother-service-jobs-1"
 		configName := serveName + "-config"
 		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
 		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(nil).Once()
-		mockKubernetes.On("DeleteSecret", mock.Anything, secretName).Return(errors.New("delete service failed")).Once()
+		mockKubernetes.On("DeleteSecret", mock.Anything, secretName).Return(errors.New("delete secret failed")).Once()
 
 		err := service.DeprovisionMotherService(ctx, motherService)
 
@@ -578,6 +587,7 @@ func TestDeprovisionTestService(t *testing.T) {
 	cfg := deployTestScenarioServiceConfig()
 	cfg.Kubernetese = config.Kubernetese{
 		TestServiceAPPServe: "test-service-serve",
+		TestServiceAPPJobs:  "test-service-jobs",
 	}
 
 	t.Run("test_scenario_is_nil", func(t *testing.T) {
@@ -666,12 +676,15 @@ func TestDeprovisionTestService(t *testing.T) {
 
 		replicaToRemove := int32(4)
 		serveName := "test-service-serve-3"
+		jobsName := "test-service-jobs-3"
 		configName := serveName + "-config"
 		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("GetDeploymentReplicas", mock.Anything, serveName).Return(4, nil).Once()
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
 		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(nil).Once()
 		mockKubernetes.On("DeleteSecret", mock.Anything, secretName).Return(nil).Once()
 
@@ -707,12 +720,15 @@ func TestDeprovisionTestService(t *testing.T) {
 
 		replicaToRemove := int32(10)
 		serveName := "test-service-serve-2"
+		jobsName := "test-service-jobs-2"
 		configName := serveName + "-config"
 		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("GetDeploymentReplicas", mock.Anything, serveName).Return(3, nil).Once()
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
 		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(nil).Once()
 		mockKubernetes.On("DeleteSecret", mock.Anything, secretName).Return(nil).Once()
 
@@ -892,11 +908,14 @@ func TestDeprovisionTestService(t *testing.T) {
 
 		replicaToRemove := int32(5)
 		serveName := "test-service-serve-2"
+		jobsName := "test-service-jobs-2"
 		configName := serveName + "-config"
 
 		mockKubernetes.On("GetDeploymentReplicas", mock.Anything, serveName).Return(5, nil).Once()
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
 		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(errors.New("DeleteConfigMap failed")).Once()
 
 		err := service.DeprovisionTestService(ctx, testScenario, replicaToRemove)
@@ -905,7 +924,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		mockKubernetes.AssertExpectations(t)
 	})
 
-	t.Run("fail_DeleteConfigMap", func(t *testing.T) {
+	t.Run("fail_DeleteSecret", func(t *testing.T) {
 		ctx := context.Background()
 		mockKubernetes := new(kubermock.KuberneteseMock)
 		service := NewProvisioningService(cfg, mockKubernetes)
@@ -931,12 +950,15 @@ func TestDeprovisionTestService(t *testing.T) {
 
 		replicaToRemove := int32(5)
 		serveName := "test-service-serve-2"
+		jobsName := "test-service-jobs-2"
 		configName := serveName + "-config"
 		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("GetDeploymentReplicas", mock.Anything, serveName).Return(5, nil).Once()
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
 		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(nil).Once()
 		mockKubernetes.On("DeleteSecret", mock.Anything, secretName).Return(errors.New("DeleteSecret failed")).Once()
 

@@ -893,7 +893,8 @@ func TestMotherServiceHandler_DeprovisionAllPods(t *testing.T) {
 		app := fiber.New(fiber.Config{})
 		app.Post("/deprovision-all", handler.DeprovisionAllPods())
 
-		mockSvc.On("DeprovisionAllPods", mock.Anything).Return(nil)
+		mockSvc.On("DeprovisionAllPods", mock.Anything).Return(nil).Once()
+		mockTSrv.On("DeprovisionAllPods", mock.Anything).Return(nil).Once()
 
 		req := httptest.NewRequest(http.MethodPost, "/deprovision-all", nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -909,8 +910,9 @@ func TestMotherServiceHandler_DeprovisionAllPods(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, pkg.CreateMotherServiceSuccessfully, result.Message)
+		assert.Equal(t, pkg.DeprovisionAllSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
+		mockTSrv.AssertExpectations(t)
 	})
 
 	t.Run("failed case", func(t *testing.T) {
@@ -921,6 +923,8 @@ func TestMotherServiceHandler_DeprovisionAllPods(t *testing.T) {
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/deprovision-all", handler.DeprovisionAllPods())
+
+		mockSvc.On("DeprovisionAllPods", mock.Anything).Return(errors.New("deprovision failed")).Once()
 
 		req := httptest.NewRequest(http.MethodPost, "/deprovision-all", nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -935,7 +939,8 @@ func TestMotherServiceHandler_DeprovisionAllPods(t *testing.T) {
 		err = json.Unmarshal(bts, &result)
 		assert.Nil(t, err)
 
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		assert.Equal(t, pkg.InvalidReqBody, result.Error)
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		assert.Equal(t, pkg.InternalServerErrorMessage, result.Error)
+		mockSvc.AssertExpectations(t)
 	})
 }
