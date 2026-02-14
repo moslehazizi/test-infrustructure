@@ -18,12 +18,14 @@ import (
 )
 
 type MotherService struct {
-	motherService usecase.MotherService
+	motherService       usecase.MotherService
+	testScenarioService usecase.TestScenario
 }
 
-func NewMotherServiceHandler(motherService usecase.MotherService) *MotherService {
+func NewMotherServiceHandler(motherService usecase.MotherService, testScenarioService usecase.TestScenario) *MotherService {
 	return &MotherService{
-		motherService: motherService,
+		motherService:       motherService,
+		testScenarioService: testScenarioService,
 	}
 }
 
@@ -196,11 +198,13 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 
 		if err := ctx.BodyParser(req); err != nil {
 			span.SetAttributes(attribute.String("error.type", "bad_request"))
+
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
 		if req.Page < 0 || req.PerPage < 0 {
 			span.SetAttributes(attribute.String("error.type", "invalid_pagination"))
+
 			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 		}
 
@@ -214,6 +218,7 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 		svcResults, count, err := handler.motherService.GetPaginated(traceCtx, reqSvc)
 		if err != nil {
 			span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
+
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
@@ -266,9 +271,20 @@ func (handler *MotherService) DeprovisionAllPods() fiber.Handler {
 		err := handler.motherService.DeprovisionAllPods(traceCtx)
 		if err != nil {
 			span.SetAttributes(
-				attribute.String("error.type", "deprovision-all_error"),
+				attribute.String("error.type", "deprovision-all-mother-service_error"),
 				attribute.String("error.message", err.Error()),
 			)
+
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
+
+		err = handler.testScenarioService.DeprovisionAllPods(traceCtx)
+		if err != nil {
+			span.SetAttributes(
+				attribute.String("error.type", "deprovision-all-test-scenario_error"),
+				attribute.String("error.message", err.Error()),
+			)
+
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 

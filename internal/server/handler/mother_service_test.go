@@ -22,8 +22,9 @@ import (
 
 func TestMotherServiceHandler_New(t *testing.T) {
 	mockSrv := new(mocks.MockMotherService)
+	mockTSrv := new(mocks.MockTestScenario)
 
-	handler := NewMotherServiceHandler(mockSrv)
+	handler := NewMotherServiceHandler(mockSrv, mockTSrv)
 
 	assert.NotNil(t, handler)
 }
@@ -31,7 +32,9 @@ func TestMotherServiceHandler_New(t *testing.T) {
 func TestMotherServiceHandler_Create(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -72,7 +75,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed case - invalid request", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -98,7 +103,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed case - required fields in request body", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -127,7 +134,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("success case - with nullable values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -178,7 +187,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed case - duplication", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -219,7 +230,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed case - internal error", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -260,7 +273,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed case - request validation error delay rate is negative", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -300,7 +315,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 	})
 	t.Run("failed case - request validation error exception rate is negative", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -341,7 +358,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed case - request validation error fixed delay is set but rate is 0", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -381,7 +400,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 	})
 	t.Run("failed case - request validation error min is greater than max", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -424,7 +445,9 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 func TestMotherServiceHandler_GetByID(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		expectedSvcResp := &entity.MotherService{
 			Name:              "mother1",
@@ -465,7 +488,9 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 
 	t.Run("success case - with pointer values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 		sampleString := "service-address"
 		sampleNum := 1
 
@@ -508,7 +533,9 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 
 	t.Run("failed case - invalid id", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New()
 		app.Get("/mother-services/:id", handler.GetByID())
@@ -533,7 +560,9 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 
 	t.Run("failed case - not found", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New()
 		app.Get("/mother-services/:id", handler.GetByID())
@@ -562,7 +591,9 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 
 	t.Run("failed case - internal server error", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New()
 		app.Get("/mother-services/:id", handler.GetByID())
@@ -593,7 +624,9 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -659,7 +692,9 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("success case - with nil values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -715,7 +750,9 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("failed case - invalid request", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -740,7 +777,9 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("failed case - invalid request negative page or per page", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -765,7 +804,9 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("failed case - internal server error", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -802,7 +843,9 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("success case - empty result", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -843,7 +886,9 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 func TestMotherServiceHandler_DeprovisionAllPods(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/deprovision-all", handler.DeprovisionAllPods())
@@ -870,7 +915,9 @@ func TestMotherServiceHandler_DeprovisionAllPods(t *testing.T) {
 
 	t.Run("failed case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		handler := NewMotherServiceHandler(mockSvc)
+		mockTSrv := new(mocks.MockTestScenario)
+
+		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/deprovision-all", handler.DeprovisionAllPods())

@@ -145,8 +145,6 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewMotherServiceRepository(db),
 		provider.NewProvisioningService(cfg, kubernetes),
 	)
-	motherHandler := handler.NewMotherServiceHandler(motherService)
-	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
 		db,
 		postgres.NewTestScenarioRepository(db),
@@ -157,6 +155,9 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewTestServiceRepository(db),
 		provider.NewProvisioningService(cfg, kubernetes),
 	)
+	motherHandler := handler.NewMotherServiceHandler(motherService, testScenarioUsecase)
+	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
+
 	err = testScenarioUsecase.ResetOrphanedScenarios(ctx)
 	if err != nil {
 		zap.L().Error("failed to reset orphaned scenarios", zap.Error(err))

@@ -1271,7 +1271,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		err := service.Start(ctx, sampleID)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatusAsRunning)
+		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning)
 		mockRepo.AssertExpectations(t)
@@ -1411,6 +1411,77 @@ func TestTestScenarioUsecase_RestOrphanedScenarios(t *testing.T) {
 		err := service.ResetOrphanedScenarios(context.Background())
 
 		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockExecutor.AssertExpectations(t)
+	})
+}
+
+func TestTestScenarioUsecase_DeprovisionAllPods(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockExecutor := new(svcMocks.MockScenarioExecutorBox)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		ctx := context.Background()
+
+		sc := &entity.TestScenario{ID: 1, Status: entity.ScenarioStatusRunning}
+
+		mockRepo.On("GetByStatus", mock.Anything, entity.ScenarioStatusRunning).Return([]*entity.TestScenario{sc}, nil)
+		mockProvisioningService.On("DeprovisionTestService", mock.Anything, sc, mock.Anything).Return(nil)
+		mockRepo.On("SetStatus", mock.Anything, sc.ID, entity.ScenarioStatusAborted).Return(nil)
+
+		err := service.DeprovisionAllPods(ctx)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockExecutor.AssertExpectations(t)
+	})
+
+	t.Run("failed case - failed to get by status", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockExecutor := new(svcMocks.MockScenarioExecutorBox)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		ctx := context.Background()
+
+		sc := &entity.TestScenario{ID: 1, Status: entity.ScenarioStatusRunning}
+
+		mockRepo.On("GetByStatus", mock.Anything, entity.ScenarioStatusRunning).Return([]*entity.TestScenario{sc}, errors.New("error happened"))
+
+		err := service.DeprovisionAllPods(ctx)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenariosByStatus)
 		mockRepo.AssertExpectations(t)
 		mockExecutor.AssertExpectations(t)
 	})

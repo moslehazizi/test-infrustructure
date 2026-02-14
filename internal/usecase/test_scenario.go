@@ -27,6 +27,7 @@ type TestScenario interface {
 	// ResetOrphanedScenarios recovers scenarios that were in running state
 	// when the service crashed and ensures they're added to the in-memory executor box.
 	ResetOrphanedScenarios(ctx context.Context) error
+	DeprovisionAllPods(ctx context.Context) error
 }
 
 func NewTestScenarioUsecase(
@@ -297,7 +298,7 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatusAsRunning, err)
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
 	}
 
 	// add scenario to executor.
@@ -341,6 +342,42 @@ func (service *testScenario) ResetOrphanedScenarios(ctx context.Context) error {
 			),
 		))
 		zap.L().Info("recovered running scenario and added to executor box", zap.Uint64("id", sc.ID))
+	}
+
+	return nil
+}
+
+func (service *testScenario) DeprovisionAllPods(ctx context.Context) error {
+	tracer := otel.Tracer("test-scenario-usecase")
+	_, span := tracer.Start(ctx, "deprovision_test_scenario")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
+	scenarios, err := service.testScenarioRepository.GetByStatus(ctx, entity.ScenarioStatusRunning)
+	if err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenariosByStatus, err)
+	}
+
+	for _, scenario := range scenarios {
+		err := service.provisioningService.DeprovisionTestService(ctx, scenario, scenario.DeploymentNumber)
+
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "deprovision_error"), attribute.String("error.message", err.Error()))
+			zap.L().Error("failed to deprovision running test scenarios", zap.Error(err))
+
+			continue
+		}
+
+		err = service.testScenarioRepository.SetStatus(ctx, scenario.ID, entity.ScenarioStatusAborted)
+
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "set_status"), attribute.String("error.message", err.Error()))
+			zap.L().Error("failed to set status running test scenarios as aborted", zap.Error(err))
+
+			continue
+		}
 	}
 
 	return nil
