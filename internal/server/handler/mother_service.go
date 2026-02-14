@@ -244,3 +244,42 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 		})
 	}
 }
+
+// Create godoc
+//
+//	@Summary		Create a mother service
+//	@Description	Create a new mother service
+//	@Tags			mother-services
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		request.MotherService	true	"Request body"
+//	@Success		200		{object}	response.SuccessResponse
+//	@Failure		400		{object}	response.ErrorResponse
+//	@Failure		422		{object}	response.ErrorResponse
+//	@Failure		500		{object}	response.ErrorResponse
+//	@Router			/api/v1/mother-services [post]
+func (handler *MotherService) DeprovisionAllPods() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("mother-service-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "deprovision-all-pods")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
+		err := handler.motherService.DeprovisionAllPods(traceCtx)
+		if err != nil {
+			span.SetAttributes(
+				attribute.String("error.type", "deprovision-all_error"),
+				attribute.String("error.message", err.Error()),
+			)
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
+
+		span.SetAttributes(attribute.String("status", "success"))
+
+		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
+			Message: pkg.DeprovisionAllSuccessfully,
+		})
+	}
+}
