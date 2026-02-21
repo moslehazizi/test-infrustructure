@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for optimized image size
 # Build stage
-FROM golang:1.25.7-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 # Use a specific German mirror for Alpine packages
 RUN echo "http://mirror1.hs-esslingen.de/pub/Mirrors/alpine/v3.22/main" > /etc/apk/repositories && \
