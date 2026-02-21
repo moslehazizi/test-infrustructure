@@ -15,3 +15,9 @@ test:
 
 swagger:
 	swag fmt && swag init -g ./main.go -o ./docs --parseInternal=true --parseDependency=true
+
+migrate-up:
+	go run main.go migrate up
+
+migrate-down:
+	go run main.go migrate down
