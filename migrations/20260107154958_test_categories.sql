@@ -19,7 +19,7 @@ INSERT INTO test_categories ("name", label, has_max_test_service_count, has_exec
 ('peak', 'Peak Testing', true, true, false),
 ('spike', 'Spike Testing', true, true, false),
 ('scalability', 'Scalability Testing', true, true, true),
-('stress', 'Stress Testing', false, true, true),
+('stress', 'Stress Testing', true, true, true),
 ('recovery', 'Recovery Testing', true, true, true);
 
 -- migrate:down
