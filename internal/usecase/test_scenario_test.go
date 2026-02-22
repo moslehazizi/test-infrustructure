@@ -892,6 +892,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 				LongStringValueRate:   0,
 				NullValueRate:         0,
 			},
+			Editable: true,
 		}
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(expectedTestScenario, nil)
@@ -1059,6 +1060,7 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 				MaxTestServiceCount: &sampleInt64,
 				ExecutionDuration:   &dur,
 				AutoStepChangeRate:  &sampleInt64,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(1),
@@ -1083,6 +1085,7 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 				MaxTestServiceCount: &sampleInt64,
 				ExecutionDuration:   &dur,
 				AutoStepChangeRate:  &sampleInt64,
+				Editable:            true,
 			},
 		}
 
