@@ -35,6 +35,7 @@ type TestScenario struct {
 	TestServiceConfig   *TestServiceConfig `gorm:"ForeignKey:TestScenarioID"`
 	DeploymentNumber    int32              `gorm:"column:deployment_number"`
 	StartedAt           *time.Time         `gorm:"column:started_at"`
+	Editable            bool               `gorm:"column:editable;default:true;not null"`
 }
 
 func (TestScenario) TableName() string {

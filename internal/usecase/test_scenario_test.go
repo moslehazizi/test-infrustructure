@@ -1266,14 +1266,14 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 			Status: entity.ScenarioStatusPending,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning).Return(errors.New("something went wrong"))
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(errors.New("something went wrong"))
 
 		err := service.Start(ctx, sampleID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
 		mockRepo.AssertExpectations(t)
 	})
 	t.Run("success case", func(t *testing.T) {
@@ -1303,7 +1303,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 			Status: entity.ScenarioStatusPending,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning).Return(nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(nil)
 
 		mockExecutorBox.On("Add", mock.Anything)
 
@@ -1311,7 +1311,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 		assert.NoError(t, err)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
 		mockExecutorBox.AssertCalled(t, "Add", mock.Anything)
 
 		mockRepo.AssertExpectations(t)
@@ -1443,7 +1443,7 @@ func TestTestScenarioUsecase_DeprovisionAllPods(t *testing.T) {
 
 		mockRepo.On("GetByStatus", mock.Anything, entity.ScenarioStatusRunning).Return([]*entity.TestScenario{sc}, nil)
 		mockProvisioningService.On("DeprovisionTestService", mock.Anything, sc, mock.Anything).Return(nil)
-		mockRepo.On("SetStatus", mock.Anything, sc.ID, entity.ScenarioStatusAborted).Return(nil)
+		mockRepo.On("SetStatus", mock.Anything, sc.ID, entity.ScenarioStatusAborted, true).Return(nil)
 
 		err := service.DeprovisionAllPods(ctx)
 

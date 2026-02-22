@@ -137,7 +137,7 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 	return testScenarios, count, nil
 }
 
-func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entity.ScenarioStatus) error {
+func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entity.ScenarioStatus, editable bool) error {
 	tracer := otel.Tracer("test-scenario-repository")
 	_, span := tracer.Start(ctx, "set_test_scenario_status")
 	defer span.End()
@@ -153,6 +153,7 @@ func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entit
 		Where("id", id).
 		Updates(map[string]any{
 			"status":     status,
+			"editable":   editable,
 			"updated_at": time.Now(),
 		}).Error
 	if err != nil {

@@ -54,7 +54,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(
 				testScenario.CreatedAt,
 				testScenario.UpdatedAt,
@@ -67,7 +67,8 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 				nil,
 				nil,
 				int32(0),
-				testScenario.StartedAt).
+				testScenario.StartedAt,
+				true).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 		mock.ExpectCommit()
 
@@ -102,7 +103,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
 			WithArgs(testScenario.CreatedAt,
 				testScenario.UpdatedAt,
 				testScenario.DeletedAt,
@@ -110,7 +111,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 				testScenario.TestCategoryID,
 				testScenario.MotherServiceID,
 				testScenario.Status,
-				nil, nil, nil, int32(0), testScenario.StartedAt).
+				nil, nil, nil, int32(0), testScenario.StartedAt, true).
 			WillReturnError(errors.New("insert failed"))
 		mock.ExpectRollback()
 
@@ -1461,9 +1462,10 @@ func TestTestScenarioRepository_SetStatus(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta(
-			`UPDATE "test_scenarios" SET "status"=$1,"updated_at"=$2 WHERE "id" = $3 AND "test_scenarios"."deleted_at" IS NULL`,
+			`UPDATE "test_scenarios" SET "editable"=$1,"status"=$2,"updated_at"=$3 WHERE "id" = $4 AND "test_scenarios"."deleted_at" IS NULL`,
 		)).
 			WithArgs(
+				false,
 				entity.ScenarioStatusRunning,
 				sqlmock.AnyArg(),
 				uint64(1),
@@ -1472,7 +1474,7 @@ func TestTestScenarioRepository_SetStatus(t *testing.T) {
 
 		mock.ExpectCommit()
 
-		err = repo.SetStatus(context.Background(), uint64(1), entity.ScenarioStatusRunning)
+		err = repo.SetStatus(context.Background(), uint64(1), entity.ScenarioStatusRunning, false)
 
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
@@ -1486,9 +1488,10 @@ func TestTestScenarioRepository_SetStatus(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta(
-			`UPDATE "test_scenarios" SET "status"=$1,"updated_at"=$2 WHERE "id" = $3 AND "test_scenarios"."deleted_at" IS NULL`,
+			`UPDATE "test_scenarios" SET "editable"=$2,"status"=$1,"updated_at"=$3 WHERE "id" = $4 AND "test_scenarios"."deleted_at" IS NULL`,
 		)).
 			WithArgs(
+				false,
 				entity.ScenarioStatusRunning,
 				sqlmock.AnyArg(),
 				uint64(1),
@@ -1497,7 +1500,7 @@ func TestTestScenarioRepository_SetStatus(t *testing.T) {
 
 		mock.ExpectRollback()
 
-		err = repo.SetStatus(context.Background(), uint64(1), entity.ScenarioStatusRunning)
+		err = repo.SetStatus(context.Background(), uint64(1), entity.ScenarioStatusRunning, false)
 
 		assert.Error(t, err)
 	})
