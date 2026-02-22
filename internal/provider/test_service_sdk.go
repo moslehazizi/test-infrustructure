@@ -13,13 +13,13 @@ import (
 
 type SDKTestService interface {
 	// Health is for check test service and its connections to database and kafka.
-	Health(ctx context.Context, podName string) (response.HealthResponse, error)
+	Health(ctx context.Context, baseURL string) (response.HealthResponse, error)
 	// GetMetrics is for see live situation of test service. how many request sent at the moment, average duration of requests and etc.
-	GetMetrics(ctx context.Context, podName string) (response.MetricsSnapshot, error)
+	GetMetrics(ctx context.Context, baseURL string) (response.MetricsSnapshot, error)
 	// Live is light version of Health, it is just for check test service pod is created or not.
-	Live(ctx context.Context, podName string) (response.HealthResponse, error)
+	Live(ctx context.Context, baseURL string) (response.HealthResponse, error)
 	// RunExecute is for run test service to send requests to mother service based on its params.
-	RunExecute(ctx context.Context, podName string, req request.RunRequest) (response.FactorialExecutionResult, error)
+	RunExecute(ctx context.Context, baseURL string, req request.RunRequest) (response.FactorialExecutionResult, error)
 }
 
 type sdkTestService struct {
@@ -38,9 +38,9 @@ type HTTPClient interface {
 
 func (s *sdkTestService) Health(
 	ctx context.Context,
-	podName string,
+	baseURL string,
 ) (response.HealthResponse, error) {
-	url := fmt.Sprintf("http://%s/api/v1/health", podName)
+	url := fmt.Sprintf("%s/api/v1/health", baseURL)
 	var result response.HealthResponse
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -79,9 +79,9 @@ func (s *sdkTestService) Health(
 
 func (s *sdkTestService) GetMetrics(
 	ctx context.Context,
-	podName string,
+	baseURL string,
 ) (response.MetricsSnapshot, error) {
-	url := fmt.Sprintf("http://%s/api/v1/metrics", podName)
+	url := fmt.Sprintf("%s/api/v1/metrics", baseURL)
 
 	var result response.MetricsSnapshot
 
@@ -115,8 +115,8 @@ func (s *sdkTestService) GetMetrics(
 	return result, nil
 }
 
-func (s *sdkTestService) Live(ctx context.Context, podName string) (response.HealthResponse, error) {
-	url := fmt.Sprintf("http://%s/api/v1/live", podName)
+func (s *sdkTestService) Live(ctx context.Context, baseURL string) (response.HealthResponse, error) {
+	url := fmt.Sprintf("%s/api/v1/live", baseURL)
 
 	var result response.HealthResponse
 
@@ -156,10 +156,10 @@ func (s *sdkTestService) Live(ctx context.Context, podName string) (response.Hea
 
 func (s *sdkTestService) RunExecute(
 	ctx context.Context,
-	podName string,
+	baseURL string,
 	runReq request.RunRequest,
 ) (response.FactorialExecutionResult, error) {
-	url := fmt.Sprintf("http://%s/api/v1/run-execute", podName)
+	url := fmt.Sprintf("%s/api/v1/run-execute", baseURL)
 
 	var result response.FactorialExecutionResult
 

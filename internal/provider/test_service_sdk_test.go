@@ -3,14 +3,11 @@ package provider
 import (
 	"context"
 	"control-panel-service/internal/provider/dto/request"
-	"control-panel-service/internal/provider/dto/response"
 	"control-panel-service/internal/provider/mocks"
 	"control-panel-service/pkg"
-	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -20,18 +17,8 @@ import (
 )
 
 func TestNewSDKTestService(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/api/v1/health", r.URL.Path)
-
-		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(response.HealthResponse{
-			OK: true,
-		})
-	}))
-	defer server.Close()
-
-	client := server.Client()
-	sdk := NewSDKTestService(client)
+	mockClient := new(mocks.MockHTTPClient)
+	sdk := NewSDKTestService(mockClient)
 
 	assert.NotNil(t, sdk)
 }
@@ -53,7 +40,7 @@ func TestSDKTestService_Health(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		resp, err := sdk.Health(context.Background(), "pod-1")
+		resp, err := sdk.Health(context.Background(), "http://localhost:8085")
 
 		require.NoError(t, err)
 		assert.True(t, resp.OK)
@@ -70,7 +57,7 @@ func TestSDKTestService_Health(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		_, err := sdk.Health(context.Background(), "pod-1")
+		_, err := sdk.Health(context.Background(), "http://localhost:8085")
 
 		assert.Error(t, err)
 
@@ -93,7 +80,7 @@ func TestSDKTestService_Health(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		resp, err := sdk.Health(context.Background(), "pod-1")
+		resp, err := sdk.Health(context.Background(), "http://localhost:8085")
 
 		assert.Error(t, err)
 		assert.False(t, resp.OK)
@@ -129,7 +116,7 @@ func TestSDKTestService_GetMetric(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		resp, err := sdk.GetMetrics(context.Background(), "pod-1")
+		resp, err := sdk.GetMetrics(context.Background(), "http://localhost:8085")
 
 		require.NoError(t, err)
 		assert.Equal(t, int64(10), resp.Requests)
@@ -147,7 +134,7 @@ func TestSDKTestService_GetMetric(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		_, err := sdk.GetMetrics(context.Background(), "pod-1")
+		_, err := sdk.GetMetrics(context.Background(), "http://localhost:8085")
 
 		assert.Error(t, err)
 
@@ -172,7 +159,7 @@ func TestSDKTestService_GetMetric(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		resp, err := sdk.GetMetrics(context.Background(), "pod-1")
+		resp, err := sdk.GetMetrics(context.Background(), "http://localhost:8085")
 
 		assert.Error(t, err)
 		assert.Equal(t, int64(0), resp.Requests)
@@ -201,7 +188,7 @@ func TestSDKTestService_Live(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		resp, err := sdk.Live(context.Background(), "pod-1")
+		resp, err := sdk.Live(context.Background(), "http://localhost:8085")
 
 		require.NoError(t, err)
 		assert.True(t, resp.OK)
@@ -218,7 +205,7 @@ func TestSDKTestService_Live(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		resp, err := sdk.Live(context.Background(), "pod-1")
+		resp, err := sdk.Live(context.Background(), "http://localhost:8085")
 
 		assert.Error(t, err)
 		assert.False(t, resp.OK)
@@ -242,7 +229,7 @@ func TestSDKTestService_Live(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		resp, err := sdk.Live(context.Background(), "pod-1")
+		resp, err := sdk.Live(context.Background(), "http://localhost:8085")
 
 		assert.Error(t, err)
 		assert.False(t, resp.OK)
@@ -282,7 +269,7 @@ func TestSDKTestService_Run(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		resp, err := sdk.RunExecute(context.Background(), "pod-1", runReq)
+		resp, err := sdk.RunExecute(context.Background(), "http://localhost:8085", runReq)
 
 		require.NoError(t, err)
 		assert.Equal(t, int64(5), resp.SuccessCount)
@@ -304,7 +291,7 @@ func TestSDKTestService_Run(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		_, err := sdk.RunExecute(context.Background(), "pod-1", request.RunRequest{})
+		_, err := sdk.RunExecute(context.Background(), "http://localhost:8085", request.RunRequest{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrRunAlreadyInProgress)
@@ -326,7 +313,7 @@ func TestSDKTestService_Run(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		_, err := sdk.RunExecute(context.Background(), "pod-1", request.RunRequest{})
+		_, err := sdk.RunExecute(context.Background(), "http://localhost:8085", request.RunRequest{})
 
 		assert.Error(t, err)
 
@@ -342,7 +329,7 @@ func TestSDKTestService_Run(t *testing.T) {
 
 		sdk := NewSDKTestService(mockClient)
 
-		_, err := sdk.RunExecute(context.Background(), "pod-1", request.RunRequest{})
+		_, err := sdk.RunExecute(context.Background(), "http://localhost:8085", request.RunRequest{})
 
 		assert.Error(t, err)
 
