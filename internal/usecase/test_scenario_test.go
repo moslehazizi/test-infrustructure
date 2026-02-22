@@ -1446,7 +1446,7 @@ func TestTestScenarioUsecase_DeprovisionAllPods(t *testing.T) {
 
 		mockRepo.On("GetByStatus", mock.Anything, entity.ScenarioStatusRunning).Return([]*entity.TestScenario{sc}, nil)
 		mockProvisioningService.On("DeprovisionTestService", mock.Anything, sc, mock.Anything).Return(nil)
-		mockRepo.On("SetStatus", mock.Anything, sc.ID, entity.ScenarioStatusAborted, true).Return(nil)
+		mockRepo.On("SetStatus", mock.Anything, sc.ID, entity.ScenarioStatusAborted, false).Return(nil)
 
 		err := service.DeprovisionAllPods(ctx)
 

@@ -370,7 +370,7 @@ func (service *testScenario) DeprovisionAllPods(ctx context.Context) error {
 			continue
 		}
 
-		err = service.testScenarioRepository.SetStatus(ctx, scenario.ID, entity.ScenarioStatusAborted, true)
+		err = service.testScenarioRepository.SetStatus(ctx, scenario.ID, entity.ScenarioStatusAborted, false)
 
 		if err != nil {
 			span.SetAttributes(attribute.String("error.type", "set_status"), attribute.String("error.message", err.Error()))
