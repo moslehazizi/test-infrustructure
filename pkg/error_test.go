@@ -119,6 +119,22 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrFailedToUpdateTestScenario,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
+		{
+			err:    ErrFailedToGetHealthCheck,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
+		{
+			err:    ErrFailedToGetMetrics,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
+		{
+			err:    ErrFailedToGetLiveCheck,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
+		{
+			err:    ErrFailedToRunTestService,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
 
 		// Other
 		{
@@ -148,6 +164,10 @@ func Test_toHTTPError(t *testing.T) {
 		{
 			err:    ErrPageNotFound,
 			wanted: HTTPError{http.StatusNotFound, PageNotFound},
+		},
+		{
+			err:    ErrRunAlreadyInProgress,
+			wanted: HTTPError{http.StatusConflict, TestServiceAlreadyInProgress},
 		},
 
 		// 422 validation errors
