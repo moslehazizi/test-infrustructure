@@ -920,6 +920,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "editable": {
+                    "type": "boolean"
+                },
                 "execution_duration": {
                     "type": "integer"
                 },

@@ -193,6 +193,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 						DatabaseTableName:        item.MotherService.DatabaseTableName,
 					}
 				}(),
+				Editable: item.Editable,
 			})
 		}
 
@@ -320,6 +321,7 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 					NullValueRate:         svcResult.TestServiceConfig.NullValueRate,
 				}
 			}(),
+			Editable: svcResult.Editable,
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&response.TestScenarioResponseByID{

@@ -18,6 +18,7 @@ type TestScenario struct {
 	ExecutionDuration   *int64                `json:"execution_duration"`
 	AutoStepChangeRate  *int64                `json:"auto_step_change_rate"`
 	TestServiceConfig   *TestServiceConfig    `json:"test_service_config"`
+	Editable            bool                  `json:"editable"`
 }
 
 type TestServiceConfig struct {
