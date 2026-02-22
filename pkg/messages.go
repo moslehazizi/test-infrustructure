@@ -52,4 +52,5 @@ const (
 	OnlyPendingScenariosCanBeStarted  = "تنها سناریو های با وضعیت در انتظار میتوانند شروع به اجرا شوند."
 	DeprovisionAllSuccessfully        = "همه پاد ها با موفقیت خاموش شدند."
 	StartingTestNotImplemented        = "اجرای تست در این دسته پیاده سازی نشده است."
+	TestServiceAlreadyInProgress      = "سرویس تست هم اکنون در حال اجرا میباشد."
 )

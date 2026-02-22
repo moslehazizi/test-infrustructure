@@ -319,6 +319,8 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 					StringValueRate:       svcResult.TestServiceConfig.StringValueRate,
 					LongStringValueRate:   svcResult.TestServiceConfig.LongStringValueRate,
 					NullValueRate:         svcResult.TestServiceConfig.NullValueRate,
+					DatabaseName:          svcResult.TestServiceConfig.DatabaseName,
+					DatabaseTableName:     svcResult.TestServiceConfig.DatabaseTableName,
 				}
 			}(),
 			Editable: svcResult.Editable,

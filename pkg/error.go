@@ -99,7 +99,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrInvalidIDInParams):
 		status = http.StatusBadRequest
 		msg = InvalidIDInParams
-
+	case errors.Is(err, ErrRunAlreadyInProgress):
+		status = http.StatusConflict
+		msg = TestServiceAlreadyInProgress
 	case errors.Is(err, ErrInvalidMotherServiceName):
 		status = http.StatusUnprocessableEntity
 		msg = InvalidMotherServiceName
@@ -309,4 +311,9 @@ var (
 	ErrInt32OutOfRange                         = errors.New("out of int32 range")
 	ErrFailedToAddScenarioToExecutionManager   = errors.New("failed to add scenario to execution manager")
 	ErrStartingTestNotImplemented              = errors.New("starting test not implemented")
+	ErrFailedToGetHealthCheck                  = errors.New("failed to get health check of test service")
+	ErrFailedToGetMetrics                      = errors.New("failed to get metric of test service")
+	ErrFailedToGetLiveCheck                    = errors.New("failed to get live check")
+	ErrRunAlreadyInProgress                    = errors.New("test service is already in progress")
+	ErrFailedToRunTestService                  = errors.New("failed to execute run function of test service")
 )

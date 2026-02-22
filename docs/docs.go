@@ -972,6 +972,12 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "database_name": {
+                    "type": "string"
+                },
+                "database_table_name": {
+                    "type": "string"
+                },
                 "fixed_test_number": {
                     "type": "integer"
                 },
