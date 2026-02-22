@@ -145,6 +145,7 @@ func TestGetByID(t *testing.T) {
 			TestCategoryID:      3,
 			MotherServiceID:     2,
 			StartedAt:           nil,
+			Editable:            true,
 			TestCategory: &entity.TestCategory{
 				ID:                     3,
 				CreatedAt:              someTime,
@@ -189,7 +190,7 @@ func TestGetByID(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at",
+				"auto_step_change_rate", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenario.ID,
@@ -204,6 +205,7 @@ func TestGetByID(t *testing.T) {
 					expectedTestScenario.ExecutionDuration,
 					expectedTestScenario.AutoStepChangeRate,
 					expectedTestScenario.StartedAt,
+					expectedTestScenario.Editable,
 				))
 
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL`)).WithArgs(2).WillReturnRows(sqlmock.NewRows([]string{
@@ -384,6 +386,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(4),
@@ -411,6 +414,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 		}
 
@@ -434,7 +438,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at",
+				"auto_step_change_rate", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -449,6 +453,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
+					expectedTestScenarios[0].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[1].ID,
@@ -463,6 +468,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].ExecutionDuration,
 					expectedTestScenarios[1].AutoStepChangeRate,
 					expectedTestScenarios[1].StartedAt,
+					expectedTestScenarios[1].Editable,
 				))
 
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" IN ($1,$2) AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3, 4).WillReturnRows(sqlmock.NewRows([]string{
@@ -550,6 +556,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(4),
@@ -577,6 +584,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 		}
 
@@ -599,7 +607,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at",
+				"auto_step_change_rate", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -614,6 +622,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
+					expectedTestScenarios[0].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[1].ID,
@@ -628,6 +637,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].ExecutionDuration,
 					expectedTestScenarios[1].AutoStepChangeRate,
 					expectedTestScenarios[1].StartedAt,
+					expectedTestScenarios[1].Editable,
 				))
 
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" IN ($1,$2) AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3, 4).WillReturnRows(sqlmock.NewRows([]string{
@@ -717,6 +727,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 		}
 
@@ -739,7 +750,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at",
+				"auto_step_change_rate", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -754,6 +765,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
+					expectedTestScenarios[0].Editable,
 				))
 
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3).WillReturnRows(sqlmock.NewRows([]string{
@@ -831,6 +843,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(5),
@@ -858,6 +871,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(4),
@@ -885,6 +899,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(3),
@@ -912,6 +927,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(2),
@@ -939,6 +955,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 		}
 
@@ -961,7 +978,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at",
+				"auto_step_change_rate", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -976,6 +993,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
+					expectedTestScenarios[0].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[1].ID,
@@ -990,6 +1008,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].ExecutionDuration,
 					expectedTestScenarios[1].AutoStepChangeRate,
 					expectedTestScenarios[1].StartedAt,
+					expectedTestScenarios[1].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[2].ID,
@@ -1004,6 +1023,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[2].ExecutionDuration,
 					expectedTestScenarios[2].AutoStepChangeRate,
 					expectedTestScenarios[2].StartedAt,
+					expectedTestScenarios[2].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[3].ID,
@@ -1018,6 +1038,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[3].ExecutionDuration,
 					expectedTestScenarios[3].AutoStepChangeRate,
 					expectedTestScenarios[3].StartedAt,
+					expectedTestScenarios[3].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[4].ID,
@@ -1032,6 +1053,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[4].ExecutionDuration,
 					expectedTestScenarios[4].AutoStepChangeRate,
 					expectedTestScenarios[4].StartedAt,
+					expectedTestScenarios[4].Editable,
 				))
 
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3).WillReturnRows(sqlmock.NewRows([]string{
@@ -1108,6 +1130,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(5),
@@ -1134,6 +1157,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(4),
@@ -1160,6 +1184,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(3),
@@ -1186,6 +1211,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 			{
 				ID:              uint64(2),
@@ -1212,6 +1238,7 @@ func TestGetPaginated(t *testing.T) {
 				MaxTestServiceCount: nil,
 				ExecutionDuration:   nil,
 				AutoStepChangeRate:  nil,
+				Editable:            true,
 			},
 		}
 
@@ -1233,7 +1260,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at",
+				"auto_step_change_rate", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -1248,6 +1275,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
+					expectedTestScenarios[0].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[1].ID,
@@ -1262,6 +1290,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].ExecutionDuration,
 					expectedTestScenarios[1].AutoStepChangeRate,
 					expectedTestScenarios[1].StartedAt,
+					expectedTestScenarios[1].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[2].ID,
@@ -1276,6 +1305,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[2].ExecutionDuration,
 					expectedTestScenarios[2].AutoStepChangeRate,
 					expectedTestScenarios[2].StartedAt,
+					expectedTestScenarios[2].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[3].ID,
@@ -1290,6 +1320,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[3].ExecutionDuration,
 					expectedTestScenarios[3].AutoStepChangeRate,
 					expectedTestScenarios[3].StartedAt,
+					expectedTestScenarios[3].Editable,
 				).
 				AddRow(
 					expectedTestScenarios[4].ID,
@@ -1304,6 +1335,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[4].ExecutionDuration,
 					expectedTestScenarios[4].AutoStepChangeRate,
 					expectedTestScenarios[4].StartedAt,
+					expectedTestScenarios[4].Editable,
 				))
 
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL`)).WithArgs(3).WillReturnRows(sqlmock.NewRows([]string{
@@ -1371,7 +1403,7 @@ func TestGetPaginated(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at",
+				"auto_step_change_rate", "started_at", "editable",
 			}))
 
 		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -1564,6 +1596,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 					LongStringValueRate:   0,
 					NullValueRate:         0,
 				},
+				Editable: false,
 			},
 			{
 				ID:                  4,
@@ -1610,7 +1643,8 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 					StringValueRate:       0,
 					LongStringValueRate:   0,
 					NullValueRate:         0,
-				}},
+				},
+				Editable: false},
 		}
 
 		mock.ExpectQuery(`SELECT \* FROM "test_scenarios" WHERE status = .+ AND "test_scenarios"\."deleted_at" IS NULL ORDER BY id DESC`).
@@ -1618,7 +1652,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate",
+				"auto_step_change_rate","editable",
 			}).
 				AddRow(
 					expectedTestScenario[0].ID,
@@ -1632,6 +1666,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 					expectedTestScenario[0].MaxTestServiceCount,
 					expectedTestScenario[0].ExecutionDuration,
 					expectedTestScenario[0].AutoStepChangeRate,
+					expectedTestScenario[0].Editable,
 				).
 				AddRow(
 					expectedTestScenario[1].ID,
@@ -1645,6 +1680,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 					expectedTestScenario[1].MaxTestServiceCount,
 					expectedTestScenario[1].ExecutionDuration,
 					expectedTestScenario[1].AutoStepChangeRate,
+					expectedTestScenario[1].Editable,
 				))
 
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" IN ($1,$2) AND "mother_services"."deleted_at" IS NULL`)).WithArgs(2, 5).WillReturnRows(sqlmock.NewRows([]string{
