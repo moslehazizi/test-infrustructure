@@ -17,6 +17,9 @@ type ExecutionManager interface {
 type TestAgentController interface {
 	// Run runs agent.
 	Run()
+
+	// Healthy checks if related test service is up and running.
+	Healthy() bool
 }
 
 type TestAgentControllerBuilder interface {

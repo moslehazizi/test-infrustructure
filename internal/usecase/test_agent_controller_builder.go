@@ -10,5 +10,5 @@ type testAgentControllerBuilder struct {
 }
 
 func (b *testAgentControllerBuilder) Build() interfaces.TestAgentController {
-	return &TestAgentController{}
+	return NewTestAgentController()
 }

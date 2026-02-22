@@ -12,9 +12,6 @@ func TestTestAgentControllerBuilder_Build(t *testing.T) {
 		b := usecase.NewTestAgentControllerBuilder().Build()
 
 		assert.NotNil(t, b)
-
-		_, ok := b.(*usecase.TestAgentController)
-		assert.True(t, ok)
 	})
 
 }

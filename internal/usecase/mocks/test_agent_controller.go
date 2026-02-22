@@ -14,6 +14,12 @@ func (m *MockTestAgentController) Run() {
 	m.Called()
 }
 
+func (m *MockTestAgentController) Healthy() bool {
+	args := m.Called()
+
+	return args.Get(0).(bool)
+}
+
 type MockTestAgentControllerBuilder struct {
 	mock.Mock
 }

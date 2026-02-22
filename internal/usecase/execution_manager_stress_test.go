@@ -1,9 +1,8 @@
-package usecase_test
+package usecase
 
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/usecase"
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
 	"testing"
@@ -21,7 +20,7 @@ func TestStressTestExecutionManager_AddScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerBuilder)
 
-		ex := usecase.NewStressTestExecutionManager(builder)
+		ex := NewStressTestExecutionManager(builder)
 
 		exeID := uuid.New()
 		err := ex.AddScenario(context.Background(), &scenario, exeID)
@@ -41,7 +40,7 @@ func TestStressTestExecutionManager_AddScenario(t *testing.T) {
 		agent.On("Run").Times(3)
 		builder.On("Build").Times(3).Return(agent)
 
-		ex := usecase.NewStressTestExecutionManager(builder)
+		ex := NewStressTestExecutionManager(builder)
 
 		exeID := uuid.New()
 		err := ex.AddScenario(context.Background(), &scenario, exeID)
@@ -53,5 +52,114 @@ func TestStressTestExecutionManager_AddScenario(t *testing.T) {
 
 		agent.AssertCalled(t, "Run")
 		builder.AssertCalled(t, "Build")
+	})
+}
+
+func TestStressTestExecutionManager_Run(t *testing.T) {
+	t.Run("all agents' test services are healthy - single agent", func(t *testing.T) {
+		t.Parallel()
+
+		scenario := entity.TestScenario{
+			ID: 1,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(1)),
+		}
+
+		builder := new(mocks.MockTestAgentControllerBuilder)
+
+		agent := new(mocks.MockTestAgentController)
+		agent.On("Run").Times(1)
+		agent.On("Healthy").Times(1).Return(false)
+
+		builder.On("Build").Times(1).Return(agent)
+
+		ex := NewStressTestExecutionManager(builder)
+
+		exeID := uuid.New()
+		err := ex.AddScenario(context.Background(), &scenario, exeID)
+
+		// will wait to all goroutines be called.
+		time.Sleep(time.Millisecond)
+
+		assert.NoError(t, err)
+
+		agent.AssertCalled(t, "Run")
+		builder.AssertCalled(t, "Build")
+
+		// now, we should watch on manager Run function
+		go ex.Run()
+
+		stEx := ex.(*StressTestExecutionManager)
+		assert.False(t, stEx.scenarios[1].allAgentsHealthy)
+
+		agent.On("Healthy").Return(true)
+
+		time.Sleep(time.Second + time.Millisecond*100)
+
+		assert.True(t, stEx.scenarios[1].allAgentsHealthy)
+	})
+
+	t.Run("all agents' test services are healthy - 2 agents", func(t *testing.T) {
+		t.Parallel()
+
+		scenario := entity.TestScenario{
+			ID: 1,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(2)),
+		}
+
+		builder := new(mocks.MockTestAgentControllerBuilder)
+
+		agent1 := new(mocks.MockTestAgentController)
+		agent1.On("Run").Times(1)
+		agent1.On("Healthy").Times(1).Return(false)
+
+		agent2 := new(mocks.MockTestAgentController)
+		agent2.On("Run").Times(1)
+		agent2.On("Healthy").Times(1).Return(false)
+
+		builder.On("Build").Times(1).Return(agent1)
+		builder.On("Build").Times(1).Return(agent2)
+
+		ex := NewStressTestExecutionManager(builder)
+
+		exeID := uuid.New()
+		err := ex.AddScenario(context.Background(), &scenario, exeID)
+
+		// will wait to all goroutines be called.
+		time.Sleep(time.Millisecond)
+
+		assert.NoError(t, err)
+
+		agent1.AssertCalled(t, "Run")
+		agent2.AssertCalled(t, "Run")
+
+		builder.AssertCalled(t, "Build")
+
+		checkLoopSleep = time.Millisecond * 10
+
+		// now, we should watch on manager Run function
+		go ex.Run()
+
+		stEx := ex.(*StressTestExecutionManager)
+		assert.False(t, stEx.scenarios[1].allAgentsHealthy)
+
+		agent1.On("Healthy").Return(true)
+
+		time.Sleep(time.Millisecond * 12)
+
+		// agent2 is still not ready
+		assert.False(t, stEx.scenarios[1].allAgentsHealthy)
+
+		agent2.On("Healthy").Return(true)
+		time.Sleep(time.Millisecond * 12)
+
+		assert.True(t, stEx.scenarios[1].allAgentsHealthy)
 	})
 }
