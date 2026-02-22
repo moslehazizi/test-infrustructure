@@ -294,7 +294,7 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	}
 
 	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning)
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning, false)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
@@ -370,7 +370,7 @@ func (service *testScenario) DeprovisionAllPods(ctx context.Context) error {
 			continue
 		}
 
-		err = service.testScenarioRepository.SetStatus(ctx, scenario.ID, entity.ScenarioStatusAborted)
+		err = service.testScenarioRepository.SetStatus(ctx, scenario.ID, entity.ScenarioStatusAborted, false)
 
 		if err != nil {
 			span.SetAttributes(attribute.String("error.type", "set_status"), attribute.String("error.message", err.Error()))

@@ -751,10 +751,12 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 					DatabaseName:      "m200",
 					DatabaseTableName: "t200",
 				},
+				Editable: false,
 			},
 			{
 				ID:           2,
 				TestCategory: nil,
+				Editable:     true,
 			},
 		}
 
@@ -802,12 +804,14 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 						DatabaseName:      "m200",
 						DatabaseTableName: "t200",
 					},
+					Editable: false,
 				},
 				{
 					// this object is for testing nil checking on TestCategory and MotherService
 					ID:            2,
 					TestCategory:  nil,
 					MotherService: nil,
+					Editable:      true,
 				},
 			},
 			Total: count,
@@ -1061,6 +1065,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 				LongStringValueRate:   0,
 				NullValueRate:         0,
 			},
+			Editable: false,
 		}
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
 		h := NewTestScenarioHandler(srv)
@@ -1135,6 +1140,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 				LongStringValueRate:   0,
 				NullValueRate:         0,
 			},
+			Editable: false,
 		}
 
 		var got response.TestScenarioResponseByID
@@ -1163,6 +1169,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 			TestCategory:        nil,
 			MotherService:       nil,
 			TestServiceConfig:   nil,
+			Editable:            true,
 		}
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
 		h := NewTestScenarioHandler(srv)
@@ -1191,6 +1198,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 			TestCategory:        nil,
 			MotherService:       nil,
 			TestServiceConfig:   nil,
+			Editable:            true,
 		}
 
 		var got response.TestScenarioResponseByID
