@@ -99,7 +99,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrInvalidIDInParams):
 		status = http.StatusBadRequest
 		msg = InvalidIDInParams
-
+	case errors.Is(err, ErrRunAlreadyInProgress):
+		status = http.StatusConflict
+		msg = TestServiceAlreadyInProgress
 	case errors.Is(err, ErrInvalidMotherServiceName):
 		status = http.StatusUnprocessableEntity
 		msg = InvalidMotherServiceName

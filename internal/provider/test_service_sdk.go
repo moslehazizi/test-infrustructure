@@ -77,7 +77,6 @@ func (s *sdkTestService) GetMetrics(
 	ctx context.Context,
 	podName string,
 ) (response.MetricsSnapshot, error) {
-
 	url := fmt.Sprintf("http://%s/api/v1/metrics", podName)
 
 	var result response.MetricsSnapshot
@@ -156,7 +155,6 @@ func (s *sdkTestService) RunExecute(
 	podName string,
 	runReq request.RunRequest,
 ) (response.FactorialExecutionResult, error) {
-
 	url := fmt.Sprintf("http://%s/api/v1/run-execute", podName)
 
 	var result response.FactorialExecutionResult

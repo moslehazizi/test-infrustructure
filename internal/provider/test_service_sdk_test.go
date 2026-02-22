@@ -307,7 +307,7 @@ func TestSDKTestService_Run(t *testing.T) {
 		_, err := sdk.RunExecute(context.Background(), "pod-1", request.RunRequest{})
 
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, pkg.ErrRunAlreadyInProgress))
+		assert.ErrorIs(t, err, pkg.ErrRunAlreadyInProgress)
 
 		mockClient.AssertExpectations(t)
 	})
