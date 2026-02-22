@@ -12,9 +12,13 @@ import (
 )
 
 type SDKTestService interface {
+	// Health is for check test service and its connections to database and kafka.
 	Health(ctx context.Context, podName string) (response.HealthResponse, error)
+	// GetMetrics is for see live situation of test service. how many request sent at the moment, average duration of requests and etc.
 	GetMetrics(ctx context.Context, podName string) (response.MetricsSnapshot, error)
+	// Live is light version of Health, it is just for check test service pod is created or not.
 	Live(ctx context.Context, podName string) (response.HealthResponse, error)
+	// RunExecute is for run test service to send requests to mother service based on its params.
 	RunExecute(ctx context.Context, podName string, req request.RunRequest) (response.FactorialExecutionResult, error)
 }
 

@@ -40,6 +40,8 @@ type TestServiceConfig struct {
 	NullValueRate         int       `json:"null_value_rate"`
 	CreatedAt             time.Time `json:"created_at"`
 	UpdatedAt             time.Time `json:"updated_at"`
+	DatabaseName          string    `json:"database_name"`
+	DatabaseTableName     string    `json:"database_table_name"`
 }
 
 type PaginatedTestScenario struct {
