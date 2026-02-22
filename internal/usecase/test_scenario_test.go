@@ -1311,14 +1311,14 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
 		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(nil)
 
-		mockStressTestExecutor.On("AddScenario", mock.Anything, scenario).Return(nil)
+		mockStressTestExecutor.On("AddScenario", mock.Anything, scenario, mock.Anything).Return(nil)
 
 		err := service.Start(ctx, sampleID)
 
 		assert.NoError(t, err)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
-		mockStressTestExecutor.AssertCalled(t, "AddScenario", mock.Anything, scenario)
+		mockStressTestExecutor.AssertCalled(t, "AddScenario", mock.Anything, scenario, mock.Anything)
 
 		mockRepo.AssertExpectations(t)
 	})
@@ -1355,14 +1355,14 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
 		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(nil)
 
-		mockStressTestExecutor.On("AddScenario", mock.Anything, scenario).Return(errors.New("something went wrong"))
+		mockStressTestExecutor.On("AddScenario", mock.Anything, scenario, mock.Anything).Return(errors.New("something went wrong"))
 
 		err := service.Start(ctx, sampleID)
 
 		assert.Error(t, err)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
-		mockStressTestExecutor.AssertCalled(t, "AddScenario", mock.Anything, scenario)
+		mockStressTestExecutor.AssertCalled(t, "AddScenario", mock.Anything, scenario, mock.Anything)
 
 		mockRepo.AssertExpectations(t)
 	})

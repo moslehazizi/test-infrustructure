@@ -145,13 +145,18 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewMotherServiceRepository(db),
 		provider.NewProvisioningService(cfg, kubernetes),
 	)
+
+	agentBuilder := usecase.NewTestAgentControllerBuilder()
+	stressTestExecutionManager := usecase.NewStressTestExecutionManager(agentBuilder)
+	go stressTestExecutionManager.Run()
+
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
 		db,
 		postgres.NewTestScenarioRepository(db),
 		postgres.NewTestCategoryRepository(db),
 		postgres.NewTestServiceConfigRepository(db),
 		postgres.NewMotherServiceRepository(db),
-		usecase.NewStressTestExecutionManager(),
+		stressTestExecutionManager,
 		postgres.NewTestServiceRepository(db),
 		provider.NewProvisioningService(cfg, kubernetes),
 	)
