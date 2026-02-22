@@ -26,7 +26,7 @@ type TestScenario interface {
 	Start(ctx context.Context, id uint64) error
 	// ResetOrphanedScenarios recovers scenarios that were in running state
 	// when the service crashed and ensures they're added to the in-memory executor box.
-	ResetOrphanedScenarios(ctx context.Context) error
+	// ResetOrphanedScenarios(ctx context.Context) error
 	DeprovisionAllPods(ctx context.Context) error
 }
 
@@ -36,7 +36,7 @@ func NewTestScenarioUsecase(
 	testCategoryRepository repository.TestCategory,
 	testServiceConfigRepository repository.TestServiceConfigRepository,
 	motherService repository.MotherServiceRepository,
-	scenarioExecutorBox interfaces.ScenarioExecutorBox,
+	stressTestExecutionManager interfaces.ExecutionManager,
 	testServiceRepo repository.TestServiceRepository,
 	provisioningService provider.ProvisioningService,
 ) TestScenario {
@@ -46,7 +46,7 @@ func NewTestScenarioUsecase(
 		testCategoryRepository:      testCategoryRepository,
 		testServiceConfigRepository: testServiceConfigRepository,
 		motherService:               motherService,
-		scenarioExecutorBox:         scenarioExecutorBox,
+		stressTestExecutionManager:  stressTestExecutionManager,
 		testServiceRepo:             testServiceRepo,
 		provisioningService:         provisioningService,
 	}
@@ -58,7 +58,7 @@ type testScenario struct {
 	testCategoryRepository      repository.TestCategory
 	testServiceConfigRepository repository.TestServiceConfigRepository
 	motherService               repository.MotherServiceRepository
-	scenarioExecutorBox         interfaces.ScenarioExecutorBox
+	stressTestExecutionManager  interfaces.ExecutionManager
 	testServiceRepo             repository.TestServiceRepository
 	provisioningService         provider.ProvisioningService
 }
@@ -301,47 +301,14 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
 	}
 
-	// add scenario to executor.
-	service.scenarioExecutorBox.Add(
-		NewScenarioExecutor(
-			*scenario,
-			NewScenarioTypeRunnerGroupA(
-				service.testServiceRepo,
-				service.provisioningService,
-				service.testScenarioRepository,
-			),
-		))
-
-	return nil
-}
-
-func (service *testScenario) ResetOrphanedScenarios(ctx context.Context) error {
-	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "reset_orphaned_scenarios")
-	defer span.End()
-
-	runningScenarios, err := service.testScenarioRepository.GetByStatus(ctx, entity.ScenarioStatusRunning)
-	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "get_by_status_error"), attribute.String("error.message", err.Error()))
-		zap.L().Error("failed to get running test scenarios", zap.Error(err))
-
-		return fmt.Errorf("failed to get running test scenarios: %w", err)
-	}
-
-	for _, sc := range runningScenarios {
-		if service.scenarioExecutorBox.HasExecutor(sc.ID) {
-			continue
+	switch scenario.TestCategory.Name {
+	case entity.STRESS:
+		err := service.stressTestExecutionManager.AddScenario(ctx, scenario)
+		if err != nil {
+			return fmt.Errorf("%w: %w", pkg.ErrFailedToAddScenarioToExecutionManager, err)
 		}
-
-		service.scenarioExecutorBox.Add(NewScenarioExecutor(
-			*sc,
-			NewScenarioTypeRunnerGroupA(
-				service.testServiceRepo,
-				service.provisioningService,
-				service.testScenarioRepository,
-			),
-		))
-		zap.L().Info("recovered running scenario and added to executor box", zap.Uint64("id", sc.ID))
+	default:
+		return pkg.ErrStartingTestNotImplemented
 	}
 
 	return nil

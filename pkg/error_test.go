@@ -119,6 +119,10 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrFailedToUpdateTestScenario,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
+		{
+			err:    ErrStartingTestNotImplemented,
+			wanted: HTTPError{http.StatusInternalServerError, StartingTestNotImplemented},
+		},
 
 		// Other
 		{

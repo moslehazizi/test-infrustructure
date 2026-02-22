@@ -215,6 +215,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrTestServiceConfigIsRequired):
 		status = http.StatusUnprocessableEntity
 		msg = TestServiceConfigIsRequired
+	case errors.Is(err, ErrStartingTestNotImplemented):
+		status = http.StatusInternalServerError
+		msg = StartingTestNotImplemented
 
 	default:
 		status = http.StatusInternalServerError
@@ -304,4 +307,6 @@ var (
 	ErrGettingRunningTestServicesByScenario    = errors.New("failed to get running test services by scenario")
 	ErrFailedToDeprovisionTestServices         = errors.New("failed to deprovision test services")
 	ErrInt32OutOfRange                         = errors.New("out of int32 range")
+	ErrFailedToAddScenarioToExecutionManager   = errors.New("failed to add scenario to execution manager")
+	ErrStartingTestNotImplemented              = errors.New("starting test not implemented")
 )
