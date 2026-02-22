@@ -51,4 +51,5 @@ const (
 	TestServiceConfigIsRequired       = "تنظیمات سرویس تست الزامی است."
 	OnlyPendingScenariosCanBeStarted  = "تنها سناریو های با وضعیت در انتظار میتوانند شروع به اجرا شوند."
 	DeprovisionAllSuccessfully        = "همه پاد ها با موفقیت خاموش شدند."
+	TestServiceAlreadyInProgress      = "سرویس تست هم اکنون در حال اجرا میباشد."
 )

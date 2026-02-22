@@ -1002,6 +1002,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		rate := int64(50)
 		exe := int64(500000)
 		num := 10
+		sampleName := "test-name"
 
 		srv := new(mocks.MockTestScenario)
 		item := &entity.TestScenario{
@@ -1064,6 +1065,8 @@ func TestTestScenario_GetByID(t *testing.T) {
 				StringValueRate:       0,
 				LongStringValueRate:   0,
 				NullValueRate:         0,
+				DatabaseName:          sampleName,
+				DatabaseTableName:     sampleName,
 			},
 			Editable: false,
 		}
@@ -1139,6 +1142,8 @@ func TestTestScenario_GetByID(t *testing.T) {
 				StringValueRate:       0,
 				LongStringValueRate:   0,
 				NullValueRate:         0,
+				DatabaseName:          sampleName,
+				DatabaseTableName:     sampleName,
 			},
 			Editable: false,
 		}

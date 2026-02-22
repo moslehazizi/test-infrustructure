@@ -131,6 +131,8 @@ func TestGetByID(t *testing.T) {
 		require.NoError(t, err)
 		repo := NewTestScenarioRepository(db)
 
+		sampleName := "test-name"
+
 		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Now().Location())
 		num := 10
 		expectedTestScenario := &entity.TestScenario{
@@ -180,6 +182,8 @@ func TestGetByID(t *testing.T) {
 				StringValueRate:       0,
 				LongStringValueRate:   0,
 				NullValueRate:         0,
+				DatabaseName:          sampleName,
+				DatabaseTableName:     sampleName,
 			},
 		}
 
@@ -256,6 +260,8 @@ func TestGetByID(t *testing.T) {
 			"string_value_rate",
 			"long_string_value_rate",
 			"null_value_rate",
+			"database_name",
+			"database_table_name",
 		}).AddRow(
 			100,
 			someTime,
@@ -276,6 +282,8 @@ func TestGetByID(t *testing.T) {
 			0,
 			0,
 			0,
+			sampleName,
+			sampleName,
 		))
 
 		result, err := repo.GetByID(context.Background(), uint64(1))
@@ -1652,7 +1660,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate","editable",
+				"auto_step_change_rate", "editable",
 			}).
 				AddRow(
 					expectedTestScenario[0].ID,
