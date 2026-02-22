@@ -5,6 +5,7 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -50,4 +51,16 @@ func (mck *MockProvisioningService) DeprovisionMotherService(ctx context.Context
 	}
 
 	return nil
+}
+
+func (mck *MockProvisioningService) DeprovisionTestServiceByName(ctx context.Context, testScenario *entity.TestScenario, uniqueID uuid.UUID) error {
+	args := mck.Called(ctx, testScenario, uniqueID)
+
+	return args.Error(0)
+}
+
+func (mck *MockProvisioningService) ProvisionTestServiceByName(ctx context.Context, testScenario *entity.TestScenario, uniqueID uuid.UUID) error {
+	args := mck.Called(ctx, testScenario, uniqueID)
+
+	return args.Error(0)
 }

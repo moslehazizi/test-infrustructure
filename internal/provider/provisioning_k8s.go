@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	kubernetese "control-panel-service/pkg/kubernetes"
@@ -109,6 +110,20 @@ func NewProvisioningService(cfg *config.Config, kubernetes kubernetese.Kubernete
 type provisioningService struct {
 	cfg        *config.Config
 	kubernetes kubernetese.Kubernetese
+}
+
+// DeprovisionTestServiceByName implements [ProvisioningService].
+func (ps *provisioningService) DeprovisionTestServiceByName(ctx context.Context, testScenario *entity.TestScenario, uniqueID uuid.UUID) error {
+	// TODO: not implemented
+
+	return nil
+}
+
+// ProvisionTestServiceByName implements [ProvisioningService].
+func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, testScenario *entity.TestScenario, uniqueID uuid.UUID) error {
+	// TODO: not implemented
+
+	return nil
 }
 
 func (ps *provisioningService) ProvisionTestService(ctx context.Context, testScenario *entity.TestScenario, replica int32) error {
