@@ -251,8 +251,9 @@ func TestDeployTestScenarioService(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -287,8 +288,9 @@ func TestDeployTestScenarioService(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -324,8 +326,9 @@ func TestDeployTestScenarioService(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -361,8 +364,9 @@ func TestDeployTestScenarioService(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -402,8 +406,9 @@ func TestDeployTestScenarioService(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -435,8 +440,9 @@ func TestDeployTestScenarioService(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -607,8 +613,9 @@ func TestDeprovisionTestService(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario",
 		}
 
 		err := service.DeprovisionTestService(ctx, testScenarioService, 2)
@@ -660,6 +667,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              3,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -704,6 +712,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -748,6 +757,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -783,6 +793,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -819,6 +830,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -855,6 +867,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -892,6 +905,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -934,6 +948,7 @@ func TestDeprovisionTestService(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -993,8 +1008,9 @@ func TestDeployTestScenarioServiceByName(t *testing.T) {
 		mockKubernetes := new(kubermock.KuberneteseMock)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario",
 		}
 
 		service := NewProvisioningService(cfg, mockKubernetes)
@@ -1011,8 +1027,9 @@ func TestDeployTestScenarioServiceByName(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -1047,8 +1064,9 @@ func TestDeployTestScenarioServiceByName(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -1082,8 +1100,9 @@ func TestDeployTestScenarioServiceByName(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -1117,8 +1136,9 @@ func TestDeployTestScenarioServiceByName(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -1154,8 +1174,9 @@ func TestDeployTestScenarioServiceByName(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -1187,8 +1208,9 @@ func TestDeployTestScenarioServiceByName(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario1",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
 				TestScenarioID:      1,
@@ -1238,8 +1260,9 @@ func TestDeprovisionTestServiceByName(t *testing.T) {
 		service := NewProvisioningService(cfg, mockKubernetes)
 
 		testScenarioService := &entity.TestScenario{
-			ID:   1,
-			Name: "testScenario",
+			ID:       1,
+			NumSteps: 2,
+			Name:     "testScenario",
 		}
 
 		err := service.DeprovisionTestServiceByName(ctx, testScenarioService, uniquId)
@@ -1299,6 +1322,7 @@ func TestDeprovisionTestServiceByName(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -1334,6 +1358,7 @@ func TestDeprovisionTestServiceByName(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -1372,6 +1397,7 @@ func TestDeprovisionTestServiceByName(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -1408,6 +1434,7 @@ func TestDeprovisionTestServiceByName(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -1447,6 +1474,7 @@ func TestDeprovisionTestServiceByName(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,
@@ -1488,6 +1516,7 @@ func TestDeprovisionTestServiceByName(t *testing.T) {
 		testScenario := &entity.TestScenario{
 			ID:              2,
 			MotherServiceID: 1,
+			NumSteps:        2,
 			Name:            "testScenario1",
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                  2,

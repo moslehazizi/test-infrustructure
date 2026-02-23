@@ -25,7 +25,8 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		t.Parallel()
 
 		scenario := &entity.TestScenario{
-			ID: 1,
+			ID:       1,
+			NumSteps: 2,
 			TestCategory: &entity.TestCategory{
 				ID:   7,
 				Name: entity.STRESS,
@@ -57,7 +58,8 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		t.Parallel()
 
 		scenario := &entity.TestScenario{
-			ID: 1,
+			ID:       1,
+			NumSteps: 2,
 			TestCategory: &entity.TestCategory{
 				ID:   7,
 				Name: entity.STRESS,
@@ -77,8 +79,8 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		}
 
 		healthyCheckSleep = time.Millisecond * 10
-		agent1.On("Healthy").Times(1).Return(true)
-		agent2.On("Healthy").Times(1).Return(true)
+		agent1.On("Healthy").Return(true) // may be called multiple times in the health-check loop
+		agent2.On("Healthy").Return(true)
 
 		go ex.Run()
 		time.Sleep(time.Millisecond)
@@ -96,6 +98,7 @@ func TestStressTestExecutionManager_AddScenario(t *testing.T) {
 	t.Run("failed case: scenario max service count is null", func(t *testing.T) {
 		scenario := entity.TestScenario{
 			MaxTestServiceCount: nil,
+			NumSteps:            2,
 		}
 
 		builder := new(mocks.MockTestAgentControllerBuilder)
@@ -112,6 +115,7 @@ func TestStressTestExecutionManager_AddScenario(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: new(int64(3)),
+			NumSteps:            2,
 		}
 
 		builder := new(mocks.MockTestAgentControllerBuilder)
@@ -146,6 +150,7 @@ func TestStressTestExecutionManager_Run(t *testing.T) {
 				Name: entity.STRESS,
 			},
 			MaxTestServiceCount: new(int64(1)),
+			NumSteps:            2,
 		}
 
 		builder := new(mocks.MockTestAgentControllerBuilder)

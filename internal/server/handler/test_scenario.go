@@ -57,7 +57,8 @@ func (handler *TestScenario) Create() fiber.Handler {
 		span.SetAttributes(
 			attribute.String("test_scenario.name", req.Name),
 			attribute.String("test_category.id", strconv.FormatUint(req.TestCategoryID, 10)),
-			attribute.String("mother_service.id", strconv.FormatUint(req.MotherServiceID, 10)))
+			attribute.String("mother_service.id", strconv.FormatUint(req.MotherServiceID, 10)),
+		)
 
 		testScenario := &entity.TestScenario{
 			Name:                req.Name,
@@ -66,6 +67,7 @@ func (handler *TestScenario) Create() fiber.Handler {
 			MaxTestServiceCount: req.MaxTestServiceCount,
 			ExecutionDuration:   req.ExecutionDuration,
 			AutoStepChangeRate:  req.AutoStepChangeRate,
+			NumSteps:            req.NumSteps,
 			TestServiceConfig: func() *entity.TestServiceConfig {
 				if req.Config == nil {
 					return nil
@@ -156,6 +158,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 				MaxTestServiceCount: item.MaxTestServiceCount,
 				AutoStepChangeRate:  item.AutoStepChangeRate,
 				ExecutionDuration:   item.ExecutionDuration,
+				NumSteps:            item.NumSteps,
 				TestCategory: func() *response.TestCategory {
 					if item.TestCategory == nil {
 						return nil
@@ -324,6 +327,7 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 				}
 			}(),
 			Editable: svcResult.Editable,
+			NumSteps: svcResult.NumSteps,
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&response.TestScenarioResponseByID{
