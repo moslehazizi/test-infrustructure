@@ -29,6 +29,7 @@ type TestScenario struct {
 	MotherServiceID     uint64             `gorm:"column:mother_service_id"`
 	MotherService       *MotherService     `gorm:"ForeignKey:MotherServiceID"`
 	Status              ScenarioStatus     `gorm:"column:status"`
+	NumSteps            int64              `gorm:"column:num_steps"`
 	MaxTestServiceCount *int64             `gorm:"column:max_test_service_count"`
 	ExecutionDuration   *int64             `gorm:"column:execution_duration"`
 	AutoStepChangeRate  *int64             `gorm:"column:auto_step_change_rate"`
