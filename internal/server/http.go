@@ -11,6 +11,7 @@ import (
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg/telemetry"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -147,8 +148,9 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	)
 
 	provisionService := provider.NewProvisioningService(cfg, kubernetes)
+	testServiceSDK := provider.NewSDKTestService(&http.Client{})
 
-	agentBuilder := usecase.NewTestAgentControllerBuilder(provisionService, cfg.Kubernetese.TestServiceAPPServe)
+	agentBuilder := usecase.NewTestAgentControllerBuilder(provisionService, testServiceSDK, cfg.Kubernetese.TestServiceAPPServe, cfg.Server.Port)
 	stressTestExecutionManager := usecase.NewStressTestExecutionManager(agentBuilder)
 	go stressTestExecutionManager.Run()
 
