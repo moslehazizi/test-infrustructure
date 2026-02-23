@@ -97,7 +97,7 @@ const (
 	PostgresUser     = "POSTGRES_USER"
 	PostgresPassword = "POSTGRES_PASSWORD" // #nosec G101 -- env key name
 
-	DelayBetweenProvisioning = 5 * time.Second
+	DelayBetweenProvisioning = 1 * time.Second
 )
 
 func NewProvisioningService(cfg *config.Config, kubernetes kubernetese.Kubernetese) ProvisioningService {
@@ -112,16 +112,180 @@ type provisioningService struct {
 	kubernetes kubernetese.Kubernetese
 }
 
-// DeprovisionTestServiceByName implements [ProvisioningService].
 func (ps *provisioningService) DeprovisionTestServiceByName(ctx context.Context, testScenario *entity.TestScenario, uniqueID uuid.UUID) error {
-	// TODO: not implemented
+	if testScenario == nil {
+		return fmt.Errorf("%w", pkg.ErrTestScenarioServiceIsNil)
+	}
+
+	// check test service config
+	if testScenario.TestServiceConfig == nil {
+		return fmt.Errorf("%w", pkg.ErrTestServiceConfigIsNil)
+	}
+
+	serveName := fmt.Sprintf("%s-%v-%s", ps.cfg.Kubernetese.TestServiceAPPServe, testScenario.ID, uniqueID)
+	jobsName := fmt.Sprintf("%s-%v-%s", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID, uniqueID)
+
+	// remove all: delete deployment (pods cascade), service, configmap, secret
+	configName := serveName + Config
+	secretName := serveName + Secret
+
+	if err := ps.kubernetes.DeleteDeployment(ctx, serveName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteService(ctx, serveName); err != nil {
+		return err
+	}
+
+	if err := ps.kubernetes.DeleteDeployment(ctx, jobsName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteService(ctx, jobsName); err != nil {
+		return err
+	}
+
+	if err := ps.kubernetes.DeleteConfigMap(ctx, configName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteSecret(ctx, secretName); err != nil {
+		return err
+	}
 
 	return nil
 }
 
-// ProvisionTestServiceByName implements [ProvisioningService].
 func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, testScenario *entity.TestScenario, uniqueID uuid.UUID) error {
-	// TODO: not implemented
+	// Test scenario service serve deployment logic here
+	// check test scenario
+	if testScenario == nil {
+		return fmt.Errorf("%w", pkg.ErrTestScenarioServiceIsNil)
+	}
+
+	// check test service config
+	if testScenario.TestServiceConfig == nil {
+		return fmt.Errorf("%w", pkg.ErrTestServiceConfigIsNil)
+	}
+
+	// Create config map
+	configMap := map[string]string{
+		ServiceId:                strconv.FormatUint(testScenario.ID, 10),
+		ServiceName:              testScenario.Name,
+		HttpMotherServiceBaseUrl: fmt.Sprintf("http://%s-%v:%v", ps.cfg.Kubernetese.MotherServiceAPPServe, testScenario.MotherServiceID, ps.cfg.Server.Port), // http://mother-service-serve-9:8080  // mother-service-serv-9.default.svc.cluster.local:8080
+		HttpMotherServiceId:      strconv.FormatUint(testScenario.MotherServiceID, 10),
+		PostgresDatabase:         testScenario.TestServiceConfig.DatabaseName,
+		PostgresTable:            testScenario.TestServiceConfig.DatabaseTableName,
+
+		KafkaHost:          ps.cfg.Kubernetese.TestServiceKafkaHost,
+		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
+		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
+		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic, testScenario.ID),
+		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaCounsumerGroup, testScenario.ID),
+
+		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
+		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
+		SwaggerScheme:                   ps.cfg.Server.SwaggerScheme[0],
+		SwaggerDocJson:                  ps.cfg.Server.SwaggerDocJSON,
+		HTTPPostBodyLimit:               strconv.Itoa(ps.cfg.Server.PostBodyLimit),
+		HTTPReadTimeout:                 ps.cfg.Server.ReadTimeout.String(),
+		HTTPWriteTimeout:                ps.cfg.Server.WriteTimeout.String(),
+		HTTPRateLimitMaxRequest:         strconv.Itoa(ps.cfg.Server.RateLimitMaxRequest),
+		HTTPRateLimitExpirationduration: ps.cfg.Server.RateLimitExpirationDuration.String(),
+		HTTPShutdownTimeout:             ps.cfg.Server.ShutdownTimeout.String(),
+		KafkaPort:                       strconv.Itoa(ps.cfg.Kafka.Port),
+		KafkaDialerTimeout:              ps.cfg.Kafka.DialerTimeout.String(),
+		KafkaMaxBytes:                   strconv.Itoa(ps.cfg.Kafka.MaxBytes),
+		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
+		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
+		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
+		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
+		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
+		PostgresMaxOpenConnection:       strconv.Itoa(ps.cfg.Postgres.MaxOpenConnections),
+		PostgresMaxIdleConnection:       strconv.Itoa(ps.cfg.Postgres.MaxIdleConnections),
+		PostgresConnMaxLifetime:         ps.cfg.Postgres.ConnMaxLifetime.String(),
+		PostgresConnMaxIdleTime:         ps.cfg.Postgres.ConnMaxIdleTime.String(),
+		LogLevel:                        ps.cfg.Logger.Level,
+		LogFormat:                       ps.cfg.Logger.Format,
+		LogOutput:                       ps.cfg.Logger.Output,
+		OTLPGrpcPort:                    strconv.Itoa(ps.cfg.Otlp.GRPCPort),
+		OTLPGrpcHost:                    ps.cfg.Otlp.GRPCHost,
+	}
+
+	// Create secret
+	secretMap := map[string]string{
+		KafkaUsername:    ps.cfg.Kafka.Username,
+		KafkaPassword:    ps.cfg.Kafka.Password,
+		PostgresUser:     ps.cfg.Postgres.User,
+		PostgresPassword: ps.cfg.Postgres.Password,
+	}
+
+	// jobs :
+	// Create deploy spec
+	jobsDepSpec := testJobsDepSpecByName(ps.cfg, uniqueID, testScenario.ID)
+
+	// Call ApplyDeployment from kubernetese interface
+	err := ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
+	if err != nil {
+		zap.L().Error("apply deployment fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Wait for deployment to be ready
+	jobsSvcName := fmt.Sprintf("%s-%v-%s", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID, uniqueID)
+	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.TestServiceAPPJobsWaitReady)
+	if err != nil {
+		zap.L().Error("create pod fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	time.Sleep(DelayBetweenProvisioning)
+
+	// Serve :
+	// Create deploy spec
+	serveDepSpec := testServDepSpecByName(ps.cfg, uniqueID, testScenario.ID)
+
+	// Create service spec
+	serveSvcSpec := testServeSvcSpecByName(ps.cfg, uniqueID, testScenario.ID)
+
+	// Call ApplyDeployment from kubernetese interface
+	err = ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
+	if err != nil {
+		zap.L().Error("apply deployment fail",
+			zap.String("apllication", serveDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Call ApplyService from kubernetese interface
+	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec, configMap, secretMap)
+	if err != nil {
+		zap.L().Error("apply serive fail",
+			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Wait for deployment to be ready
+	serveSvcName := fmt.Sprintf("%s-%v-%s", ps.cfg.Kubernetese.TestServiceAPPServe, testScenario.ID, uniqueID)
+	err = ps.kubernetes.WaitForDeployment(ctx, serveSvcName, ps.cfg.Kubernetese.TestServiceAPPServeWaitReady)
+	if err != nil {
+		zap.L().Error("create pod fail",
+			zap.String("apllication", serveDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
 
 	return nil
 }
@@ -667,6 +831,96 @@ func motherJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
+								ImagePullPolicy: corev1.PullAlways,
+								Command:         []string{Main, Jobs},
+								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
+								EnvFrom: []corev1.EnvFromSource{
+									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
+									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func testServDepSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64) inEntity.DeploymentSpec {
+	replicas := int32(Replication)
+	appName := fmt.Sprintf("%s-%v-%s", cfg.Kubernetese.TestServiceAPPServe, appId, uniqueId)
+	configName := appName + Config
+	secretName := cfg.Kubernetese.TestServiceAPPServe + Secret
+	labels := map[string]string{App: appName}
+
+	return inEntity.DeploymentSpec{
+		Name: appName,
+		Deployment: &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: appsv1.DeploymentSpec{
+				Replicas: &replicas,
+				Selector: &metav1.LabelSelector{MatchLabels: labels},
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{Labels: labels},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:            App,
+								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
+								ImagePullPolicy: corev1.PullAlways,
+								Command:         []string{Main, Serve},
+								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
+								EnvFrom: []corev1.EnvFromSource{
+									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
+									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func testServeSvcSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64) inEntity.ServiceSpec {
+	appName := fmt.Sprintf("%s-%v-%s", cfg.Kubernetese.TestServiceAPPServe, appId, uniqueId)
+
+	return inEntity.ServiceSpec{
+		Name: appName,
+		Service: &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: corev1.ServiceSpec{
+				Selector: map[string]string{App: appName},
+				Type:     corev1.ServiceTypeClusterIP,
+				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}}, // #nosec G115 -- port from config
+			},
+		},
+	}
+}
+
+func testJobsDepSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64) inEntity.DeploymentSpec {
+	replicas := int32(Replication)
+	appName := fmt.Sprintf("%s-%v-%s", cfg.Kubernetese.TestServiceAPPJobs, appId, uniqueId)
+	configName := appName + Config
+	secretName := cfg.Kubernetese.TestServiceAPPServe + Secret
+	labels := map[string]string{App: appName}
+
+	return inEntity.DeploymentSpec{
+		Name: appName,
+		Deployment: &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: appsv1.DeploymentSpec{
+				Replicas: &replicas,
+				Selector: &metav1.LabelSelector{MatchLabels: labels},
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{Labels: labels},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:            App,
+								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
 								ImagePullPolicy: corev1.PullAlways,
 								Command:         []string{Main, Jobs},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config

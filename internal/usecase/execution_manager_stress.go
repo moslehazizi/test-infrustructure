@@ -31,6 +31,11 @@ type scenarioExecution struct {
 	executionID      uuid.UUID
 	agents           []interfaces.TestAgentController
 	allAgentsHealthy bool
+	running          bool
+}
+
+func (sc *scenarioExecution) Run() error {
+	return nil
 }
 
 type StressTestExecutionManager struct {
@@ -44,23 +49,29 @@ func (ex *StressTestExecutionManager) Run() {
 	for ex.running {
 		// check all scenarios
 		// for each scenario, all test services should be healthy.
-		for k, sc := range ex.scenarios {
-			_ = k
-
-			allHealthy := true
-			for i, agent := range sc.agents {
-				_ = i
-				h := agent.Healthy()
-				if !h {
-					allHealthy = false
-
-					break
-				}
+		for _, sc := range ex.scenarios {
+			if sc.running {
+				continue
 			}
 
-			sc.allAgentsHealthy = allHealthy
-		}
+			go func() {
+				_ = sc.Run()
+			}()
+			// _ = k
 
+			// allHealthy := true
+			// for i, agent := range sc.agents {
+			// 	_ = i
+			// 	h := agent.Healthy()
+			// 	if !h {
+			// 		allHealthy = false
+
+			// 		break
+			// 	}
+			// }
+
+			// sc.allAgentsHealthy = allHealthy
+		}
 		time.Sleep(checkLoopSleep)
 	}
 
@@ -81,8 +92,10 @@ func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario 
 	}
 
 	for i := int64(1); i <= *scenario.MaxTestServiceCount; i++ {
-		agent := ex.testAgentControllerBuilder.Build()
-		go agent.Run()
+		agent := ex.testAgentControllerBuilder.Build(scenario)
+		go func() {
+			_ = agent.Run()
+		}()
 
 		ex.mx.Lock()
 		_, ok := ex.scenarios[scenario.ID]

@@ -82,6 +82,7 @@ func (s *sdkTestService) GetMetrics(
 	baseURL string,
 ) (response.MetricsSnapshot, error) {
 	url := baseURL + "/api/v1/metrics"
+
 	var result response.MetricsSnapshot
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)

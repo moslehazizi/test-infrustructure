@@ -16,7 +16,7 @@ type ExecutionManager interface {
 
 type TestAgentController interface {
 	// Run runs agent.
-	Run()
+	Run() error
 
 	// Healthy checks if related test service is up and running.
 	Healthy() bool
@@ -24,5 +24,5 @@ type TestAgentController interface {
 
 type TestAgentControllerBuilder interface {
 	// Build will define new TestAgentController based on given config.
-	Build() TestAgentController
+	Build(scenario *entity.TestScenario) TestAgentController
 }
