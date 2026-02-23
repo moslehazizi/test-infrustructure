@@ -1,23 +1,28 @@
 package request
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type RunRequest struct {
-	StepNum            int       `json:"step_num"`
-	ExecutionId        uuid.UUID `json:"execution_id"`
-	ScenarioId         int       `json:"scenario_id"`
-	StepIncrement      int       `json:"step_increment"`
-	MaxTxsCount        int       `json:"max_txs_count"`
-	MaxTxsDuration     int       `json:"max_txs_duration"`
-	MaxDelayBetweenTxs int       `json:"max_delay_between_txs"`
-	MinDelayBetweenTxs int       `json:"min_delay_between_txs"`
-	MaxInputNum        int       `json:"max_input_num"`
-	MinInputNum        int       `json:"min_input_num"`
-	TotalErr           int       `json:"total_err"`
-	RealNumErr         int       `json:"real_num_err"`
-	NegativeNumErr     int       `json:"negative_num_err"`
-	ZeroNumErr         int       `json:"zero_num_err"`
-	ShortStrErr        int       `json:"short_str_err"`
-	LongStrErr         int       `json:"long_str_err"`
-	NilErr             int       `json:"nil_err"`
+	StepNum               int       `json:"step_num"`
+	ExecutionId           uuid.UUID `json:"execution_id"`
+	TestScenarioID        uint64    `json:"test_scenario_id"`
+	MaxRequests           int       `json:"max_requests"`
+	MaxDuration           int64     `json:"max_duration"`
+	RequestDelayDuration  *int      `json:"request_delay_duration"`
+	RandomRequestDelayMin *int      `json:"random_request_delay_min"`
+	RandomRequestDelayMax *int      `json:"random_request_delay_max"`
+	FixedTestNumber       *int      `json:"fixed_test_number"`
+	RandomTestNumberMin   *int      `json:"random_test_number_min"`
+	RandomTestNumberMax   *int      `json:"random_test_number_max"`
+	BadValueRate          int       `json:"bad_value_rate"`
+	NegativeValueRate     int       `json:"negative_value_rate"`
+	RealValueRate         int       `json:"real_value_rate"`
+	ZeroValueRate         int       `json:"zero_value_rate"`
+	StringValueRate       int       `json:"string_value_rate"`
+	LongStringValueRate   int       `json:"long_string_value_rate"`
+	NullValueRate         int       `json:"null_value_rate"`
+	DatabaseName          string    `json:"database_name"`
+	DatabaseTableName     string    `json:"database_table_name"`
 }
