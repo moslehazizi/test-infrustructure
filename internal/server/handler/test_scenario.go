@@ -379,3 +379,50 @@ func (handler *TestScenario) Start() fiber.Handler {
 		})
 	}
 }
+
+// Update godoc
+//
+//	@Summary		Update a test scenario
+//	@Description	Update test scenario with configuration
+//	@Tags			test-scenarios
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		request.TestScenarioUpdateRequest	true	"Request body"
+//	@Success		200		{object}	response.SuccessResponse
+//	@Failure		400		{object}	response.ErrorResponse
+//	@Failure		404		{object}	response.ErrorResponse
+//	@Failure		422		{object}	response.ErrorResponse
+//	@Failure		500		{object}	response.ErrorResponse
+//	@Router			/api/v1/test-scenarios/update [post]
+func (handler *TestScenario) Update() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		requestID := logger.GetRequestID(ctx.Context())
+		tracer := otel.Tracer("test-scenario-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "update_test_scenario")
+		defer span.End()
+
+		span.SetAttributes(attribute.String("request_id", requestID))
+
+		req := new(request.TestScenarioUpdateRequest)
+
+		if err := ctx.BodyParser(req); err != nil {
+			span.SetAttributes(attribute.String("error.type", "bad_request"))
+			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
+		}
+
+		span.SetAttributes(
+			attribute.String("test_scenario.id", strconv.FormatUint(req.ID, 10)),
+			attribute.String("test_scenario.name", req.Name),
+			attribute.String("mother_service.id", strconv.FormatUint(req.MotherServiceID, 10)))
+
+		err := handler.testScenario.Update(traceCtx, req)
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "update_error"), attribute.String("error.message", err.Error()))
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
+
+		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
+			Message: pkg.UpdateTestScenarioSuccessfully,
+		})
+	}
+}

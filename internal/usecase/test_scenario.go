@@ -5,6 +5,7 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
+	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
@@ -29,6 +30,7 @@ type TestScenario interface {
 	// when the service crashed and ensures they're added to the in-memory executor box.
 	// ResetOrphanedScenarios(ctx context.Context) error
 	DeprovisionAllPods(ctx context.Context) error
+	Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) (e error)
 }
 
 func NewTestScenarioUsecase(
@@ -347,6 +349,113 @@ func (service *testScenario) DeprovisionAllPods(ctx context.Context) error {
 			continue
 		}
 	}
+
+	return nil
+}
+
+func (service *testScenario) Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) (e error) {
+	tracer := otel.Tracer("test-scenario-usecase")
+	_, span := tracer.Start(ctx, "update_test_scenario")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(
+		attribute.String("request_id", requestID),
+		attribute.String("test_scenario.id", strconv.FormatUint(testScenarioUpdateRequest.ID, 10)),
+	)
+
+	if testScenarioUpdateRequest.Config == nil {
+		return pkg.ErrTestServiceConfigIsRequired
+	}
+
+	existing, err := service.testScenarioRepository.GetByID(ctx, testScenarioUpdateRequest.ID)
+	if err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrTestScenarioNotFound, err)
+	}
+
+	motherService, err := service.motherService.GetByID(ctx, testScenarioUpdateRequest.MotherServiceID)
+	if err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetMotherService, err)
+	}
+
+	if existing.TestServiceConfig.ID == 0 {
+		return fmt.Errorf("%w: test service config not loaded for scenario %d", pkg.ErrFailedToGetTestServiceConfig, existing.ID)
+	}
+
+	existing.Name = testScenarioUpdateRequest.Name
+	existing.MotherServiceID = testScenarioUpdateRequest.MotherServiceID
+	existing.MotherService = motherService
+
+	if testScenarioUpdateRequest.MaxTestServiceCount != nil {
+		existing.MaxTestServiceCount = testScenarioUpdateRequest.MaxTestServiceCount
+	}
+	if testScenarioUpdateRequest.ExecutionDuration != nil {
+		existing.ExecutionDuration = testScenarioUpdateRequest.ExecutionDuration
+	}
+	if testScenarioUpdateRequest.AutoStepChangeRate != nil {
+		existing.AutoStepChangeRate = testScenarioUpdateRequest.AutoStepChangeRate
+	}
+
+	if err = existing.Validate(existing.TestCategory); err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, err)
+	}
+
+	testSvcConfig, err := service.testServiceConfigRepository.GetByID(ctx, existing.TestServiceConfig.ID)
+	if err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestServiceConfig, err)
+	}
+
+	cfg := testScenarioUpdateRequest.Config
+	testSvcConfig.MaxRequests = cfg.MaxRequests
+	testSvcConfig.MaxDuration = int64(cfg.MaxDuration)
+	testSvcConfig.RequestDelayDuration = cfg.RequestDelayDuration
+	testSvcConfig.RandomRequestDelayMin = cfg.RandomRequestDelayMin
+	testSvcConfig.RandomRequestDelayMax = cfg.RandomRequestDelayMax
+	testSvcConfig.FixedTestNumber = cfg.FixedTestNumber
+	testSvcConfig.RandomTestNumberMin = cfg.RandomTestNumberMin
+	testSvcConfig.RandomTestNumberMax = cfg.RandomTestNumberMax
+	testSvcConfig.BadValueRate = cfg.BadValueRate
+	testSvcConfig.NegativeValueRate = cfg.NegativeValueRate
+	testSvcConfig.ZeroValueRate = cfg.ZeroValueRate
+	testSvcConfig.StringValueRate = cfg.StringValueRate
+	testSvcConfig.RealValueRate = cfg.RealValueRate
+	testSvcConfig.LongStringValueRate = cfg.LongStringValueRate
+	testSvcConfig.NullValueRate = cfg.NullValueRate
+	testSvcConfig.DatabaseName = cfg.DatabaseName
+	testSvcConfig.DatabaseTableName = cfg.DatabaseTableName
+
+	existing.TestServiceConfig = testSvcConfig
+
+	if err = existing.TestServiceConfig.Validate(); err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
+	}
+
+	tx := service.db.Begin()
+	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
+
+	defer func() {
+		if e != nil {
+			_ = tx.Rollback()
+			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
+			zap.L().Error("test scenario creation failed, transaction rolled back",
+				zap.String(logger.FieldRequestID, requestID),
+				zap.String("name", existing.Name),
+				zap.Error(e),
+			)
+		}
+	}()
+
+	if err = service.testScenarioRepository.Update(dbCtx, existing); err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, err)
+	}
+
+	if err = service.testServiceConfigRepository.UpdateByScenarioID(dbCtx, existing.ID, existing.TestServiceConfig); err != nil {
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, err)
+	}
+
+	_ = tx.Commit()
+
+	span.SetAttributes(attribute.String("transaction.status", "committed"))
 
 	return nil
 }

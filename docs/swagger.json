@@ -439,6 +439,64 @@
                 }
             }
         },
+        "/api/v1/test-scenarios/update": {
+            "post": {
+                "description": "Update test scenario with configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test-scenarios"
+                ],
+                "summary": "Update a test scenario",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.TestScenarioUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/test-scenarios/{id}": {
             "get": {
                 "description": "Retrieve a specific test scenario by its ID",
@@ -673,6 +731,32 @@
                 },
                 "per_page": {
                     "type": "integer"
+                }
+            }
+        },
+        "request.TestScenarioUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "auto_step_change_rate": {
+                    "type": "integer"
+                },
+                "execution_duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "max_test_service_count": {
+                    "type": "integer"
+                },
+                "mother_service_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "test_service_config": {
+                    "$ref": "#/definitions/request.TestServiceConfigRequest"
                 }
             }
         },

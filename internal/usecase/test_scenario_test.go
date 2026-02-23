@@ -6,6 +6,7 @@ import (
 	prvMock "control-panel-service/internal/provider/mocks"
 	"control-panel-service/internal/repository/mocks"
 	repoMocks "control-panel-service/internal/repository/mocks"
+	"control-panel-service/internal/server/dto/request"
 	svcMock "control-panel-service/internal/usecase/mocks"
 	svcMocks "control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTestScenarioUsecase_Init(t *testing.T) {
@@ -1478,5 +1480,1091 @@ func TestTestScenarioUsecase_DeprovisionAllPods(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenariosByStatus)
 		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestTestScenarioUsecase_Update(t *testing.T) {
+	sampleCategory := &entity.TestCategory{
+		ID:                     1,
+		Name:                   "stress",
+		HasMaxTestServiceCount: false,
+		HasExecutionDuration:   false,
+		HasAutoStepChangeRate:  false,
+	}
+
+	baseExistingScenario := func() *entity.TestScenario {
+		return &entity.TestScenario{
+			ID:              1,
+			Name:            "Old Name",
+			MotherServiceID: 10,
+			MotherService:   &entity.MotherService{ID: 10, Name: "Old Mother"},
+			TestCategory:    sampleCategory,
+			TestServiceConfig: &entity.TestServiceConfig{
+				ID: 100,
+			},
+		}
+	}
+
+	baseMotherService := &entity.MotherService{ID: 12}
+
+	baseConfig := func() *entity.TestServiceConfig {
+		return &entity.TestServiceConfig{ID: 100}
+	}
+
+	fixedTestNumber := 5
+	requestDelay := 180
+
+	baseRequest := func() *request.TestScenarioUpdateRequest {
+		return &request.TestScenarioUpdateRequest{
+			ID:              1,
+			Name:            "Updated Load Test Scenario",
+			MotherServiceID: 12,
+			Config: &request.TestServiceConfigRequest{
+				MaxRequests:          1000,
+				MaxDuration:          300,
+				RequestDelayDuration: &requestDelay,
+				FixedTestNumber:      &fixedTestNumber,
+				BadValueRate:         0,
+				NegativeValueRate:    0,
+				RealValueRate:        0,
+				ZeroValueRate:        0,
+				StringValueRate:      0,
+				LongStringValueRate:  0,
+				NullValueRate:        0,
+				DatabaseName:         "test_db",
+				DatabaseTableName:    "transactions",
+			},
+		}
+	}
+	t.Run("success", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
+		mockTestServiceConfig.On("UpdateByScenarioID",
+			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
+		).Return(nil)
+
+		err := svc.Update(context.Background(), baseRequest())
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+	t.Run("success - category requires all optional fields", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		catWithAll := &entity.TestCategory{
+			ID:                     2,
+			Name:                   "advanced",
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   true,
+			HasAutoStepChangeRate:  true,
+		}
+		maxCount := int64(10)
+		execDuration := int64(3600)
+		stepRate := int64(5)
+
+		existing := baseExistingScenario()
+		existing.TestCategory = catWithAll
+
+		req := baseRequest()
+		req.MaxTestServiceCount = &maxCount
+		req.ExecutionDuration = &execDuration
+		req.AutoStepChangeRate = &stepRate
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(existing, nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
+		mockTestServiceConfig.On("UpdateByScenarioID",
+			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
+		).Return(nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+	t.Run("success - random delay and random test number config", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		minDelay := 100
+		maxDelay := 500
+		minTest := 1
+		maxTest := 10
+
+		req := baseRequest()
+		req.Config.RequestDelayDuration = nil
+		req.Config.RandomRequestDelayMin = &minDelay
+		req.Config.RandomRequestDelayMax = &maxDelay
+		req.Config.FixedTestNumber = nil
+		req.Config.RandomTestNumberMin = &minTest
+		req.Config.RandomTestNumberMax = &maxTest
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
+		mockTestServiceConfig.On("UpdateByScenarioID",
+			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
+		).Return(nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+	t.Run("success - bad value rate enabled with valid sub-rates summing to 100", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		req := baseRequest()
+		req.Config.BadValueRate = 30
+		req.Config.NegativeValueRate = 20
+		req.Config.RealValueRate = 20
+		req.Config.ZeroValueRate = 20
+		req.Config.StringValueRate = 10
+		req.Config.LongStringValueRate = 10
+		req.Config.NullValueRate = 20
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
+		mockTestServiceConfig.On("UpdateByScenarioID",
+			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
+		).Return(nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+	t.Run("success - optional fields nil are preserved from existing", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		originalMax := int64(99)
+		cat := &entity.TestCategory{
+			HasMaxTestServiceCount: true,
+			HasExecutionDuration:   false,
+			HasAutoStepChangeRate:  false,
+		}
+		existing := baseExistingScenario()
+		existing.TestCategory = cat
+		existing.MaxTestServiceCount = &originalMax
+
+		req := baseRequest()
+		req.MaxTestServiceCount = nil
+
+		var capturedScenario *entity.TestScenario
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(existing, nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).
+			Run(func(args mock.Arguments) {
+				capturedScenario = args.Get(1).(*entity.TestScenario)
+			}).Return(nil)
+		mockTestServiceConfig.On("UpdateByScenarioID",
+			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
+		).Return(nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.NoError(t, err)
+		require.NotNil(t, capturedScenario)
+		assert.Equal(t, originalMax, *capturedScenario.MaxTestServiceCount,
+			"MaxTestServiceCount must not be overwritten when nil is passed")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+	t.Run("error - nil config returns ErrTestServiceConfigIsRequired immediately", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		req := baseRequest()
+		req.Config = nil
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrTestServiceConfigIsRequired)
+		mockRepo.AssertNotCalled(t, "GetByID")
+		mockMotherService.AssertNotCalled(t, "GetByID")
+		mockTestServiceConfig.AssertNotCalled(t, "GetByID")
+	})
+
+	t.Run("error - scenario not found", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(nil, errors.New("not found"))
+
+		err := svc.Update(context.Background(), baseRequest())
+
+		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
+		mockMotherService.AssertNotCalled(t, "GetByID")
+		mockTestServiceConfig.AssertNotCalled(t, "GetByID")
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("error - mother service not found", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(nil, errors.New("not found"))
+
+		err := svc.Update(context.Background(), baseRequest())
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetMotherService)
+		mockTestServiceConfig.AssertNotCalled(t, "GetByID")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+	})
+
+	t.Run("error - scenario validation: MaxTestServiceCount < 1", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		cat := &entity.TestCategory{HasMaxTestServiceCount: true}
+		existing := baseExistingScenario()
+		existing.TestCategory = cat
+
+		invalidCount := int64(0)
+		req := baseRequest()
+		req.MaxTestServiceCount = &invalidCount
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(existing, nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToUpdateTestScenario)
+		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountLessThanOne)
+		mockTestServiceConfig.AssertNotCalled(t, "GetByID")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+	})
+
+	t.Run("error - scenario validation: optional field set but category does not require it", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		execDuration := int64(3600)
+		req := baseRequest()
+		req.ExecutionDuration = &execDuration
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToUpdateTestScenario)
+		assert.ErrorIs(t, err, pkg.ErrNoNeedExecutionDuration)
+		mockTestServiceConfig.AssertNotCalled(t, "GetByID")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+	})
+
+	t.Run("error - scenario validation: required field not set for category", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		cat := &entity.TestCategory{HasExecutionDuration: true}
+		existing := baseExistingScenario()
+		existing.TestCategory = cat
+
+		req := baseRequest()
+		req.ExecutionDuration = nil
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(existing, nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToUpdateTestScenario)
+		assert.ErrorIs(t, err, pkg.ErrExecutionDurationNotSet)
+		mockTestServiceConfig.AssertNotCalled(t, "GetByID")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+	})
+
+	t.Run("error - test service config not preloaded (ID = 0)", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		existing := baseExistingScenario()
+		existing.TestServiceConfig = &entity.TestServiceConfig{ID: 0}
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(existing, nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+
+		err := svc.Update(context.Background(), baseRequest())
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestServiceConfig)
+		mockTestServiceConfig.AssertNotCalled(t, "GetByID")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+	})
+
+	t.Run("error - failed to fetch test service config", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(nil, errors.New("db error"))
+
+		err := svc.Update(context.Background(), baseRequest())
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestServiceConfig)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+	t.Run("error - config validation: no delay config set", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		req := baseRequest()
+		req.Config.RequestDelayDuration = nil
+		req.Config.RandomRequestDelayMin = nil
+		req.Config.RandomRequestDelayMax = nil
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrInvalidRequestDelayDurationConfig)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+	t.Run("error - config validation: fixed delay and random delay both set", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		minDelay := 100
+		maxDelay := 500
+
+		req := baseRequest()
+		// RequestDelayDuration already set — mixing with random is invalid
+		req.Config.RandomRequestDelayMin = &minDelay
+		req.Config.RandomRequestDelayMax = &maxDelay
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrInvalidRequestDelayDurationConfig)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - config validation: random delay min >= max", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		minDelay := 500
+		maxDelay := 100 // min > max
+
+		req := baseRequest()
+		req.Config.RequestDelayDuration = nil
+		req.Config.RandomRequestDelayMin = &minDelay
+		req.Config.RandomRequestDelayMax = &maxDelay
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrMinDelayDurationMoreThanMax)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - config validation: no test number config set", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		req := baseRequest()
+		req.Config.FixedTestNumber = nil
+		req.Config.RandomTestNumberMin = nil
+		req.Config.RandomTestNumberMax = nil
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrInvalidTestNumberConfig)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - config validation: fixed test number <= 0", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		zero := 0
+		req := baseRequest()
+		req.Config.FixedTestNumber = &zero
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrInvalidFixedTestNumber)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - config validation: fixed and random test number both set", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		minTest := 1
+		maxTest := 10
+
+		req := baseRequest()
+		// FixedTestNumber already set in baseRequest — mixing with random is invalid
+		req.Config.RandomTestNumberMin = &minTest
+		req.Config.RandomTestNumberMax = &maxTest
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrInvalidFixedTestNumberConfig)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - config validation: random test number min >= max", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		minTest := 10
+		maxTest := 1 // min > max
+
+		req := baseRequest()
+		req.Config.FixedTestNumber = nil
+		req.Config.RandomTestNumberMin = &minTest
+		req.Config.RandomTestNumberMax = &maxTest
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrMinRandomTestNumberMoreThanMax)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - config validation: bad value rate > 0 but sub-rates do not sum to 100", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		req := baseRequest()
+		req.Config.BadValueRate = 30
+		req.Config.NegativeValueRate = 10 // sum = 10, not 100
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrInvalid100SumOfBadValues)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - config validation: bad value rate == 0 but sub-rates are non-zero", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		req := baseRequest()
+		req.Config.BadValueRate = 0
+		req.Config.NegativeValueRate = 10 // must be 0 when BadValueRate == 0
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrInvalidZeroSumOfBadValues)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - config validation: empty database name", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		req := baseRequest()
+		req.Config.DatabaseName = ""
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrInvalidDatabaseName)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - config validation: empty database table name", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		req := baseRequest()
+		req.Config.DatabaseTableName = ""
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+
+		err := svc.Update(context.Background(), req)
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+		assert.ErrorIs(t, err, pkg.ErrInvalidDatabaseTableName)
+		mockRepo.AssertNotCalled(t, "Update")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - scenario repository update fails", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).
+			Return(errors.New("update failed"))
+
+		err := svc.Update(context.Background(), baseRequest())
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToUpdateTestScenario)
+		mockTestServiceConfig.AssertNotCalled(t, "UpdateByScenarioID")
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+
+	t.Run("error - test service config update fails", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
+		mockTestServiceConfig.On("UpdateByScenarioID",
+			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
+		).Return(errors.New("config update failed"))
+
+		err := svc.Update(context.Background(), baseRequest())
+
+		assert.ErrorIs(t, err, pkg.ErrFailedToUpdateTestScenario)
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
 	})
 }

@@ -30,6 +30,16 @@ type TestServiceConfigRequest struct {
 	DatabaseTableName     string `json:"database_table_name"`
 }
 
+type TestScenarioUpdateRequest struct {
+	ID                  uint64                    `json:"id"`
+	Name                string                    `json:"name"`
+	MotherServiceID     uint64                    `json:"mother_service_id"`
+	MaxTestServiceCount *int64                    `json:"max_test_service_count"`
+	ExecutionDuration   *int64                    `json:"execution_duration"`
+	AutoStepChangeRate  *int64                    `json:"auto_step_change_rate"`
+	Config              *TestServiceConfigRequest `json:"test_service_config"`
+}
+
 type TestScenarioPaginationRequest struct {
 	Page    int `json:"page"`
 	PerPage int `json:"per_page"`

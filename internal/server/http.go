@@ -184,6 +184,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
 	apiV1.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
 	apiV1.Post("/test-scenarios/:id/start", testScenarioHandler.Start())
+	apiV1.Post("/test-scenarios/update", testScenarioHandler.Update())
 
 	// database-metadata
 	apiV1.Get("/databases", databaseMetadataHandler.GetAll())

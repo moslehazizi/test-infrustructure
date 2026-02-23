@@ -40,7 +40,7 @@ func (s *sdkTestService) Health(
 	ctx context.Context,
 	baseURL string,
 ) (response.HealthResponse, error) {
-	url := fmt.Sprintf("%s/api/v1/health", baseURL)
+	url := baseURL + "/api/v1/health"
 	var result response.HealthResponse
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -81,8 +81,7 @@ func (s *sdkTestService) GetMetrics(
 	ctx context.Context,
 	baseURL string,
 ) (response.MetricsSnapshot, error) {
-	url := fmt.Sprintf("%s/api/v1/metrics", baseURL)
-
+	url := baseURL + "/api/v1/metrics"
 	var result response.MetricsSnapshot
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -116,7 +115,7 @@ func (s *sdkTestService) GetMetrics(
 }
 
 func (s *sdkTestService) Live(ctx context.Context, baseURL string) (response.HealthResponse, error) {
-	url := fmt.Sprintf("%s/api/v1/live", baseURL)
+	url := baseURL + "/api/v1/live"
 
 	var result response.HealthResponse
 
@@ -159,7 +158,7 @@ func (s *sdkTestService) RunExecute(
 	baseURL string,
 	runReq request.RunRequest,
 ) (response.FactorialExecutionResult, error) {
-	url := fmt.Sprintf("%s/api/v1/run-execute", baseURL)
+	url := baseURL + "/api/v1/run-execute"
 
 	var result response.FactorialExecutionResult
 

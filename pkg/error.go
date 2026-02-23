@@ -78,7 +78,8 @@ func toHTTPError(err error) *HTTPError {
 		errors.Is(err, ErrFailedToGetDatabases),
 		errors.Is(err, ErrFailedToSendEventData),
 		errors.Is(err, ErrFailedToUpdateTestScenario),
-		errors.Is(err, ErrFailedToGetTestScenariosByStatus):
+		errors.Is(err, ErrFailedToGetTestScenariosByStatus),
+		errors.Is(err, ErrFailedToGetTestServiceConfig):
 		status = http.StatusInternalServerError
 		msg = InternalServerErrorMessage
 	case errors.Is(err, ErrMotherServiceNotFound):
@@ -220,6 +221,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrStartingTestNotImplemented):
 		status = http.StatusInternalServerError
 		msg = StartingTestNotImplemented
+	case errors.Is(err, ErrTestServiceConfigNotFound):
+		status = http.StatusNotFound
+		msg = TestServiceConfigNotFound
 
 	default:
 		status = http.StatusInternalServerError
@@ -316,4 +320,6 @@ var (
 	ErrFailedToGetLiveCheck                    = errors.New("failed to get live check")
 	ErrRunAlreadyInProgress                    = errors.New("test service is already in progress")
 	ErrFailedToRunTestService                  = errors.New("failed to execute run function of test service")
+	ErrFailedToGetTestServiceConfig            = errors.New("failed to get test service config by id")
+	ErrTestServiceConfigNotFound               = errors.New("test service config not found")
 )

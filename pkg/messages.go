@@ -53,4 +53,6 @@ const (
 	DeprovisionAllSuccessfully        = "همه پاد ها با موفقیت خاموش شدند."
 	StartingTestNotImplemented        = "اجرای تست در این دسته پیاده سازی نشده است."
 	TestServiceAlreadyInProgress      = "سرویس تست هم اکنون در حال اجرا میباشد."
+	TestServiceConfigNotFound         = "تنظیمات سرویس تست یافت نشد."
+	UpdateTestScenarioSuccessfully    = "سناریو تست با موفقیت ویرایش شد"
 )

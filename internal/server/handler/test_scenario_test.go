@@ -3,6 +3,7 @@ package handler
 import (
 	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
@@ -1318,4 +1319,171 @@ func TestTestScenario_Start(t *testing.T) {
 		assert.Equal(t, response.Message, pkg.TestScenarioStarted)
 	})
 
+}
+
+func TestTestScenariosHandler_Update(t *testing.T) {
+	t.Run("success case - bad values set", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/update", handler.Update())
+
+		reqBody := `{
+			"name": "load1",
+			"mother_service_id": 1,
+			"max_test_service_count": 1,
+			"execution_duration": 1,
+			"auto_step_change_rate": 1,
+			"test_service_config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": null,
+				"random_request_delay_min": 10,
+				"random_request_delay_max": 20,
+				"fixed_test_number": null,
+				"random_test_number_min": 10,
+				"random_test_number_max": 20,
+				"bad_value_rate": 50,
+				"negative_value_rate": 10,
+				"real_value_rate": 20,
+				"zero_value_rate": 40,
+				"string_value_rate": 10,
+				"long_string_value_rate": 10,
+				"null_value_rate": 10 , 
+		        "database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
+			}
+    	}`
+
+		sampleUin64 := uint64(1)
+		sampleInt := 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
+		sampleTestScenarioUpdateRequest := &request.TestScenarioUpdateRequest{
+			Name:                "load1",
+			MotherServiceID:     sampleUin64,
+			MaxTestServiceCount: new(int64(1)),
+			ExecutionDuration:   new(int64(1)),
+			AutoStepChangeRate:  new(int64(1)),
+			Config: &request.TestServiceConfigRequest{
+				MaxRequests:           sampleInt,
+				MaxDuration:           1,
+				RandomRequestDelayMin: new(10),
+				RandomRequestDelayMax: new(20),
+				RandomTestNumberMin:   new(10),
+				RandomTestNumberMax:   new(20),
+				BadValueRate:          50,
+				NegativeValueRate:     10,
+				RealValueRate:         20,
+				ZeroValueRate:         40,
+				StringValueRate:       10,
+				LongStringValueRate:   10,
+				NullValueRate:         10,
+				DatabaseName:          databaseName,
+				DatabaseTableName:     databaseTableName,
+			},
+		}
+
+		mockSvc.On("Update", mock.Anything, sampleTestScenarioUpdateRequest).Return(nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/update", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result response.SuccessResponse
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, pkg.UpdateTestScenarioSuccessfully, result.Message)
+		mockSvc.AssertExpectations(t)
+	})
+	t.Run("failed case", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/update", handler.Update())
+
+		reqBody := `{
+			"name": "load1",
+			"mother_service_id": 1,
+			"max_test_service_count": 1,
+			"execution_duration": 1,
+			"auto_step_change_rate": 1,
+			"test_service_config": {
+				"max_requests": 1,
+				"max_duration": 1,
+				"request_delay_duration": null,
+				"random_request_delay_min": 10,
+				"random_request_delay_max": 20,
+				"fixed_test_number": null,
+				"random_test_number_min": 10,
+				"random_test_number_max": 20,
+				"bad_value_rate": 50,
+				"negative_value_rate": 10,
+				"real_value_rate": 20,
+				"zero_value_rate": 40,
+				"string_value_rate": 10,
+				"long_string_value_rate": 10,
+				"null_value_rate": 10 , 
+		        "database_name": "test_service_db",
+        		"database_table_name": "test_service_table"
+			}
+    	}`
+
+		sampleUin64 := uint64(1)
+		sampleInt := 1
+		databaseName := "test_service_db"
+		databaseTableName := "test_service_table"
+		sampleTestScenarioUpdateRequest := &request.TestScenarioUpdateRequest{
+			Name:                "load1",
+			MotherServiceID:     sampleUin64,
+			MaxTestServiceCount: new(int64(1)),
+			ExecutionDuration:   new(int64(1)),
+			AutoStepChangeRate:  new(int64(1)),
+			Config: &request.TestServiceConfigRequest{
+				MaxRequests:           sampleInt,
+				MaxDuration:           1,
+				RandomRequestDelayMin: new(10),
+				RandomRequestDelayMax: new(20),
+				RandomTestNumberMin:   new(10),
+				RandomTestNumberMax:   new(20),
+				BadValueRate:          50,
+				NegativeValueRate:     10,
+				RealValueRate:         20,
+				ZeroValueRate:         40,
+				StringValueRate:       10,
+				LongStringValueRate:   10,
+				NullValueRate:         10,
+				DatabaseName:          databaseName,
+				DatabaseTableName:     databaseTableName,
+			},
+		}
+
+		mockSvc.On("Update", mock.Anything, sampleTestScenarioUpdateRequest).Return(errors.New("error happened"))
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/update", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var result response.ErrorResponse
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		err = json.Unmarshal(bts, &result)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		assert.Equal(t, result.Error, pkg.InternalServerErrorMessage)
+		mockSvc.AssertExpectations(t)
+	})
 }

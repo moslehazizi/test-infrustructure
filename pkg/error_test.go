@@ -139,6 +139,10 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrFailedToRunTestService,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
+		{
+			err:    ErrFailedToGetTestServiceConfig,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
 
 		// Other
 		{
@@ -172,6 +176,10 @@ func Test_toHTTPError(t *testing.T) {
 		{
 			err:    ErrRunAlreadyInProgress,
 			wanted: HTTPError{http.StatusConflict, TestServiceAlreadyInProgress},
+		},
+		{
+			err:    ErrTestServiceConfigNotFound,
+			wanted: HTTPError{http.StatusNotFound, TestServiceConfigNotFound},
 		},
 
 		// 422 validation errors
