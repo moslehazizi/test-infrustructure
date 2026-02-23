@@ -1,6 +1,6 @@
 -- migrate:up
 ALTER TABLE test_scenarios
-ADD COLUMN num_steps bigint NOT NULL DEFAULT 1;
+ADD COLUMN num_steps int NOT NULL DEFAULT 1;
 
 -- migrate:down
 ALTER TABLE test_scenarios
