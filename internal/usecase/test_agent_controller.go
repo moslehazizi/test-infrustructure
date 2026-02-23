@@ -67,7 +67,17 @@ func (c *testAgentController) Run() error {
 	// listen to channels for functions call
 	// switch case for do action
 	// all actions are api call
-	return nil
+	// return nil
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+
+		case req := <-c.runChan:
+			c.startTesting(ctx, req)
+		}
+	}
+
 }
 
 func (c *testAgentController) provisionTestService(ctx context.Context, scenario *entity.TestScenario, uniqueID uuid.UUID) error {
@@ -123,7 +133,7 @@ func (c *testAgentController) Healthy() bool {
 }
 
 func (c *testAgentController) StartTesting(ctx context.Context, req request.RunRequest) error {
-	// TODO implemented
+	c.runChan <- req
 	return nil
 }
 

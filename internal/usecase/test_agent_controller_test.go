@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/provider/dto/request"
 	"control-panel-service/internal/provider/mocks"
 	"control-panel-service/pkg"
 	"errors"
@@ -16,9 +17,6 @@ import (
 
 func TestNewTestAgentController(t *testing.T) {
 	testSvcServe := "challenge-test-service-serve"
-	// abortChan := make(chan bool)
-	// healthChan := make(chan bool)
-	// endStepChan := make(chan bool)
 
 	ctrl := NewTestAgentController(new(mocks.MockProvisioningService), &entity.TestScenario{}, testSvcServe)
 
@@ -136,5 +134,59 @@ func Test_testAgentController_Run(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToRunAgentControllerDueToProvisioningFailure)
 
 		provSvc.AssertCalled(t, "ProvisionTestServiceByName", mock.Anything, scenario, mock.Anything)
+	})
+}
+
+func Test_testAgentControler_StartTesting(t *testing.T) {
+	t.Run("ssuccess case", func(t *testing.T) {
+		scenario := &entity.TestScenario{}
+		id := uuid.New()
+		testSvcServe := "challenge-test-service-serve"
+		ctx := context.Background()
+
+		provSvc := new(mocks.MockProvisioningService)
+		ctrl := NewTestAgentController(provSvc, scenario, testSvcServe)
+
+		c := ctrl.(*testAgentController)
+		c.provisioningRetries = 1
+		c.provisioningRetriesSleep = time.Millisecond * 50
+
+		go func() {
+			provSvc.
+				On("ProvisionTestServiceByName", mock.Anything, scenario, mock.Anything).
+				Times(1).
+				Return(nil)
+
+			err := c.Run()
+			assert.NoError(t, err)
+		}()
+
+		err := c.StartTesting(ctx, request.RunRequest{
+			StepNum:            1,
+			ExecutionId:        id,
+			ScenarioId:         2,
+			StepIncrement:      10,
+			MaxTxsCount:        1000,
+			MaxTxsDuration:     10000,
+			MaxDelayBetweenTxs: 0,
+			MinDelayBetweenTxs: 0,
+			MaxInputNum:        1,
+			MinInputNum:        1,
+			TotalErr:           0,
+			RealNumErr:         0,
+			NegativeNumErr:     0,
+			ZeroNumErr:         0,
+			ShortStrErr:        0,
+			LongStrErr:         0,
+			NilErr:             0,
+		})
+
+		assert.NoError(t, err)
+	})
+}
+
+func Test_testAgentControler_startTesting(t *testing.T) {
+	t.Run("success response", func(t *testing.T) {
+
 	})
 }
