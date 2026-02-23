@@ -146,7 +146,9 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		provider.NewProvisioningService(cfg, kubernetes),
 	)
 
-	agentBuilder := usecase.NewTestAgentControllerBuilder()
+	provisionService := provider.NewProvisioningService(cfg, kubernetes)
+
+	agentBuilder := usecase.NewTestAgentControllerBuilder(provisionService)
 	stressTestExecutionManager := usecase.NewStressTestExecutionManager(agentBuilder)
 	go stressTestExecutionManager.Run()
 
