@@ -13,4 +13,5 @@ type TestScenarioRepository interface {
 	GetByStatus(ctx context.Context, status entity.ScenarioStatus) ([]*entity.TestScenario, error)
 	GetDeploymentNumberByScenarioID(ctx context.Context, id uint64) (int32, error)
 	UpdateDeploymentNumber(ctx context.Context, id uint64, newDeploymentNumber int32) error
+	Update(ctx context.Context, scenario *entity.TestScenario) error
 }

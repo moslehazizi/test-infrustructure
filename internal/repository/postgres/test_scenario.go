@@ -275,3 +275,81 @@ func (repo *testScenario) UpdateDeploymentNumber(
 
 	return nil
 }
+
+func (repo *testScenario) Update(ctx context.Context, scenario *entity.TestScenario) error {
+	tracer := otel.Tracer("test-scenario-repository")
+	_, span := tracer.Start(ctx, "update_test_scenario")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+	span.SetAttributes(
+		attribute.String("database.operation", "update"),
+		attribute.String("test_scenario.id", strconv.FormatUint(scenario.ID, 10)),
+	)
+
+	tx := postgres.QueryBuilder(ctx, repo.db).Begin()
+
+	err := tx.
+		Omit(
+			"TestCategory",
+			"TestCategoryID",
+			clause.Associations,
+		).
+		Model(&entity.TestScenario{}).
+		Where("id = ?", scenario.ID).
+		Updates(map[string]any{
+			"name":                   scenario.Name,
+			"mother_service_id":      scenario.MotherServiceID,
+			"status":                 scenario.Status,
+			"max_test_service_count": scenario.MaxTestServiceCount,
+			"execution_duration":     scenario.ExecutionDuration,
+			"auto_step_change_rate":  scenario.AutoStepChangeRate,
+			"deployment_number":      scenario.DeploymentNumber,
+			"started_at":             scenario.StartedAt,
+			"editable":               scenario.Editable,
+			"updated_at":             time.Now(),
+		}).Error
+	if err != nil {
+		tx.Rollback()
+
+		return fmt.Errorf("failed to update test scenario: %w", err)
+	}
+
+	if scenario.TestServiceConfig != nil {
+		err = tx.
+			Model(&entity.TestServiceConfig{}).
+			Where("test_scenario_id = ?", scenario.ID).
+			Updates(map[string]any{
+				"max_requests":             scenario.TestServiceConfig.MaxRequests,
+				"max_duration":             scenario.TestServiceConfig.MaxDuration,
+				"request_delay_duration":   scenario.TestServiceConfig.RequestDelayDuration,
+				"random_request_delay_min": scenario.TestServiceConfig.RandomRequestDelayMin,
+				"random_request_delay_max": scenario.TestServiceConfig.RandomRequestDelayMax,
+				"fixed_test_number":        scenario.TestServiceConfig.FixedTestNumber,
+				"random_test_number_min":   scenario.TestServiceConfig.RandomTestNumberMin,
+				"random_test_number_max":   scenario.TestServiceConfig.RandomTestNumberMax,
+				"bad_value_rate":           scenario.TestServiceConfig.BadValueRate,
+				"negative_value_rate":      scenario.TestServiceConfig.NegativeValueRate,
+				"real_value_rate":          scenario.TestServiceConfig.RealValueRate,
+				"zero_value_rate":          scenario.TestServiceConfig.ZeroValueRate,
+				"string_value_rate":        scenario.TestServiceConfig.StringValueRate,
+				"long_string_value_rate":   scenario.TestServiceConfig.LongStringValueRate,
+				"null_value_rate":          scenario.TestServiceConfig.NullValueRate,
+				"database_name":            scenario.TestServiceConfig.DatabaseName,
+				"database_table_name":      scenario.TestServiceConfig.DatabaseTableName,
+				"updated_at":               time.Now(),
+			}).Error
+		if err != nil {
+			tx.Rollback()
+
+			return fmt.Errorf("failed to update test service config: %w", err)
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}

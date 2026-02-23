@@ -90,3 +90,9 @@ func (m *MockTestScenario) UpdateDeploymentNumber(ctx context.Context, id uint64
 
 	return args.Error(0)
 }
+
+func (m *MockTestScenario) Update(ctx context.Context, scenario *entity.TestScenario) error {
+	args := m.Called(ctx, scenario)
+
+	return args.Error(0)
+}

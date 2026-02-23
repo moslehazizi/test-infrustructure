@@ -1950,3 +1950,137 @@ func TestUpdateDeploymentNumber(t *testing.T) {
 	})
 
 }
+
+func TestTestScenarioRepository_Update(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		maxCount := int64(10)
+
+		scenario := &entity.TestScenario{
+			ID:                  1,
+			Name:                "updated-name",
+			MotherServiceID:     2,
+			Status:              entity.ScenarioStatusRunning,
+			MaxTestServiceCount: &maxCount,
+			DeploymentNumber:    3,
+			Editable:            false,
+			TestServiceConfig: &entity.TestServiceConfig{
+				MaxRequests:         100,
+				MaxDuration:         60,
+				BadValueRate:        1,
+				NegativeValueRate:   2,
+				RealValueRate:       3,
+				ZeroValueRate:       4,
+				StringValueRate:     5,
+				LongStringValueRate: 6,
+				NullValueRate:       7,
+				DatabaseName:        "db1",
+				DatabaseTableName:   "table1",
+			},
+		}
+
+		mock.ExpectBegin()
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET`,
+		)).
+			WillReturnResult(sqlmock.NewResult(0, 1))
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_service_configs" SET`,
+		)).
+			WillReturnResult(sqlmock.NewResult(0, 1))
+
+		mock.ExpectCommit()
+
+		err = repo.Update(context.Background(), scenario)
+
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("scenario update fails", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		scenario := &entity.TestScenario{
+			ID:              1,
+			Name:            "updated-name",
+			MotherServiceID: 2,
+		}
+
+		mock.ExpectBegin()
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET`,
+		)).
+			WillReturnError(errors.New("update failed"))
+
+		mock.ExpectRollback()
+
+		err = repo.Update(context.Background(), scenario)
+
+		assert.Error(t, err)
+	})
+
+	t.Run("failed case - update config", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		repo := NewTestScenarioRepository(db)
+
+		maxCount := int64(10)
+
+		scenario := &entity.TestScenario{
+			ID:                  1,
+			Name:                "updated-name",
+			MotherServiceID:     2,
+			Status:              entity.ScenarioStatusRunning,
+			MaxTestServiceCount: &maxCount,
+			DeploymentNumber:    3,
+			Editable:            false,
+			TestServiceConfig: &entity.TestServiceConfig{
+				MaxRequests:         100,
+				MaxDuration:         60,
+				BadValueRate:        1,
+				NegativeValueRate:   2,
+				RealValueRate:       3,
+				ZeroValueRate:       4,
+				StringValueRate:     5,
+				LongStringValueRate: 6,
+				NullValueRate:       7,
+				DatabaseName:        "db1",
+				DatabaseTableName:   "table1",
+			},
+		}
+
+		mock.ExpectBegin()
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET`,
+		)).
+			WillReturnResult(sqlmock.NewResult(0, 1))
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_service_configs" SET`,
+		)).
+			WillReturnError(errors.New("error happened"))
+
+		mock.ExpectRollback()
+
+		err = repo.Update(context.Background(), scenario)
+
+		assert.Error(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+}
