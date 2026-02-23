@@ -14,6 +14,12 @@ type ExecutionManager interface {
 	AddScenario(ctx context.Context, scenario *entity.TestScenario, executionID uuid.UUID) error
 }
 
+type ScenarioExecutor interface {
+	Run() error
+	IsRunning() bool
+	AddAgent(agent TestAgentController)
+}
+
 type TestAgentController interface {
 	// Run runs agent.
 	Run() error
