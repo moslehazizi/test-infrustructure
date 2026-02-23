@@ -4,6 +4,7 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider"
+	"control-panel-service/internal/provider/dto/request"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"fmt"
@@ -37,6 +38,12 @@ type testAgentController struct {
 	uniqueID                 uuid.UUID
 	provisioningRetries      int
 	provisioningRetriesSleep time.Duration
+
+	// testSvcServeName
+	// runChan
+	// abortChan
+	// healthChan
+	// endStepChan
 }
 
 func (c *testAgentController) Run() error {
@@ -55,6 +62,9 @@ func (c *testAgentController) Run() error {
 	}
 
 	// TODO: complete implementation
+	// listen to channels for functions call
+	// switch case for do action
+	// all actions are api call
 	return nil
 }
 
@@ -106,6 +116,11 @@ func (c *testAgentController) provisionTestService(ctx context.Context, scenario
 }
 
 func (c *testAgentController) Healthy() bool {
-	// TODO not implemented
+	// TODO not implemented number 2 - api call
 	return true
+}
+
+func (c *testAgentController) StartTesting(ctx context.Context, req request.RunRequest) error {
+	// TODO implement
+	return nil
 }

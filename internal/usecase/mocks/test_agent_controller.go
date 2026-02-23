@@ -1,7 +1,9 @@
 package mocks
 
 import (
+	"context"
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/provider/dto/request"
 	"control-panel-service/internal/usecase/interfaces"
 
 	"github.com/stretchr/testify/mock"
@@ -21,6 +23,12 @@ func (m *MockTestAgentController) Healthy() bool {
 	args := m.Called()
 
 	return args.Get(0).(bool)
+}
+
+func (m *MockTestAgentController) StartTesting(ctx context.Context, req request.RunRequest) error {
+	args := m.Called(ctx, req)
+
+	return args.Error(0)
 }
 
 type MockTestAgentControllerBuilder struct {

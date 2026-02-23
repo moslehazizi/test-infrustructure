@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -244,7 +245,7 @@ func TestSDKTestService_Run(t *testing.T) {
 
 		runReq := request.RunRequest{
 			StepNum:     1,
-			ExecutionId: 10,
+			ExecutionId: uuid.New(),
 		}
 
 		body := io.NopCloser(strings.NewReader(`{

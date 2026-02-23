@@ -15,6 +15,12 @@ import (
 )
 
 func TestNewTestAgentController(t *testing.T) {
+	// runChan := make(chan request.RunRequest)
+	// abortChan := make(chan bool)
+	// healthChan := make(chan bool)
+	// endStepChan := make(chan bool)
+	// testSvcServeName := "challenge-test-service-serve"
+
 	ctrl := NewTestAgentController(new(mocks.MockProvisioningService), &entity.TestScenario{})
 
 	assert.NotNil(t, ctrl)
