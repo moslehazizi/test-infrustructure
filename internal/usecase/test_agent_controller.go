@@ -23,12 +23,15 @@ const (
 func NewTestAgentController(
 	provisioningService provider.ProvisioningService,
 	scenario *entity.TestScenario,
+	testSvcServe string,
 ) interfaces.TestAgentController {
 	return &testAgentController{
 		provisioningService:      provisioningService,
 		scenario:                 scenario,
 		provisioningRetries:      provisioningRetries,
 		provisioningRetriesSleep: provisioningRetriesSleep,
+		testSvcServe:             testSvcServe,
+		runChan:                  make(chan request.RunRequest),
 	}
 }
 
@@ -38,9 +41,8 @@ type testAgentController struct {
 	uniqueID                 uuid.UUID
 	provisioningRetries      int
 	provisioningRetriesSleep time.Duration
-
-	// testSvcServeName
-	// runChan
+	testSvcServe             string
+	runChan                  chan request.RunRequest
 	// abortChan
 	// healthChan
 	// endStepChan
@@ -121,6 +123,11 @@ func (c *testAgentController) Healthy() bool {
 }
 
 func (c *testAgentController) StartTesting(ctx context.Context, req request.RunRequest) error {
-	// TODO implement
+	// TODO implemented
+	return nil
+}
+
+func (c *testAgentController) startTesting(ctx context.Context, req request.RunRequest) error {
+	// TODO implemented
 	return nil
 }

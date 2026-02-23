@@ -15,13 +15,12 @@ import (
 )
 
 func TestNewTestAgentController(t *testing.T) {
-	// runChan := make(chan request.RunRequest)
+	testSvcServe := "challenge-test-service-serve"
 	// abortChan := make(chan bool)
 	// healthChan := make(chan bool)
 	// endStepChan := make(chan bool)
-	// testSvcServeName := "challenge-test-service-serve"
 
-	ctrl := NewTestAgentController(new(mocks.MockProvisioningService), &entity.TestScenario{})
+	ctrl := NewTestAgentController(new(mocks.MockProvisioningService), &entity.TestScenario{}, testSvcServe)
 
 	assert.NotNil(t, ctrl)
 
@@ -35,11 +34,12 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 	t.Run("fail case: provisioning service has error", func(t *testing.T) {
 		scenario := &entity.TestScenario{}
 		id := uuid.New()
+		testSvcServe := "challenge-test-service-serve"
 
 		provSvc := new(mocks.MockProvisioningService)
 		provSvc.On("ProvisionTestServiceByName", mock.Anything, scenario, mock.Anything).Return(errors.New("something went wrong"))
 
-		ctrl := NewTestAgentController(provSvc, scenario)
+		ctrl := NewTestAgentController(provSvc, scenario, testSvcServe)
 
 		c := ctrl.(*testAgentController)
 		err := c.provisionTestService(context.Background(), scenario, id)
@@ -52,6 +52,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 	t.Run("fail case: provisioning service has error => make sure retries work", func(t *testing.T) {
 		scenario := &entity.TestScenario{}
 		id := uuid.New()
+		testSvcServe := "challenge-test-service-serve"
 
 		provSvc := new(mocks.MockProvisioningService)
 		provSvc.
@@ -59,7 +60,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 			Times(3).
 			Return(errors.New("something went wrong"))
 
-		ctrl := NewTestAgentController(provSvc, scenario)
+		ctrl := NewTestAgentController(provSvc, scenario, testSvcServe)
 
 		c := ctrl.(*testAgentController)
 		c.provisioningRetries = 3
@@ -81,6 +82,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 	t.Run("success case: provisioning service has error on first try but works then", func(t *testing.T) {
 		scenario := &entity.TestScenario{}
 		id := uuid.New()
+		testSvcServe := "challenge-test-service-serve"
 
 		provSvc := new(mocks.MockProvisioningService)
 		provSvc.
@@ -93,7 +95,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 			Times(1).
 			Return(nil)
 
-		ctrl := NewTestAgentController(provSvc, scenario)
+		ctrl := NewTestAgentController(provSvc, scenario, testSvcServe)
 
 		c := ctrl.(*testAgentController)
 		c.provisioningRetries = 3
@@ -115,6 +117,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 func Test_testAgentController_Run(t *testing.T) {
 	t.Run("fail case: unable to provision test service", func(t *testing.T) {
 		scenario := &entity.TestScenario{}
+		testSvcServe := "challenge-test-service-serve"
 
 		provSvc := new(mocks.MockProvisioningService)
 		provSvc.
@@ -122,7 +125,7 @@ func Test_testAgentController_Run(t *testing.T) {
 			Times(1).
 			Return(errors.New("something went wrong"))
 
-		ctrl := NewTestAgentController(provSvc, scenario)
+		ctrl := NewTestAgentController(provSvc, scenario, testSvcServe)
 
 		c := ctrl.(*testAgentController)
 		c.provisioningRetries = 1
