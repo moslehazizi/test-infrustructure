@@ -14,19 +14,20 @@ import (
 )
 
 var checkLoopSleep = time.Second
+var healthyCheckSleep = time.Second
 
 // See: https://github.com/farbodan/challenge-control-panel-service/blob/main/internal/usecase/test_scenario_runner.md.
 func NewStressTestExecutionManager(testAgentControllerBuilder interfaces.TestAgentControllerBuilder) interfaces.ExecutionManager {
 	mng := &StressTestExecutionManager{
 		testAgentControllerBuilder: testAgentControllerBuilder,
 	}
-	mng.scenarios = make(map[uint64]*scenarioExecution)
+	mng.scenarios = make(map[uint64]interfaces.ScenarioExecutor)
 	mng.running = true
 
 	return mng
 }
 
-type scenarioExecution struct {
+type scenarioExecutor struct {
 	scenarioID       uint64
 	executionID      uuid.UUID
 	agents           []interfaces.TestAgentController
@@ -34,13 +35,44 @@ type scenarioExecution struct {
 	running          bool
 }
 
-func (sc *scenarioExecution) Run() error {
+func (sc *scenarioExecutor) Run() error {
+	sc.running = true
+
+	// Make sure all agents are healthy.
+	for {
+		allHealthy := true
+		for _, agent := range sc.agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		sc.allAgentsHealthy = allHealthy
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+
 	return nil
 }
 
+func (sc *scenarioExecutor) IsRunning() bool {
+	return sc.running
+}
+
+func (sc *scenarioExecutor) AddAgent(agent interfaces.TestAgentController) {
+	sc.agents = append(sc.agents, agent)
+}
+
+// #region StressTestExecutionManager
 type StressTestExecutionManager struct {
 	running                    bool
-	scenarios                  map[uint64]*scenarioExecution
+	scenarios                  map[uint64]interfaces.ScenarioExecutor
 	testAgentControllerBuilder interfaces.TestAgentControllerBuilder
 	mx                         sync.Mutex
 }
@@ -48,29 +80,15 @@ type StressTestExecutionManager struct {
 func (ex *StressTestExecutionManager) Run() {
 	for ex.running {
 		// check all scenarios
-		// for each scenario, all test services should be healthy.
+		// for each scenario, make sure the executor is running.
 		for _, sc := range ex.scenarios {
-			if sc.running {
+			if sc.IsRunning() {
 				continue
 			}
 
 			go func() {
 				_ = sc.Run()
 			}()
-			// _ = k
-
-			// allHealthy := true
-			// for i, agent := range sc.agents {
-			// 	_ = i
-			// 	h := agent.Healthy()
-			// 	if !h {
-			// 		allHealthy = false
-
-			// 		break
-			// 	}
-			// }
-
-			// sc.allAgentsHealthy = allHealthy
 		}
 		time.Sleep(checkLoopSleep)
 	}
@@ -100,13 +118,13 @@ func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario 
 		ex.mx.Lock()
 		_, ok := ex.scenarios[scenario.ID]
 		if !ok {
-			ex.scenarios[scenario.ID] = &scenarioExecution{
+			ex.scenarios[scenario.ID] = &scenarioExecutor{
 				scenarioID:  scenario.ID,
 				executionID: executionID,
 				agents:      []interfaces.TestAgentController{agent},
 			}
 		} else {
-			ex.scenarios[scenario.ID].agents = append(ex.scenarios[scenario.ID].agents, agent)
+			ex.scenarios[scenario.ID].AddAgent(agent)
 		}
 
 		ex.mx.Unlock()
@@ -114,3 +132,5 @@ func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario 
 
 	return nil
 }
+
+//#endregion StressTestExecutionManager

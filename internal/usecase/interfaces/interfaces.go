@@ -3,6 +3,7 @@ package interfaces
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/provider/dto/request"
 
 	"github.com/google/uuid"
 )
@@ -14,9 +15,17 @@ type ExecutionManager interface {
 	AddScenario(ctx context.Context, scenario *entity.TestScenario, executionID uuid.UUID) error
 }
 
+type ScenarioExecutor interface {
+	Run() error
+	IsRunning() bool
+	AddAgent(agent TestAgentController)
+}
+
 type TestAgentController interface {
 	// Run runs agent.
 	Run() error
+
+	StartTesting(ctx context.Context, req request.RunRequest) error
 
 	// Healthy checks if related test service is up and running.
 	Healthy() bool
