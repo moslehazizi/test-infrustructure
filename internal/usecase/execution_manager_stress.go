@@ -82,7 +82,9 @@ func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario 
 
 	for i := int64(1); i <= *scenario.MaxTestServiceCount; i++ {
 		agent := ex.testAgentControllerBuilder.Build(scenario)
-		go agent.Run()
+		go func() {
+			_ = agent.Run()
+		}()
 
 		ex.mx.Lock()
 		_, ok := ex.scenarios[scenario.ID]
