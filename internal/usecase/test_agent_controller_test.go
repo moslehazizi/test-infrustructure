@@ -145,60 +145,6 @@ func Test_testAgentController_Run(t *testing.T) {
 }
 
 func Test_testAgentControler_StartTesting(t *testing.T) {
-	t.Run("ssuccess case", func(t *testing.T) {
-		scenario := &entity.TestScenario{}
-		id := uuid.New()
-		testSvcServe := "challenge-test-service-serve"
-		testSvcPort := 8080
-		ctx := context.Background()
-		zero := 0
-		one := 1
-
-		provSvc := new(mocks.MockProvisioningService)
-		ctrl := NewTestAgentController(provSvc, new(mocks.MockTestServiceSDK), scenario, testSvcServe, testSvcPort)
-
-		c := ctrl.(*testAgentController)
-		c.provisioningRetries = 1
-		c.provisioningRetriesSleep = time.Millisecond * 50
-
-		go func() {
-			provSvc.
-				On("ProvisionTestServiceByName", mock.Anything, scenario, mock.Anything).
-				Times(1).
-				Return(nil)
-
-			err := c.Run()
-			assert.NoError(t, err)
-		}()
-
-		err := c.StartTesting(ctx, request.RunRequest{
-			StepNum:               1,
-			ExecutionId:           id,
-			TestScenarioID:        2,
-			MaxRequests:           1000,
-			MaxDuration:           10000,
-			RequestDelayDuration:  &zero,
-			RandomRequestDelayMin: nil,
-			RandomRequestDelayMax: nil,
-			FixedTestNumber:       &one,
-			RandomTestNumberMin:   nil,
-			RandomTestNumberMax:   nil,
-			BadValueRate:          0,
-			RealValueRate:         0,
-			NegativeValueRate:     0,
-			ZeroValueRate:         0,
-			StringValueRate:       0,
-			LongStringValueRate:   0,
-			NullValueRate:         0,
-			DatabaseName:          "test-service",
-			DatabaseTableName:     "executor",
-		})
-
-		assert.NoError(t, err)
-	})
-}
-
-func Test_testAgentControler_startTesting(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		scenario := &entity.TestScenario{ID: 5}
 		id := uuid.New()
@@ -239,14 +185,16 @@ func Test_testAgentControler_startTesting(t *testing.T) {
 		c := ctrl.(*testAgentController)
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
+		c.uniqueID = id
 
 		baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort)
 		provTest.
 			On("RunExecute", mock.Anything, baseUrl, req).
 			Return(response.FactorialExecutionResult{}, nil)
 
-		err := c.startTesting(ctx, req)
+		err := c.StartTesting(ctx, req)
 		assert.NoError(t, err)
+		provTest.AssertExpectations(t)
 	})
 
 	t.Run("fail_case", func(t *testing.T) {
@@ -289,20 +237,23 @@ func Test_testAgentControler_startTesting(t *testing.T) {
 		c := ctrl.(*testAgentController)
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
+		c.uniqueID = id
 
 		baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort)
 		provTest.
 			On("RunExecute", mock.Anything, baseUrl, req).
 			Return(response.FactorialExecutionResult{}, errors.New("run execute error"))
 
-		err := c.startTesting(ctx, req)
+		err := c.StartTesting(ctx, req)
 		assert.Error(t, err)
+		provTest.AssertExpectations(t)
 	})
 }
 
 func Test_testAgentControler_Healthy(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		scenario := &entity.TestScenario{ID: 5}
+		id := uuid.New()
 		testSvcServe := "challenge-test-service-serve"
 		testSvcPort := 8080
 
@@ -314,6 +265,7 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 		c := ctrl.(*testAgentController)
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
+		c.uniqueID = id
 
 		baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort)
 		provTest.
@@ -322,10 +274,12 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 
 		healthy := c.Healthy()
 		assert.True(t, healthy)
+		provTest.AssertExpectations(t)
 	})
 
 	t.Run("fail_case", func(t *testing.T) {
 		scenario := &entity.TestScenario{ID: 5}
+		id := uuid.New()
 		testSvcServe := "challenge-test-service-serve"
 		testSvcPort := 8080
 
@@ -337,6 +291,7 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 		c := ctrl.(*testAgentController)
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
+		c.uniqueID = id
 
 		baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort)
 		provTest.
@@ -345,10 +300,12 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 
 		healthy := c.Healthy()
 		assert.False(t, healthy)
+		provTest.AssertExpectations(t)
 	})
 
 	t.Run("success_case_is_not_healthy", func(t *testing.T) {
 		scenario := &entity.TestScenario{ID: 5}
+		id := uuid.New()
 		testSvcServe := "challenge-test-service-serve"
 		testSvcPort := 8080
 
@@ -360,6 +317,7 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 		c := ctrl.(*testAgentController)
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
+		c.uniqueID = id
 
 		baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort)
 		provTest.
@@ -368,5 +326,60 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 
 		healthy := c.Healthy()
 		assert.False(t, healthy)
+		provTest.AssertExpectations(t)
+	})
+}
+
+func Test_testAgentControler_AbortTesting(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
+		scenario := &entity.TestScenario{ID: 5}
+		id := uuid.New()
+		ctx := context.Background()
+		testSvcServe := "challenge-test-service-serve"
+		testSvcPort := 8080
+
+		provSvc := new(mocks.MockProvisioningService)
+		provTest := new(mocks.MockTestServiceSDK)
+
+		ctrl := NewTestAgentController(provSvc, provTest, scenario, testSvcServe, testSvcPort)
+
+		c := ctrl.(*testAgentController)
+		c.provisioningRetries = 1
+		c.provisioningRetriesSleep = time.Millisecond * 50
+		c.uniqueID = id
+
+		provSvc.
+			On("DeprovisionTestServiceByName", mock.Anything, c.scenario, c.uniqueID).
+			Return(nil)
+
+		err := c.AbortTesting(ctx)
+		assert.NoError(t, err)
+		provSvc.AssertExpectations(t)
+	})
+
+	t.Run("fail_case", func(t *testing.T) {
+		scenario := &entity.TestScenario{ID: 5}
+		id := uuid.New()
+		ctx := context.Background()
+		testSvcServe := "challenge-test-service-serve"
+		testSvcPort := 8080
+
+		provSvc := new(mocks.MockProvisioningService)
+		provTest := new(mocks.MockTestServiceSDK)
+
+		ctrl := NewTestAgentController(provSvc, provTest, scenario, testSvcServe, testSvcPort)
+
+		c := ctrl.(*testAgentController)
+		c.provisioningRetries = 1
+		c.provisioningRetriesSleep = time.Millisecond * 50
+		c.uniqueID = id
+
+		provSvc.
+			On("DeprovisionTestServiceByName", mock.Anything, c.scenario, c.uniqueID).
+			Return(errors.New("faield to deprovision"))
+
+		err := c.AbortTesting(ctx)
+		assert.Error(t, err)
+		provSvc.AssertExpectations(t)
 	})
 }

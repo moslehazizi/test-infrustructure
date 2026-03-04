@@ -27,6 +27,7 @@ type TestAgentController interface {
 	Run() error
 
 	StartTesting(ctx context.Context, req request.RunRequest) error
+	AbortTesting(ctx context.Context) error
 
 	// Healthy checks if related test service is up and running.
 	Healthy() bool
