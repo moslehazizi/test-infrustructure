@@ -132,6 +132,11 @@ func (c *testAgentController) Healthy() bool {
 	return health.OK
 }
 
+func (c *testAgentController) ReadyForTesting() bool {
+	// TODO: not implemented
+	return true
+}
+
 func (c *testAgentController) StartTesting(ctx context.Context, req request.RunRequest) error {
 	baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort) // http://chalenge-tese-srvice-serve-{sid}-{uuid}:8080
 	_, err := c.testServiceSDK.RunExecute(ctx, baseUrl, req)

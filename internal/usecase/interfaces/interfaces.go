@@ -31,6 +31,10 @@ type TestAgentController interface {
 
 	// Healthy checks if related test service is up and running.
 	Healthy() bool
+
+	// ReadyForTesting tests that test service is not executing
+	// any test and is ready to get execution command.
+	ReadyForTesting() bool
 }
 
 type TestAgentControllerBuilder interface {

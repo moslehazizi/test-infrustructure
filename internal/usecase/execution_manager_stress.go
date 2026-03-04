@@ -16,6 +16,7 @@ import (
 
 var checkLoopSleep = time.Second
 var healthyCheckSleep = time.Second
+var readyForTestingCheckSleep = time.Second
 
 // See: https://github.com/farbodan/challenge-control-panel-service/blob/main/internal/usecase/test_scenario_runner.md.
 func NewStressTestExecutionManager(testAgentControllerBuilder interfaces.TestAgentControllerBuilder) interfaces.ExecutionManager {
@@ -29,11 +30,12 @@ func NewStressTestExecutionManager(testAgentControllerBuilder interfaces.TestAge
 }
 
 type scenarioExecutor struct {
-	scenario         *entity.TestScenario
-	executionID      uuid.UUID
-	agents           []interfaces.TestAgentController
-	allAgentsHealthy bool
-	running          bool
+	scenario                 *entity.TestScenario
+	executionID              uuid.UUID
+	agents                   []interfaces.TestAgentController
+	allAgentsHealthy         bool
+	allAgentsReadyForTesting bool
+	running                  bool
 }
 
 func (sc *scenarioExecutor) IsRunning() bool {
@@ -77,8 +79,11 @@ func (sc *scenarioExecutor) Run() error {
 		}
 
 		wg.Wait()
-		// wait based on step duration.
-		time.Sleep(time.Duration(*sc.scenario.ExecutionDuration) * time.Millisecond)
+
+		if i < sc.scenario.NumSteps {
+			// wait for all agents to be ready to execute next step.
+			sc.awaitAgentsToBeReadyToStartTesting()
+		}
 	}
 
 	return nil
@@ -102,6 +107,27 @@ func (sc *scenarioExecutor) awaitAgentsToBeHealthy() {
 		}
 
 		time.Sleep(healthyCheckSleep)
+	}
+}
+
+func (sc *scenarioExecutor) awaitAgentsToBeReadyToStartTesting() {
+	for {
+		allReady := true
+		for _, agent := range sc.agents {
+			if !agent.ReadyForTesting() {
+				allReady = false
+
+				break
+			}
+		}
+
+		sc.allAgentsReadyForTesting = allReady
+
+		if allReady {
+			break
+		}
+
+		time.Sleep(readyForTestingCheckSleep)
 	}
 }
 
