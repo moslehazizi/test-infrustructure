@@ -264,7 +264,7 @@ func TestSDKTestService_Run(t *testing.T) {
 		mockClient.
 			On("Do", mock.MatchedBy(func(req *http.Request) bool {
 				return req.Method == http.MethodPost &&
-					req.URL.Path == "/api/v1/run-execute"
+					req.URL.Path == "/api/v1/run"
 			})).
 			Return(mockResp, nil)
 

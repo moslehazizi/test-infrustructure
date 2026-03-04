@@ -47,10 +47,6 @@ type testAgentController struct {
 	provisioningRetriesSleep time.Duration
 	testSvcServe             string
 	testSvcPort              int
-	// runChan
-	// healthChan
-	// abortChan
-	// endStepChan
 }
 
 func (c *testAgentController) Run() error {
@@ -120,7 +116,7 @@ func (c *testAgentController) provisionTestService(ctx context.Context, scenario
 
 func (c *testAgentController) Healthy() bool {
 	ctx := context.Background()
-	baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort) // http://chalenge-tese-srvice-serve-{sid}-{uuid}:8080
+	baseUrl := c.baseUrlGenerator()
 	health, err := c.testServiceSDK.Health(ctx, baseUrl)
 	if err != nil {
 		zap.L().Error("health error",
@@ -134,7 +130,7 @@ func (c *testAgentController) Healthy() bool {
 
 func (c *testAgentController) ReadyForTesting() bool {
 	ctx := context.Background()
-	baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort) // http://chalenge-tese-srvice-serve-{sid}-{uuid}:8080
+	baseUrl := c.baseUrlGenerator()
 	ready, err := c.testServiceSDK.ReadyForTest(ctx, baseUrl)
 	if err != nil {
 		zap.L().Error("ready for test error",
@@ -147,7 +143,7 @@ func (c *testAgentController) ReadyForTesting() bool {
 }
 
 func (c *testAgentController) StartTesting(ctx context.Context, req request.RunRequest) error {
-	baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort) // http://chalenge-tese-srvice-serve-{sid}-{uuid}:8080
+	baseUrl := c.baseUrlGenerator()
 	_, err := c.testServiceSDK.RunExecute(ctx, baseUrl, req)
 	if err != nil {
 		zap.L().Error("run execute error",
@@ -168,4 +164,8 @@ func (c *testAgentController) AbortTesting(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+func (c *testAgentController) baseUrlGenerator() string {
+	return fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort) // http://chalenge-tese-srvice-serve-{sid}-{uuid}:8080
 }

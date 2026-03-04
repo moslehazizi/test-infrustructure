@@ -161,7 +161,7 @@ func (s *sdkTestService) RunExecute(
 	baseURL string,
 	runReq request.RunRequest,
 ) (response.FactorialExecutionResult, error) {
-	url := baseURL + "/api/v1/run-execute"
+	url := baseURL + "/api/v1/run"
 
 	var result response.FactorialExecutionResult
 
