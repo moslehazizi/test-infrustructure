@@ -35,3 +35,9 @@ func (m *MockTestServiceSDK) RunExecute(ctx context.Context, baseURL string, run
 
 	return args.Get(0).(response.FactorialExecutionResult), args.Error(1)
 }
+
+func (m *MockTestServiceSDK) ReadyForTest(ctx context.Context, baseURL string) (response.HealthResponse, error) {
+	args := m.Called(ctx, baseURL)
+
+	return args.Get(0).(response.HealthResponse), args.Error(1)
+}

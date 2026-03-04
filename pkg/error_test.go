@@ -143,6 +143,10 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrFailedToGetTestServiceConfig,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
+		{
+			err:    ErrFailedToGetReadyForTesting,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
 
 		// Other
 		{

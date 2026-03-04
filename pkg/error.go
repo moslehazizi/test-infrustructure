@@ -79,7 +79,8 @@ func toHTTPError(err error) *HTTPError {
 		errors.Is(err, ErrFailedToSendEventData),
 		errors.Is(err, ErrFailedToUpdateTestScenario),
 		errors.Is(err, ErrFailedToGetTestScenariosByStatus),
-		errors.Is(err, ErrFailedToGetTestServiceConfig):
+		errors.Is(err, ErrFailedToGetTestServiceConfig),
+		errors.Is(err, ErrFailedToGetReadyForTesting):
 		status = http.StatusInternalServerError
 		msg = InternalServerErrorMessage
 	case errors.Is(err, ErrMotherServiceNotFound):
@@ -267,6 +268,7 @@ var (
 	ErrFailedToDeProvisionMotherService = errors.New("failed to deprovision mother service")
 	ErrFailedToDeProvisionTestService   = errors.New("failed to deprovision test service")
 	ErrFailedToUpdateTestScenario       = errors.New("failed to update test scenario")
+	ErrFailedToGetReadyForTesting       = errors.New("failed to get ready for testing response")
 
 	// Validation errors.
 	ErrFailedToGetTestServiceConfig                       = errors.New("failed to get test service config by id")

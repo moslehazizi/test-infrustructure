@@ -20,6 +20,8 @@ type SDKTestService interface {
 	Live(ctx context.Context, baseURL string) (response.HealthResponse, error)
 	// RunExecute is for run test service to send requests to mother service based on its params.
 	RunExecute(ctx context.Context, baseURL string, req request.RunRequest) (response.FactorialExecutionResult, error)
+	// ReadyForTesting is for checking test service is ready for start or no.
+	ReadyForTest(ctx context.Context, baseURL string) (response.HealthResponse, error)
 }
 
 type sdkTestService struct {
@@ -200,6 +202,47 @@ func (s *sdkTestService) RunExecute(
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return result, fmt.Errorf("failed to decode run execute response: %w", err)
+	}
+
+	return result, nil
+}
+
+func (s *sdkTestService) ReadyForTest(
+	ctx context.Context,
+	baseURL string,
+) (response.HealthResponse, error) {
+	url := baseURL + "/api/v1/ready-for-testing"
+	var result response.HealthResponse
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		result.OK = false
+
+		return result, fmt.Errorf("failed to create request to check ready for testing: %w", err)
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		result.OK = false
+
+		return result, fmt.Errorf("failed to do request to check ready for testing: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			result.OK = false
+
+			return result, fmt.Errorf("%w: %w", pkg.ErrFailedToGetReadyForTesting, err)
+		}
+
+		return result, fmt.Errorf("%w- check ready for testing return with status code: %d", pkg.ErrFailedToGetReadyForTesting, resp.StatusCode)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		result.OK = false
+
+		return result, fmt.Errorf("%w: %w", pkg.ErrFailedToGetReadyForTesting, err)
 	}
 
 	return result, nil

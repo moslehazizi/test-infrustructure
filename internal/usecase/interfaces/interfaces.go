@@ -25,13 +25,12 @@ type ScenarioExecutor interface {
 type TestAgentController interface {
 	// Run runs agent.
 	Run() error
-
+	// StartTesting is responsible for sending start command.
 	StartTesting(ctx context.Context, req request.RunRequest) error
+	// StartTesting is responsible for sending abort command.
 	AbortTesting(ctx context.Context) error
-
 	// Healthy checks if related test service is up and running.
 	Healthy() bool
-
 	// ReadyForTesting tests that test service is not executing
 	// any test and is ready to get execution command.
 	ReadyForTesting() bool

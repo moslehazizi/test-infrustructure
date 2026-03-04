@@ -337,3 +337,69 @@ func TestSDKTestService_Run(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 }
+
+func TestSDKTestService_ReadyForTesting(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		mockClient := new(mocks.MockHTTPClient)
+
+		body := io.NopCloser(strings.NewReader(`{"ok": true}`))
+
+		mockResp := &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       body,
+		}
+
+		mockClient.
+			On("Do", mock.AnythingOfType("*http.Request")).
+			Return(mockResp, nil)
+
+		sdk := NewSDKTestService(mockClient)
+
+		resp, err := sdk.ReadyForTest(context.Background(), "http://localhost:8085")
+
+		require.NoError(t, err)
+		assert.True(t, resp.OK)
+
+		mockClient.AssertExpectations(t)
+	})
+
+	t.Run("failed case - invalid host", func(t *testing.T) {
+		mockClient := new(mocks.MockHTTPClient)
+
+		mockClient.
+			On("Do", mock.Anything).
+			Return(nil, errors.New("network error"))
+
+		sdk := NewSDKTestService(mockClient)
+
+		_, err := sdk.ReadyForTest(context.Background(), "http://localhost:8085")
+
+		assert.Error(t, err)
+
+		mockClient.AssertExpectations(t)
+	})
+
+	t.Run("failed case - status code not ok", func(t *testing.T) {
+		mockClient := new(mocks.MockHTTPClient)
+
+		body := io.NopCloser(strings.NewReader(`{"ok": false}`))
+
+		mockResp := &http.Response{
+			StatusCode: http.StatusInternalServerError,
+			Body:       body,
+		}
+
+		mockClient.
+			On("Do", mock.AnythingOfType("*http.Request")).
+			Return(mockResp, nil)
+
+		sdk := NewSDKTestService(mockClient)
+
+		resp, err := sdk.ReadyForTest(context.Background(), "http://localhost:8085")
+
+		assert.Error(t, err)
+		assert.False(t, resp.OK)
+
+		mockClient.AssertExpectations(t)
+	})
+}
