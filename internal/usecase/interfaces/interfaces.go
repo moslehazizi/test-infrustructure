@@ -18,6 +18,7 @@ type ExecutionManager interface {
 type ScenarioExecutor interface {
 	Run() error
 	IsRunning() bool
+	AllAgentsAreHealthy() bool
 	AddAgent(agent TestAgentController)
 }
 

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/provider/dto/request"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"sync"
@@ -28,17 +29,62 @@ func NewStressTestExecutionManager(testAgentControllerBuilder interfaces.TestAge
 }
 
 type scenarioExecutor struct {
-	scenarioID       uint64
+	scenario         *entity.TestScenario
 	executionID      uuid.UUID
 	agents           []interfaces.TestAgentController
 	allAgentsHealthy bool
 	running          bool
 }
 
+func (sc *scenarioExecutor) IsRunning() bool {
+	return sc.running
+}
+
+func (sc *scenarioExecutor) AddAgent(agent interfaces.TestAgentController) {
+	sc.agents = append(sc.agents, agent)
+}
+
+func (sc *scenarioExecutor) AllAgentsAreHealthy() bool {
+	return sc.allAgentsHealthy
+}
+
 func (sc *scenarioExecutor) Run() error {
 	sc.running = true
 
 	// Make sure all agents are healthy.
+	sc.awaitAgentsToBeHealthy()
+
+	// NOW: all agents are healthy.
+
+	// we can send scheduled commands.
+
+	// we need a loop based on len of steps:
+	for i := int64(1); i <= sc.scenario.NumSteps; i++ {
+		req := request.NewRunRequestFromTestServiceConfig(
+			int(i),
+			sc.executionID,
+			sc.scenario.TestServiceConfig,
+		)
+
+		// send command to all agents.
+		wg := sync.WaitGroup{}
+		for _, agent := range sc.agents {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				_ = agent.StartTesting(context.Background(), *req)
+			}()
+		}
+
+		wg.Wait()
+		// wait based on step duration.
+		time.Sleep(time.Duration(*sc.scenario.ExecutionDuration) * time.Millisecond)
+	}
+
+	return nil
+}
+
+func (sc *scenarioExecutor) awaitAgentsToBeHealthy() {
 	for {
 		allHealthy := true
 		for _, agent := range sc.agents {
@@ -57,16 +103,6 @@ func (sc *scenarioExecutor) Run() error {
 
 		time.Sleep(healthyCheckSleep)
 	}
-
-	return nil
-}
-
-func (sc *scenarioExecutor) IsRunning() bool {
-	return sc.running
-}
-
-func (sc *scenarioExecutor) AddAgent(agent interfaces.TestAgentController) {
-	sc.agents = append(sc.agents, agent)
 }
 
 // #region StressTestExecutionManager
@@ -119,7 +155,7 @@ func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario 
 		_, ok := ex.scenarios[scenario.ID]
 		if !ok {
 			ex.scenarios[scenario.ID] = &scenarioExecutor{
-				scenarioID:  scenario.ID,
+				scenario:    scenario,
 				executionID: executionID,
 				agents:      []interfaces.TestAgentController{agent},
 			}

@@ -1,6 +1,8 @@
 package request
 
 import (
+	"control-panel-service/internal/domain/entity"
+
 	"github.com/google/uuid"
 )
 
@@ -25,4 +27,29 @@ type RunRequest struct {
 	NullValueRate         int       `json:"null_value_rate"`
 	DatabaseName          string    `json:"database_name"`
 	DatabaseTableName     string    `json:"database_table_name"`
+}
+
+func NewRunRequestFromTestServiceConfig(stepNum int, executionID uuid.UUID, cfg *entity.TestServiceConfig) *RunRequest {
+	return &RunRequest{
+		StepNum:               stepNum,
+		ExecutionId:           executionID,
+		TestScenarioID:        cfg.TestScenarioID,
+		MaxRequests:           stepNum * cfg.MaxRequests,
+		MaxDuration:           cfg.MaxDuration,
+		RequestDelayDuration:  cfg.RequestDelayDuration,
+		RandomRequestDelayMin: cfg.RandomRequestDelayMin,
+		RandomRequestDelayMax: cfg.RandomRequestDelayMax,
+		FixedTestNumber:       cfg.FixedTestNumber,
+		RandomTestNumberMin:   cfg.RandomTestNumberMin,
+		RandomTestNumberMax:   cfg.RandomTestNumberMax,
+		BadValueRate:          cfg.BadValueRate,
+		NegativeValueRate:     cfg.NegativeValueRate,
+		RealValueRate:         cfg.RealValueRate,
+		ZeroValueRate:         cfg.ZeroValueRate,
+		StringValueRate:       cfg.StringValueRate,
+		LongStringValueRate:   cfg.LongStringValueRate,
+		NullValueRate:         cfg.NullValueRate,
+		DatabaseName:          cfg.DatabaseName,
+		DatabaseTableName:     cfg.DatabaseTableName,
+	}
 }
