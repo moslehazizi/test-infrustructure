@@ -25,6 +25,12 @@ func (m *MockTestAgentController) Healthy() bool {
 	return args.Get(0).(bool)
 }
 
+func (m *MockTestAgentController) ReadyForTesting() bool {
+	args := m.Called()
+
+	return args.Get(0).(bool)
+}
+
 func (m *MockTestAgentController) StartTesting(ctx context.Context, req request.RunRequest) error {
 	args := m.Called(ctx, req)
 

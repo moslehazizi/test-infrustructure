@@ -146,6 +146,11 @@ func (c *testAgentController) Healthy() bool {
 	return health.OK
 }
 
+func (c *testAgentController) ReadyForTesting() bool {
+	// TODO: not implemented
+	return true
+}
+
 func (c *testAgentController) StartTesting(ctx context.Context, req request.RunRequest) error {
 	c.runChan <- req
 	return nil

@@ -141,6 +141,113 @@ func Test_scenarioExecutor_awaitAgentsToBeHealthy(t *testing.T) {
 	})
 }
 
+func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
+	t.Run("all agents' test services are ready - single agent", func(t *testing.T) {
+		scenario := &entity.TestScenario{
+			ID:       1,
+			NumSteps: 2,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(1)),
+		}
+
+		agent := new(mocks.MockTestAgentController)
+		agent.On("ReadyForTesting").Times(1).Return(true)
+
+		ex := &scenarioExecutor{
+			scenario:                 scenario,
+			executionID:              uuid.New(),
+			agents:                   []interfaces.TestAgentController{agent},
+			allAgentsHealthy:         false,
+			allAgentsReadyForTesting: false,
+			running:                  false,
+		}
+
+		ex.awaitAgentsToBeReadyToStartTesting()
+
+		agent.AssertCalled(t, "ReadyForTesting")
+
+		assert.True(t, ex.allAgentsReadyForTesting)
+	})
+
+	t.Run("all agents' test services are ready - single agent - first time is not ready", func(t *testing.T) {
+		t.Parallel()
+
+		scenario := &entity.TestScenario{
+			ID:       1,
+			NumSteps: 2,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(1)),
+		}
+
+		agent := new(mocks.MockTestAgentController)
+		agent.On("ReadyForTesting").Times(1).Return(false)
+
+		ex := &scenarioExecutor{
+			scenario:                 scenario,
+			executionID:              uuid.New(),
+			agents:                   []interfaces.TestAgentController{agent},
+			allAgentsHealthy:         false,
+			allAgentsReadyForTesting: false,
+			running:                  false,
+		}
+
+		go ex.awaitAgentsToBeReadyToStartTesting()
+		time.Sleep(time.Millisecond)
+
+		agent.AssertCalled(t, "ReadyForTesting")
+
+		assert.False(t, ex.allAgentsReadyForTesting)
+
+		agent.On("ReadyForTesting").Times(1).Return(true)
+		time.Sleep(readyForTestingCheckSleep)
+
+		time.Sleep(time.Millisecond)
+
+		agent.AssertCalled(t, "ReadyForTesting")
+		assert.True(t, ex.allAgentsReadyForTesting)
+	})
+
+	t.Run("all agents' test services are ready - two agents", func(t *testing.T) {
+		scenario := &entity.TestScenario{
+			ID:       1,
+			NumSteps: 2,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(2)),
+		}
+
+		agent1 := new(mocks.MockTestAgentController)
+		agent1.On("ReadyForTesting").Times(1).Return(true)
+
+		agent2 := new(mocks.MockTestAgentController)
+		agent2.On("ReadyForTesting").Times(1).Return(true)
+
+		ex := &scenarioExecutor{
+			scenario:                 scenario,
+			executionID:              uuid.New(),
+			agents:                   []interfaces.TestAgentController{agent1, agent2},
+			allAgentsHealthy:         false,
+			allAgentsReadyForTesting: false,
+			running:                  false,
+		}
+
+		ex.awaitAgentsToBeReadyToStartTesting()
+
+		agent1.AssertCalled(t, "ReadyForTesting")
+		agent2.AssertCalled(t, "ReadyForTesting")
+
+		assert.True(t, ex.allAgentsReadyForTesting)
+	})
+}
+
 func Test_scenarioExecutor_Run(t *testing.T) {
 	t.Run("success - single step", func(t *testing.T) {
 		t.Parallel()
@@ -208,8 +315,8 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		err := ex.Run()
 		assert.NoError(t, err)
 	})
+
 	t.Run("success - 2 steps", func(t *testing.T) {
-		// TODO: this is just added. neeted to be checked and tested
 		t.Parallel()
 
 		// setting up agents
