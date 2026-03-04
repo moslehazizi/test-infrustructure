@@ -300,19 +300,23 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent1.On("Healthy").Return(true)
 		agent2.On("Healthy").Return(true)
 
-		ex.awaitAgentsToBeHealthy()
 		time.Sleep(time.Millisecond)
 		time.Sleep(time.Millisecond * 10)
-		assert.True(t, ex.allAgentsHealthy)
-
-		agent1.AssertCalled(t, "Healthy")
-		agent2.AssertCalled(t, "Healthy")
 
 		// we have 2 agents ready
 
 		agent1.On("StartTesting", mock.Anything, mock.Anything).Times(1).Return(nil)
 		agent2.On("StartTesting", mock.Anything, mock.Anything).Times(1).Return(nil)
 		err := ex.Run()
+
+		agent1.AssertCalled(t, "Healthy")
+		agent2.AssertCalled(t, "Healthy")
+
+		assert.True(t, ex.allAgentsHealthy)
+
+		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
+		agent2.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
+
 		assert.NoError(t, err)
 	})
 
@@ -367,20 +371,28 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent1.On("Healthy").Return(true)
 		agent2.On("Healthy").Return(true)
 
-		ex.awaitAgentsToBeHealthy()
 		time.Sleep(time.Millisecond)
 		time.Sleep(time.Millisecond * 10)
-		assert.True(t, ex.allAgentsHealthy)
-
-		agent1.AssertCalled(t, "Healthy")
-		agent2.AssertCalled(t, "Healthy")
 
 		// we have 2 agents ready
 
 		agent1.On("StartTesting", mock.Anything, mock.Anything).Times(2).Return(nil)
 		agent2.On("StartTesting", mock.Anything, mock.Anything).Times(2).Return(nil)
 
+		agent1.On("ReadyForTesting").Times(1).Return(true)
+		agent2.On("ReadyForTesting").Times(1).Return(true)
+
 		err := ex.Run()
+
+		agent1.AssertCalled(t, "Healthy")
+		agent2.AssertCalled(t, "Healthy")
+
+		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
+		agent2.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
+
+		agent1.AssertCalled(t, "ReadyForTesting")
+		agent2.AssertCalled(t, "ReadyForTesting")
+
 		assert.NoError(t, err)
 	})
 }

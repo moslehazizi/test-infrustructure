@@ -80,10 +80,10 @@ func (sc *scenarioExecutor) Run() error {
 
 		wg.Wait()
 
-		// TODO: if scenario ExecutionDuration is nil, wait for 1ms.
-		// wait based on step duration.
-		time.Sleep(time.Duration(*sc.scenario.ExecutionDuration) * time.Millisecond)
-		// awaitAgentsToBeReadyToStartTesting
+		if i < sc.scenario.NumSteps {
+			// wait for all agents to be ready to execute next step.
+			sc.awaitAgentsToBeReadyToStartTesting()
+		}
 	}
 
 	return nil
