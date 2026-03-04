@@ -24,6 +24,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MaxTestServiceCount: &sampleInt,
 			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
+			NumSteps:            int64(2),
 		}
 
 		TestCategory := &TestCategory{
@@ -50,6 +51,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			TestCategoryID:  uint64(4),
 			MotherServiceID: uint64(5),
 			Status:          ScenarioStatusPending,
+			NumSteps:        int64(2),
 		}
 		TestCategory := &TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -77,6 +79,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:     uint64(5),
 			Status:              ScenarioStatusPending,
 			MaxTestServiceCount: &sampleIntLessThanOne,
+			NumSteps:            int64(2),
 		}
 		TestCategory := &TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -105,6 +108,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:   uint64(5),
 			Status:            ScenarioStatusPending,
 			ExecutionDuration: &dur,
+			NumSteps:          int64(2),
 		}
 		TestCategory := &TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -133,6 +137,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:    uint64(5),
 			Status:             ScenarioStatusPending,
 			AutoStepChangeRate: &sampleIntLessThanOne,
+			NumSteps:           int64(2),
 		}
 		TestCategory := &TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -163,6 +168,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Status:             ScenarioStatusPending,
 			ExecutionDuration:  &dur,
 			AutoStepChangeRate: &sampleInt,
+			NumSteps:           int64(2),
 		}
 
 		TestCategory := &TestCategory{
@@ -195,6 +201,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MaxTestServiceCount: &sampleInt,
 			ExecutionDuration:   &dur,
 			AutoStepChangeRate:  &sampleInt,
+			NumSteps:            int64(2),
 		}
 
 		TestCategory := &TestCategory{
@@ -224,6 +231,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:    uint64(5),
 			Status:             ScenarioStatusPending,
 			AutoStepChangeRate: &sampleInt,
+			NumSteps:           int64(2),
 		}
 
 		TestCategory := &TestCategory{
@@ -255,6 +263,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Status:             ScenarioStatusPending,
 			ExecutionDuration:  &dur,
 			AutoStepChangeRate: &sampleInt,
+			NumSteps:           int64(2),
 		}
 
 		TestCategory := &TestCategory{
@@ -282,6 +291,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			TestCategoryID:  uint64(4),
 			MotherServiceID: uint64(5),
 			Status:          ScenarioStatusPending,
+			NumSteps:        int64(2),
 		}
 
 		TestCategory := &TestCategory{
@@ -310,6 +320,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:    uint64(5),
 			Status:             ScenarioStatusPending,
 			AutoStepChangeRate: &sampleInt,
+			NumSteps:           int64(2),
 		}
 
 		TestCategory := &TestCategory{
@@ -326,6 +337,28 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrNoNeedAutoStepChange)
 	})
+
+	t.Run("failed case - num steps not set (zero)", func(t *testing.T) {
+		testSci := TestScenario{
+			// ... other fields ...
+			NumSteps: 0,
+		}
+		// ...
+		err := testSci.Validate(&TestCategory{})
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrNumStepsNotSet)
+	})
+
+	t.Run("failed case - num steps set to negative value", func(t *testing.T) {
+		testSci := TestScenario{
+			// ... other fields ...
+			NumSteps: -2,
+		}
+		// ...
+		err := testSci.Validate(&TestCategory{})
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrNumStepsNotSet)
+	})
 }
 
 func TestTableName(t *testing.T) {
@@ -338,6 +371,7 @@ func TestTableName(t *testing.T) {
 		TestCategoryID:  uint64(4),
 		MotherServiceID: uint64(5),
 		Status:          ScenarioStatusPending,
+		NumSteps:        int64(2),
 	}
 
 	name := testSci.TableName()

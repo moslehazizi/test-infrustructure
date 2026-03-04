@@ -715,6 +715,9 @@
                 "name": {
                     "type": "string"
                 },
+                "num_steps": {
+                    "type": "integer"
+                },
                 "test_category_id": {
                     "type": "integer"
                 },
@@ -754,6 +757,9 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "num_steps": {
+                    "type": "integer"
                 },
                 "test_service_config": {
                     "$ref": "#/definitions/request.TestServiceConfigRequest"
@@ -1010,6 +1016,9 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "num_steps": {
+                    "type": "integer"
                 },
                 "started_at": {
                     "type": "string"

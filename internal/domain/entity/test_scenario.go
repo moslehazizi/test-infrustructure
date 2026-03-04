@@ -61,6 +61,10 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 		return pkg.ErrAutoStepChangeRateLessThanOne
 	}
 
+	if ts.NumSteps < 1 {
+		return pkg.ErrNumStepsNotSet
+	}
+
 	if testCat.HasMaxTestServiceCount {
 		if ts.MaxTestServiceCount == nil {
 			return pkg.ErrMaxTestServiceCountNotSet

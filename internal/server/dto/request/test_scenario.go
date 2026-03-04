@@ -8,6 +8,7 @@ type TestScenario struct {
 	ExecutionDuration   *int64                    `json:"execution_duration"`
 	AutoStepChangeRate  *int64                    `json:"auto_step_change_rate"`
 	Config              *TestServiceConfigRequest `json:"test_service_config"`
+	NumSteps            int64                     `json:"num_steps"`
 }
 
 type TestServiceConfigRequest struct {
@@ -38,6 +39,7 @@ type TestScenarioUpdateRequest struct {
 	ExecutionDuration   *int64                    `json:"execution_duration"`
 	AutoStepChangeRate  *int64                    `json:"auto_step_change_rate"`
 	Config              *TestServiceConfigRequest `json:"test_service_config"`
+	NumSteps            int64                     `json:"num_steps"`
 }
 
 type TestScenarioPaginationRequest struct {

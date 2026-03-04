@@ -726,6 +726,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "num_steps": {
+                    "type": "integer"
+                },
                 "test_category_id": {
                     "type": "integer"
                 },
@@ -765,6 +768,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "num_steps": {
+                    "type": "integer"
                 },
                 "test_service_config": {
                     "$ref": "#/definitions/request.TestServiceConfigRequest"
@@ -1021,6 +1027,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "num_steps": {
+                    "type": "integer"
                 },
                 "started_at": {
                     "type": "string"

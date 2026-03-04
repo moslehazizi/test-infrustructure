@@ -50,11 +50,13 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 			ExecutionDuration:   nil,
 			AutoStepChangeRate:  nil,
 			StartedAt:           nil,
+			NumSteps:            2,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			// `INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","num_steps","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "id"`)).
 			WithArgs(
 				testScenario.CreatedAt,
 				testScenario.UpdatedAt,
@@ -63,6 +65,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 				testScenario.TestCategoryID,
 				testScenario.MotherServiceID,
 				testScenario.Status,
+				testScenario.NumSteps,
 				nil,
 				nil,
 				nil,
@@ -99,11 +102,13 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 			ExecutionDuration:   nil,
 			AutoStepChangeRate:  nil,
 			StartedAt:           nil,
+			NumSteps:            2,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			// `INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","num_steps","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "id"`)).
 			WithArgs(testScenario.CreatedAt,
 				testScenario.UpdatedAt,
 				testScenario.DeletedAt,
@@ -111,6 +116,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 				testScenario.TestCategoryID,
 				testScenario.MotherServiceID,
 				testScenario.Status,
+				testScenario.NumSteps,
 				nil, nil, nil, int32(0), testScenario.StartedAt, true).
 			WillReturnError(errors.New("insert failed"))
 		mock.ExpectRollback()
@@ -148,6 +154,7 @@ func TestGetByID(t *testing.T) {
 			MotherServiceID:     2,
 			StartedAt:           nil,
 			Editable:            true,
+			NumSteps:            2,
 			TestCategory: &entity.TestCategory{
 				ID:                     3,
 				CreatedAt:              someTime,
@@ -191,10 +198,20 @@ func TestGetByID(t *testing.T) {
 			`SELECT * FROM "test_scenarios" WHERE "test_scenarios"."id" = $1 AND "test_scenarios"."deleted_at" IS NULL ORDER BY "test_scenarios"."id" LIMIT $2`)).
 			WithArgs(uint64(1), 1).
 			WillReturnRows(sqlmock.NewRows([]string{
-				"id", "created_at", "updated_at", "deleted_at", "name",
-				"test_category_id", "mother_service_id", "status",
-				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at", "editable",
+				"id",
+				"created_at",
+				"updated_at",
+				"deleted_at",
+				"name",
+				"test_category_id",
+				"mother_service_id",
+				"status",
+				"num_steps",
+				"max_test_service_count",
+				"execution_duration",
+				"auto_step_change_rate",
+				"started_at",
+				"editable",
 			}).
 				AddRow(
 					expectedTestScenario.ID,
@@ -205,6 +222,7 @@ func TestGetByID(t *testing.T) {
 					expectedTestScenario.TestCategoryID,
 					expectedTestScenario.MotherServiceID,
 					expectedTestScenario.Status,
+					expectedTestScenario.NumSteps,
 					expectedTestScenario.MaxTestServiceCount,
 					expectedTestScenario.ExecutionDuration,
 					expectedTestScenario.AutoStepChangeRate,
@@ -376,6 +394,7 @@ func TestGetPaginated(t *testing.T) {
 				TestCategoryID:  4,
 				MotherServiceID: 3,
 				StartedAt:       nil,
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -443,10 +462,20 @@ func TestGetPaginated(t *testing.T) {
 			`SELECT * FROM "test_scenarios" WHERE "test_scenarios"."deleted_at" IS NULL ORDER BY id DESC LIMIT $1`)).
 			WithArgs(2).
 			WillReturnRows(sqlmock.NewRows([]string{
-				"id", "created_at", "updated_at", "deleted_at", "name",
-				"test_category_id", "mother_service_id", "status",
-				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at", "editable",
+				"id",
+				"created_at",
+				"updated_at",
+				"deleted_at",
+				"name",
+				"test_category_id",
+				"mother_service_id",
+				"status",
+				"num_steps",
+				"max_test_service_count",
+				"execution_duration",
+				"auto_step_change_rate",
+				"started_at",
+				"editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -457,6 +486,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].TestCategoryID,
 					expectedTestScenarios[0].MotherServiceID,
 					expectedTestScenarios[0].Status,
+					expectedTestScenarios[0].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
@@ -472,6 +502,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].TestCategoryID,
 					expectedTestScenarios[1].MotherServiceID,
 					expectedTestScenarios[1].Status,
+					expectedTestScenarios[1].NumSteps,
 					expectedTestScenarios[1].MaxTestServiceCount,
 					expectedTestScenarios[1].ExecutionDuration,
 					expectedTestScenarios[1].AutoStepChangeRate,
@@ -546,6 +577,7 @@ func TestGetPaginated(t *testing.T) {
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
 				StartedAt:       nil,
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -614,6 +646,7 @@ func TestGetPaginated(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
+				"num_steps",
 				"max_test_service_count", "execution_duration",
 				"auto_step_change_rate", "started_at", "editable",
 			}).
@@ -626,6 +659,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].TestCategoryID,
 					expectedTestScenarios[0].MotherServiceID,
 					expectedTestScenarios[0].Status,
+					expectedTestScenarios[0].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
@@ -641,6 +675,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].TestCategoryID,
 					expectedTestScenarios[1].MotherServiceID,
 					expectedTestScenarios[1].Status,
+					expectedTestScenarios[1].NumSteps,
 					expectedTestScenarios[1].MaxTestServiceCount,
 					expectedTestScenarios[1].ExecutionDuration,
 					expectedTestScenarios[1].AutoStepChangeRate,
@@ -717,6 +752,7 @@ func TestGetPaginated(t *testing.T) {
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
 				StartedAt:       nil,
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -757,6 +793,7 @@ func TestGetPaginated(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
+				"num_steps",
 				"max_test_service_count", "execution_duration",
 				"auto_step_change_rate", "started_at", "editable",
 			}).
@@ -769,6 +806,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].TestCategoryID,
 					expectedTestScenarios[0].MotherServiceID,
 					expectedTestScenarios[0].Status,
+					expectedTestScenarios[0].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
@@ -833,6 +871,7 @@ func TestGetPaginated(t *testing.T) {
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
 				StartedAt:       nil,
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -861,6 +900,7 @@ func TestGetPaginated(t *testing.T) {
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
 				StartedAt:       nil,
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -889,6 +929,7 @@ func TestGetPaginated(t *testing.T) {
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
 				StartedAt:       nil,
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -917,6 +958,7 @@ func TestGetPaginated(t *testing.T) {
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
 				StartedAt:       nil,
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -945,6 +987,7 @@ func TestGetPaginated(t *testing.T) {
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
 				StartedAt:       nil,
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -985,6 +1028,7 @@ func TestGetPaginated(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
+				"num_steps",
 				"max_test_service_count", "execution_duration",
 				"auto_step_change_rate", "started_at", "editable",
 			}).
@@ -997,6 +1041,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].TestCategoryID,
 					expectedTestScenarios[0].MotherServiceID,
 					expectedTestScenarios[0].Status,
+					expectedTestScenarios[1].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
@@ -1012,6 +1057,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].TestCategoryID,
 					expectedTestScenarios[1].MotherServiceID,
 					expectedTestScenarios[1].Status,
+					expectedTestScenarios[1].NumSteps,
 					expectedTestScenarios[1].MaxTestServiceCount,
 					expectedTestScenarios[1].ExecutionDuration,
 					expectedTestScenarios[1].AutoStepChangeRate,
@@ -1027,6 +1073,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[2].TestCategoryID,
 					expectedTestScenarios[2].MotherServiceID,
 					expectedTestScenarios[2].Status,
+					expectedTestScenarios[2].NumSteps,
 					expectedTestScenarios[2].MaxTestServiceCount,
 					expectedTestScenarios[2].ExecutionDuration,
 					expectedTestScenarios[2].AutoStepChangeRate,
@@ -1042,6 +1089,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[3].TestCategoryID,
 					expectedTestScenarios[3].MotherServiceID,
 					expectedTestScenarios[3].Status,
+					expectedTestScenarios[3].NumSteps,
 					expectedTestScenarios[3].MaxTestServiceCount,
 					expectedTestScenarios[3].ExecutionDuration,
 					expectedTestScenarios[3].AutoStepChangeRate,
@@ -1057,6 +1105,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[4].TestCategoryID,
 					expectedTestScenarios[4].MotherServiceID,
 					expectedTestScenarios[4].Status,
+					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[4].MaxTestServiceCount,
 					expectedTestScenarios[4].ExecutionDuration,
 					expectedTestScenarios[4].AutoStepChangeRate,
@@ -1120,6 +1169,7 @@ func TestGetPaginated(t *testing.T) {
 				Name:            "load1",
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -1147,6 +1197,7 @@ func TestGetPaginated(t *testing.T) {
 				Name:            "load2",
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -1174,6 +1225,7 @@ func TestGetPaginated(t *testing.T) {
 				Name:            "load3",
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -1201,6 +1253,7 @@ func TestGetPaginated(t *testing.T) {
 				Name:            "load4",
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -1228,6 +1281,7 @@ func TestGetPaginated(t *testing.T) {
 				Name:            "load5",
 				TestCategoryID:  uint64(4),
 				MotherServiceID: uint64(3),
+				NumSteps:        2,
 				TestCategory: &entity.TestCategory{
 					ID:                     4,
 					CreatedAt:              now,
@@ -1267,6 +1321,7 @@ func TestGetPaginated(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
+				"num_steps",
 				"max_test_service_count", "execution_duration",
 				"auto_step_change_rate", "started_at", "editable",
 			}).
@@ -1279,6 +1334,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[0].TestCategoryID,
 					expectedTestScenarios[0].MotherServiceID,
 					expectedTestScenarios[0].Status,
+					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
 					expectedTestScenarios[0].ExecutionDuration,
 					expectedTestScenarios[0].AutoStepChangeRate,
@@ -1294,6 +1350,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[1].TestCategoryID,
 					expectedTestScenarios[1].MotherServiceID,
 					expectedTestScenarios[1].Status,
+					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[1].MaxTestServiceCount,
 					expectedTestScenarios[1].ExecutionDuration,
 					expectedTestScenarios[1].AutoStepChangeRate,
@@ -1309,6 +1366,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[2].TestCategoryID,
 					expectedTestScenarios[2].MotherServiceID,
 					expectedTestScenarios[2].Status,
+					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[2].MaxTestServiceCount,
 					expectedTestScenarios[2].ExecutionDuration,
 					expectedTestScenarios[2].AutoStepChangeRate,
@@ -1324,6 +1382,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[3].TestCategoryID,
 					expectedTestScenarios[3].MotherServiceID,
 					expectedTestScenarios[3].Status,
+					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[3].MaxTestServiceCount,
 					expectedTestScenarios[3].ExecutionDuration,
 					expectedTestScenarios[3].AutoStepChangeRate,
@@ -1339,6 +1398,7 @@ func TestGetPaginated(t *testing.T) {
 					expectedTestScenarios[4].TestCategoryID,
 					expectedTestScenarios[4].MotherServiceID,
 					expectedTestScenarios[4].Status,
+					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[4].MaxTestServiceCount,
 					expectedTestScenarios[4].ExecutionDuration,
 					expectedTestScenarios[4].AutoStepChangeRate,
@@ -1569,6 +1629,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 				AutoStepChangeRate:  nil,
 				TestCategoryID:      3,
 				MotherServiceID:     2,
+				NumSteps:            2,
 				TestCategory: &entity.TestCategory{
 					ID:                     3,
 					CreatedAt:              someTime,
@@ -1617,6 +1678,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 				AutoStepChangeRate:  nil,
 				TestCategoryID:      6,
 				MotherServiceID:     5,
+				NumSteps:            2,
 				TestCategory: &entity.TestCategory{
 					ID:                     6,
 					CreatedAt:              someTime,
@@ -1659,6 +1721,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
+				"num_steps",
 				"max_test_service_count", "execution_duration",
 				"auto_step_change_rate", "editable",
 			}).
@@ -1671,6 +1734,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 					expectedTestScenario[0].TestCategoryID,
 					expectedTestScenario[0].MotherServiceID,
 					expectedTestScenario[0].Status,
+					expectedTestScenario[0].NumSteps,
 					expectedTestScenario[0].MaxTestServiceCount,
 					expectedTestScenario[0].ExecutionDuration,
 					expectedTestScenario[0].AutoStepChangeRate,
@@ -1685,6 +1749,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 					expectedTestScenario[1].TestCategoryID,
 					expectedTestScenario[1].MotherServiceID,
 					expectedTestScenario[1].Status,
+					expectedTestScenario[1].NumSteps,
 					expectedTestScenario[1].MaxTestServiceCount,
 					expectedTestScenario[1].ExecutionDuration,
 					expectedTestScenario[1].AutoStepChangeRate,
@@ -1969,6 +2034,7 @@ func TestTestScenarioRepository_Update(t *testing.T) {
 			MaxTestServiceCount: &maxCount,
 			DeploymentNumber:    3,
 			Editable:            false,
+			NumSteps:            2,
 		}
 
 		mock.ExpectBegin()
@@ -2006,6 +2072,7 @@ func TestTestScenarioRepository_Update(t *testing.T) {
 			ID:              1,
 			Name:            "updated-name",
 			MotherServiceID: 2,
+			NumSteps:        2,
 		}
 
 		mock.ExpectBegin()

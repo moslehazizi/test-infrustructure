@@ -224,6 +224,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrTestServiceConfigNotFound):
 		status = http.StatusNotFound
 		msg = TestServiceConfigNotFound
+	case errors.Is(err, ErrNumStepsNotSet):
+		status = http.StatusUnprocessableEntity
+		msg = NumStepsNotSet
 
 	default:
 		status = http.StatusInternalServerError
@@ -266,8 +269,8 @@ var (
 	ErrFailedToUpdateTestScenario       = errors.New("failed to update test scenario")
 
 	// Validation errors.
-	ErrFailedToGetTestServiceConfig            = errors.New("failed to get test service config by id")
-	ErrTestServiceConfigNotFound               = errors.New("test service config not found")
+	ErrFailedToGetTestServiceConfig                       = errors.New("failed to get test service config by id")
+	ErrTestServiceConfigNotFound                          = errors.New("test service config not found")
 	ErrInvalidMotherServiceName                           = errors.New("mother service name is required")
 	ErrMotherServiceIsNil                                 = errors.New("mother service is nil")
 	ErrTestScenarioServiceIsNil                           = errors.New("test scenario service is nil")
@@ -324,4 +327,5 @@ var (
 	ErrFailedToRunTestService                             = errors.New("failed to execute run function of test service")
 	ErrFailedToProvisionTestService                       = errors.New("failed to provision test service")
 	ErrFailedToRunAgentControllerDueToProvisioningFailure = errors.New("unable to run test agent controller due to provisioning test service failure")
+	ErrNumStepsNotSet                                     = errors.New("num steps not set")
 )

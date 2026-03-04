@@ -395,6 +395,9 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 	if testScenarioUpdateRequest.AutoStepChangeRate != nil {
 		existing.AutoStepChangeRate = testScenarioUpdateRequest.AutoStepChangeRate
 	}
+	if testScenarioUpdateRequest.NumSteps >= 1 {
+		existing.NumSteps = testScenarioUpdateRequest.NumSteps
+	}
 
 	if err = existing.Validate(existing.TestCategory); err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, err)
