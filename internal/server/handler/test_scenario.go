@@ -384,6 +384,102 @@ func (handler *TestScenario) Start() fiber.Handler {
 	}
 }
 
+// Pause godoc
+//
+//	@Summary		Pause a test scenario.
+//	@Description	Retrieve a specific test scenario by its ID and start the scenario.
+//	@Tags			test-scenarios
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Test scenario ID"
+//	@Success		200	{object}	response.SuccessResponse
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		404	{object}	response.ErrorResponse
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/api/v1/test-scenarios/{id}/start [post]
+func (handler *TestScenario) Pause() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("test-scenario-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "pause_test_scenario")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
+		idParam := ctx.Params("id")
+		if idParam == "" {
+			span.SetAttributes(attribute.String("error.type", "missing_id"))
+			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
+		}
+
+		id, err := strconv.ParseUint(idParam, 10, 64)
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
+			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
+		}
+
+		span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
+
+		err = handler.testScenario.Pause(traceCtx, id)
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "start_error"), attribute.String("error.message", err.Error()))
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
+
+		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
+			Message: pkg.TestScenarioPaused,
+		})
+	}
+}
+
+// Resume godoc
+//
+//	@Summary		Resume a test scenario.
+//	@Description	Retrieve a specific test scenario by its ID and start the scenario.
+//	@Tags			test-scenarios
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Test scenario ID"
+//	@Success		200	{object}	response.SuccessResponse
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		404	{object}	response.ErrorResponse
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/api/v1/test-scenarios/{id}/start [post]
+func (handler *TestScenario) Resume() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		tracer := otel.Tracer("test-scenario-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "resume_test_scenario")
+		defer span.End()
+
+		requestID := logger.GetRequestID(ctx.Context())
+		span.SetAttributes(attribute.String("request_id", requestID))
+
+		idParam := ctx.Params("id")
+		if idParam == "" {
+			span.SetAttributes(attribute.String("error.type", "missing_id"))
+			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
+		}
+
+		id, err := strconv.ParseUint(idParam, 10, 64)
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
+			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
+		}
+
+		span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
+
+		err = handler.testScenario.Resume(traceCtx, id)
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "start_error"), attribute.String("error.message", err.Error()))
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
+
+		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
+			Message: pkg.TestScenarioResumed,
+		})
+	}
+}
+
 // Update godoc
 //
 //	@Summary		Update a test scenario

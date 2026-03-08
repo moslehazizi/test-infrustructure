@@ -1434,6 +1434,559 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 }
 
+func TestTestScenarioUsecase_Pause(t *testing.T) {
+	t.Run("failed_case_scenario_not_found", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, pkg.ErrTestScenarioNotFound)
+
+		err := service.Pause(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_repository_unknown_error", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, errors.New("error happened"))
+
+		err := service.Pause(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenario)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_scenario_status_is_not_running", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:       sampleID,
+			Status:   entity.ScenarioStatusPending,
+			NumSteps: 2,
+		}
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+
+		err := service.Pause(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrOnlyRunningScenariosCanBePaused)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_repository_error_on_marking_as_puase", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:       sampleID,
+			Status:   entity.ScenarioStatusRunning,
+			NumSteps: 2,
+		}
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPaused, false).Return(errors.New("something went wrong"))
+
+		err := service.Pause(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPaused, false)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_stress_test_pause_scenario_failed", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:     sampleID,
+			Status: entity.ScenarioStatusRunning,
+			TestCategory: &entity.TestCategory{
+				ID:   1,
+				Name: entity.STRESS,
+			},
+			NumSteps: 2,
+		}
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPaused, false).Return(nil)
+		mockStressTestExecutor.On("PauseScenario", mock.Anything, scenario, mock.Anything).Return(errors.New("something went wrong"))
+
+		err := service.Pause(ctx, sampleID)
+
+		assert.Error(t, err)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPaused, false)
+		mockStressTestExecutor.AssertCalled(t, "PauseScenario", mock.Anything, scenario, mock.Anything)
+
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_not_implemented", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:     sampleID,
+			Status: entity.ScenarioStatusRunning,
+			TestCategory: &entity.TestCategory{
+				ID:   1,
+				Name: "notsupported",
+			},
+			NumSteps: 2,
+		}
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPaused, false).Return(nil)
+
+		err := service.Pause(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrPauseingTestNotImplemented)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPaused, false)
+
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("success_case_stress_test", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:     sampleID,
+			Status: entity.ScenarioStatusRunning,
+			TestCategory: &entity.TestCategory{
+				ID:   1,
+				Name: entity.STRESS,
+			},
+			NumSteps: 2,
+		}
+
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPaused, false).Return(nil)
+		mockStressTestExecutor.On("PauseScenario", mock.Anything, scenario, mock.Anything).Return(nil)
+
+		err := service.Pause(ctx, sampleID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPaused, false)
+		mockStressTestExecutor.AssertCalled(t, "PauseScenario", mock.Anything, scenario, mock.Anything)
+
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestTestScenarioUsecase_Resune(t *testing.T) {
+	t.Run("failed_case_scenario_not_found", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, pkg.ErrTestScenarioNotFound)
+
+		err := service.Resume(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertExpectations(t)
+	})
+	t.Run("failed_case_repository_unknown_error", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, errors.New("error happened"))
+
+		err := service.Resume(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenario)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_scenario_status_is_not_paused", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:       sampleID,
+			Status:   entity.ScenarioStatusRunning,
+			NumSteps: 2,
+		}
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+
+		err := service.Resume(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrOnlyPausedScenariosCanBeReStarted)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_repository_error_on_marking_as_puase", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:       sampleID,
+			Status:   entity.ScenarioStatusPaused,
+			NumSteps: 2,
+		}
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(errors.New("something went wrong"))
+
+		err := service.Resume(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_stress_test_resume_scenario_failed", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:     sampleID,
+			Status: entity.ScenarioStatusPaused,
+			TestCategory: &entity.TestCategory{
+				ID:   1,
+				Name: entity.STRESS,
+			},
+			NumSteps: 2,
+		}
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(nil)
+		mockStressTestExecutor.On("ResumeScenario", mock.Anything, scenario, mock.Anything).Return(errors.New("something went wrong"))
+
+		err := service.Resume(ctx, sampleID)
+
+		assert.Error(t, err)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
+		mockStressTestExecutor.AssertCalled(t, "ResumeScenario", mock.Anything, scenario, mock.Anything)
+
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_not_implemented", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:     sampleID,
+			Status: entity.ScenarioStatusPaused,
+			TestCategory: &entity.TestCategory{
+				ID:   1,
+				Name: "notsupported",
+			},
+			NumSteps: 2,
+		}
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(nil)
+
+		err := service.Resume(ctx, sampleID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrResumeingTestNotImplemented)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
+
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("success_case_stress_test", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockTestScenario)
+		mockTestCatRepo := new(mocks.MockTestCategory)
+		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
+		mockMotherService := new(mocks.MockMotherService)
+		mockStressTestExecutor := new(svcMock.MockExecutionManage)
+		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
+		provisioningService := new(prvMock.MockProvisioningService)
+
+		service := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			provisioningService,
+		)
+		sampleID := uint64(4)
+
+		scenario := &entity.TestScenario{
+			ID:     sampleID,
+			Status: entity.ScenarioStatusPaused,
+			TestCategory: &entity.TestCategory{
+				ID:   1,
+				Name: entity.STRESS,
+			},
+			NumSteps: 2,
+		}
+
+		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(nil)
+		mockStressTestExecutor.On("ResumeScenario", mock.Anything, scenario, mock.Anything).Return(nil)
+
+		err := service.Resume(ctx, sampleID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
+		mockStressTestExecutor.AssertCalled(t, "ResumeScenario", mock.Anything, scenario, mock.Anything)
+
+		mockRepo.AssertExpectations(t)
+	})
+}
+
 func TestTestScenarioUsecase_DeprovisionAllPods(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)

@@ -155,6 +155,12 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrOnlyPendingScenariosCanBeStarted):
 		status = http.StatusUnprocessableEntity
 		msg = OnlyPendingScenariosCanBeStarted
+	case errors.Is(err, ErrOnlyRunningScenariosCanBePaused):
+		status = http.StatusUnprocessableEntity
+		msg = OnlyRunningScenariosCanBePaused
+	case errors.Is(err, ErrOnlyPausedScenariosCanBeReStarted):
+		status = http.StatusUnprocessableEntity
+		msg = OnlyPausedScenariosCanBeReStarted
 	case errors.Is(err, ErrPageNotFound):
 		status = http.StatusNotFound
 		msg = PageNotFound
@@ -316,12 +322,18 @@ var (
 	ErrInvalid100SumOfBadValues                           = errors.New("sum of all bad values should be 100 if bad value field has value")
 	ErrTestServiceConfigIsRequired                        = errors.New("test service config is required")
 	ErrOnlyPendingScenariosCanBeStarted                   = errors.New("only pending scenarios can be started")
+	ErrOnlyRunningScenariosCanBePaused                    = errors.New("only running scenarios can be paused")
+	ErrOnlyPausedScenariosCanBeReStarted                  = errors.New("only pause scenarios can be re-started")
 	ErrFailedToSetScenarioStatus                          = errors.New("failed to set scenario status")
 	ErrGettingRunningTestServicesByScenario               = errors.New("failed to get running test services by scenario")
 	ErrFailedToDeprovisionTestServices                    = errors.New("failed to deprovision test services")
 	ErrInt32OutOfRange                                    = errors.New("out of int32 range")
 	ErrFailedToAddScenarioToExecutionManager              = errors.New("failed to add scenario to execution manager")
+	ErrFailedToPauseScenarioToExecutionManager            = errors.New("failed to pause scenario in execution manager")
+	ErrFailedToResumeScenarioToExecutionManager           = errors.New("failed to resume scenario in execution manager")
 	ErrStartingTestNotImplemented                         = errors.New("starting test not implemented")
+	ErrPauseingTestNotImplemented                         = errors.New("pausing test not implemented")
+	ErrResumeingTestNotImplemented                        = errors.New("resumeing test not implemented")
 	ErrFailedToGetHealthCheck                             = errors.New("failed to get health check of test service")
 	ErrFailedToGetMetrics                                 = errors.New("failed to get metric of test service")
 	ErrFailedToGetLiveCheck                               = errors.New("failed to get live check")

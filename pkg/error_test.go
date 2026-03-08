@@ -336,6 +336,14 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrOnlyPendingScenariosCanBeStarted,
 			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyPendingScenariosCanBeStarted},
 		},
+		{
+			err:    ErrOnlyRunningScenariosCanBePaused,
+			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyRunningScenariosCanBePaused},
+		},
+		{
+			err:    ErrOnlyPausedScenariosCanBeReStarted,
+			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyPausedScenariosCanBeReStarted},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {
