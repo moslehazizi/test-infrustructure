@@ -195,4 +195,14 @@ func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario 
 	return nil
 }
 
+func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	// TODO pause scenario
+	return nil
+}
+
+func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	// TODO resume scenario
+	return nil
+}
+
 //#endregion StressTestExecutionManager

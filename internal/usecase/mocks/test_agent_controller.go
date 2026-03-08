@@ -43,6 +43,18 @@ func (m *MockTestAgentController) AbortTesting(ctx context.Context) error {
 	return args.Error(0)
 }
 
+func (m *MockTestAgentController) PauseTesting(ctx context.Context) error {
+	args := m.Called(ctx)
+
+	return args.Error(0)
+}
+
+func (m *MockTestAgentController) ResumeTesting(ctx context.Context) error {
+	args := m.Called(ctx)
+
+	return args.Error(0)
+}
+
 type MockTestAgentControllerBuilder struct {
 	mock.Mock
 }

@@ -166,6 +166,16 @@ func (c *testAgentController) AbortTesting(ctx context.Context) error {
 	return nil
 }
 
+func (c *testAgentController) PauseTesting(ctx context.Context) error {
+	// TODO pause testing
+	return nil
+}
+
+func (c *testAgentController) ResumeTesting(ctx context.Context) error {
+	// TODO resume testing
+	return nil
+}
+
 func (c *testAgentController) baseUrlGenerator() string {
 	return fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort) // http://chalenge-tese-srvice-serve-{sid}-{uuid}:8080
 }
