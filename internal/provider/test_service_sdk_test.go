@@ -403,3 +403,87 @@ func TestSDKTestService_ReadyForTesting(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 }
+
+func TestSDKTestService_Pause(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		mockClient := new(mocks.MockHTTPClient)
+
+		body := io.NopCloser(strings.NewReader(`{"message": "done"}`))
+
+		mockResp := &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       body,
+		}
+
+		mockClient.
+			On("Do", mock.AnythingOfType("*http.Request")).
+			Return(mockResp, nil)
+
+		sdk := NewSDKTestService(mockClient)
+
+		resp, err := sdk.Pause(context.Background(), "http://localhost:8085")
+
+		require.NoError(t, err)
+		assert.Equal(t, "done", resp.Message)
+
+		mockClient.AssertExpectations(t)
+	})
+
+	t.Run("failed case - invalid host", func(t *testing.T) {
+		mockClient := new(mocks.MockHTTPClient)
+
+		mockClient.
+			On("Do", mock.Anything).
+			Return(nil, errors.New("network error"))
+
+		sdk := NewSDKTestService(mockClient)
+
+		resp, err := sdk.Pause(context.Background(), "http://localhost:8085")
+
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+		mockClient.AssertExpectations(t)
+	})
+}
+
+func TestSDKTestService_Resume(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		mockClient := new(mocks.MockHTTPClient)
+
+		body := io.NopCloser(strings.NewReader(`{"message": "done"}`))
+
+		mockResp := &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       body,
+		}
+
+		mockClient.
+			On("Do", mock.AnythingOfType("*http.Request")).
+			Return(mockResp, nil)
+
+		sdk := NewSDKTestService(mockClient)
+
+		resp, err := sdk.Resume(context.Background(), "http://localhost:8085")
+
+		require.NoError(t, err)
+		assert.Equal(t, "done", resp.Message)
+
+		mockClient.AssertExpectations(t)
+	})
+
+	t.Run("failed case - invalid host", func(t *testing.T) {
+		mockClient := new(mocks.MockHTTPClient)
+
+		mockClient.
+			On("Do", mock.Anything).
+			Return(nil, errors.New("network error"))
+
+		sdk := NewSDKTestService(mockClient)
+
+		resp, err := sdk.Resume(context.Background(), "http://localhost:8085")
+
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+		mockClient.AssertExpectations(t)
+	})
+}

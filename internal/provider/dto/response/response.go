@@ -6,6 +6,14 @@ type HealthResponse struct {
 	OK bool `json:"ok"`
 }
 
+type PauseResponse struct {
+	Message string `json:"message"`
+}
+
+type ResumeResponse struct {
+	Message string `json:"message"`
+}
+
 type MetricsSnapshot struct {
 	Requests    int64         `json:"requests"`
 	Success     int64         `json:"success"`

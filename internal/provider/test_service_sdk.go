@@ -22,6 +22,10 @@ type SDKTestService interface {
 	RunExecute(ctx context.Context, baseURL string, req request.RunRequest) (response.FactorialExecutionResult, error)
 	// ReadyForTesting is for checking test service is ready for start or no.
 	ReadyForTest(ctx context.Context, baseURL string) (response.HealthResponse, error)
+	// Pause is for pause running test service.
+	Pause(ctx context.Context, baseURL string) (*response.PauseResponse, error)
+	// Resume is for resume paused test service
+	Resume(ctx context.Context, baseURL string) (*response.ResumeResponse, error)
 }
 
 type sdkTestService struct {
@@ -246,4 +250,64 @@ func (s *sdkTestService) ReadyForTest(
 	}
 
 	return result, nil
+}
+
+func (s *sdkTestService) Pause(ctx context.Context, baseURL string) (*response.PauseResponse, error) {
+	url := baseURL + "/api/v1/pause"
+	var result response.PauseResponse
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request to pause test service: %w", err)
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to do request to pause test service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToPauseTestService, err)
+		}
+
+		return nil, fmt.Errorf("%w- pause test service return with status code: %d", pkg.ErrFailedToPauseTestService, resp.StatusCode)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToPauseTestService, err)
+	}
+
+	return &result, nil
+}
+
+func (s *sdkTestService) Resume(ctx context.Context, baseURL string) (*response.ResumeResponse, error) {
+	url := baseURL + "/api/v1/resume"
+	var result response.ResumeResponse
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request to resume test service: %w", err)
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to do request to resume test service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToResumeTestService, err)
+		}
+
+		return nil, fmt.Errorf("%w- resume test service return with status code: %d", pkg.ErrFailedToResumeTestService, resp.StatusCode)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToResumeTestService, err)
+	}
+
+	return &result, nil
 }
