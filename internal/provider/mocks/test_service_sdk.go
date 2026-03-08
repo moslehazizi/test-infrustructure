@@ -41,3 +41,25 @@ func (m *MockTestServiceSDK) ReadyForTest(ctx context.Context, baseURL string) (
 
 	return args.Get(0).(response.HealthResponse), args.Error(1)
 }
+
+func (m *MockTestServiceSDK) Pause(ctx context.Context, baseURL string) (*response.PauseResponse, error) {
+	args := m.Called(ctx, baseURL)
+
+	var result *response.PauseResponse
+	if args.Get(0) != nil {
+		result = args.Get(0).(*response.PauseResponse)
+	}
+
+	return result, args.Error(1)
+}
+
+func (m *MockTestServiceSDK) Resume(ctx context.Context, baseURL string) (*response.ResumeResponse, error) {
+	args := m.Called(ctx, baseURL)
+
+	var result *response.ResumeResponse
+	if args.Get(0) != nil {
+		result = args.Get(0).(*response.ResumeResponse)
+	}
+
+	return result, args.Error(1)
+}

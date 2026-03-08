@@ -137,8 +137,10 @@ func (c *testAgentController) ReadyForTesting() bool {
 			zap.String("base_url", baseUrl),
 			zap.Error(err),
 		)
+
 		return false
 	}
+
 	return ready.OK
 }
 
@@ -150,8 +152,10 @@ func (c *testAgentController) StartTesting(ctx context.Context, req request.RunR
 			zap.String("base_url", baseUrl),
 			zap.Error(err),
 		)
+
 		return err
 	}
+
 	return nil
 }
 
@@ -161,18 +165,40 @@ func (c *testAgentController) AbortTesting(ctx context.Context) error {
 		zap.L().Error("abort testing error",
 			zap.Error(err),
 		)
+
 		return err
 	}
+
 	return nil
 }
 
 func (c *testAgentController) PauseTesting(ctx context.Context) error {
-	// TODO pause testing
+	baseUrl := c.baseUrlGenerator()
+	_, err := c.testServiceSDK.Pause(ctx, baseUrl)
+	if err != nil {
+		zap.L().Error("pause test service error",
+			zap.String("base_url", baseUrl),
+			zap.Error(err),
+		)
+
+		return err
+	}
+
 	return nil
 }
 
 func (c *testAgentController) ResumeTesting(ctx context.Context) error {
-	// TODO resume testing
+	baseUrl := c.baseUrlGenerator()
+	_, err := c.testServiceSDK.Resume(ctx, baseUrl)
+	if err != nil {
+		zap.L().Error("resume test service error",
+			zap.String("base_url", baseUrl),
+			zap.Error(err),
+		)
+
+		return err
+	}
+
 	return nil
 }
 

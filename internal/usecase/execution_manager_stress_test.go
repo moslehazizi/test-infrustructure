@@ -463,7 +463,7 @@ func TestStressTestExecutionManager_Run(t *testing.T) {
 
 		agent := new(mocks.MockTestAgentController)
 		agent.On("Run").Return(nil).Times(1)
-		agent.On("Healthy").Times(1).Return(false)
+		agent.On("Healthy").Return(false)
 
 		builder.On("Build", scenario).Times(1).Return(agent)
 
