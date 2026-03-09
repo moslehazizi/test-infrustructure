@@ -333,6 +333,7 @@ var (
 	ErrFailedToDeprovisionTestServices                    = errors.New("failed to deprovision test services")
 	ErrInt32OutOfRange                                    = errors.New("out of int32 range")
 	ErrFailedToAddScenarioToExecutionManager              = errors.New("failed to add scenario to execution manager")
+	ErrFailedToRunScenarioInExecutionManager              = errors.New("failed to run scenario in execution manager")
 	ErrFailedToPauseScenarioToExecutionManager            = errors.New("failed to pause scenario in execution manager")
 	ErrFailedToResumeScenarioToExecutionManager           = errors.New("failed to resume scenario in execution manager")
 	ErrStartingTestNotImplemented                         = errors.New("starting test not implemented")

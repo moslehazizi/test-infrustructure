@@ -396,7 +396,7 @@ func (handler *TestScenario) Start() fiber.Handler {
 //	@Failure		400	{object}	response.ErrorResponse
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
-//	@Router			/api/v1/test-scenarios/{id}/start [post]
+//	@Router			/api/v1/test-scenarios/{id}/pause [post]
 func (handler *TestScenario) Pause() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
@@ -444,7 +444,7 @@ func (handler *TestScenario) Pause() fiber.Handler {
 //	@Failure		400	{object}	response.ErrorResponse
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
-//	@Router			/api/v1/test-scenarios/{id}/start [post]
+//	@Router			/api/v1/test-scenarios/{id}/resume [post]
 func (handler *TestScenario) Resume() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")

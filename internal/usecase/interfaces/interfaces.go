@@ -13,6 +13,8 @@ type ExecutionManager interface {
 	Run()
 	// Add will initialize new TestAgentControllers based on scenario config.
 	AddScenario(ctx context.Context, scenario *entity.TestScenario, executionID uuid.UUID) error
+	// RunScenario is for run scenario.
+	RunScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// PauseScenario is for pause runned scenario.
 	PauseScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// ResumeScenario is for resume paused scenario.
@@ -22,6 +24,7 @@ type ExecutionManager interface {
 type ScenarioExecutor interface {
 	Run() error
 	IsRunning() bool
+	SetRunning(status bool)
 	AllAgentsAreHealthy() bool
 	AddAgent(agent TestAgentController)
 }
@@ -44,7 +47,9 @@ type TestAgentController interface {
 	ResumeTesting(ctx context.Context) error
 }
 
-type TestAgentControllerBuilder interface {
+type TestAgentControllerToolBox interface {
 	// Build will define new TestAgentController based on given config.
 	Build(scenario *entity.TestScenario) TestAgentController
+	// Get will return TestAgentController based on given config.
+	Get(scenario *entity.TestScenario) TestAgentController
 }

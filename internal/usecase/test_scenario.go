@@ -189,6 +189,18 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
 
+	testScenario.TestCategory = testCat
+
+	switch testScenario.TestCategory.Name {
+	case entity.STRESS:
+		err := service.stressTestExecutionManager.AddScenario(dbCtx, testScenario, uuid.New())
+		if err != nil {
+			return fmt.Errorf("%w: %w", pkg.ErrFailedToAddScenarioToExecutionManager, err)
+		}
+	default:
+		return pkg.ErrStartingTestNotImplemented
+	}
+
 	_ = tx.Commit()
 
 	span.SetAttributes(attribute.String("transaction.status", "committed"))
@@ -308,9 +320,9 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.AddScenario(ctx, scenario, uuid.New())
+		err := service.stressTestExecutionManager.RunScenario(ctx, scenario)
 		if err != nil {
-			return fmt.Errorf("%w: %w", pkg.ErrFailedToAddScenarioToExecutionManager, err)
+			return fmt.Errorf("%w: %w", pkg.ErrFailedToRunScenarioInExecutionManager, err)
 		}
 	default:
 		return pkg.ErrStartingTestNotImplemented
