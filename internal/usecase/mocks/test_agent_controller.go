@@ -43,11 +43,29 @@ func (m *MockTestAgentController) AbortTesting(ctx context.Context) error {
 	return args.Error(0)
 }
 
-type MockTestAgentControllerBuilder struct {
+func (m *MockTestAgentController) PauseTesting(ctx context.Context) error {
+	args := m.Called(ctx)
+
+	return args.Error(0)
+}
+
+func (m *MockTestAgentController) ResumeTesting(ctx context.Context) error {
+	args := m.Called(ctx)
+
+	return args.Error(0)
+}
+
+type MockTestAgentControllerToolBox struct {
 	mock.Mock
 }
 
-func (m *MockTestAgentControllerBuilder) Build(scenario *entity.TestScenario) interfaces.TestAgentController {
+func (m *MockTestAgentControllerToolBox) Build(scenario *entity.TestScenario) interfaces.TestAgentController {
+	args := m.Called(scenario)
+
+	return args.Get(0).(interfaces.TestAgentController)
+}
+
+func (m *MockTestAgentControllerToolBox) Get(scenario *entity.TestScenario) interfaces.TestAgentController {
 	args := m.Called(scenario)
 
 	return args.Get(0).(interfaces.TestAgentController)

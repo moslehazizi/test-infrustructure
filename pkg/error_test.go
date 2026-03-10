@@ -147,6 +147,14 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrFailedToGetReadyForTesting,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
+		{
+			err:    ErrFailedToPauseTestService,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
+		{
+			err:    ErrFailedToResumeTestService,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
 
 		// Other
 		{
@@ -335,6 +343,14 @@ func Test_toHTTPError(t *testing.T) {
 		{
 			err:    ErrOnlyPendingScenariosCanBeStarted,
 			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyPendingScenariosCanBeStarted},
+		},
+		{
+			err:    ErrOnlyRunningScenariosCanBePaused,
+			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyRunningScenariosCanBePaused},
+		},
+		{
+			err:    ErrOnlyPausedScenariosCanBeReStarted,
+			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyPausedScenariosCanBeReStarted},
 		},
 	}
 	for _, tt := range tests {
