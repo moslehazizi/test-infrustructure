@@ -1561,7 +1561,7 @@ func TestTestScenario_Resume(t *testing.T) {
 
 }
 
-func TestTestScenario_Restart(t *testing.T) {
+func TestTestScenario_Stop(t *testing.T) {
 	_, err := config.LoadConfig()
 	assert.Nil(t, err)
 
@@ -1570,7 +1570,7 @@ func TestTestScenario_Restart(t *testing.T) {
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/restart", h.Restart())
+		app.Post("/test-scenarios/:id/stop", h.Stop())
 
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
 
@@ -1586,9 +1586,9 @@ func TestTestScenario_Restart(t *testing.T) {
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/restart", h.Restart())
+		app.Post("/test-scenarios/:id/stop", h.Stop())
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/restart", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/stop", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -1606,13 +1606,13 @@ func TestTestScenario_Restart(t *testing.T) {
 
 	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
-		srv.On("Restart", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		srv.On("Stop", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/restart", h.Restart())
+		app.Post("/test-scenarios/:id/stop", h.Stop())
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/restart", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -1622,13 +1622,13 @@ func TestTestScenario_Restart(t *testing.T) {
 
 	t.Run("error_item_not_found", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
-		srv.On("Restart", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		srv.On("Stop", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/restart", h.Restart())
+		app.Post("/test-scenarios/:id/stop", h.Stop())
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/restart", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -1646,13 +1646,13 @@ func TestTestScenario_Restart(t *testing.T) {
 
 	t.Run("success_case", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
-		srv.On("Restart", mock.Anything, uint64(1)).Return(nil)
+		srv.On("Stop", mock.Anything, uint64(1)).Return(nil)
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/restart", h.Restart())
+		app.Post("/test-scenarios/:id/stop", h.Stop())
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/restart", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -1665,7 +1665,7 @@ func TestTestScenario_Restart(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, response.Message, pkg.TestScenarioRestart)
+		assert.Equal(t, response.Message, pkg.TestScenarioStop)
 	})
 
 }

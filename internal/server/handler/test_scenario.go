@@ -482,8 +482,8 @@ func (handler *TestScenario) Resume() fiber.Handler {
 
 // Resume godoc
 //
-//	@Summary		Restart a test scenario.
-//	@Description	Restart a specific test scenario by its ID.
+//	@Summary		Stop a test scenario.
+//	@Description	Stop a specific test scenario by its ID.
 //	@Tags			test-scenarios
 //	@Accept			json
 //	@Produce		json
@@ -492,11 +492,11 @@ func (handler *TestScenario) Resume() fiber.Handler {
 //	@Failure		400	{object}	response.ErrorResponse
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
-//	@Router			/api/v1/test-scenarios/{id}/restart [post]
-func (handler *TestScenario) Restart() fiber.Handler {
+//	@Router			/api/v1/test-scenarios/{id}/stop [post]
+func (handler *TestScenario) Stop() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "restart_test_scenario")
+		traceCtx, span := tracer.Start(ctx.Context(), "stop_test_scenario")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -516,14 +516,14 @@ func (handler *TestScenario) Restart() fiber.Handler {
 
 		span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
-		err = handler.testScenario.Restart(traceCtx, id)
+		err = handler.testScenario.Stop(traceCtx, id)
 		if err != nil {
-			span.SetAttributes(attribute.String("error.type", "restart_error"), attribute.String("error.message", err.Error()))
+			span.SetAttributes(attribute.String("error.type", "stop_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
-			Message: pkg.TestScenarioRestart,
+			Message: pkg.TestScenarioStop,
 		})
 	}
 }

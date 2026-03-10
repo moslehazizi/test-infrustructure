@@ -202,7 +202,7 @@ func (c *testAgentController) ResumeTesting(ctx context.Context) error {
 	return nil
 }
 
-func (c *testAgentController) RestartTesting(ctx context.Context) error {
+func (c *testAgentController) StopTesting(ctx context.Context) error {
 	// TODO
 	return nil
 }

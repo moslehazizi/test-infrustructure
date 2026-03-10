@@ -28,7 +28,7 @@ type TestScenario interface {
 	Start(ctx context.Context, id uint64) error
 	Pause(ctx context.Context, id uint64) error
 	Resume(ctx context.Context, id uint64) error
-	Restart(ctx context.Context, id uint64) error
+	Stop(ctx context.Context, id uint64) error
 	// ResetOrphanedScenarios recovers scenarios that were in running state
 	// when the service crashed and ensures they're added to the in-memory executor box.
 	// ResetOrphanedScenarios(ctx context.Context) error
@@ -432,9 +432,9 @@ func (service *testScenario) Resume(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (service *testScenario) Restart(ctx context.Context, id uint64) error {
+func (service *testScenario) Stop(ctx context.Context, id uint64) error {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "restart_test_scenario")
+	_, span := tracer.Start(ctx, "stop_test_scenario")
 	defer span.End()
 
 	requestID := logger.GetRequestID(ctx)
@@ -455,14 +455,14 @@ func (service *testScenario) Restart(ctx context.Context, id uint64) error {
 	}
 
 	// make sure scenario has correct status
-	if scenario.Status == entity.ScenarioStatusPending {
+	if scenario.Status != entity.ScenarioStatusRunning && scenario.Status != entity.ScenarioStatusPaused {
 		span.SetAttributes(attribute.String("error.type", "invalid_status"))
 
-		return pkg.ErrPendingScenariosCanNotBeRestarted
+		return pkg.ErrOnlyRunAndPauseScenariosCanBeStop
 	}
 
 	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning, false)
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusPending, false)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
@@ -471,12 +471,12 @@ func (service *testScenario) Restart(ctx context.Context, id uint64) error {
 
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.RestartScenario(ctx, scenario)
+		err := service.stressTestExecutionManager.StopScenario(ctx, scenario)
 		if err != nil {
-			return fmt.Errorf("%w: %w", pkg.ErrFailedToRestartScenarioToExecutionManager, err)
+			return fmt.Errorf("%w: %w", pkg.ErrFailedToStopScenarioToExecutionManager, err)
 		}
 	default:
-		return pkg.ErrRestartingTestNotImplemented
+		return pkg.ErrStopingTestNotImplemented
 	}
 
 	return nil
