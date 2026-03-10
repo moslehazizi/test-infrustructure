@@ -97,7 +97,7 @@ func Test_scenarioExecutor_SetRunning(t *testing.T) {
 }
 
 func Test_scenarioExecutor_awaitAgentsToBeHealthy(t *testing.T) {
-	t.Run("all agents' test services are healthy - single agent", func(t *testing.T) {
+	t.Run("all_agents_test_services_are_healthy_single_agent", func(t *testing.T) {
 		t.Parallel()
 
 		scenario := &entity.TestScenario{
@@ -128,7 +128,7 @@ func Test_scenarioExecutor_awaitAgentsToBeHealthy(t *testing.T) {
 		assert.True(t, ex.allAgentsHealthy)
 	})
 
-	t.Run("all agents' test services are healthy - 2 agents", func(t *testing.T) {
+	t.Run("all_agents_test_services_are_healthy_2_agents", func(t *testing.T) {
 		t.Parallel()
 
 		scenario := &entity.TestScenario{
@@ -167,7 +167,7 @@ func Test_scenarioExecutor_awaitAgentsToBeHealthy(t *testing.T) {
 }
 
 func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
-	t.Run("all agents' test services are ready - single agent", func(t *testing.T) {
+	t.Run("all_agents_test_services_are_ready_single_agent", func(t *testing.T) {
 		scenario := &entity.TestScenario{
 			ID:       1,
 			NumSteps: 2,
@@ -197,7 +197,7 @@ func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
 		assert.True(t, ex.allAgentsReadyForTesting)
 	})
 
-	t.Run("all agents' test services are ready - single agent - first time is not ready", func(t *testing.T) {
+	t.Run("all_agents_test_services_are_ready_single_agent_first_time_is_not_ready", func(t *testing.T) {
 		t.Parallel()
 
 		scenario := &entity.TestScenario{
@@ -238,7 +238,7 @@ func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
 		assert.True(t, ex.allAgentsReadyForTesting)
 	})
 
-	t.Run("all agents' test services are ready - two agents", func(t *testing.T) {
+	t.Run("all_agents_test_services_are_ready_two_agents", func(t *testing.T) {
 		scenario := &entity.TestScenario{
 			ID:       1,
 			NumSteps: 2,
@@ -274,7 +274,7 @@ func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
 }
 
 func Test_scenarioExecutor_Run(t *testing.T) {
-	t.Run("success - single step", func(t *testing.T) {
+	t.Run("success_single_step", func(t *testing.T) {
 		t.Parallel()
 
 		// setting up agents
@@ -345,7 +345,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("success - 2 steps", func(t *testing.T) {
+	t.Run("success_2_steps", func(t *testing.T) {
 		t.Parallel()
 
 		// setting up agents
@@ -426,7 +426,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 
 // #region StressTestExecutionManager
 func TestStressTestExecutionManager_AddScenario(t *testing.T) {
-	t.Run("failed case: scenario max service count is null", func(t *testing.T) {
+	t.Run("failed_case_scenario_max_service_count_is_null", func(t *testing.T) {
 		scenario := entity.TestScenario{
 			MaxTestServiceCount: nil,
 			NumSteps:            2,
@@ -443,7 +443,7 @@ func TestStressTestExecutionManager_AddScenario(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountNotSet)
 	})
 
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: new(int64(3)),
 			NumSteps:            2,
@@ -718,7 +718,7 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 }
 
 func TestStressTestExecutionManager_Run(t *testing.T) {
-	t.Run("all executors are running", func(t *testing.T) {
+	t.Run("all_executors_are_running", func(t *testing.T) {
 		t.Parallel()
 
 		scenario := &entity.TestScenario{

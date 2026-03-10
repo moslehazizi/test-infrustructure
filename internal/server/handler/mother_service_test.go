@@ -30,7 +30,7 @@ func TestMotherServiceHandler_New(t *testing.T) {
 }
 
 func TestMotherServiceHandler_Create(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -73,7 +73,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("failed case - invalid request", func(t *testing.T) {
+	t.Run("failed_case_invalid_request", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -101,7 +101,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.InvalidReqBody, result.Error)
 	})
 
-	t.Run("failed case - required fields in request body", func(t *testing.T) {
+	t.Run("failed_case_required_fields_in_request_body", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -132,7 +132,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.InvalidReqBody, result.Error)
 	})
 
-	t.Run("success case - with nullable values", func(t *testing.T) {
+	t.Run("success_case_with_nullable_values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -185,7 +185,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("failed case - duplication", func(t *testing.T) {
+	t.Run("failed_case_duplication", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -228,7 +228,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("failed case - internal error", func(t *testing.T) {
+	t.Run("failed_case_internal_error", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -271,7 +271,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("failed case - request validation error delay rate is negative", func(t *testing.T) {
+	t.Run("failed_case_request_validation_error_delay_rate_is_negative", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -313,7 +313,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.InvalidResponseDelayRate, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("failed case - request validation error exception rate is negative", func(t *testing.T) {
+	t.Run("failed_case_request_validation_error_exception_rate_is_negative", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -356,7 +356,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("failed case - request validation error fixed delay is set but rate is 0", func(t *testing.T) {
+	t.Run("failed_case_request_validation_error_fixed_delay_is_set_but_rate_is_0", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -398,7 +398,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.InvalidDelayConfiguration, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("failed case - request validation error min is greater than max", func(t *testing.T) {
+	t.Run("failed_case_request_validation_error_min_is_greater_than_max", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -443,7 +443,7 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 }
 
 func TestMotherServiceHandler_GetByID(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -486,7 +486,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("success case - with pointer values", func(t *testing.T) {
+	t.Run("success_case_with_pointer_values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -531,7 +531,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("failed case - invalid id", func(t *testing.T) {
+	t.Run("failed_case_invalid_id", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -558,7 +558,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
 	})
 
-	t.Run("failed case - not found", func(t *testing.T) {
+	t.Run("failed_case_not_found", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -589,7 +589,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("failed case - internal server error", func(t *testing.T) {
+	t.Run("failed_case_internal_server_error", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -622,7 +622,7 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 }
 
 func TestMotherServiceHandler_GetPaginated(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -690,7 +690,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("success case - with nil values", func(t *testing.T) {
+	t.Run("success_case_with_nil_values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -748,7 +748,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("failed case - invalid request", func(t *testing.T) {
+	t.Run("failed_case_invalid_request", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -775,7 +775,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
-	t.Run("failed case - invalid request negative page or per page", func(t *testing.T) {
+	t.Run("failed_case_invalid_request_negative_page_or_per_page", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -802,7 +802,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
-	t.Run("failed case - internal server error", func(t *testing.T) {
+	t.Run("failed_case_internal_server_error", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -841,7 +841,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("success case - empty result", func(t *testing.T) {
+	t.Run("success_case_empty_result", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -884,7 +884,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 }
 
 func TestMotherServiceHandler_DeprovisionAllPods(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 
@@ -915,7 +915,7 @@ func TestMotherServiceHandler_DeprovisionAllPods(t *testing.T) {
 		mockTSrv.AssertExpectations(t)
 	})
 
-	t.Run("failed case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
 		mockTSrv := new(mocks.MockTestScenario)
 

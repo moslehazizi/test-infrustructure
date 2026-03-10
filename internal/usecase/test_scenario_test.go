@@ -990,7 +990,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 }
 
 func TestTestScenarioUsecase_GetByID(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1076,7 +1076,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed case - not found", func(t *testing.T) {
+	t.Run("failed_case_not_found", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1109,7 +1109,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed case - repository unknown error", func(t *testing.T) {
+	t.Run("failed_case_repository_unknown_error", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1142,7 +1142,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed case - repository unknown error", func(t *testing.T) {
+	t.Run("failed_case_repository_unknown_error", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1177,7 +1177,7 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 }
 
 func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1274,7 +1274,7 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1313,7 +1313,7 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 }
 
 func TestTestScenarioUsecase_Start(t *testing.T) {
-	t.Run("failed case - not found", func(t *testing.T) {
+	t.Run("failed_case_not_found", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1344,7 +1344,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertExpectations(t)
 	})
-	t.Run("failed case - repository unknown error", func(t *testing.T) {
+	t.Run("failed_case_repository_unknown_error", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1375,7 +1375,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertExpectations(t)
 	})
-	t.Run("failed case - scenario status is not pending", func(t *testing.T) {
+	t.Run("failed_case_scenario_status_is_not_pending", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1411,7 +1411,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertExpectations(t)
 	})
-	t.Run("failed case - repository error on marking as running", func(t *testing.T) {
+	t.Run("failed_case_repository_error_on_marking_as_running", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1449,7 +1449,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
 		mockRepo.AssertExpectations(t)
 	})
-	t.Run("success case - stress test", func(t *testing.T) {
+	t.Run("success_case_stress_test", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1494,7 +1494,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 		mockRepo.AssertExpectations(t)
 	})
-	t.Run("error case - stress test adding failed", func(t *testing.T) {
+	t.Run("error_case_stress_test_adding_failed", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1539,7 +1539,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 		mockRepo.AssertExpectations(t)
 	})
-	t.Run("success case - not implemented", func(t *testing.T) {
+	t.Run("success_case_not_implemented", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -2415,7 +2415,7 @@ func TestTestScenarioUsecase_Restart(t *testing.T) {
 }
 
 func TestTestScenarioUsecase_DeprovisionAllPods(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2453,7 +2453,7 @@ func TestTestScenarioUsecase_DeprovisionAllPods(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed case - failed to get by status", func(t *testing.T) {
+	t.Run("failed_case_failed_to_get_by_status", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2582,7 +2582,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("success - category requires all optional fields", func(t *testing.T) {
+	t.Run("success_category_requires_all_optional_fields", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2637,7 +2637,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("success - random delay and random test number config", func(t *testing.T) {
+	t.Run("success_random_delay_and_random_test_number_config", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2686,7 +2686,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("success - bad value rate enabled with valid sub-rates summing to 100", func(t *testing.T) {
+	t.Run("success_bad_value_rate_enabled_with_valid_sub_rates_summing_to_100", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2731,7 +2731,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("success - optional fields nil are preserved from existing", func(t *testing.T) {
+	t.Run("success_optional_fields_nil_are_preserved_from_existing", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2788,7 +2788,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - nil config returns ErrTestServiceConfigIsRequired immediately", func(t *testing.T) {
+	t.Run("error_nil_config_returns_ErrTestServiceConfigIsRequired_immediately", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2819,7 +2819,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertNotCalled(t, "GetByID")
 	})
 
-	t.Run("error - scenario not found", func(t *testing.T) {
+	t.Run("error_scenario_not_found", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2849,7 +2849,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("error - mother service not found", func(t *testing.T) {
+	t.Run("error_mother_service_not_found", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2880,7 +2880,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockMotherService.AssertExpectations(t)
 	})
 
-	t.Run("error - scenario validation: MaxTestServiceCount < 1", func(t *testing.T) {
+	t.Run("error_scenario_validation_MaxTestServiceCount_<_1", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2920,7 +2920,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockMotherService.AssertExpectations(t)
 	})
 
-	t.Run("error - scenario validation: optional field set but category does not require it", func(t *testing.T) {
+	t.Run("error_scenario_validation_optional_field_set_but_category_does_not_require_it", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2956,7 +2956,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockMotherService.AssertExpectations(t)
 	})
 
-	t.Run("error - scenario validation: required field not set for category", func(t *testing.T) {
+	t.Run("error_scenario_validation_required_field_not_set_for_category", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -2995,7 +2995,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockMotherService.AssertExpectations(t)
 	})
 
-	t.Run("error - test service config not preloaded (ID = 0)", func(t *testing.T) {
+	t.Run("error_test_service_config_not_preloaded_(ID=0)", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3029,7 +3029,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockMotherService.AssertExpectations(t)
 	})
 
-	t.Run("error - failed to fetch test service config", func(t *testing.T) {
+	t.Run("error_failed_to_fetch_test_service_config", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3062,7 +3062,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: no delay config set", func(t *testing.T) {
+	t.Run("error_config_validation_no_delay_config_set", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3101,7 +3101,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: fixed delay and random delay both set", func(t *testing.T) {
+	t.Run("error_config_validation_fixed_delay_and_random_delay_both_set", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3143,7 +3143,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: random delay min >= max", func(t *testing.T) {
+	t.Run("error_config_validation_random_delay_min_>=_max", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3185,7 +3185,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: no test number config set", func(t *testing.T) {
+	t.Run("error_config_validation_no_test_number_config_set", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3224,7 +3224,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: fixed test number <= 0", func(t *testing.T) {
+	t.Run("error_config_validation_fixed_test_number_<=_0", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3262,7 +3262,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: fixed and random test number both set", func(t *testing.T) {
+	t.Run("error_config_validation_fixed_and_random_test_number_both_set", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3304,7 +3304,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: random test number min >= max", func(t *testing.T) {
+	t.Run("error_config_validation_random_test_number_min_>=_max", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3346,7 +3346,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: bad value rate > 0 but sub-rates do not sum to 100", func(t *testing.T) {
+	t.Run("error_config_validation_bad_value_rate_>_0_but_sub_rates_do_not_sum_to_100", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3384,7 +3384,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: bad value rate == 0 but sub-rates are non-zero", func(t *testing.T) {
+	t.Run("error_config_validation_bad_value_rate_==_0_but_sub_rates_are_non_zero", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3422,7 +3422,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: empty database name", func(t *testing.T) {
+	t.Run("error_config_validation_empty_database_name", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3459,7 +3459,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - config validation: empty database table name", func(t *testing.T) {
+	t.Run("error_config_validation_empty_database_table_name", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3496,7 +3496,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - scenario repository update fails", func(t *testing.T) {
+	t.Run("error_scenario_repository_update_fails", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
@@ -3531,7 +3531,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error - test service config update fails", func(t *testing.T) {
+	t.Run("error_test_service_config_update_fails", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
 		mockTestCatRepo := new(repoMocks.MockTestCategory)
 		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)

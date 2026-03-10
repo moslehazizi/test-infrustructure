@@ -29,7 +29,7 @@ func TestDatabaseMetadataRepositoryInitialization(t *testing.T) {
 }
 
 func TestDatabaseMetadataRepository_GetAll(t *testing.T) {
-	t.Run("success case - with some result", func(t *testing.T) {
+t.Run("success_case_with_some_result", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -54,7 +54,7 @@ func TestDatabaseMetadataRepository_GetAll(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Len(t, result, 3)
 	})
-	t.Run("success case - with empty result", func(t *testing.T) {
+t.Run("success_case_with_empty_result", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -81,7 +81,7 @@ func TestDatabaseMetadataRepository_GetAll(t *testing.T) {
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failure case - database error", func(t *testing.T) {
+t.Run("failure_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)

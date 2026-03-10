@@ -24,7 +24,7 @@ func TestNewTestCategoryService(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	t.Run("success case: get all empty list", func(t *testing.T) {
+	t.Run("success_case_get_all_empty_list", func(t *testing.T) {
 		testCategoryRepo := new(mocks.MockTestCategory)
 		expected := []entity.TestCategory{
 			{
@@ -57,7 +57,7 @@ func TestGetAll(t *testing.T) {
 		assert.True(t, reflect.DeepEqual(items, expected))
 	})
 
-	t.Run("failed case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		testCategoryRepo := new(mocks.MockTestCategory)
 		var expected []entity.TestCategory
 		testCategoryRepo.On("GetAll", mock.Anything).Return(expected, errors.New("something went wrong"))
@@ -70,7 +70,7 @@ func TestGetAll(t *testing.T) {
 }
 
 func TestGetByID(t *testing.T) {
-	t.Run("error case - not found", func(t *testing.T) {
+	t.Run("error_case_not_found", func(t *testing.T) {
 		testCategoryRepo := new(mocks.MockTestCategory)
 		testCategoryRepo.On("GetByID", mock.Anything, uint64(1)).Return(nil, pkg.ErrTestCategoryNotFound)
 
@@ -78,7 +78,7 @@ func TestGetByID(t *testing.T) {
 		_, err := srv.GetByID(context.Background(), uint64(1))
 		assert.ErrorIs(t, err, pkg.ErrTestCategoryNotFound)
 	})
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		testCategoryRepo := new(mocks.MockTestCategory)
 		want := &entity.TestCategory{
 			ID:                     1,

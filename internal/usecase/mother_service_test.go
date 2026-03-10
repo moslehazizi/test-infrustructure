@@ -40,7 +40,7 @@ func TestNewMotherService(t *testing.T) {
 }
 
 func TestMotherServiceUsecase_Create(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -61,7 +61,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
 		mockProvision.AssertExpectations(t)
 	})
-	t.Run("failed DeployMotherService => returns ErrFailedToDeployMotherService", func(t *testing.T) {
+	t.Run("failed_DeployMotherService_returns_ErrFailedToDeployMotherService", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -84,7 +84,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockProvision.AssertExpectations(t)
 	})
 
-	t.Run("failed case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -105,7 +105,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
 	})
 
-	t.Run("failed case - duplicate", func(t *testing.T) {
+	t.Run("failed_case_duplicate", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -126,7 +126,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
 	})
 
-	t.Run("failed case - validation error service name is missing", func(t *testing.T) {
+	t.Run("failed_case_validation_error_service_name_is_missing", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -143,7 +143,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidMotherServiceName)
 	})
 
-	t.Run("failed case - validation error response delay rete not be negative", func(t *testing.T) {
+	t.Run("failed_case_validation_error_response_delay_rete_not_be_negative", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -163,7 +163,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidResponseDelayRate)
 	})
 
-	t.Run("failed case - validation error exception rate is negative", func(t *testing.T) {
+	t.Run("failed_case_validation_error_exception_rate_is_negative", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -182,7 +182,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidExceptionRate)
 	})
 
-	t.Run("failed case - validation error fixed delay is set but rate is 0", func(t *testing.T) {
+	t.Run("failed_case_validation_error_fixed_delay_is_set_but_rate_is_0", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -206,7 +206,7 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 }
 
 func TestMotherServiceUsecase_GetByID(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -234,7 +234,7 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, inputID)
 	})
 
-	t.Run("failed case - not found", func(t *testing.T) {
+	t.Run("failed_case_not_found", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -252,7 +252,7 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, inputID)
 	})
 
-	t.Run("failed case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -272,7 +272,7 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 }
 
 func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -324,7 +324,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
 
-	t.Run("failed case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -346,7 +346,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		mockRepo.AssertCalled(t, "GetPaginated", mock.Anything, paginationRequest)
 	})
 
-	t.Run("failed case - negative page", func(t *testing.T) {
+	t.Run("failed_case_negative_page", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -370,7 +370,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 }
 
 func TestMotherServiceUsecase_DeprovisionAllPods(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -406,7 +406,7 @@ func TestMotherServiceUsecase_DeprovisionAllPods(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("fail case GetPaginated return err", func(t *testing.T) {
+	t.Run("fail_case_GetPaginated_return_err", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
@@ -424,7 +424,7 @@ func TestMotherServiceUsecase_DeprovisionAllPods(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 
-	t.Run("sucsess case GetPaginated return 0 number of result", func(t *testing.T) {
+	t.Run("sucsess_case_GetPaginated_return_0_number_of_result", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)

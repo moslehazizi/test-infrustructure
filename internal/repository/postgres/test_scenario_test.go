@@ -30,7 +30,7 @@ func TestTestScenarioRepository_New(t *testing.T) {
 }
 
 func TestTestScenarioRepository_Create(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -82,7 +82,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failed case", func(t *testing.T) {
+t.Run("failed_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -131,7 +131,7 @@ func TestTestScenarioRepository_Create(t *testing.T) {
 }
 
 func TestGetByID(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -312,7 +312,7 @@ func TestGetByID(t *testing.T) {
 		assert.Equal(t, expectedTestScenario, result)
 	})
 
-	t.Run("failed case - record not found", func(t *testing.T) {
+t.Run("failed_case_record_not_found", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -331,7 +331,7 @@ func TestGetByID(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failed case - database error", func(t *testing.T) {
+t.Run("failed_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -352,7 +352,7 @@ func TestGetByID(t *testing.T) {
 }
 
 func TestGetPaginated(t *testing.T) {
-	t.Run("failed case - failed to get database records count", func(t *testing.T) {
+t.Run("failed_case_failed_to_get_database_records_count", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -377,7 +377,7 @@ func TestGetPaginated(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("success case - page 1 per page 2", func(t *testing.T) {
+t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -560,7 +560,7 @@ func TestGetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case - page 2 per page 2", func(t *testing.T) {
+t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -735,7 +735,7 @@ func TestGetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case - page 2 per page 1", func(t *testing.T) {
+t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -854,7 +854,7 @@ func TestGetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case - page 3 per page 5", func(t *testing.T) {
+t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1153,7 +1153,7 @@ func TestGetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case - page 0 per page 0 - return all records", func(t *testing.T) {
+t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1446,7 +1446,7 @@ func TestGetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case - empty result - page beyond available data", func(t *testing.T) {
+t.Run("success_case_empty_result_page_beyond_available_data", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1483,7 +1483,7 @@ func TestGetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failed case - database error", func(t *testing.T) {
+t.Run("failed_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1515,7 +1515,7 @@ func TestGetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failed case - negative page", func(t *testing.T) {
+t.Run("failed_case_negative_page", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, _, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1533,7 +1533,7 @@ func TestGetPaginated(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)
 	})
 
-	t.Run("failed case - negative per page", func(t *testing.T) {
+t.Run("failed_case_negative_per_page", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, _, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1553,7 +1553,7 @@ func TestGetPaginated(t *testing.T) {
 }
 
 func TestTestScenarioRepository_SetStatus(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1579,7 +1579,7 @@ func TestTestScenarioRepository_SetStatus(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("failed case", func(t *testing.T) {
+t.Run("failed_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1608,7 +1608,7 @@ func TestTestScenarioRepository_SetStatus(t *testing.T) {
 }
 
 func TestTestScenarioRepository_GetByStatus(t *testing.T) {
-	t.Run("success case - get running status", func(t *testing.T) {
+t.Run("success_case_get_running_status", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1866,7 +1866,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 		assert.Equal(t, expectedTestScenario, result)
 	})
 
-	t.Run("failed case - database connection error", func(t *testing.T) {
+t.Run("failed_case_database_connection_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1885,7 +1885,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 }
 
 func TestGetDeploymentNumberByScenarioID(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1908,7 +1908,7 @@ func TestGetDeploymentNumberByScenarioID(t *testing.T) {
 		assert.Equal(t, int32(5), result)
 	})
 
-	t.Run("failed case - record not found", func(t *testing.T) {
+t.Run("failed_case_record_not_found", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1929,7 +1929,7 @@ func TestGetDeploymentNumberByScenarioID(t *testing.T) {
 		assert.Equal(t, int32(0), result)
 	})
 
-	t.Run("failed case - database error", func(t *testing.T) {
+t.Run("failed_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1952,7 +1952,7 @@ func TestGetDeploymentNumberByScenarioID(t *testing.T) {
 }
 
 func TestUpdateDeploymentNumber(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1972,7 +1972,7 @@ func TestUpdateDeploymentNumber(t *testing.T) {
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("record not found", func(t *testing.T) {
+t.Run("record_not_found", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1993,7 +1993,7 @@ func TestUpdateDeploymentNumber(t *testing.T) {
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("database error", func(t *testing.T) {
+t.Run("database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -2017,7 +2017,7 @@ func TestUpdateDeploymentNumber(t *testing.T) {
 }
 
 func TestTestScenarioRepository_Update(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -2061,7 +2061,7 @@ func TestTestScenarioRepository_Update(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("update fails", func(t *testing.T) {
+t.Run("update_fails", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)

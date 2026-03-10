@@ -8,7 +8,7 @@ import (
 )
 
 func TestMotherService_Validate(t *testing.T) {
-	t.Run("success case - no delay", func(t *testing.T) {
+	t.Run("success_case_no_delay", func(t *testing.T) {
 		service := MotherService{
 			Name:              "mother",
 			DatabaseName:      "mother1",
@@ -22,7 +22,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("success case - fixed delay", func(t *testing.T) {
+	t.Run("success_case_fixed_delay", func(t *testing.T) {
 		duration := 100
 		service := MotherService{
 			Name:                  "mother",
@@ -37,7 +37,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("success case - random delay", func(t *testing.T) {
+	t.Run("success_case_random_delay", func(t *testing.T) {
 		minDelay := 10
 		maxDelay := 50
 		service := MotherService{
@@ -54,7 +54,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("failed case - name is missing", func(t *testing.T) {
+	t.Run("failed_case_name_is_missing", func(t *testing.T) {
 		service := MotherService{
 			DatabaseName: "db",
 		}
@@ -65,7 +65,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidMotherServiceName)
 	})
 
-	t.Run("failed case - delay rate is negative", func(t *testing.T) {
+	t.Run("failed_case_delay_rate_is_negative", func(t *testing.T) {
 		service := MotherService{
 			Name:              "test",
 			ResponseDelayRate: -1,
@@ -77,7 +77,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidResponseDelayRate)
 	})
 
-	t.Run("failed case - delay rate is bigger than 100", func(t *testing.T) {
+	t.Run("failed_case_delay_rate_is_bigger_than_100", func(t *testing.T) {
 		service := MotherService{
 			Name:              "test",
 			ResponseDelayRate: 101,
@@ -89,7 +89,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidResponseDelayRate)
 	})
 
-	t.Run("failed case - exception rate is negative", func(t *testing.T) {
+	t.Run("failed_case_exception_rate_is_negative", func(t *testing.T) {
 		service := MotherService{
 			Name:          "test",
 			ExceptionRate: -1,
@@ -101,7 +101,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidExceptionRate)
 	})
 
-	t.Run("failed case - exception rate is bigger than 100", func(t *testing.T) {
+	t.Run("failed_case_exception_rate_is_bigger_than_100", func(t *testing.T) {
 		service := MotherService{
 			Name:          "test",
 			ExceptionRate: 101,
@@ -113,7 +113,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidExceptionRate)
 	})
 
-	t.Run("failed case - fixed delay is set but rate is 0", func(t *testing.T) {
+	t.Run("failed_case_fixed_delay_is_set_but_rate_is_0", func(t *testing.T) {
 		duration := 100
 		service := MotherService{
 			Name:                  "mother",
@@ -129,7 +129,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidDelayConfiguration)
 	})
 
-	t.Run("failed case - random delay is set but rate is 0", func(t *testing.T) {
+	t.Run("failed_case_random_delay_is_set_but_rate_is_0", func(t *testing.T) {
 		minDelay := 10
 		maxDelay := 50
 		service := MotherService{
@@ -147,7 +147,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidDelayConfiguration)
 	})
 
-	t.Run("failed case - both fixed and random delay fields are set", func(t *testing.T) {
+	t.Run("failed_case_both_fixed_and_random_delay_fields_are_set", func(t *testing.T) {
 		minDelay := 10
 		duration := 100
 		service := MotherService{
@@ -165,7 +165,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidDelayConfiguration)
 	})
 
-	t.Run("failed case - min is greater than max", func(t *testing.T) {
+	t.Run("failed_case_min_is_greater_than_max", func(t *testing.T) {
 		max := 10
 		min := 100
 		service := MotherService{
@@ -183,7 +183,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidRandomDelayRange)
 	})
 
-	t.Run("failed case - only min random delay is provided", func(t *testing.T) {
+	t.Run("failed_case_only_min_random_delay_is_provided", func(t *testing.T) {
 		min := 10
 		service := MotherService{
 			Name:                   "mother",
@@ -199,7 +199,7 @@ func TestMotherService_Validate(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrInvalidDelayConfiguration)
 	})
 
-	t.Run("failed case - only max random delay is provided", func(t *testing.T) {
+	t.Run("failed_case_only_max_random_delay_is_provided", func(t *testing.T) {
 		max := 10
 		service := MotherService{
 			Name:                   "mother",

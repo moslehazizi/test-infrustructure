@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetConnectionString(t *testing.T) {
-	t.Run("ssl mode disabled", func(t *testing.T) {
+	t.Run("ssl_mode_disabled", func(t *testing.T) {
 		cfg := &DatabaseConfig{
 			Host:     "localhost",
 			Port:     5432,
@@ -20,7 +20,7 @@ func TestGetConnectionString(t *testing.T) {
 		str := GetConnectionString(cfg)
 		assert.Equal(t, str, "postgres://dev:psswd@localhost:5432/control-panel?sslmode=disable")
 	})
-	t.Run("ssl mode allow", func(t *testing.T) {
+	t.Run("ssl_mode_allow", func(t *testing.T) {
 		cfg := &DatabaseConfig{
 			Host:     "localhost",
 			Port:     5432,
@@ -33,7 +33,7 @@ func TestGetConnectionString(t *testing.T) {
 		str := GetConnectionString(cfg)
 		assert.Equal(t, str, "postgres://dev:psswd@localhost:5432/control-panel?sslmode=allow")
 	})
-	t.Run("complicate password", func(t *testing.T) {
+	t.Run("complicate_password", func(t *testing.T) {
 		cfg := &DatabaseConfig{
 			Host:     "localhost",
 			Port:     5432,

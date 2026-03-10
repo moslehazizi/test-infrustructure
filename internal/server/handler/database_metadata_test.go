@@ -29,7 +29,7 @@ func TestDatabaseMetadata_Initialization(t *testing.T) {
 }
 
 func TestStorageHandler_GetDatabases(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
 		handler := NewDatabaseMetadataHandler(mockUC)
 
@@ -56,7 +56,7 @@ func TestStorageHandler_GetDatabases(t *testing.T) {
 		mockUC.AssertExpectations(t)
 	})
 
-	t.Run("failure case - usecase error", func(t *testing.T) {
+	t.Run("failure_case_usecase_error", func(t *testing.T) {
 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
 		handler := NewDatabaseMetadataHandler(mockUC)
 
@@ -75,7 +75,7 @@ func TestStorageHandler_GetDatabases(t *testing.T) {
 }
 
 func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
 		handler := NewDatabaseMetadataHandler(mockUC)
 		app := fiber.New()
@@ -110,7 +110,7 @@ func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
 		mockUC.AssertExpectations(t)
 	})
 
-	t.Run("success case - empty result", func(t *testing.T) {
+	t.Run("success_case_empty_result", func(t *testing.T) {
 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
 		handler := NewDatabaseMetadataHandler(mockUC)
 		app := fiber.New()
@@ -142,7 +142,7 @@ func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
 		mockUC.AssertExpectations(t)
 	})
 
-	t.Run("failure case - bad request body", func(t *testing.T) {
+	t.Run("failure_case_bad_request_body", func(t *testing.T) {
 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
 		handler := NewDatabaseMetadataHandler(mockUC)
 		app := fiber.New()
@@ -156,7 +156,7 @@ func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
-	t.Run("failure case - missing database_name", func(t *testing.T) {
+	t.Run("failure_case_missing_database_name", func(t *testing.T) {
 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
 		handler := NewDatabaseMetadataHandler(mockUC)
 		app := fiber.New()
@@ -170,7 +170,7 @@ func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
-	t.Run("failure case - usecase error", func(t *testing.T) {
+	t.Run("failure_case_usecase_error", func(t *testing.T) {
 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
 		handler := NewDatabaseMetadataHandler(mockUC)
 		app := fiber.New()

@@ -14,7 +14,7 @@ import (
 )
 
 func Test_testService_GetRunningByScenario(t *testing.T) {
-	t.Run("success case with empty result and no limit", func(t *testing.T) {
+t.Run("success_case_with_empty_result_and_no_limit", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -33,7 +33,7 @@ func Test_testService_GetRunningByScenario(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case with some results and no limit", func(t *testing.T) {
+t.Run("success_case_with_some_results_and_no_limit", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -51,7 +51,7 @@ func Test_testService_GetRunningByScenario(t *testing.T) {
 		assert.Len(t, result, 3)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("success case with some results and applied limit", func(t *testing.T) {
+t.Run("success_case_with_some_results_and_applied_limit", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -69,7 +69,7 @@ func Test_testService_GetRunningByScenario(t *testing.T) {
 		assert.Len(t, result, 3)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("error case", func(t *testing.T) {
+t.Run("error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -87,7 +87,7 @@ func Test_testService_GetRunningByScenario(t *testing.T) {
 }
 
 func Test_testService_GetCountAllRunningByScenario(t *testing.T) {
-	t.Run("error case", func(t *testing.T) {
+t.Run("error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, _, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -98,7 +98,7 @@ func Test_testService_GetCountAllRunningByScenario(t *testing.T) {
 		assert.Equal(t, result, int64(0))
 	})
 
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)

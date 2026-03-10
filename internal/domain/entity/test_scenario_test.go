@@ -9,7 +9,7 @@ import (
 )
 
 func TestTestScenarioValidation(t *testing.T) {
-	t.Run("success case - test category config matches inputs", func(t *testing.T) {
+	t.Run("success_case_test_category_config_matches_inputs", func(t *testing.T) {
 		sampleInt := int64(2)
 		dur := int64(2)
 		testSci := TestScenario{
@@ -41,7 +41,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("success case - nullable values not set", func(t *testing.T) {
+	t.Run("success_case_nullable_values_not_set", func(t *testing.T) {
 		testSci := TestScenario{
 			ID:              uint64(1),
 			CreatedAt:       time.Now(),
@@ -67,7 +67,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("failed case - max test service count less than one", func(t *testing.T) {
+	t.Run("failed_case_max_test_service_count_less_than_one", func(t *testing.T) {
 		sampleIntLessThanOne := int64(-1)
 		testSci := TestScenario{
 			ID:                  uint64(1),
@@ -96,7 +96,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountLessThanOne)
 	})
 
-	t.Run("failed case - execution duration should be more than 1", func(t *testing.T) {
+	t.Run("failed_case_execution_duration_should_be_more_than_1", func(t *testing.T) {
 		dur := int64(-1)
 		testSci := TestScenario{
 			ID:                uint64(1),
@@ -125,7 +125,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrExecutionDurationLessThanOne)
 	})
 
-	t.Run("failed case - auto step change rate should be more than 1", func(t *testing.T) {
+	t.Run("failed_case_auto_step_change_rate_should_be_more_than_1", func(t *testing.T) {
 		sampleIntLessThanOne := int64(-1)
 		testSci := TestScenario{
 			ID:                 uint64(1),
@@ -154,7 +154,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrAutoStepChangeRateLessThanOne)
 	})
 
-	t.Run("failed case - max test service count not set", func(t *testing.T) {
+	t.Run("failed_case_max_test_service_count_not_set", func(t *testing.T) {
 		sampleInt := int64(2)
 		dur := int64(2)
 		testSci := TestScenario{
@@ -186,7 +186,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountNotSet)
 	})
 
-	t.Run("failed case - no need to max test service count", func(t *testing.T) {
+	t.Run("failed_case_no_need_to_max_test_service_count", func(t *testing.T) {
 		sampleInt := int64(2)
 		dur := int64(2)
 		testSci := TestScenario{
@@ -219,7 +219,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrNoNeedMaxTestServiceCount)
 	})
 
-	t.Run("failed case - execution duration not set", func(t *testing.T) {
+	t.Run("failed_case_execution_duration_not_set", func(t *testing.T) {
 		sampleInt := int64(2)
 		testSci := TestScenario{
 			ID:                 uint64(1),
@@ -249,7 +249,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrExecutionDurationNotSet)
 	})
 
-	t.Run("failed case - no need execution duration", func(t *testing.T) {
+	t.Run("failed_case_no_need_execution_duration", func(t *testing.T) {
 		sampleInt := int64(2)
 		dur := int64(2)
 		testSci := TestScenario{
@@ -281,7 +281,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrNoNeedExecutionDuration)
 	})
 
-	t.Run("failed case - auto step change not set", func(t *testing.T) {
+	t.Run("failed_case_auto_step_change_not_set", func(t *testing.T) {
 		testSci := TestScenario{
 			ID:              uint64(1),
 			CreatedAt:       time.Now(),
@@ -308,7 +308,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrAutoStepChangeNotSet)
 	})
-	t.Run("failed case - no need to auto step change", func(t *testing.T) {
+	t.Run("failed_case_no_need_to_auto_step_change", func(t *testing.T) {
 		sampleInt := int64(1)
 		testSci := TestScenario{
 			ID:                 uint64(1),
@@ -338,7 +338,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrNoNeedAutoStepChange)
 	})
 
-	t.Run("failed case - num steps not set (zero)", func(t *testing.T) {
+	t.Run("failed_case_num_steps_not_set_(zero)", func(t *testing.T) {
 		testSci := TestScenario{
 			// ... other fields ...
 			NumSteps: 0,
@@ -349,7 +349,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrNumStepsNotSet)
 	})
 
-	t.Run("failed case - num steps set to negative value", func(t *testing.T) {
+	t.Run("failed_case_num_steps_set_to_negative_value", func(t *testing.T) {
 		testSci := TestScenario{
 			// ... other fields ...
 			NumSteps: -2,

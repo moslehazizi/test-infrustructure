@@ -21,7 +21,7 @@ func TestDatabaseMetadataUsecase_initialization(t *testing.T) {
 }
 
 func TestDatabaseMetadataUsecase_GetAll(t *testing.T) {
-	t.Run("success case - with result", func(t *testing.T) {
+	t.Run("success_case_with_result", func(t *testing.T) {
 		repo := new(mocks.MockDatabaseMetadata)
 		repo.On("GetAll", mock.Anything).
 			Return([]string{"postgres", "load_test_db"}, nil)
@@ -34,7 +34,7 @@ func TestDatabaseMetadataUsecase_GetAll(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-	t.Run("success case - with empty result", func(t *testing.T) {
+	t.Run("success_case_with_empty_result", func(t *testing.T) {
 		repo := new(mocks.MockDatabaseMetadata)
 		repo.On("GetAll", mock.Anything).
 			Return([]string(nil), nil)
@@ -47,7 +47,7 @@ func TestDatabaseMetadataUsecase_GetAll(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-	t.Run("failure case - repository error", func(t *testing.T) {
+	t.Run("failure_case_repository_error", func(t *testing.T) {
 		repo := new(mocks.MockDatabaseMetadata)
 		repo.On("GetAll", mock.Anything).
 			Return(nil, errors.New("db error"))
@@ -62,7 +62,7 @@ func TestDatabaseMetadataUsecase_GetAll(t *testing.T) {
 }
 
 func TestStorageUsecase_GetTablesByDBName(t *testing.T) {
-	t.Run("success case - with result", func(t *testing.T) {
+	t.Run("success_case_with_result", func(t *testing.T) {
 		repo := new(mocks.MockDatabaseMetadata)
 		motherTables := []string{"mother1", "mother2"}
 		testTables := []string{"test1", "test2"}
@@ -81,7 +81,7 @@ func TestStorageUsecase_GetTablesByDBName(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-	t.Run("success case - with empty result", func(t *testing.T) {
+	t.Run("success_case_with_empty_result", func(t *testing.T) {
 		repo := new(mocks.MockDatabaseMetadata)
 		repo.On("GetTablesByDBName", mock.Anything, "load_test_db").
 			Return(nil, nil)
@@ -94,7 +94,7 @@ func TestStorageUsecase_GetTablesByDBName(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-	t.Run("failure case - bad request", func(t *testing.T) {
+	t.Run("failure_case_bad_request", func(t *testing.T) {
 		repo := new(mocks.MockDatabaseMetadata)
 
 		uc := NewDatabaseMetadata(repo)
@@ -104,7 +104,7 @@ func TestStorageUsecase_GetTablesByDBName(t *testing.T) {
 		assert.Nil(t, result)
 	})
 
-	t.Run("failure case - repository error", func(t *testing.T) {
+	t.Run("failure_case_repository_error", func(t *testing.T) {
 		repo := new(mocks.MockDatabaseMetadata)
 		repo.On("GetTablesByDBName", mock.Anything, "load_test_db").
 			Return(nil, errors.New("db error"))
