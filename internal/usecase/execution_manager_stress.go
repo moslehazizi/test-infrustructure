@@ -299,8 +299,40 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 	return nil
 }
 
-func (ex *StressTestExecutionManager) RestartScenario(ctx context.Context, scenario *entity.TestScenario) error {
-	// TODO
+func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	tracer := otel.Tracer("StressTestExecutionManager")
+	_, span := tracer.Start(ctx, "StopScenario")
+	defer span.End()
+
+	if scenario.MaxTestServiceCount == nil {
+		zap.L().Error("max test service count value is null but required", zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrMaxTestServiceCountNotSet
+	}
+
+	for i := int64(1); i <= *scenario.MaxTestServiceCount; i++ {
+		ex.mx.Lock()
+		sci, ok := ex.scenarios[scenario.ID]
+		if !ok {
+			zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
+			ex.mx.Unlock()
+
+			return pkg.ErrTestScenarioNotFound
+		}
+		sci.SetRunning(false)
+
+		agent := ex.testAgentControllerToolBox.Get(scenario)
+		err := agent.StopTesting(ctx)
+		if err != nil {
+			zap.L().Error("test agent controller couldn't stop test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+			ex.mx.Unlock()
+
+			return fmt.Errorf("%w - %w", pkg.ErrFailedToStopTestService, err)
+		}
+
+		ex.mx.Unlock()
+	}
+
 	return nil
 }
 

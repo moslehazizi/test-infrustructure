@@ -40,7 +40,7 @@ func (m *MockExecutionManage) ResumeScenario(ctx context.Context, scenario *enti
 	return args.Error(0)
 }
 
-func (m *MockExecutionManage) RestartScenario(ctx context.Context, scenario *entity.TestScenario) error {
+func (m *MockExecutionManage) StopScenario(ctx context.Context, scenario *entity.TestScenario) error {
 	args := m.Called(ctx, scenario)
 
 	return args.Error(0)
