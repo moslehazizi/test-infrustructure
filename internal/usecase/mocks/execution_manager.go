@@ -45,3 +45,9 @@ func (m *MockExecutionManage) StopScenario(ctx context.Context, scenario *entity
 
 	return args.Error(0)
 }
+
+func (m *MockExecutionManage) AbortScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	args := m.Called(ctx, scenario)
+
+	return args.Error(0)
+}

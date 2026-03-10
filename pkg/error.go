@@ -281,6 +281,7 @@ var (
 	ErrFailedToPauseTestService         = errors.New("failed to pause test service")
 	ErrFailedToResumeTestService        = errors.New("failed to resume test service")
 	ErrFailedToStopTestService          = errors.New("failed to stop test services")
+	ErrFailedToAbortTestService         = errors.New("failed to abort test services")
 
 	// Validation errors.
 	ErrFailedToGetTestServiceConfig                       = errors.New("failed to get test service config by id")
@@ -331,6 +332,7 @@ var (
 	ErrOnlyRunningScenariosCanBePaused                    = errors.New("only running scenarios can be paused")
 	ErrOnlyPausedScenariosCanBeResume                     = errors.New("only pause scenarios can be resume")
 	ErrOnlyRunAndPauseScenariosCanBeStop                  = errors.New("only run and pause can not be stoped")
+	ErrAbortedScenariosCanBeAbort                         = errors.New("aborted can not be abort")
 	ErrFailedToSetScenarioStatus                          = errors.New("failed to set scenario status")
 	ErrGettingRunningTestServicesByScenario               = errors.New("failed to get running test services by scenario")
 	ErrFailedToDeprovisionTestServices                    = errors.New("failed to deprovision test services")
@@ -340,10 +342,12 @@ var (
 	ErrFailedToPauseScenarioToExecutionManager            = errors.New("failed to pause scenario in execution manager")
 	ErrFailedToResumeScenarioToExecutionManager           = errors.New("failed to resume scenario in execution manager")
 	ErrFailedToStopScenarioToExecutionManager             = errors.New("failed to stop scenario in execution manager")
+	ErrFailedToAbortScenarioToExecutionManager            = errors.New("failed to abort scenario in execution manager")
 	ErrStartingTestNotImplemented                         = errors.New("starting test not implemented")
 	ErrPauseingTestNotImplemented                         = errors.New("pausing test not implemented")
 	ErrResumeingTestNotImplemented                        = errors.New("resumeing test not implemented")
 	ErrStopingTestNotImplemented                          = errors.New("stoping test not implemented")
+	ErrAbortTestNotImplemented                            = errors.New("abort test not implemented")
 	ErrFailedToGetHealthCheck                             = errors.New("failed to get health check of test service")
 	ErrFailedToGetMetrics                                 = errors.New("failed to get metric of test service")
 	ErrFailedToGetLiveCheck                               = errors.New("failed to get live check")

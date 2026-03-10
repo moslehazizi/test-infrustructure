@@ -21,6 +21,8 @@ type ExecutionManager interface {
 	ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// StopScenario is for stop running scenario.
 	StopScenario(ctx context.Context, scenario *entity.TestScenario) error
+	// AbortScenario is for stop running scenario.
+	AbortScenario(ctx context.Context, scenario *entity.TestScenario) error
 }
 
 type ScenarioExecutor interface {
@@ -36,8 +38,6 @@ type TestAgentController interface {
 	Run() error
 	// StartTesting is responsible for sending start command.
 	StartTesting(ctx context.Context, req request.RunRequest) error
-	// StartTesting is responsible for sending abort command.
-	AbortTesting(ctx context.Context) error
 	// Healthy checks if related test service is up and running.
 	Healthy() bool
 	// ReadyForTesting tests that test service is not executing
@@ -49,6 +49,8 @@ type TestAgentController interface {
 	ResumeTesting(ctx context.Context) error
 	// StopTesting stop agent.
 	StopTesting(ctx context.Context) error
+	// AbortTesting is responsible for sending abort command.
+	AbortTesting(ctx context.Context) error
 }
 
 type TestAgentControllerToolBox interface {

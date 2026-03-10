@@ -558,6 +558,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/test-scenarios/{id}/abort": {
+            "post": {
+                "description": "Abort a specific test scenario by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test-scenarios"
+                ],
+                "summary": "Abort a test scenario.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Test scenario ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/test-scenarios/{id}/pause": {
             "post": {
                 "description": "Retrieve a specific test scenario by its ID and pause the scenario.",

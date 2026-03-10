@@ -336,4 +336,40 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 	return nil
 }
 
+func (ex *StressTestExecutionManager) AbortScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	tracer := otel.Tracer("StressTestExecutionManager")
+	_, span := tracer.Start(ctx, "AbortScenario")
+	defer span.End()
+
+	if scenario.MaxTestServiceCount == nil {
+		zap.L().Error("max test service count value is null but required", zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrMaxTestServiceCountNotSet
+	}
+
+	for i := int64(1); i <= *scenario.MaxTestServiceCount; i++ {
+		ex.mx.Lock()
+		sci, ok := ex.scenarios[scenario.ID]
+		if !ok {
+			zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
+			ex.mx.Unlock()
+
+			return pkg.ErrTestScenarioNotFound
+		}
+		sci.SetRunning(false)
+
+		agent := ex.testAgentControllerToolBox.Get(scenario)
+		err := agent.AbortTesting(ctx)
+		if err != nil {
+			zap.L().Error("test agent controller couldn't abort test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+			ex.mx.Unlock()
+
+			return fmt.Errorf("%w - %w", pkg.ErrFailedToAbortTestService, err)
+		}
+
+		ex.mx.Unlock()
+	}
+	return nil
+}
+
 //#endregion StressTestExecutionManager

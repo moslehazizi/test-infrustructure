@@ -1670,6 +1670,115 @@ func TestTestScenario_Stop(t *testing.T) {
 
 }
 
+func TestTestScenario_Abort(t *testing.T) {
+	_, err := config.LoadConfig()
+	assert.Nil(t, err)
+
+	t.Run("error_missing_id_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1sdf/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
+	})
+
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Abort", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+
+	t.Run("error_item_not_found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Abort", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
+	})
+
+	t.Run("success_case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Abort", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.SuccessResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, response.Message, pkg.TestScenarioAbort)
+	})
+
+}
+
 func TestTestScenariosHandler_Update(t *testing.T) {
 	t.Run("success_case_bad_values_set", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)

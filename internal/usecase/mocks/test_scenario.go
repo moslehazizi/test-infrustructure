@@ -64,6 +64,12 @@ func (m *MockTestScenario) Stop(ctx context.Context, id uint64) error {
 	return args.Error(0)
 }
 
+func (m *MockTestScenario) Abort(ctx context.Context, id uint64) error {
+	args := m.Called(ctx, id)
+
+	return args.Error(0)
+}
+
 func (m *MockTestScenario) DeployTestScenarioService(ctx context.Context, motherService *entity.TestScenario) error {
 	args := m.Called(ctx, motherService)
 	return args.Error(0)
