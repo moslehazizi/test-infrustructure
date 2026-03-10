@@ -245,7 +245,7 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 			zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
 			ex.mx.Unlock()
 
-			return fmt.Errorf("%w", pkg.ErrTestScenarioNotFound)
+			return pkg.ErrTestScenarioNotFound
 		}
 
 		agent := ex.testAgentControllerToolBox.Get(scenario)
