@@ -408,7 +408,7 @@ func (service *testScenario) Resume(ctx context.Context, id uint64) error {
 	if scenario.Status != entity.ScenarioStatusPaused {
 		span.SetAttributes(attribute.String("error.type", "invalid_status"))
 
-		return pkg.ErrOnlyPausedScenariosCanBeReStarted
+		return pkg.ErrOnlyPausedScenariosCanBeResume
 	}
 
 	// mark scenario as running
@@ -433,7 +433,52 @@ func (service *testScenario) Resume(ctx context.Context, id uint64) error {
 }
 
 func (service *testScenario) Restart(ctx context.Context, id uint64) error {
-	// TODO
+	tracer := otel.Tracer("test-scenario-usecase")
+	_, span := tracer.Start(ctx, "restart_test_scenario")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
+	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
+
+	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
+			span.SetAttributes(attribute.String("error.type", "not_found"))
+
+			return pkg.ErrTestScenarioNotFound
+		}
+		span.SetAttributes(attribute.String("error.type", "get_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
+	}
+
+	// make sure scenario has correct status
+	if scenario.Status == entity.ScenarioStatusPending {
+		span.SetAttributes(attribute.String("error.type", "invalid_status"))
+
+		return pkg.ErrPendingScenariosCanNotBeRestarted
+	}
+
+	// mark scenario as running
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning, false)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
+	}
+
+	switch scenario.TestCategory.Name {
+	case entity.STRESS:
+		err := service.stressTestExecutionManager.RestartScenario(ctx, scenario)
+		if err != nil {
+			return fmt.Errorf("%w: %w", pkg.ErrFailedToRestartScenarioToExecutionManager, err)
+		}
+	default:
+		return pkg.ErrRestartingTestNotImplemented
+	}
+
 	return nil
 }
 

@@ -1,4 +1,9 @@
 definitions:
+  control-panel-service_internal_server_dto_response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
   entity.MotherServiceStatus:
     enum:
     - pending
@@ -160,11 +165,6 @@ definitions:
         items:
           type: string
         type: array
-    type: object
-  response.ErrorResponse:
-    properties:
-      error:
-        type: string
     type: object
   response.MotherService:
     properties:
@@ -360,7 +360,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Get all databases
       tags:
       - database-metadata
@@ -386,11 +386,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Get tables by database name
       tags:
       - database-metadata
@@ -407,7 +407,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Deprovision all pods
       tags:
       - mother-services
@@ -433,15 +433,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Create a mother service
       tags:
       - mother-services
@@ -466,15 +466,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Get mother service by ID
       tags:
       - mother-services
@@ -500,11 +500,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Get paginated mother services
       tags:
       - mother-services
@@ -525,7 +525,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Get all test categories
       tags:
       - test-categories
@@ -550,15 +550,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Get test category by ID
       tags:
       - test-categories
@@ -584,15 +584,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Create a test scenario
       tags:
       - test-scenarios
@@ -617,15 +617,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Get test scenario by ID
       tags:
       - test-scenarios
@@ -633,7 +633,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Retrieve a specific test scenario by its ID and start the scenario.
+      description: Retrieve a specific test scenario by its ID and pause the scenario.
       parameters:
       - description: Test scenario ID
         in: path
@@ -650,23 +650,56 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Pause a test scenario.
+      tags:
+      - test-scenarios
+  /api/v1/test-scenarios/{id}/restart:
+    post:
+      consumes:
+      - application/json
+      description: Restart a specific test scenario by its ID.
+      parameters:
+      - description: Test scenario ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
+      summary: Restart a test scenario.
       tags:
       - test-scenarios
   /api/v1/test-scenarios/{id}/resume:
     post:
       consumes:
       - application/json
-      description: Retrieve a specific test scenario by its ID and start the scenario.
+      description: Retrieve a specific test scenario by its ID and resume the scenario.
       parameters:
       - description: Test scenario ID
         in: path
@@ -683,15 +716,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Resume a test scenario.
       tags:
       - test-scenarios
@@ -716,15 +749,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Start a test scenario.
       tags:
       - test-scenarios
@@ -750,15 +783,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Get paginated test scenarios
       tags:
       - test-scenarios
@@ -784,19 +817,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
       summary: Update a test scenario
       tags:
       - test-scenarios

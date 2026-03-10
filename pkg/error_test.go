@@ -349,7 +349,7 @@ func Test_toHTTPError(t *testing.T) {
 			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyRunningScenariosCanBePaused},
 		},
 		{
-			err:    ErrOnlyPausedScenariosCanBeReStarted,
+			err:    ErrOnlyPausedScenariosCanBeResume,
 			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyPausedScenariosCanBeReStarted},
 		},
 	}
