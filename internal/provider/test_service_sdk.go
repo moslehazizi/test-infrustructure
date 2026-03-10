@@ -255,6 +255,7 @@ func (s *sdkTestService) ReadyForTest(
 func (s *sdkTestService) Pause(ctx context.Context, baseURL string) (*response.PauseResponse, error) {
 	url := baseURL + "/api/v1/pause"
 	var result response.PauseResponse
+	var errorResult response.ErrorResponse
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -268,7 +269,7 @@ func (s *sdkTestService) Pause(ctx context.Context, baseURL string) (*response.P
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&errorResult); err != nil {
 			return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToPauseTestService, err)
 		}
 
@@ -285,6 +286,7 @@ func (s *sdkTestService) Pause(ctx context.Context, baseURL string) (*response.P
 func (s *sdkTestService) Resume(ctx context.Context, baseURL string) (*response.ResumeResponse, error) {
 	url := baseURL + "/api/v1/resume"
 	var result response.ResumeResponse
+	var errorResult response.ErrorResponse
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -298,7 +300,7 @@ func (s *sdkTestService) Resume(ctx context.Context, baseURL string) (*response.
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&errorResult); err != nil {
 			return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToResumeTestService, err)
 		}
 

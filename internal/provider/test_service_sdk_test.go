@@ -405,6 +405,30 @@ func TestSDKTestService_ReadyForTesting(t *testing.T) {
 }
 
 func TestSDKTestService_Pause(t *testing.T) {
+	t.Run("failed_case_status_not_ok", func(t *testing.T) {
+		mockClient := new(mocks.MockHTTPClient)
+
+		body := io.NopCloser(strings.NewReader(`{"error": "something went wrong"}`))
+
+		mockResp := &http.Response{
+			StatusCode: http.StatusInternalServerError,
+			Body:       body,
+		}
+
+		mockClient.
+			On("Do", mock.AnythingOfType("*http.Request")).
+			Return(mockResp, nil)
+
+		sdk := NewSDKTestService(mockClient)
+
+		resp, err := sdk.Pause(context.Background(), "http://localhost:8085")
+
+		require.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToPauseTestService)
+		assert.Nil(t, resp)
+
+		mockClient.AssertExpectations(t)
+	})
 	t.Run("success case", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
@@ -447,6 +471,30 @@ func TestSDKTestService_Pause(t *testing.T) {
 }
 
 func TestSDKTestService_Resume(t *testing.T) {
+	t.Run("failed_case_status_not_ok", func(t *testing.T) {
+		mockClient := new(mocks.MockHTTPClient)
+
+		body := io.NopCloser(strings.NewReader(`{"error": "something went wrong"}`))
+
+		mockResp := &http.Response{
+			StatusCode: http.StatusInternalServerError,
+			Body:       body,
+		}
+
+		mockClient.
+			On("Do", mock.AnythingOfType("*http.Request")).
+			Return(mockResp, nil)
+
+		sdk := NewSDKTestService(mockClient)
+
+		resp, err := sdk.Resume(context.Background(), "http://localhost:8085")
+
+		require.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToResumeTestService)
+		assert.Nil(t, resp)
+
+		mockClient.AssertExpectations(t)
+	})
 	t.Run("success case", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
