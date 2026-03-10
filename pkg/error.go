@@ -82,7 +82,8 @@ func toHTTPError(err error) *HTTPError {
 		errors.Is(err, ErrFailedToGetTestServiceConfig),
 		errors.Is(err, ErrFailedToGetReadyForTesting),
 		errors.Is(err, ErrFailedToPauseTestService),
-		errors.Is(err, ErrFailedToResumeTestService):
+		errors.Is(err, ErrFailedToResumeTestService),
+		errors.Is(err, ErrFailedToStopTestService):
 		status = http.StatusInternalServerError
 		msg = InternalServerErrorMessage
 	case errors.Is(err, ErrMotherServiceNotFound):
@@ -279,6 +280,7 @@ var (
 	ErrFailedToGetReadyForTesting       = errors.New("failed to get ready for testing response")
 	ErrFailedToPauseTestService         = errors.New("failed to pause test service")
 	ErrFailedToResumeTestService        = errors.New("failed to resume test service")
+	ErrFailedToStopTestService          = errors.New("failed to stop test services")
 
 	// Validation errors.
 	ErrFailedToGetTestServiceConfig                       = errors.New("failed to get test service config by id")

@@ -26,6 +26,8 @@ type SDKTestService interface {
 	Pause(ctx context.Context, baseURL string) (*response.PauseResponse, error)
 	// Resume is for resume paused test service
 	Resume(ctx context.Context, baseURL string) (*response.ResumeResponse, error)
+	// Stop is for stop running or paused test service
+	Stop(ctx context.Context, baseURL string) (*response.StopResponse, error)
 }
 
 type sdkTestService struct {
@@ -309,6 +311,37 @@ func (s *sdkTestService) Resume(ctx context.Context, baseURL string) (*response.
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToResumeTestService, err)
+	}
+
+	return &result, nil
+}
+
+func (s *sdkTestService) Stop(ctx context.Context, baseURL string) (*response.StopResponse, error) {
+	url := baseURL + "/api/v1/resume"
+	var result response.StopResponse
+	var errorResult response.ErrorResponse
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request to stop test service: %w", err)
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to do request to stop test service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		if err := json.NewDecoder(resp.Body).Decode(&errorResult); err != nil {
+			return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToStopTestService, err)
+		}
+
+		return nil, fmt.Errorf("%w- stop test service return with status code: %d", pkg.ErrFailedToStopTestService, resp.StatusCode)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToStopTestService, err)
 	}
 
 	return &result, nil

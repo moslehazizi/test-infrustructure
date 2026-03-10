@@ -63,3 +63,14 @@ func (m *MockTestServiceSDK) Resume(ctx context.Context, baseURL string) (*respo
 
 	return result, args.Error(1)
 }
+
+func (m *MockTestServiceSDK) Stop(ctx context.Context, baseURL string) (*response.StopResponse, error) {
+	args := m.Called(ctx, baseURL)
+
+	var result *response.StopResponse
+	if args.Get(0) != nil {
+		result = args.Get(0).(*response.StopResponse)
+	}
+
+	return result, args.Error(1)
+}

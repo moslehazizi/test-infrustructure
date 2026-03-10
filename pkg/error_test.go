@@ -155,6 +155,10 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrFailedToResumeTestService,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
+		{
+			err:    ErrFailedToStopTestService,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
 
 		// Other
 		{

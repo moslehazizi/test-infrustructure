@@ -19,7 +19,7 @@ type ExecutionManager interface {
 	PauseScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// ResumeScenario is for resume paused scenario.
 	ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error
-	// StopScenario is for stop paused or runned scenario.
+	// StopScenario is for stop running scenario.
 	StopScenario(ctx context.Context, scenario *entity.TestScenario) error
 }
 
@@ -47,7 +47,7 @@ type TestAgentController interface {
 	PauseTesting(ctx context.Context) error
 	// ResumeTesting resume agent.
 	ResumeTesting(ctx context.Context) error
-	// StopTesting resume agent.
+	// StopTesting stop agent.
 	StopTesting(ctx context.Context) error
 }
 

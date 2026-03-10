@@ -18,6 +18,10 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
+type StopResponse struct {
+	Message string `json:"message"`
+}
+
 type MetricsSnapshot struct {
 	Requests    int64         `json:"requests"`
 	Success     int64         `json:"success"`

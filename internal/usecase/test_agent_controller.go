@@ -203,7 +203,17 @@ func (c *testAgentController) ResumeTesting(ctx context.Context) error {
 }
 
 func (c *testAgentController) StopTesting(ctx context.Context) error {
-	// TODO
+	baseUrl := c.baseUrlGenerator()
+	_, err := c.testServiceSDK.Stop(ctx, baseUrl)
+	if err != nil {
+		zap.L().Error("stop test service error",
+			zap.String("base_url", baseUrl),
+			zap.Error(err),
+		)
+
+		return err
+	}
+
 	return nil
 }
 
