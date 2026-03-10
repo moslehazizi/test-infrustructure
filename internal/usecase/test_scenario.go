@@ -28,6 +28,7 @@ type TestScenario interface {
 	Start(ctx context.Context, id uint64) error
 	Pause(ctx context.Context, id uint64) error
 	Resume(ctx context.Context, id uint64) error
+	Restart(ctx context.Context, id uint64) error
 	// ResetOrphanedScenarios recovers scenarios that were in running state
 	// when the service crashed and ensures they're added to the in-memory executor box.
 	// ResetOrphanedScenarios(ctx context.Context) error
@@ -428,6 +429,11 @@ func (service *testScenario) Resume(ctx context.Context, id uint64) error {
 		return pkg.ErrResumeingTestNotImplemented
 	}
 
+	return nil
+}
+
+func (service *testScenario) Restart(ctx context.Context, id uint64) error {
+	// TODO
 	return nil
 }
 

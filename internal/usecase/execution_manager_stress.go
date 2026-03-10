@@ -299,4 +299,9 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 	return nil
 }
 
+func (ex *StressTestExecutionManager) RestartScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	// TODO
+	return nil
+}
+
 //#endregion StressTestExecutionManager

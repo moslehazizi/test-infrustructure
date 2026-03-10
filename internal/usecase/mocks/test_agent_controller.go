@@ -55,6 +55,12 @@ func (m *MockTestAgentController) ResumeTesting(ctx context.Context) error {
 	return args.Error(0)
 }
 
+func (m *MockTestAgentController) RestartTesting(ctx context.Context) error {
+	args := m.Called(ctx)
+
+	return args.Error(0)
+}
+
 type MockTestAgentControllerToolBox struct {
 	mock.Mock
 }

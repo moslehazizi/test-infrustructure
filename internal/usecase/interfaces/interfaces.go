@@ -19,6 +19,8 @@ type ExecutionManager interface {
 	PauseScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// ResumeScenario is for resume paused scenario.
 	ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error
+	// RestartScenario is for resume paused scenario.
+	RestartScenario(ctx context.Context, scenario *entity.TestScenario) error
 }
 
 type ScenarioExecutor interface {
@@ -45,6 +47,8 @@ type TestAgentController interface {
 	PauseTesting(ctx context.Context) error
 	// ResumeTesting resume agent.
 	ResumeTesting(ctx context.Context) error
+	// RestartTesting resume agent.
+	RestartTesting(ctx context.Context) error
 }
 
 type TestAgentControllerToolBox interface {
