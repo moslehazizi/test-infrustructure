@@ -25,7 +25,3 @@ type testAgentControllerToolBox struct {
 func (b *testAgentControllerToolBox) Build(scenario *entity.TestScenario) interfaces.TestAgentController {
 	return NewTestAgentController(b.provisioningService, b.testServiceSDK, scenario, b.testSvcServe, b.testSvcPort)
 }
-
-func (b *testAgentControllerToolBox) Get(scenario *entity.TestScenario) interfaces.TestAgentController {
-	return NewTestAgentController(b.provisioningService, b.testServiceSDK, scenario, b.testSvcServe, b.testSvcPort)
-}

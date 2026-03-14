@@ -317,7 +317,7 @@ func (s *sdkTestService) Resume(ctx context.Context, baseURL string) (*response.
 }
 
 func (s *sdkTestService) Stop(ctx context.Context, baseURL string) (*response.StopResponse, error) {
-	url := baseURL + "/api/v1/resume"
+	url := baseURL + "/api/v1/stop"
 	var result response.StopResponse
 	var errorResult response.ErrorResponse
 

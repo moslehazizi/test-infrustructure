@@ -70,9 +70,3 @@ func (m *MockTestAgentControllerToolBox) Build(scenario *entity.TestScenario) in
 
 	return args.Get(0).(interfaces.TestAgentController)
 }
-
-func (m *MockTestAgentControllerToolBox) Get(scenario *entity.TestScenario) interfaces.TestAgentController {
-	args := m.Called(scenario)
-
-	return args.Get(0).(interfaces.TestAgentController)
-}

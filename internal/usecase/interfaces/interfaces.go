@@ -29,8 +29,10 @@ type ScenarioExecutor interface {
 	Run() error
 	IsRunning() bool
 	SetRunning(status bool)
+	SetExecutionID(execID uuid.UUID)
 	AllAgentsAreHealthy() bool
 	AddAgent(agent TestAgentController)
+	GetAgents() []TestAgentController
 }
 
 type TestAgentController interface {
@@ -56,6 +58,4 @@ type TestAgentController interface {
 type TestAgentControllerToolBox interface {
 	// Build will define new TestAgentController based on given config.
 	Build(scenario *entity.TestScenario) TestAgentController
-	// Get will return TestAgentController based on given config.
-	Get(scenario *entity.TestScenario) TestAgentController
 }

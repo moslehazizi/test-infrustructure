@@ -48,13 +48,22 @@ func (sc *scenarioExecutor) SetRunning(status bool) {
 	sc.running = status
 }
 
+func (sc *scenarioExecutor) SetExecutionID(execID uuid.UUID) {
+	sc.executionID = execID
+}
+
 func (sc *scenarioExecutor) AddAgent(agent interfaces.TestAgentController) {
 	sc.agents = append(sc.agents, agent)
+}
+
+func (sc *scenarioExecutor) GetAgents() []interfaces.TestAgentController {
+	return sc.agents
 }
 
 func (sc *scenarioExecutor) AllAgentsAreHealthy() bool {
 	return sc.allAgentsHealthy
 }
+
 func (sc *scenarioExecutor) Run() error {
 	sc.once.Do(sc.RunOnce)
 
@@ -66,7 +75,7 @@ func (sc *scenarioExecutor) RunOnce() {
 
 start:
 	for !sc.running {
-		time.Sleep(time.Millisecond)
+		time.Sleep(time.Millisecond * 100)
 
 		zap.L().Info("scenarioExecutor.RunOnce waiting to be run")
 	}
@@ -201,10 +210,9 @@ func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario 
 		_, ok := ex.scenarios[scenario.ID]
 		if !ok {
 			ex.scenarios[scenario.ID] = &scenarioExecutor{
-				scenario:    scenario,
-				executionID: executionID,
-				agents:      []interfaces.TestAgentController{agent},
-				running:     false,
+				scenario: scenario,
+				agents:   []interfaces.TestAgentController{agent},
+				running:  false,
 			}
 		} else {
 			ex.scenarios[scenario.ID].AddAgent(agent)
@@ -237,6 +245,7 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 		return fmt.Errorf("%w", pkg.ErrTestScenarioNotFound)
 	}
 
+	testScenario.SetExecutionID(uuid.New())
 	testScenario.SetRunning(true)
 
 	return nil
@@ -255,7 +264,7 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 
 	for i := int64(1); i <= *scenario.MaxTestServiceCount; i++ {
 		ex.mx.Lock()
-		_, ok := ex.scenarios[scenario.ID]
+		testScenario, ok := ex.scenarios[scenario.ID]
 		if !ok {
 			zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
 			ex.mx.Unlock()
@@ -263,13 +272,15 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 			return pkg.ErrTestScenarioNotFound
 		}
 
-		agent := ex.testAgentControllerToolBox.Get(scenario)
-		err := agent.PauseTesting(ctx)
-		if err != nil {
-			zap.L().Error("test agent controller can not pause test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
-			ex.mx.Unlock()
+		agents := testScenario.GetAgents()
+		for _, agent := range agents {
+			err := agent.PauseTesting(ctx)
+			if err != nil {
+				zap.L().Error("test agent controller can not pause test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+				ex.mx.Unlock()
 
-			return fmt.Errorf("%w - %w", pkg.ErrFailedToPauseTestService, err)
+				return fmt.Errorf("%w - %w", pkg.ErrFailedToPauseTestService, err)
+			}
 		}
 
 		ex.mx.Unlock()
@@ -291,7 +302,7 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 
 	for i := int64(1); i <= *scenario.MaxTestServiceCount; i++ {
 		ex.mx.Lock()
-		_, ok := ex.scenarios[scenario.ID]
+		testScenario, ok := ex.scenarios[scenario.ID]
 		if !ok {
 			zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
 			ex.mx.Unlock()
@@ -299,13 +310,15 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 			return fmt.Errorf("%w", pkg.ErrTestScenarioNotFound)
 		}
 
-		agent := ex.testAgentControllerToolBox.Get(scenario)
-		err := agent.ResumeTesting(ctx)
-		if err != nil {
-			zap.L().Error("test agent controller can not resume test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
-			ex.mx.Unlock()
+		agents := testScenario.GetAgents()
+		for _, agent := range agents {
+			err := agent.ResumeTesting(ctx)
+			if err != nil {
+				zap.L().Error("test agent controller can not resume test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+				ex.mx.Unlock()
 
-			return fmt.Errorf("%w - %w", pkg.ErrFailedToResumeTestService, err)
+				return fmt.Errorf("%w - %w", pkg.ErrFailedToResumeTestService, err)
+			}
 		}
 
 		ex.mx.Unlock()
@@ -336,13 +349,15 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 		}
 		sci.SetRunning(false)
 
-		agent := ex.testAgentControllerToolBox.Get(scenario)
-		err := agent.StopTesting(ctx)
-		if err != nil {
-			zap.L().Error("test agent controller couldn't stop test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
-			ex.mx.Unlock()
+		agents := sci.GetAgents()
+		for _, agent := range agents {
+			err := agent.StopTesting(ctx)
+			if err != nil {
+				zap.L().Error("test agent controller couldn't stop test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+				ex.mx.Unlock()
 
-			return fmt.Errorf("%w - %w", pkg.ErrFailedToStopTestService, err)
+				return fmt.Errorf("%w - %w", pkg.ErrFailedToStopTestService, err)
+			}
 		}
 
 		ex.mx.Unlock()
@@ -373,13 +388,15 @@ func (ex *StressTestExecutionManager) AbortScenario(ctx context.Context, scenari
 		}
 		sci.SetRunning(false)
 
-		agent := ex.testAgentControllerToolBox.Get(scenario)
-		err := agent.AbortTesting(ctx)
-		if err != nil {
-			zap.L().Error("test agent controller couldn't abort test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
-			ex.mx.Unlock()
+		agents := sci.GetAgents()
+		for _, agent := range agents {
+			err := agent.AbortTesting(ctx)
+			if err != nil {
+				zap.L().Error("test agent controller couldn't abort test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+				ex.mx.Unlock()
 
-			return fmt.Errorf("%w - %w", pkg.ErrFailedToAbortTestService, err)
+				return fmt.Errorf("%w - %w", pkg.ErrFailedToAbortTestService, err)
+			}
 		}
 
 		ex.mx.Unlock()
