@@ -63,8 +63,12 @@ func (sc *scenarioExecutor) Run() error {
 
 func (sc *scenarioExecutor) RunOnce() {
 	zap.L().Info("scenarioExecutor.RunOnce Called")
+
+start:
 	for !sc.running {
 		time.Sleep(time.Millisecond)
+
+		zap.L().Info("scenarioExecutor.RunOnce waiting to be run")
 	}
 	zap.L().Info("scenarioExecutor.RunOnce Running")
 
@@ -105,6 +109,8 @@ func (sc *scenarioExecutor) RunOnce() {
 			sc.awaitAgentsToBeReadyToStartTesting()
 		}
 	}
+
+	goto start
 }
 
 func (sc *scenarioExecutor) awaitAgentsToBeHealthy() {
@@ -341,11 +347,6 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 
 		ex.mx.Unlock()
 	}
-
-	ex.mx.Lock()
-	// remove scenario from executor manager.
-	delete(ex.scenarios, scenario.ID)
-	ex.mx.Unlock()
 
 	return nil
 }
