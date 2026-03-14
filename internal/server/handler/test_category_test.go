@@ -36,7 +36,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 	cfg, err := config.LoadConfig()
 	assert.Nil(t, err)
 
-	t.Run("error on getting data from service layer", func(t *testing.T) {
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
 		srv := new(mocks.MockTestCategoryService)
 		var items []entity.TestCategory
 		srv.On("GetAll", mock.Anything).Return(items, errors.New("something went wrong"))
@@ -52,7 +52,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	})
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		var theTime time.Time // use nil time to avoid reflect Deep equal issue while having a json decoding
 		srv := new(mocks.MockTestCategoryService)
 		var items []entity.TestCategory = []entity.TestCategory{
@@ -130,7 +130,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 	cfg, err := config.LoadConfig()
 	assert.Nil(t, err)
 
-	t.Run("error: missing id in param", func(t *testing.T) {
+	t.Run("error_missing_id_in_param", func(t *testing.T) {
 		srv := new(mocks.MockTestCategoryService)
 		h := NewTestCategoryHandler(&cfg, srv)
 
@@ -144,7 +144,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
-	t.Run("error: invalid id data in param", func(t *testing.T) {
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
 		srv := new(mocks.MockTestCategoryService)
 		h := NewTestCategoryHandler(&cfg, srv)
 
@@ -169,7 +169,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
 	})
 
-	t.Run("error on getting data from service layer", func(t *testing.T) {
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
 		srv := new(mocks.MockTestCategoryService)
 		var want *entity.TestCategory
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, errors.New("something went wrong"))
@@ -185,7 +185,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	})
-	t.Run("error item not found", func(t *testing.T) {
+	t.Run("error_item_not_found", func(t *testing.T) {
 		srv := new(mocks.MockTestCategoryService)
 		var want *entity.TestCategory
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, pkg.ErrTestCategoryNotFound)
@@ -211,7 +211,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 		assert.Equal(t, response.Error, pkg.TestCategoryNotFound)
 	})
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		theTime := time.Date(2026, 01, 13, 10, 06, 30, 0, time.UTC)
 		srv := new(mocks.MockTestCategoryService)
 		item := &entity.TestCategory{

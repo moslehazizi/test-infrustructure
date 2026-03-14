@@ -202,6 +202,21 @@ func (c *testAgentController) ResumeTesting(ctx context.Context) error {
 	return nil
 }
 
+func (c *testAgentController) StopTesting(ctx context.Context) error {
+	baseUrl := c.baseUrlGenerator()
+	_, err := c.testServiceSDK.Stop(ctx, baseUrl)
+	if err != nil {
+		zap.L().Error("stop test service error",
+			zap.String("base_url", baseUrl),
+			zap.Error(err),
+		)
+
+		return err
+	}
+
+	return nil
+}
+
 func (c *testAgentController) baseUrlGenerator() string {
 	return fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort) // http://chalenge-tese-srvice-serve-{sid}-{uuid}:8080
 }

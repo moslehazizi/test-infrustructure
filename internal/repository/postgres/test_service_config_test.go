@@ -30,7 +30,7 @@ func TestTestServiceConfigRepo_Init(t *testing.T) {
 }
 
 func TestTestServiceConfigRepo_Create(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -74,7 +74,7 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failed case - db error", func(t *testing.T) {
+t.Run("failed_case_db_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -120,7 +120,7 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 }
 
 func TestTestServiceConfigRepo_GetByID(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -199,7 +199,7 @@ func TestTestServiceConfigRepo_GetByID(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failed case - not found", func(t *testing.T) {
+t.Run("failed_case_not_found", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -217,7 +217,7 @@ func TestTestServiceConfigRepo_GetByID(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failed case - database error", func(t *testing.T) {
+t.Run("failed_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -237,7 +237,7 @@ func TestTestServiceConfigRepo_GetByID(t *testing.T) {
 }
 
 func TestTestServiceConfigRepository_UpdateByScenarioID(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -282,7 +282,7 @@ func TestTestServiceConfigRepository_UpdateByScenarioID(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("update fails", func(t *testing.T) {
+t.Run("update_fails", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)

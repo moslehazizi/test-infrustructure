@@ -50,7 +50,7 @@ func TestDeployMotherService(t *testing.T) {
 		assert.Error(t, err)
 	})
 
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployMotherServiceConfig()
 		mockKubernetes := new(kubermock.KuberneteseMock)
@@ -74,7 +74,7 @@ func TestDeployMotherService(t *testing.T) {
 		mockKubernetes.AssertExpectations(t)
 	})
 
-	t.Run("failed ApplyDeployment serve", func(t *testing.T) {
+	t.Run("failed_ApplyDeployment_serve", func(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployMotherServiceConfig()
 		mockKubernetes := new(kubermock.KuberneteseMock)
@@ -95,7 +95,7 @@ func TestDeployMotherService(t *testing.T) {
 		mockKubernetes.AssertExpectations(t)
 	})
 
-	t.Run("failed ApplyService serve", func(t *testing.T) {
+	t.Run("failed_ApplyService_serve", func(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployMotherServiceConfig()
 		mockKubernetes := new(kubermock.KuberneteseMock)
@@ -117,7 +117,7 @@ func TestDeployMotherService(t *testing.T) {
 		mockKubernetes.AssertExpectations(t)
 	})
 
-	t.Run("failed WaitForDeployment serve", func(t *testing.T) {
+	t.Run("failed_WaitForDeployment_serve", func(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployMotherServiceConfig()
 		mockKubernetes := new(kubermock.KuberneteseMock)
@@ -140,7 +140,7 @@ func TestDeployMotherService(t *testing.T) {
 		mockKubernetes.AssertExpectations(t)
 	})
 
-	t.Run("failed ApplyDeployment jobs", func(t *testing.T) {
+	t.Run("failed_ApplyDeployment_jobs", func(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployMotherServiceConfig()
 		mockKubernetes := new(kubermock.KuberneteseMock)
@@ -164,7 +164,7 @@ func TestDeployMotherService(t *testing.T) {
 		mockKubernetes.AssertExpectations(t)
 	})
 
-	t.Run("failed WaitForDeployment jobs", func(t *testing.T) {
+	t.Run("failed_WaitForDeployment_jobs", func(t *testing.T) {
 		ctx := context.Background()
 		cfg := deployMotherServiceConfig()
 		mockKubernetes := new(kubermock.KuberneteseMock)

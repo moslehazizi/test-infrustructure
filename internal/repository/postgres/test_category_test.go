@@ -31,7 +31,7 @@ func TestNewTestCategoryRepository(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	t.Run("success case with empty result", func(t *testing.T) {
+t.Run("success_case_with_empty_result", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -53,7 +53,7 @@ func TestGetAll(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Len(t, result, 0)
 	})
-	t.Run("success case with some results", func(t *testing.T) {
+t.Run("success_case_with_some_results", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -118,7 +118,7 @@ func TestGetAll(t *testing.T) {
 
 		assert.True(t, reflect.DeepEqual(result, expected))
 	})
-	t.Run("error case", func(t *testing.T) {
+t.Run("error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -133,7 +133,7 @@ func TestGetAll(t *testing.T) {
 }
 
 func TestTestCategory_GetByID(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -185,7 +185,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failed case - not found", func(t *testing.T) {
+t.Run("failed_case_not_found", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -203,7 +203,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("failed case - database error", func(t *testing.T) {
+t.Run("failed_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)

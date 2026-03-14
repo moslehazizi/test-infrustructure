@@ -4,7 +4,6 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -16,8 +15,8 @@ func (m *MockExecutionManage) Run() {
 	m.Called()
 }
 
-func (m *MockExecutionManage) AddScenario(ctx context.Context, scenario *entity.TestScenario, executionID uuid.UUID) error {
-	args := m.Called(ctx, scenario, executionID)
+func (m *MockExecutionManage) AddScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	args := m.Called(ctx, scenario)
 
 	return args.Error(0)
 }
@@ -35,6 +34,18 @@ func (m *MockExecutionManage) PauseScenario(ctx context.Context, scenario *entit
 }
 
 func (m *MockExecutionManage) ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	args := m.Called(ctx, scenario)
+
+	return args.Error(0)
+}
+
+func (m *MockExecutionManage) StopScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	args := m.Called(ctx, scenario)
+
+	return args.Error(0)
+}
+
+func (m *MockExecutionManage) AbortScenario(ctx context.Context, scenario *entity.TestScenario) error {
 	args := m.Called(ctx, scenario)
 
 	return args.Error(0)

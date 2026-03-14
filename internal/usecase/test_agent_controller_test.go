@@ -32,7 +32,7 @@ func TestNewTestAgentController(t *testing.T) {
 }
 
 func Test_testAgentController_provisionTestService(t *testing.T) {
-	t.Run("fail case: provisioning service has error", func(t *testing.T) {
+	t.Run("fail_case_provisioning_service_has_error", func(t *testing.T) {
 		scenario := &entity.TestScenario{}
 		id := uuid.New()
 		testSvcServe := "challenge-test-service-serve"
@@ -51,7 +51,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 		provSvc.AssertCalled(t, "ProvisionTestServiceByName", mock.Anything, scenario, mock.Anything)
 	})
 
-	t.Run("fail case: provisioning service has error => make sure retries work", func(t *testing.T) {
+	t.Run("fail_case_provisioning_service_has_error_make_sure_retries_work", func(t *testing.T) {
 		scenario := &entity.TestScenario{}
 		id := uuid.New()
 		testSvcServe := "challenge-test-service-serve"
@@ -82,7 +82,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 		provSvc.AssertCalled(t, "ProvisionTestServiceByName", mock.Anything, scenario, mock.Anything)
 	})
 
-	t.Run("success case: provisioning service has error on first try but works then", func(t *testing.T) {
+	t.Run("success_case_provisioning_service_has_error_on_first_try_but_works_then", func(t *testing.T) {
 		scenario := &entity.TestScenario{}
 		id := uuid.New()
 		testSvcServe := "challenge-test-service-serve"
@@ -119,7 +119,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 }
 
 func Test_testAgentController_Run(t *testing.T) {
-	t.Run("fail case: unable to provision test service", func(t *testing.T) {
+	t.Run("fail_case:_unable_to_provision_test_service", func(t *testing.T) {
 		scenario := &entity.TestScenario{}
 		testSvcServe := "challenge-test-service-serve"
 		testSvcPort := 8080
@@ -578,6 +578,63 @@ func Test_testAgentControler_Resume(t *testing.T) {
 			Return(nil, errors.New("run execute error"))
 
 		err := c.ResumeTesting(ctx)
+		assert.Error(t, err)
+		provTest.AssertExpectations(t)
+	})
+}
+
+func Test_testAgentControler_Stop(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
+		scenario := &entity.TestScenario{ID: 5}
+		id := uuid.New()
+		testSvcServe := "challenge-test-service-serve"
+		testSvcPort := 8080
+		ctx := context.Background()
+
+		provSvc := new(mocks.MockProvisioningService)
+		provTest := new(mocks.MockTestServiceSDK)
+
+		ctrl := NewTestAgentController(provSvc, provTest, scenario, testSvcServe, testSvcPort)
+
+		c := ctrl.(*testAgentController)
+		c.provisioningRetries = 1
+		c.provisioningRetriesSleep = time.Millisecond * 50
+		c.uniqueID = id
+
+		baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort)
+		provTest.
+			On("Stop", mock.Anything, baseUrl).
+			Return(&response.StopResponse{
+				Message: "done",
+			}, nil)
+
+		err := c.StopTesting(ctx)
+		assert.NoError(t, err)
+		provTest.AssertExpectations(t)
+	})
+	t.Run("failed_case", func(t *testing.T) {
+		scenario := &entity.TestScenario{ID: 5}
+		id := uuid.New()
+		testSvcServe := "challenge-test-service-serve"
+		testSvcPort := 8080
+		ctx := context.Background()
+
+		provSvc := new(mocks.MockProvisioningService)
+		provTest := new(mocks.MockTestServiceSDK)
+
+		ctrl := NewTestAgentController(provSvc, provTest, scenario, testSvcServe, testSvcPort)
+
+		c := ctrl.(*testAgentController)
+		c.provisioningRetries = 1
+		c.provisioningRetriesSleep = time.Millisecond * 50
+		c.uniqueID = id
+
+		baseUrl := fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort)
+		provTest.
+			On("Stop", mock.Anything, baseUrl).
+			Return(nil, errors.New("run execute error"))
+
+		err := c.StopTesting(ctx)
 		assert.Error(t, err)
 		provTest.AssertExpectations(t)
 	})

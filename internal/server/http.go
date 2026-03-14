@@ -190,6 +190,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Post("/test-scenarios/:id/start", testScenarioHandler.Start())
 	apiV1.Post("/test-scenarios/:id/pause", testScenarioHandler.Pause())
 	apiV1.Post("/test-scenarios/:id/resume", testScenarioHandler.Resume())
+	apiV1.Post("/test-scenarios/:id/stop", testScenarioHandler.Stop())
+	apiV1.Post("/test-scenarios/:id/abort", testScenarioHandler.Abort())
 	apiV1.Post("/test-scenarios/update", testScenarioHandler.Update())
 
 	// database-metadata

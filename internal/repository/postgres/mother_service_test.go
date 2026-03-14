@@ -18,7 +18,7 @@ import (
 )
 
 func TestMotherServiceRepository_Create(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -72,7 +72,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("error case", func(t *testing.T) {
+t.Run("error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -117,7 +117,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("duplicate name error case", func(t *testing.T) {
+t.Run("duplicate_name_error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -177,7 +177,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 }
 
 func TestMotherServiceRepository_GetByID(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -245,7 +245,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("not found case", func(t *testing.T) {
+t.Run("not_found_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -263,7 +263,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("error case", func(t *testing.T) {
+t.Run("error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -283,7 +283,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 }
 
 func TestMotherServiceRepository_GetPaginated(t *testing.T) {
-	t.Run("failed case - failed to get database record count", func(t *testing.T) {
+t.Run("failed_case_failed_to_get_database_record_count", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -308,7 +308,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("success case with pagination - page 1", func(t *testing.T) {
+t.Run("success_case_with_pagination_page_1", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -414,7 +414,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case with pagination - page 2", func(t *testing.T) {
+t.Run("success_case_with_pagination_page_2", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -520,7 +520,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case with pagination - page 3 with 10 per page", func(t *testing.T) {
+t.Run("success_case_with_pagination_page_3_with_10_per_page", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -590,7 +590,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case without pagination - return all items (page=0, perPage=0)", func(t *testing.T) {
+t.Run("success_case_without_pagination_return_all_items_(page=0,_perPage=0)", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -721,7 +721,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success case with empty result - page beyond available data", func(t *testing.T) {
+t.Run("success_case_with_empty_result_page_beyond_available_data", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -758,7 +758,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("error case with pagination", func(t *testing.T) {
+t.Run("error_case_with_pagination", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -789,7 +789,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("error case if page is negative", func(t *testing.T) {
+t.Run("error_case_if_page_is_negative", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -807,7 +807,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("error case if perPage is negative", func(t *testing.T) {
+t.Run("error_case_if_perPage_is_negative", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -827,7 +827,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 }
 
 func TestMotherServiceRepository_SetStatus(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -852,7 +852,7 @@ func TestMotherServiceRepository_SetStatus(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("failed case", func(t *testing.T) {
+t.Run("failed_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)

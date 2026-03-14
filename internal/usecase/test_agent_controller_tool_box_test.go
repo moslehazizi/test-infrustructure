@@ -22,17 +22,3 @@ func TestTestAgentControllerToolBox_Build(t *testing.T) {
 	})
 
 }
-
-func TestTestAgentControllerToolBox_Get(t *testing.T) {
-	t.Run("ok", func(t *testing.T) {
-		testSvcServe := "challenge-test-service"
-		testSvcPort := 8080
-
-		b := usecase.
-			NewTestAgentControllerToolBox(new(mocks.MockProvisioningService), new(mocks.MockTestServiceSDK), testSvcServe, testSvcPort).
-			Get(&entity.TestScenario{})
-
-		assert.NotNil(t, b)
-	})
-
-}

@@ -82,7 +82,8 @@ func toHTTPError(err error) *HTTPError {
 		errors.Is(err, ErrFailedToGetTestServiceConfig),
 		errors.Is(err, ErrFailedToGetReadyForTesting),
 		errors.Is(err, ErrFailedToPauseTestService),
-		errors.Is(err, ErrFailedToResumeTestService):
+		errors.Is(err, ErrFailedToResumeTestService),
+		errors.Is(err, ErrFailedToStopTestService):
 		status = http.StatusInternalServerError
 		msg = InternalServerErrorMessage
 	case errors.Is(err, ErrMotherServiceNotFound):
@@ -160,7 +161,7 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrOnlyRunningScenariosCanBePaused):
 		status = http.StatusUnprocessableEntity
 		msg = OnlyRunningScenariosCanBePaused
-	case errors.Is(err, ErrOnlyPausedScenariosCanBeReStarted):
+	case errors.Is(err, ErrOnlyPausedScenariosCanBeResume):
 		status = http.StatusUnprocessableEntity
 		msg = OnlyPausedScenariosCanBeReStarted
 	case errors.Is(err, ErrPageNotFound):
@@ -279,6 +280,8 @@ var (
 	ErrFailedToGetReadyForTesting       = errors.New("failed to get ready for testing response")
 	ErrFailedToPauseTestService         = errors.New("failed to pause test service")
 	ErrFailedToResumeTestService        = errors.New("failed to resume test service")
+	ErrFailedToStopTestService          = errors.New("failed to stop test services")
+	ErrFailedToAbortTestService         = errors.New("failed to abort test services")
 
 	// Validation errors.
 	ErrFailedToGetTestServiceConfig                       = errors.New("failed to get test service config by id")
@@ -327,7 +330,9 @@ var (
 	ErrTestServiceConfigIsRequired                        = errors.New("test service config is required")
 	ErrOnlyPendingScenariosCanBeStarted                   = errors.New("only pending scenarios can be started")
 	ErrOnlyRunningScenariosCanBePaused                    = errors.New("only running scenarios can be paused")
-	ErrOnlyPausedScenariosCanBeReStarted                  = errors.New("only pause scenarios can be re-started")
+	ErrOnlyPausedScenariosCanBeResume                     = errors.New("only pause scenarios can be resume")
+	ErrOnlyRunAndPauseScenariosCanBeStop                  = errors.New("only run and pause can not be stoped")
+	ErrAbortedScenariosCanBeAbort                         = errors.New("aborted can not be abort")
 	ErrFailedToSetScenarioStatus                          = errors.New("failed to set scenario status")
 	ErrGettingRunningTestServicesByScenario               = errors.New("failed to get running test services by scenario")
 	ErrFailedToDeprovisionTestServices                    = errors.New("failed to deprovision test services")
@@ -336,9 +341,13 @@ var (
 	ErrFailedToRunScenarioInExecutionManager              = errors.New("failed to run scenario in execution manager")
 	ErrFailedToPauseScenarioToExecutionManager            = errors.New("failed to pause scenario in execution manager")
 	ErrFailedToResumeScenarioToExecutionManager           = errors.New("failed to resume scenario in execution manager")
+	ErrFailedToStopScenarioToExecutionManager             = errors.New("failed to stop scenario in execution manager")
+	ErrFailedToAbortScenarioToExecutionManager            = errors.New("failed to abort scenario in execution manager")
 	ErrStartingTestNotImplemented                         = errors.New("starting test not implemented")
 	ErrPauseingTestNotImplemented                         = errors.New("pausing test not implemented")
 	ErrResumeingTestNotImplemented                        = errors.New("resumeing test not implemented")
+	ErrStopingTestNotImplemented                          = errors.New("stoping test not implemented")
+	ErrAbortTestNotImplemented                            = errors.New("abort test not implemented")
 	ErrFailedToGetHealthCheck                             = errors.New("failed to get health check of test service")
 	ErrFailedToGetMetrics                                 = errors.New("failed to get metric of test service")
 	ErrFailedToGetLiveCheck                               = errors.New("failed to get live check")

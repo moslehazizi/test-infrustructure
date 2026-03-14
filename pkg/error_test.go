@@ -155,6 +155,10 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrFailedToResumeTestService,
 			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
 		},
+		{
+			err:    ErrFailedToStopTestService,
+			wanted: HTTPError{http.StatusInternalServerError, InternalServerErrorMessage},
+		},
 
 		// Other
 		{
@@ -349,7 +353,7 @@ func Test_toHTTPError(t *testing.T) {
 			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyRunningScenariosCanBePaused},
 		},
 		{
-			err:    ErrOnlyPausedScenariosCanBeReStarted,
+			err:    ErrOnlyPausedScenariosCanBeResume,
 			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyPausedScenariosCanBeReStarted},
 		},
 	}
@@ -363,7 +367,7 @@ func Test_toHTTPError(t *testing.T) {
 }
 
 func TestToHTTPError(t *testing.T) {
-	t.Run("success case: we have only one error and having no error wrapping", func(t *testing.T) {
+	t.Run("success_case_we_have_only_one_error_and_having_no_error_wrapping", func(t *testing.T) {
 		want := &HTTPError{
 			status: http.StatusInternalServerError,
 			msg:    InternalServerErrorMessage,
@@ -371,7 +375,7 @@ func TestToHTTPError(t *testing.T) {
 		got := ToHTTPError(ErrFailedToGetTestCategoryFromRepository)
 		assert.Equal(t, want, got)
 	})
-	t.Run("success case: we have 2 wrapped error: 500 and 400 and should get 400", func(t *testing.T) {
+	t.Run("success_case_we_have_2_wrapped_error_500_and_400_and_should_get_400", func(t *testing.T) {
 		want := &HTTPError{
 			status: http.StatusBadRequest,
 			msg:    InvalidReqBody,
@@ -379,7 +383,7 @@ func TestToHTTPError(t *testing.T) {
 		got := ToHTTPError(fmt.Errorf("%w:%w", ErrFailedToGetTestCategoryFromRepository, ErrBadRequest))
 		assert.Equal(t, want, got)
 	})
-	t.Run("success case: we have 2 wrapped error: 400 and 500 and should get 400", func(t *testing.T) {
+	t.Run("success_case_we_have_2_wrapped_error_400_and_500_and_should_get_400", func(t *testing.T) {
 		want := &HTTPError{
 			status: http.StatusBadRequest,
 			msg:    InvalidReqBody,
@@ -387,7 +391,7 @@ func TestToHTTPError(t *testing.T) {
 		got := ToHTTPError(fmt.Errorf("%w:%w", ErrBadRequest, ErrFailedToGetTestCategoryFromRepository))
 		assert.Equal(t, want, got)
 	})
-	t.Run("success case: we have 3 wrapped error: 400, 422, and 500 and should get 400", func(t *testing.T) {
+	t.Run("success_case_we_have_3_wrapped_error_400,_422,_and_500_and_should_get_400", func(t *testing.T) {
 		want := &HTTPError{
 			status: http.StatusBadRequest,
 			msg:    InvalidReqBody,
@@ -395,7 +399,7 @@ func TestToHTTPError(t *testing.T) {
 		got := ToHTTPError(fmt.Errorf("%w:%w:%w", ErrBadRequest, ErrFailedToGetTestCategoryFromRepository, ErrTestServiceConfigIsRequired))
 		assert.Equal(t, want, got)
 	})
-	t.Run("success case: we have 1 wrapped error: 400 and should get 400", func(t *testing.T) {
+	t.Run("success_case_we_have_1_wrapped_error_400_and_should_get_400", func(t *testing.T) {
 		want := &HTTPError{
 			status: http.StatusBadRequest,
 			msg:    InvalidReqBody,
@@ -403,7 +407,7 @@ func TestToHTTPError(t *testing.T) {
 		got := ToHTTPError(fmt.Errorf("%w", ErrBadRequest))
 		assert.Equal(t, want, got)
 	})
-	t.Run("success case: we do not have a wrapped error", func(t *testing.T) {
+	t.Run("success_case_we_do_not_have_a_wrapped_error", func(t *testing.T) {
 		want := &HTTPError{
 			status: http.StatusInternalServerError,
 			msg:    InternalServerErrorMessage,

@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 
@@ -28,6 +27,8 @@ type TestScenario interface {
 	Start(ctx context.Context, id uint64) error
 	Pause(ctx context.Context, id uint64) error
 	Resume(ctx context.Context, id uint64) error
+	Stop(ctx context.Context, id uint64) error
+	Abort(ctx context.Context, id uint64) error
 	// ResetOrphanedScenarios recovers scenarios that were in running state
 	// when the service crashed and ensures they're added to the in-memory executor box.
 	// ResetOrphanedScenarios(ctx context.Context) error
@@ -193,7 +194,7 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 
 	switch testScenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.AddScenario(dbCtx, testScenario, uuid.New())
+		err := service.stressTestExecutionManager.AddScenario(dbCtx, testScenario)
 		if err != nil {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToAddScenarioToExecutionManager, err)
 		}
@@ -407,7 +408,7 @@ func (service *testScenario) Resume(ctx context.Context, id uint64) error {
 	if scenario.Status != entity.ScenarioStatusPaused {
 		span.SetAttributes(attribute.String("error.type", "invalid_status"))
 
-		return pkg.ErrOnlyPausedScenariosCanBeReStarted
+		return pkg.ErrOnlyPausedScenariosCanBeResume
 	}
 
 	// mark scenario as running
@@ -426,6 +427,106 @@ func (service *testScenario) Resume(ctx context.Context, id uint64) error {
 		}
 	default:
 		return pkg.ErrResumeingTestNotImplemented
+	}
+
+	return nil
+}
+
+func (service *testScenario) Stop(ctx context.Context, id uint64) error {
+	tracer := otel.Tracer("test-scenario-usecase")
+	_, span := tracer.Start(ctx, "stop_test_scenario")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
+	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
+
+	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
+			span.SetAttributes(attribute.String("error.type", "not_found"))
+
+			return pkg.ErrTestScenarioNotFound
+		}
+		span.SetAttributes(attribute.String("error.type", "get_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
+	}
+
+	// make sure scenario has correct status
+	if scenario.Status != entity.ScenarioStatusRunning && scenario.Status != entity.ScenarioStatusPaused {
+		span.SetAttributes(attribute.String("error.type", "invalid_status"))
+
+		return pkg.ErrOnlyRunAndPauseScenariosCanBeStop
+	}
+
+	// mark scenario as running
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusPending, false)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
+	}
+
+	switch scenario.TestCategory.Name {
+	case entity.STRESS:
+		err := service.stressTestExecutionManager.StopScenario(ctx, scenario)
+		if err != nil {
+			return fmt.Errorf("%w: %w", pkg.ErrFailedToStopScenarioToExecutionManager, err)
+		}
+	default:
+		return pkg.ErrStopingTestNotImplemented
+	}
+
+	return nil
+}
+
+func (service *testScenario) Abort(ctx context.Context, id uint64) error {
+	tracer := otel.Tracer("test-scenario-usecase")
+	_, span := tracer.Start(ctx, "abort_test_scenario")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
+	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
+
+	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
+			span.SetAttributes(attribute.String("error.type", "not_found"))
+
+			return pkg.ErrTestScenarioNotFound
+		}
+		span.SetAttributes(attribute.String("error.type", "get_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
+	}
+
+	// make sure scenario has correct status
+	if scenario.Status == entity.ScenarioStatusAborted {
+		span.SetAttributes(attribute.String("error.type", "invalid_status"))
+
+		return pkg.ErrAbortedScenariosCanBeAbort
+	}
+
+	// mark scenario as running
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusAborted, false)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
+	}
+
+	switch scenario.TestCategory.Name {
+	case entity.STRESS:
+		err := service.stressTestExecutionManager.AbortScenario(ctx, scenario)
+		if err != nil {
+			return fmt.Errorf("%w: %w", pkg.ErrFailedToAbortScenarioToExecutionManager, err)
+		}
+	default:
+		return pkg.ErrAbortTestNotImplemented
 	}
 
 	return nil

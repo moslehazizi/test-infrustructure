@@ -7,7 +7,7 @@ import (
 )
 
 func TestCalcRange(t *testing.T) {
-	t.Run("const is nil , min and max are not nil", func(t *testing.T) {
+	t.Run("const_is_nil_min_and_max_are_not_nil", func(t *testing.T) {
 		var (
 			cntPtr      *int
 			minVal      = 10
@@ -24,7 +24,7 @@ func TestCalcRange(t *testing.T) {
 		assert.Equal(t, expectedMax, actualMax)
 	})
 
-	t.Run("const is not nil min and max are nil", func(t *testing.T) {
+	t.Run("const_is_not_nil_min_and_max_are_nil", func(t *testing.T) {
 		var (
 			cntVal      = 10
 			cntPtr      = &cntVal
@@ -40,7 +40,7 @@ func TestCalcRange(t *testing.T) {
 		assert.Equal(t, expectedMax, actualMax)
 	})
 
-	t.Run("const is nil , min is nil and max is not nil", func(t *testing.T) {
+	t.Run("const_is_nil_min_is_nil_and_max_is_not_nil", func(t *testing.T) {
 		var (
 			cntPtr      *int
 			minPtr      *int
@@ -56,7 +56,7 @@ func TestCalcRange(t *testing.T) {
 		assert.Equal(t, expectedMax, actualMax)
 	})
 
-	t.Run("const is nil , min is not nil and max is nil", func(t *testing.T) {
+	t.Run("const_is_nil_min_is_not_nil_and_max_is_nil", func(t *testing.T) {
 		var (
 			cntPtr      *int
 			minVal      = 10
@@ -72,7 +72,7 @@ func TestCalcRange(t *testing.T) {
 		assert.Equal(t, expectedMax, actualMax)
 	})
 
-	t.Run("const is not nil min is not nil and max is nil", func(t *testing.T) {
+	t.Run("const_is_not_nil_min_is_not_nil_and_max_is_nil", func(t *testing.T) {
 		var (
 			cntVal      = 10
 			cntPtr      = &cntVal
@@ -89,7 +89,7 @@ func TestCalcRange(t *testing.T) {
 		assert.Equal(t, expectedMax, actualMax)
 	})
 
-	t.Run("const is not nil min is nil and max is not nil", func(t *testing.T) {
+	t.Run("const_is_not_nil_min_is_nil_and_max_is_not_nil", func(t *testing.T) {
 		var (
 			cntVal      = 10
 			cntPtr      = &cntVal
@@ -106,7 +106,7 @@ func TestCalcRange(t *testing.T) {
 		assert.Equal(t, expectedMax, actualMax)
 	})
 
-	t.Run("const , min . max are nil", func(t *testing.T) {
+	t.Run("const_min_max_are_nil", func(t *testing.T) {
 		var (
 			cntPtr      *int
 			minPtr      *int
@@ -121,7 +121,7 @@ func TestCalcRange(t *testing.T) {
 		assert.Equal(t, expectedMax, actualMax)
 	})
 
-	t.Run("const , min . max are not nil", func(t *testing.T) {
+	t.Run("const_min_max_are_not_nil", func(t *testing.T) {
 		var (
 			cntVal      = 5
 			cntPtr      = &cntVal
@@ -142,7 +142,7 @@ func TestCalcRange(t *testing.T) {
 }
 
 func TestNumValue(t *testing.T) {
-	t.Run("input is nil", func(t *testing.T) {
+	t.Run("input_is_nil", func(t *testing.T) {
 		var (
 			inputPtr  *int
 			excpected int = 0
@@ -152,7 +152,7 @@ func TestNumValue(t *testing.T) {
 		assert.Equal(t, excpected, actual)
 	})
 
-	t.Run("input is not nil", func(t *testing.T) {
+	t.Run("input_is_not_nil", func(t *testing.T) {
 		var (
 			inputVal      = 10
 			inputPtr      = &inputVal

@@ -33,7 +33,7 @@ func TestTestServiceConfigHandler_New(t *testing.T) {
 }
 
 func TestTestScenarioHandler_Create(t *testing.T) {
-	t.Run("success case - bad values set", func(t *testing.T) {
+	t.Run("success_case_bad_values_set", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -123,7 +123,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("success case - random test number ", func(t *testing.T) {
+	t.Run("success_case_random_test_number", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -206,7 +206,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("success case - random request delay ", func(t *testing.T) {
+	t.Run("success_case_random_request_delay", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -288,7 +288,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("success case - request delay and fixed number set", func(t *testing.T) {
+	t.Run("success_case_request_delay_and_fixed_number_set", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -367,7 +367,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("success case - don't fill null fields in test scenario", func(t *testing.T) {
+	t.Run("success_case_don't_fill_null_fields_in_test_scenario", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -442,7 +442,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("failed case - body parser bad request", func(t *testing.T) {
+	t.Run("failed_case_body_parser_bad_request", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -467,7 +467,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 		assert.Equal(t, pkg.InvalidReqBody, result.Error)
 	})
-	t.Run("failed case - test category not found", func(t *testing.T) {
+	t.Run("failed_case_test_category_not_found", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -546,7 +546,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, pkg.TestCategoryNotFound, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("failed case - failed to get test category", func(t *testing.T) {
+	t.Run("failed_case_failed_to_get_test_category", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -625,7 +625,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		assert.Equal(t, result.Error, pkg.InternalServerErrorMessage)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("failed case - validation error handler", func(t *testing.T) {
+	t.Run("failed_case_validation_error_handler", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -708,7 +708,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 }
 
 func TestTestScenarioHandler_GetPaginated(t *testing.T) {
-	t.Run("success case - with nil values", func(t *testing.T) {
+	t.Run("success_case_with_nil_values", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -877,7 +877,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		// 	}
 		// }
 	})
-	t.Run("error: invalid request body", func(t *testing.T) {
+	t.Run("error_invalid_request_body", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -902,7 +902,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 		assert.Equal(t, result.Error, pkg.InvalidReqBody)
 	})
-	t.Run("error from service layer", func(t *testing.T) {
+	t.Run("error_from_service_layer", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -937,7 +937,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 	_, err := config.LoadConfig()
 	assert.Nil(t, err)
 
-	t.Run("error: missing id in param", func(t *testing.T) {
+	t.Run("error_missing_id_in_param", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		h := NewTestScenarioHandler(srv)
 
@@ -951,7 +951,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
-	t.Run("error: invalid id data in param", func(t *testing.T) {
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 
 		h := NewTestScenarioHandler(srv)
@@ -975,7 +975,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
 	})
 
-	t.Run("error on getting data from service layer", func(t *testing.T) {
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		var want *entity.TestScenario
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, errors.New("something went wrong"))
@@ -991,7 +991,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	})
-	t.Run("error item not found", func(t *testing.T) {
+	t.Run("error_item_not_found", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		var want *entity.TestScenario
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, pkg.ErrTestScenarioNotFound)
@@ -1015,7 +1015,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
 	})
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := int64(100)
 		rate := int64(50)
@@ -1174,7 +1174,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected, got.Data)
 	})
-	t.Run("success case => category and mother service are null", func(t *testing.T) {
+	t.Run("success_case_category_and_mother_service_are_null", func(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := int64(100)
 		rate := int64(50)
@@ -1240,7 +1240,7 @@ func TestTestScenario_Start(t *testing.T) {
 	_, err := config.LoadConfig()
 	assert.Nil(t, err)
 
-	t.Run("error: missing id in param", func(t *testing.T) {
+	t.Run("error_missing_id_in_param", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		h := NewTestScenarioHandler(srv)
 
@@ -1254,7 +1254,7 @@ func TestTestScenario_Start(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
-	t.Run("error: invalid id data in param", func(t *testing.T) {
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 
 		h := NewTestScenarioHandler(srv)
@@ -1278,7 +1278,7 @@ func TestTestScenario_Start(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
 	})
 
-	t.Run("error on getting data from service layer", func(t *testing.T) {
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		srv.On("Start", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
 		h := NewTestScenarioHandler(srv)
@@ -1293,7 +1293,7 @@ func TestTestScenario_Start(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	})
-	t.Run("error item not found", func(t *testing.T) {
+	t.Run("error_item_not_found", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		srv.On("Start", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
 		h := NewTestScenarioHandler(srv)
@@ -1317,7 +1317,7 @@ func TestTestScenario_Start(t *testing.T) {
 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
 	})
 
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		srv.On("Start", mock.Anything, uint64(1)).Return(nil)
 		h := NewTestScenarioHandler(srv)
@@ -1561,8 +1561,226 @@ func TestTestScenario_Resume(t *testing.T) {
 
 }
 
+func TestTestScenario_Stop(t *testing.T) {
+	_, err := config.LoadConfig()
+	assert.Nil(t, err)
+
+	t.Run("error_missing_id_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/stop", h.Stop())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/stop", h.Stop())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/stop", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
+	})
+
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Stop", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/stop", h.Stop())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+
+	t.Run("error_item_not_found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Stop", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/stop", h.Stop())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
+	})
+
+	t.Run("success_case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Stop", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/stop", h.Stop())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.SuccessResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, response.Message, pkg.TestScenarioStop)
+	})
+
+}
+
+func TestTestScenario_Abort(t *testing.T) {
+	_, err := config.LoadConfig()
+	assert.Nil(t, err)
+
+	t.Run("error_missing_id_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1sdf/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
+	})
+
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Abort", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+
+	t.Run("error_item_not_found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Abort", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
+	})
+
+	t.Run("success_case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Abort", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioHandler(srv)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.SuccessResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, response.Message, pkg.TestScenarioAbort)
+	})
+
+}
+
 func TestTestScenariosHandler_Update(t *testing.T) {
-	t.Run("success case - bad values set", func(t *testing.T) {
+	t.Run("success_case_bad_values_set", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -1646,7 +1864,7 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 		assert.Equal(t, pkg.UpdateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("failed case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 

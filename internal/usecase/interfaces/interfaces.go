@@ -12,21 +12,27 @@ type ExecutionManager interface {
 	// Run will run ExecutionManager as a background job.
 	Run()
 	// Add will initialize new TestAgentControllers based on scenario config.
-	AddScenario(ctx context.Context, scenario *entity.TestScenario, executionID uuid.UUID) error
+	AddScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// RunScenario is for run scenario.
 	RunScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// PauseScenario is for pause runned scenario.
 	PauseScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// ResumeScenario is for resume paused scenario.
 	ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error
+	// StopScenario is for stop running scenario.
+	StopScenario(ctx context.Context, scenario *entity.TestScenario) error
+	// AbortScenario is for stop running scenario.
+	AbortScenario(ctx context.Context, scenario *entity.TestScenario) error
 }
 
 type ScenarioExecutor interface {
-	Run() error
+	Run(ctx context.Context) error
 	IsRunning() bool
 	SetRunning(status bool)
+	SetExecutionID(execID uuid.UUID)
 	AllAgentsAreHealthy() bool
 	AddAgent(agent TestAgentController)
+	GetAgents() []TestAgentController
 }
 
 type TestAgentController interface {
@@ -34,8 +40,6 @@ type TestAgentController interface {
 	Run() error
 	// StartTesting is responsible for sending start command.
 	StartTesting(ctx context.Context, req request.RunRequest) error
-	// StartTesting is responsible for sending abort command.
-	AbortTesting(ctx context.Context) error
 	// Healthy checks if related test service is up and running.
 	Healthy() bool
 	// ReadyForTesting tests that test service is not executing
@@ -45,11 +49,13 @@ type TestAgentController interface {
 	PauseTesting(ctx context.Context) error
 	// ResumeTesting resume agent.
 	ResumeTesting(ctx context.Context) error
+	// StopTesting stop agent.
+	StopTesting(ctx context.Context) error
+	// AbortTesting is responsible for sending abort command.
+	AbortTesting(ctx context.Context) error
 }
 
 type TestAgentControllerToolBox interface {
 	// Build will define new TestAgentController based on given config.
 	Build(scenario *entity.TestScenario) TestAgentController
-	// Get will return TestAgentController based on given config.
-	Get(scenario *entity.TestScenario) TestAgentController
 }

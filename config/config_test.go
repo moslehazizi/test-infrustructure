@@ -13,7 +13,7 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	t.Run("success fetch otlp config", func(t *testing.T) {
+	t.Run("success_fetch_otlp_config", func(t *testing.T) {
 		expectedPort := 8080
 		exportedHost := "localhost"
 		expectedServiceName := "control-panel"
@@ -29,7 +29,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Otlp.GRPCHost, exportedHost)
 		assert.Equal(t, cfg.ServiceName, expectedServiceName)
 	})
-	t.Run("success fetch http config", func(t *testing.T) {
+	t.Run("success_fetch_http_config", func(t *testing.T) {
 		expectedPort := 8080
 		expectedHost := "localhost"
 		expectedSwaggerScheme := []string{"http", "https"}
@@ -66,7 +66,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Server.RateLimitExpirationDuration, expectedRateLimitExpirationDuration)
 		assert.Equal(t, cfg.Server.ShutdownTimeout, expectedShutdownTimeout)
 	})
-	t.Run("success fetch kafka config", func(t *testing.T) {
+	t.Run("success_fetch_kafka_config", func(t *testing.T) {
 		expectedKafkaHost := "127.0.0.1"
 		expectedKafkaPort := 9092
 		expectedKafkaUsername := "kafka_user"
@@ -107,7 +107,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.BatchBytes, expectedKafkaBatchBytes)
 
 	})
-	t.Run("success fetch kafka config without username and password", func(t *testing.T) {
+	t.Run("success_fetch_kafka_config_without_username_and_password", func(t *testing.T) {
 		expectedKafkaHost := "127.0.0.1"
 		expectedKafkaPort := 9092
 		expectedKafkaProvisioningTopic := "factorial"
@@ -129,7 +129,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.ProvisioningTopic, expectedKafkaProvisioningTopic)
 
 	})
-	t.Run("success fetch postgres config", func(t *testing.T) {
+	t.Run("success_fetch_postgres_config", func(t *testing.T) {
 		expectedPostgresHost := "127.0.0.1"
 		expectedPostgresPort := 5432
 		expectedPostgresUser := "postgres"
@@ -165,7 +165,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Postgres.MaxIdleConnections, expectedPostgresMaxIdleConnections)
 		assert.Equal(t, cfg.Postgres.ConnMaxLifetime, expectedPostgresConnMaxLifetime)
 	})
-	t.Run("success fetch logger config", func(t *testing.T) {
+	t.Run("success_fetch_logger_config", func(t *testing.T) {
 		expectedLogLevel := "debug"
 		expectedLogFormat := "console"
 		expectedLogOutput := "stderr"
@@ -182,7 +182,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Logger.Output, expectedLogOutput)
 	})
 
-	t.Run("success fetch kubernets config", func(t *testing.T) {
+	t.Run("success_fetch_kubernets_config", func(t *testing.T) {
 		expectedKubernetesNameSpace := "control-panel-service"
 		expectedKubernetesContainerRegistryUrl := "chalenge.azurecr.io/"
 		expectedKubernetesMotherSvcImage := "challenge-mother-service:0.1"
@@ -263,7 +263,7 @@ func TestLoadConfig(t *testing.T) {
 
 	})
 
-	t.Run("check default values config", func(t *testing.T) {
+	t.Run("check_default_values_config", func(t *testing.T) {
 		expectedDefaultPort := 8080
 		expectedDefaultHTTPHost := "localhost"
 		expectedDefaultSwaggerDocJSON := "doc.json"
@@ -390,7 +390,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.TestServiceLiveFeedTopic, expectedDefaultKubernetesTestServiceKafkaLiveFeedTopic)
 	})
 
-	t.Run("error - invalid environment variable value", func(t *testing.T) {
+	t.Run("error_invalid_environment_variable_value", func(t *testing.T) {
 		// Set an invalid value for POSTGRES_PORT that can't be parsed as int
 		os.Setenv("POSTGRES_PORT", "invalid_port")
 		defer os.Unsetenv("POSTGRES_PORT")
