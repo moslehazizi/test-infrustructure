@@ -37,6 +37,7 @@ type scenarioExecutor struct {
 	allAgentsHealthy         bool
 	allAgentsReadyForTesting bool
 	running                  bool
+	once                     sync.Once
 }
 
 func (sc *scenarioExecutor) IsRunning() bool {
@@ -54,9 +55,18 @@ func (sc *scenarioExecutor) AddAgent(agent interfaces.TestAgentController) {
 func (sc *scenarioExecutor) AllAgentsAreHealthy() bool {
 	return sc.allAgentsHealthy
 }
-
 func (sc *scenarioExecutor) Run() error {
-	sc.running = false
+	sc.once.Do(sc.RunOnce)
+
+	return nil
+}
+
+func (sc *scenarioExecutor) RunOnce() {
+	zap.L().Info("scenarioExecutor.RunOnce Called")
+	for !sc.running {
+		time.Sleep(time.Millisecond)
+	}
+	zap.L().Info("scenarioExecutor.RunOnce Running")
 
 	// Make sure all agents are healthy.
 	sc.awaitAgentsToBeHealthy()
@@ -67,6 +77,11 @@ func (sc *scenarioExecutor) Run() error {
 
 	// we need a loop based on len of steps:
 	for i := int64(1); i <= sc.scenario.NumSteps; i++ {
+		if !sc.running {
+			zap.L().Info("scenario executor is not running; exiting scenarioExecutor.Run")
+
+			break
+		}
 		req := request.NewRunRequestFromTestServiceConfig(
 			int(i),
 			sc.executionID,
@@ -90,8 +105,6 @@ func (sc *scenarioExecutor) Run() error {
 			sc.awaitAgentsToBeReadyToStartTesting()
 		}
 	}
-
-	return nil
 }
 
 func (sc *scenarioExecutor) awaitAgentsToBeHealthy() {
@@ -149,10 +162,6 @@ func (ex *StressTestExecutionManager) Run() {
 		// check all scenarios
 		// for each scenario, make sure the executor is running.
 		for _, sc := range ex.scenarios {
-			if !sc.IsRunning() {
-				continue
-			}
-
 			go func() {
 				_ = sc.Run()
 			}()
@@ -332,6 +341,11 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 
 		ex.mx.Unlock()
 	}
+
+	ex.mx.Lock()
+	// remove scenario from executor manager.
+	delete(ex.scenarios, scenario.ID)
+	ex.mx.Unlock()
 
 	return nil
 }
