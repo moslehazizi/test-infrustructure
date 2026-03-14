@@ -16,6 +16,49 @@ import (
 )
 
 // #region scenarioExecutor
+func Test_ScenarioExecutor_SetExecutionID(t *testing.T) {
+	agent := new(mocks.MockTestAgentController)
+
+	ex := &scenarioExecutor{
+		scenario: &entity.TestScenario{
+			ID: 1,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(1)),
+		},
+		agents:           []interfaces.TestAgentController{agent},
+		allAgentsHealthy: false,
+		running:          false,
+	}
+	sampleUUID := uuid.New()
+	ex.SetExecutionID(sampleUUID)
+
+	assert.Equal(t, sampleUUID, ex.executionID)
+}
+func Test_ScenarioExecutor_GetAgents(t *testing.T) {
+	agent := new(mocks.MockTestAgentController)
+
+	ex := &scenarioExecutor{
+		scenario: &entity.TestScenario{
+			ID: 1,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(1)),
+		},
+		executionID:      uuid.New(),
+		agents:           []interfaces.TestAgentController{agent},
+		allAgentsHealthy: false,
+		running:          false,
+	}
+	agents := ex.GetAgents()
+
+	assert.NotNil(t, agents)
+	assert.Equal(t, agents[0], agent)
+}
 func Test_scenarioExecutor_AddAgent(t *testing.T) {
 	ex := new(scenarioExecutor)
 	assert.Len(t, ex.agents, 0)
@@ -23,7 +66,6 @@ func Test_scenarioExecutor_AddAgent(t *testing.T) {
 	ex.AddAgent(&mocks.MockTestAgentController{})
 	assert.Len(t, ex.agents, 1)
 }
-
 func Test_scenarioExecutor_AllAgentsAreHealthy(t *testing.T) {
 	agent := new(mocks.MockTestAgentController)
 
@@ -47,7 +89,6 @@ func Test_scenarioExecutor_AllAgentsAreHealthy(t *testing.T) {
 	ex.allAgentsHealthy = true
 	assert.True(t, ex.AllAgentsAreHealthy())
 }
-
 func Test_scenarioExecutor_IsRunning(t *testing.T) {
 	agent := new(mocks.MockTestAgentController)
 
@@ -68,7 +109,6 @@ func Test_scenarioExecutor_IsRunning(t *testing.T) {
 
 	assert.False(t, ex.IsRunning())
 }
-
 func Test_scenarioExecutor_SetRunning(t *testing.T) {
 	agent := new(mocks.MockTestAgentController)
 
@@ -95,7 +135,6 @@ func Test_scenarioExecutor_SetRunning(t *testing.T) {
 	assert.False(t, ex.IsRunning())
 
 }
-
 func Test_scenarioExecutor_awaitAgentsToBeHealthy(t *testing.T) {
 	t.Run("all_agents_test_services_are_healthy_single_agent", func(t *testing.T) {
 		t.Parallel()
@@ -165,7 +204,6 @@ func Test_scenarioExecutor_awaitAgentsToBeHealthy(t *testing.T) {
 		agent2.AssertCalled(t, "Healthy")
 	})
 }
-
 func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
 	t.Run("all_agents_test_services_are_ready_single_agent", func(t *testing.T) {
 		scenario := &entity.TestScenario{
@@ -272,10 +310,12 @@ func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
 		assert.True(t, ex.allAgentsReadyForTesting)
 	})
 }
-
 func Test_scenarioExecutor_Run(t *testing.T) {
 	t.Run("success_single_step", func(t *testing.T) {
 		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*500)
+		defer cancel()
 
 		// setting up agents
 		scenario := &entity.TestScenario{
@@ -328,11 +368,13 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		time.Sleep(time.Millisecond)
 		time.Sleep(time.Millisecond * 10)
 
+		ex.SetRunning(true)
+
 		// we have 2 agents ready
 
-		agent1.On("StartTesting", mock.Anything, mock.Anything).Times(1).Return(nil)
-		agent2.On("StartTesting", mock.Anything, mock.Anything).Times(1).Return(nil)
-		err := ex.Run()
+		agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
+		agent2.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
+		err := ex.Run(ctx)
 
 		agent1.AssertCalled(t, "Healthy")
 		agent2.AssertCalled(t, "Healthy")
@@ -347,6 +389,9 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 
 	t.Run("success_2_steps", func(t *testing.T) {
 		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*500)
+		defer cancel()
 
 		// setting up agents
 		scenario := &entity.TestScenario{
@@ -389,7 +434,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 			executionID:      uuid.New(),
 			agents:           []interfaces.TestAgentController{agent1, agent2},
 			allAgentsHealthy: false,
-			running:          false,
+			running:          true,
 		}
 
 		healthyCheckSleep = time.Millisecond * 10
@@ -401,13 +446,13 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 
 		// we have 2 agents ready
 
-		agent1.On("StartTesting", mock.Anything, mock.Anything).Times(2).Return(nil)
-		agent2.On("StartTesting", mock.Anything, mock.Anything).Times(2).Return(nil)
+		agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
+		agent2.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
 
-		agent1.On("ReadyForTesting").Times(1).Return(true)
-		agent2.On("ReadyForTesting").Times(1).Return(true)
+		agent1.On("ReadyForTesting").Return(true)
+		agent2.On("ReadyForTesting").Return(true)
 
-		err := ex.Run()
+		err := ex.Run(ctx)
 
 		agent1.AssertCalled(t, "Healthy")
 		agent2.AssertCalled(t, "Healthy")
@@ -436,8 +481,7 @@ func TestStressTestExecutionManager_AddScenario(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder)
 
-		exeID := uuid.New()
-		err := ex.AddScenario(context.Background(), &scenario, exeID)
+		err := ex.AddScenario(context.Background(), &scenario)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountNotSet)
@@ -457,8 +501,7 @@ func TestStressTestExecutionManager_AddScenario(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder)
 
-		exeID := uuid.New()
-		err := ex.AddScenario(context.Background(), scenario, exeID)
+		err := ex.AddScenario(context.Background(), scenario)
 
 		// will wait to all goroutines be called.
 		time.Sleep(time.Millisecond)
@@ -517,6 +560,7 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 		}
 
 		err := ex.RunScenario(ctx, scenario)
+
 		assert.NoError(t, err)
 	})
 }
@@ -560,7 +604,6 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		agent := new(mocks.MockTestAgentController)
-		builder.On("Get", scenario).Times(1).Return(agent)
 		agent.On("PauseTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder)
@@ -581,7 +624,6 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToPauseTestService)
 
-		builder.AssertCalled(t, "Get", scenario)
 		agent.AssertCalled(t, "PauseTesting", mock.Anything)
 	})
 
@@ -594,7 +636,6 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		agent := new(mocks.MockTestAgentController)
-		builder.On("Get", scenario).Times(3).Return(agent)
 		agent.On("PauseTesting", mock.Anything).Return(nil)
 
 		ex := NewStressTestExecutionManager(builder)
@@ -614,7 +655,6 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		builder.AssertCalled(t, "Get", scenario)
 		agent.AssertCalled(t, "PauseTesting", mock.Anything)
 	})
 }
@@ -658,7 +698,6 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		agent := new(mocks.MockTestAgentController)
-		builder.On("Get", scenario).Times(1).Return(agent)
 		agent.On("ResumeTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder)
@@ -679,7 +718,6 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToResumeTestService)
 
-		builder.AssertCalled(t, "Get", scenario)
 		agent.AssertCalled(t, "ResumeTesting", mock.Anything)
 	})
 
@@ -712,7 +750,6 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		builder.AssertCalled(t, "Get", scenario)
 		agent.AssertCalled(t, "ResumeTesting", mock.Anything)
 	})
 }
@@ -741,8 +778,7 @@ func TestStressTestExecutionManager_Run(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder)
 
-		exeID := uuid.New()
-		err := ex.AddScenario(context.Background(), scenario, exeID)
+		err := ex.AddScenario(context.Background(), scenario)
 		assert.NoError(t, err)
 
 		// will wait to all goroutines be called.
@@ -804,7 +840,6 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		agent := new(mocks.MockTestAgentController)
-		builder.On("Get", scenario).Times(1).Return(agent)
 		agent.On("StopTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder)
@@ -822,7 +857,6 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToStopTestService)
 
-		builder.AssertCalled(t, "Get", scenario)
 		agent.AssertCalled(t, "StopTesting", mock.Anything)
 	})
 
@@ -851,7 +885,6 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 
 		assert.Nil(t, err)
 
-		builder.AssertCalled(t, "Get", scenario)
 		agent.AssertCalled(t, "StopTesting", mock.Anything)
 	})
 }
@@ -895,7 +928,6 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		agent := new(mocks.MockTestAgentController)
-		builder.On("Get", scenario).Times(1).Return(agent)
 		agent.On("AbortTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder)
@@ -913,7 +945,6 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToAbortTestService)
 
-		builder.AssertCalled(t, "Get", scenario)
 		agent.AssertCalled(t, "AbortTesting", mock.Anything)
 	})
 
@@ -942,7 +973,6 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 
 		assert.Nil(t, err)
 
-		builder.AssertCalled(t, "Get", scenario)
 		agent.AssertCalled(t, "AbortTesting", mock.Anything)
 	})
 }

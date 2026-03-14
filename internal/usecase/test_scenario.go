@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 
@@ -195,7 +194,7 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 
 	switch testScenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.AddScenario(dbCtx, testScenario, uuid.New())
+		err := service.stressTestExecutionManager.AddScenario(dbCtx, testScenario)
 		if err != nil {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToAddScenarioToExecutionManager, err)
 		}

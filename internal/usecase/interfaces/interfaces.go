@@ -12,7 +12,7 @@ type ExecutionManager interface {
 	// Run will run ExecutionManager as a background job.
 	Run()
 	// Add will initialize new TestAgentControllers based on scenario config.
-	AddScenario(ctx context.Context, scenario *entity.TestScenario, executionID uuid.UUID) error
+	AddScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// RunScenario is for run scenario.
 	RunScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// PauseScenario is for pause runned scenario.
@@ -26,7 +26,7 @@ type ExecutionManager interface {
 }
 
 type ScenarioExecutor interface {
-	Run() error
+	Run(ctx context.Context) error
 	IsRunning() bool
 	SetRunning(status bool)
 	SetExecutionID(execID uuid.UUID)

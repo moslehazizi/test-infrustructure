@@ -255,7 +255,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo.On("GetByID", mock.Anything, testSci.TestCategoryID).Return(testCat, nil)
 		mockRepo.On("Create", mock.Anything, testSci).Return(expectedID, nil)
 		mockTestServiceConfig.On("Create", mock.Anything, testServiceConfig).Return(nil)
-		mockStressTestExecutor.On("AddScenario", mock.Anything, testSci, mock.Anything).Return(nil)
+		mockStressTestExecutor.On("AddScenario", mock.Anything, testSci).Return(nil)
 
 		err := service.Create(ctx, testSci)
 
@@ -408,7 +408,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo.On("GetByID", mock.Anything, testSci.TestCategoryID).Return(testCat, nil)
 		mockRepo.On("Create", mock.Anything, testSci).Return(expectedID, nil)
 		mockTestServiceConfig.On("Create", mock.Anything, testServiceConfig).Return(nil)
-		mockStressTestExecutor.On("AddScenario", mock.Anything, testSci, mock.Anything).Return(errors.New("some thing went wrong"))
+		mockStressTestExecutor.On("AddScenario", mock.Anything, testSci).Return(errors.New("some thing went wrong"))
 
 		err := service.Create(ctx, testSci)
 

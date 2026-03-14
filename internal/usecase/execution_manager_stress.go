@@ -64,62 +64,69 @@ func (sc *scenarioExecutor) AllAgentsAreHealthy() bool {
 	return sc.allAgentsHealthy
 }
 
-func (sc *scenarioExecutor) Run() error {
-	sc.once.Do(sc.RunOnce)
+func (sc *scenarioExecutor) Run(ctx context.Context) error {
+	sc.once.Do(func() {
+		sc.RunOnce(ctx)
+	})
 
 	return nil
 }
 
-func (sc *scenarioExecutor) RunOnce() {
+func (sc *scenarioExecutor) RunOnce(ctx context.Context) {
 	zap.L().Info("scenarioExecutor.RunOnce Called")
 
 start:
-	for !sc.running {
-		time.Sleep(time.Millisecond * 100)
+	select {
+	case <-ctx.Done():
+		return
+	default:
+		for !sc.running {
+			time.Sleep(time.Millisecond * 100)
 
-		zap.L().Info("scenarioExecutor.RunOnce waiting to be run")
+			zap.L().Info("scenarioExecutor.RunOnce waiting to be run")
+		}
+		zap.L().Info("scenarioExecutor.RunOnce Running")
+
+		// Make sure all agents are healthy.
+		sc.awaitAgentsToBeHealthy()
+
+		// NOW: all agents are healthy.
+
+		// we can send scheduled commands.
+
+		// we need a loop based on len of steps:
+		for i := int64(1); i <= sc.scenario.NumSteps; i++ {
+			if !sc.running {
+				zap.L().Info("scenario executor is not running; exiting scenarioExecutor.Run")
+
+				break
+			}
+			req := request.NewRunRequestFromTestServiceConfig(
+				int(i),
+				sc.executionID,
+				sc.scenario.TestServiceConfig,
+			)
+
+			// send command to all agents.
+			wg := sync.WaitGroup{}
+			for _, agent := range sc.agents {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					_ = agent.StartTesting(context.Background(), *req)
+				}()
+			}
+
+			wg.Wait()
+
+			if i < sc.scenario.NumSteps {
+				// wait for all agents to be ready to execute next step.
+				sc.awaitAgentsToBeReadyToStartTesting()
+			}
+		}
+
+		goto start
 	}
-	zap.L().Info("scenarioExecutor.RunOnce Running")
-
-	// Make sure all agents are healthy.
-	sc.awaitAgentsToBeHealthy()
-
-	// NOW: all agents are healthy.
-
-	// we can send scheduled commands.
-
-	// we need a loop based on len of steps:
-	for i := int64(1); i <= sc.scenario.NumSteps; i++ {
-		if !sc.running {
-			zap.L().Info("scenario executor is not running; exiting scenarioExecutor.Run")
-
-			break
-		}
-		req := request.NewRunRequestFromTestServiceConfig(
-			int(i),
-			sc.executionID,
-			sc.scenario.TestServiceConfig,
-		)
-
-		// send command to all agents.
-		wg := sync.WaitGroup{}
-		for _, agent := range sc.agents {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				_ = agent.StartTesting(context.Background(), *req)
-			}()
-		}
-
-		wg.Wait()
-
-		if i < sc.scenario.NumSteps {
-			// wait for all agents to be ready to execute next step.
-			sc.awaitAgentsToBeReadyToStartTesting()
-		}
-	}
-
-	goto start
 }
 
 func (sc *scenarioExecutor) awaitAgentsToBeHealthy() {
@@ -173,12 +180,13 @@ type StressTestExecutionManager struct {
 }
 
 func (ex *StressTestExecutionManager) Run() {
+	ctx := context.Background()
 	for ex.running {
 		// check all scenarios
 		// for each scenario, make sure the executor is running.
 		for _, sc := range ex.scenarios {
 			go func() {
-				_ = sc.Run()
+				_ = sc.Run(ctx)
 			}()
 		}
 		time.Sleep(checkLoopSleep)
@@ -187,7 +195,7 @@ func (ex *StressTestExecutionManager) Run() {
 	zap.L().Info("exiting from StressTestExecutionManager.Run")
 }
 
-func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario *entity.TestScenario, executionID uuid.UUID) error {
+func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario *entity.TestScenario) error {
 	tracer := otel.Tracer("StressTestExecutionManager")
 	_, span := tracer.Start(ctx, "AddScenario")
 	defer span.End()
