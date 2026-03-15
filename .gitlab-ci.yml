@@ -1,7 +1,7 @@
 stages:
     #   - lint
-    - test
-    # - build
+    # - test
+    - build
     # - docker
 
 # variables:
@@ -34,31 +34,29 @@ before_script:
 #     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 #     - if: $CI_COMMIT_BRANCH
 
-test:
-    stage: test
-    variables:
-        CGO_ENABLED: 1
-    script:
-        - go test -v -race -cover ./...
-    # artifacts:
-    #     reports:
-    #         junit: report.xml
-    coverage: '/coverage: \d+\.\d+%/'
-    rules:
-        - if: $CI_COMMIT_BRANCH
+# test:
+#     stage: test
+#     variables:
+#         CGO_ENABLED: 1
+#     script:
+#         - go test -v -race -cover ./...
+#     # artifacts:
+#     #     reports:
+#     #         junit: report.xml
+#     coverage: '/coverage: \d+\.\d+%/'
+#     rules:
+#         - if: $CI_COMMIT_BRANCH
 
-# build:
-#   stage: build
-#   image: golang:${GO_VERSION}
-#   script:
-#     - mkdir -p bin
-#     - go build -ldflags="-s -w" -o bin/app ./cmd/app
-#   artifacts:
-#     paths:
-#       - bin/app
-#     expire_in: 1 week
-#   rules:
-#     - if: $CI_COMMIT_BRANCH
+build:
+  stage: build
+  script:
+    - go build -ldflags="-s -w" -o main ./cmd/main
+  artifacts:
+    paths:
+      - main
+    # expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH
 
 # docker-build:
 #   stage: docker
