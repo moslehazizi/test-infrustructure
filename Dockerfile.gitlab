@@ -7,7 +7,7 @@ RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
 
-COPY main main
+COPY main /app/main
 
 # Change ownership to non-root user
 RUN chown appuser:appgroup main
