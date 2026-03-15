@@ -2,7 +2,7 @@ stages:
     #   - lint
     - test
     - build
-    # - docker
+    - docker
 
 # variables:
 #   GO_VERSION: "1.22"
