@@ -39,6 +39,10 @@ test:
 
 build-app:
   stage: build
+  variables:
+    CGO_ENABLED: 0
+    GOOS: linux
+    GOARCH: amd64
   script:
     - go build -ldflags="-s -w" -o main
   artifacts:
@@ -60,7 +64,6 @@ docker-build:
     before_script:
         - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     script:
-        - ls -lah
         - docker build -f Dockerfile.gitlab -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
         - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
         - docker image rm $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
