@@ -11,7 +11,7 @@ stages:
 #   DOCKER_DRIVER: overlay2
 
 
-image: golang:1.26-alpine
+image: golang:1.26
 cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
