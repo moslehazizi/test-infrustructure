@@ -50,7 +50,7 @@ before_script:
 build:
   stage: build
   script:
-    - go build -ldflags="-s -w" -o main ./main
+    - go build -ldflags="-s -w" -o main
   artifacts:
     paths:
       - main
