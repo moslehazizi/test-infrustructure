@@ -15,6 +15,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	RunOnceDelay = time.Millisecond * 100
+)
+
 var checkLoopSleep = time.Second
 var healthyCheckSleep = time.Second
 var readyForTestingCheckSleep = time.Second
@@ -74,7 +78,7 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 			return
 		default:
 			for !sc.running {
-				time.Sleep(time.Millisecond * 100)
+				time.Sleep(RunOnceDelay)
 
 				zap.L().Info("scenarioExecutor.RunOnce waiting to be run")
 			}
@@ -104,6 +108,7 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 				wg := sync.WaitGroup{}
 				for _, agent := range sc.agents {
 					wg.Add(1)
+					//nolint
 					go func() {
 						defer wg.Done()
 						_ = agent.StartTesting(context.Background(), *req)
