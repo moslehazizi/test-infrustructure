@@ -1,14 +1,8 @@
 stages:
-    #   - lint
+    - lint
     - test
     - build
     - docker
-
-# variables:
-#   GO_VERSION: "1.22"
-#   CGO_ENABLED: "0"
-#   GOFLAGS: "-mod=readonly"
-#   DOCKER_DRIVER: overlay2
 
 
 image: golang:1.26
@@ -23,16 +17,14 @@ before_script:
     - go version
     - go mod download
 
-
-
-# lint:
-#   stage: lint
-#   image: golangci/golangci-lint:v1.56
-#   script:
-#     - golangci-lint run ./...
-#   rules:
-#     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-#     - if: $CI_COMMIT_BRANCH
+lint:
+  stage: lint
+  image: golangci/golangci-lint:v1.56
+  script:
+    - golangci-lint -c=.golangci.yml run ./...
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
 
 test:
     stage: test
@@ -48,7 +40,7 @@ test:
     rules:
         - if: $CI_COMMIT_BRANCH
 
-build:
+build-app:
   stage: build
   script:
     - go build -ldflags="-s -w" -o main
@@ -76,3 +68,7 @@ docker-build:
         - docker image rm $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    needs:
+        - job: build-app
+          artifacts: true
+
