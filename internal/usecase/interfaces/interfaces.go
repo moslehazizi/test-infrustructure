@@ -15,7 +15,7 @@ type ExecutionManager interface {
 	AddScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// RunScenario is for run scenario.
 	RunScenario(ctx context.Context, scenario *entity.TestScenario) error
-	// PauseScenario is for pause runned scenario.
+	// PauseScenario is for pause ran scenario.
 	PauseScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// ResumeScenario is for resume paused scenario.
 	ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error

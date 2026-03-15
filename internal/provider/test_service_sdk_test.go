@@ -25,7 +25,7 @@ func TestNewSDKTestService(t *testing.T) {
 }
 
 func TestSDKTestService_Health(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"ok": true}`))
@@ -49,7 +49,7 @@ t.Run("success_case", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("failed_case_invalid_host", func(t *testing.T) {
+	t.Run("failed_case_invalid_host", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		mockClient.
@@ -65,7 +65,7 @@ t.Run("failed_case_invalid_host", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("failed_case_status_code_not_ok", func(t *testing.T) {
+	t.Run("failed_case_status_code_not_ok", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"ok": false}`))
@@ -91,7 +91,7 @@ t.Run("failed_case_status_code_not_ok", func(t *testing.T) {
 }
 
 func TestSDKTestService_GetMetric(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{
@@ -126,7 +126,7 @@ t.Run("success_case", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("failed_case_network_error", func(t *testing.T) {
+	t.Run("failed_case_network_error", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		mockClient.
@@ -142,7 +142,7 @@ t.Run("failed_case_network_error", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("failed_case_status_code_not_ok", func(t *testing.T) {
+	t.Run("failed_case_status_code_not_ok", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{
@@ -170,7 +170,7 @@ t.Run("failed_case_status_code_not_ok", func(t *testing.T) {
 }
 
 func TestSDKTestService_Live(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"ok": true}`))
@@ -197,7 +197,7 @@ t.Run("success_case", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("live_failed_network_error", func(t *testing.T) {
+	t.Run("live_failed_network_error", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		mockClient.
@@ -214,7 +214,7 @@ t.Run("live_failed_network_error", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("live_failed_status_not_ok", func(t *testing.T) {
+	t.Run("live_failed_status_not_ok", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"ok": false}`))
@@ -240,7 +240,7 @@ t.Run("live_failed_status_not_ok", func(t *testing.T) {
 }
 
 func TestSDKTestService_Run(t *testing.T) {
-t.Run("run_execute_success", func(t *testing.T) {
+	t.Run("run_execute_success", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		runReq := request.RunRequest{
@@ -278,7 +278,7 @@ t.Run("run_execute_success", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("run_execute_conflict", func(t *testing.T) {
+	t.Run("run_execute_conflict", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		mockResp := &http.Response{
@@ -300,7 +300,7 @@ t.Run("run_execute_conflict", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("run_execute_internal_error", func(t *testing.T) {
+	t.Run("run_execute_internal_error", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		mockResp := &http.Response{
@@ -321,7 +321,7 @@ t.Run("run_execute_internal_error", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("run_execute_network_error", func(t *testing.T) {
+	t.Run("run_execute_network_error", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		mockClient.
@@ -339,7 +339,7 @@ t.Run("run_execute_network_error", func(t *testing.T) {
 }
 
 func TestSDKTestService_ReadyForTesting(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"ok": true}`))
@@ -363,7 +363,7 @@ t.Run("success_case", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("failed_case_invalid_host", func(t *testing.T) {
+	t.Run("failed_case_invalid_host", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		mockClient.
@@ -379,7 +379,7 @@ t.Run("failed_case_invalid_host", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("failed_case_status_code_not_ok", func(t *testing.T) {
+	t.Run("failed_case_status_code_not_ok", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"ok": false}`))
@@ -405,7 +405,7 @@ t.Run("failed_case_status_code_not_ok", func(t *testing.T) {
 }
 
 func TestSDKTestService_Pause(t *testing.T) {
-t.Run("failed_case_status_not_ok", func(t *testing.T) {
+	t.Run("failed_case_status_not_ok", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"error": "something went wrong"}`))
@@ -429,7 +429,7 @@ t.Run("failed_case_status_not_ok", func(t *testing.T) {
 
 		mockClient.AssertExpectations(t)
 	})
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"message": "done"}`))
@@ -453,7 +453,7 @@ t.Run("success_case", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("failed_case_invalid_host", func(t *testing.T) {
+	t.Run("failed_case_invalid_host", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		mockClient.
@@ -471,7 +471,7 @@ t.Run("failed_case_invalid_host", func(t *testing.T) {
 }
 
 func TestSDKTestService_Resume(t *testing.T) {
-t.Run("failed_case_status_not_ok", func(t *testing.T) {
+	t.Run("failed_case_status_not_ok", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"error": "something went wrong"}`))
@@ -495,7 +495,7 @@ t.Run("failed_case_status_not_ok", func(t *testing.T) {
 
 		mockClient.AssertExpectations(t)
 	})
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		body := io.NopCloser(strings.NewReader(`{"message": "done"}`))
@@ -519,7 +519,7 @@ t.Run("success_case", func(t *testing.T) {
 		mockClient.AssertExpectations(t)
 	})
 
-t.Run("failed_case_invalid_host", func(t *testing.T) {
+	t.Run("failed_case_invalid_host", func(t *testing.T) {
 		mockClient := new(mocks.MockHTTPClient)
 
 		mockClient.
