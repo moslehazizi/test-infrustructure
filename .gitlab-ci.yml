@@ -33,9 +33,6 @@ test:
     script:
         - go test -cover -v ./...
         # - go test -v -race -cover ./...
-    # artifacts:
-    #     reports:
-    #         junit: report.xml
     coverage: '/coverage: \d+\.\d+%/'
     rules:
         - if: $CI_COMMIT_BRANCH
@@ -63,9 +60,9 @@ docker-build:
     before_script:
         - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     script:
-        - docker build -f Dockerfile.gitlab -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
-        - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-        - docker image rm $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+        - docker build -f Dockerfile.gitlab -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+        - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+        - docker image rm $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     needs:
