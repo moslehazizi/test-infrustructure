@@ -36,6 +36,8 @@ before_script:
 
 test:
     stage: test
+    variables:
+        CGO_ENABLED: 1
     script:
         - go test -v -race -cover ./...
     artifacts:
