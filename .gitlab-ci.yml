@@ -34,18 +34,19 @@ before_script:
 #     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 #     - if: $CI_COMMIT_BRANCH
 
-# test:
-#     stage: test
-#     variables:
-#         CGO_ENABLED: 1
-#     script:
-#         - go test -v -race -cover ./...
-#     # artifacts:
-#     #     reports:
-#     #         junit: report.xml
-#     coverage: '/coverage: \d+\.\d+%/'
-#     rules:
-#         - if: $CI_COMMIT_BRANCH
+test:
+    stage: test
+    variables:
+        CGO_ENABLED: 1
+    script:
+        - go test -cover -v ./...
+        # - go test -v -race -cover ./...
+    # artifacts:
+    #     reports:
+    #         junit: report.xml
+    coverage: '/coverage: \d+\.\d+%/'
+    rules:
+        - if: $CI_COMMIT_BRANCH
 
 build:
   stage: build
