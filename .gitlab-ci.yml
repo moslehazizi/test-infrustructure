@@ -19,6 +19,7 @@ cache:
         - .cache/go-build
 
 before_script:
+    - go env -w GOPROXY=https://repo.tibobit.ir/repository/golang/,direct
     - go version
     - go mod download
 
