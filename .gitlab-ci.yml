@@ -1,6 +1,6 @@
 stages:
-    - test
     - lint
+    - test
     - build
     - docker
 
@@ -19,7 +19,7 @@ before_script:
 
 lint:
   stage: lint
-  image: golangci/golangci-lint:2.11.3
+  image: golangci/golangci-lint:v2.11.3
   script:
     - golangci-lint -c=.golangci.yml run ./...
   rules:
