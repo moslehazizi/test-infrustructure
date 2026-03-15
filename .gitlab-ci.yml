@@ -40,9 +40,9 @@ test:
         CGO_ENABLED: 1
     script:
         - go test -v -race -cover ./...
-    artifacts:
-        reports:
-            junit: report.xml
+    # artifacts:
+    #     reports:
+    #         junit: report.xml
     coverage: '/coverage: \d+\.\d+%/'
     rules:
         - if: $CI_COMMIT_BRANCH
