@@ -3,6 +3,7 @@ stages:
     - test
     - build
     - docker
+    - deploy
 
 
 image: golang:1.26
@@ -49,6 +50,8 @@ build-app:
     paths:
       - main
       - Dockerfile.gitlab
+      - .env.example
+      - k8s
     # expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -72,4 +75,44 @@ docker-build:
     needs:
         - job: build-app
           artifacts: true
+deploy:
+    stage: deploy
+    image: bitnami/kubectl:latest
+    variables:
+      IMAGE_NAME: $CI_REGISTRY_IMAGE
+      IMAGE_TAG: $CI_COMMIT_SHA
+      CONTAINER_REGISTRY_URL: $CI_REGISTRY
+    before_script:
+      - echo "$KUBE_CONFIG" | base64 -d > kubeconfig
+      - export KUBECONFIG=$PWD/kubeconfig
+# kubeconfig-secret
+    script:
+      - kubectl config use-context default
+      - kubectl create secret docker-registry gitlab-registry \
+          --docker-server=$CI_REGISTRY \
+          --docker-username=$CI_REGISTRY_USER \
+          --docker-password=$CI_REGISTRY_PASSWORD \
+          --namespace $KUBE_NAMESPACE \
+          --dry-run=client -o yaml | kubectl apply -f -
+        
+      - 'kubectl patch serviceaccount default -p {"imagePullSecrets":[{"name":"gitlab-registry"}]} -n $KUBE_NAMESPACE'
+
+      - kubectl -n "$KUBE_NAMESPACE" create configmap $(IMAGE_NAME)-config \
+          --from-env-file=".env.example" \
+          --dry-run=client -o yaml | kubectl apply -f -
+
+      - kubectl create secret generic kubeconfig-secret \
+          --from-file=kubeconfig=$KUBECONFIG \
+          --dry-run=client -n $KUBE_NAMESPACE -o yaml | kubectl apply -f -
+
+      # - sed -i "s|IMAGE_TAG|$CI_COMMIT_SHA|g" k8s/deployment.yaml
+      # - kubectl set image deployment/app app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
+      - |
+        for f in k8s/*.yaml; do
+          envsubst < $f | kubectl apply -f -
+        done
+      # - kubectl rollout status deployment/app -n $KUBE_NAMESPACE
+
+    rules:
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
