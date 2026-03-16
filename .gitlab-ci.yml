@@ -87,7 +87,7 @@ deploy:
       CONTAINER_REGISTRY_URL: $CI_REGISTRY
       GIT_STRATEGY: none
     before_script:
-      - echo "$KUBE_CONFIG" | base64 -d > kubeconfig
+      - echo "$KUBE_CONFIG" > kubeconfig
       - export KUBECONFIG=$PWD/kubeconfig
 # kubeconfig-secret
     script:
