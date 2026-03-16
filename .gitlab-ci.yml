@@ -115,7 +115,7 @@ deploy:
       # - sed -i "s|IMAGE_TAG|$CI_COMMIT_SHA|g" k8s/deployment.yaml
       # - kubectl set image deployment/app app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
       - |
-        IMAGE_NAME="$KUBE_NAMESPACE/$IMAGE_NAME"
+        CONTAINER_REGISTRY_URL="$CONTAINER_REGISTRY_URL/$KUBE_NAMESPACE"
         for f in k8s/*.yaml; do
           envsubst < $f | kubectl apply -f -
         done
