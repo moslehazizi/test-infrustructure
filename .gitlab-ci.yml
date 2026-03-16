@@ -82,7 +82,7 @@ deploy:
       entrypoint: [""]
 
     variables:
-      IMAGE_NAME: $CI_REGISTRY_IMAGE
+      IMAGE_NAME: $CI_PROJECT_NAME
       IMAGE_TAG: $CI_COMMIT_SHA
       CONTAINER_REGISTRY_URL: $CI_REGISTRY
       GIT_STRATEGY: none
