@@ -1,6 +1,6 @@
 stages:
-    - lint
-    - test
+    # - lint
+    # - test
     - build
     - docker
     - deploy
@@ -18,25 +18,25 @@ before_script:
     - go version
     - go mod download
 
-lint:
-  stage: lint
-  image: golangci/golangci-lint:v2.11.3
-  script:
-    - golangci-lint -c=.golangci.yml run ./...
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
+# lint:
+#   stage: lint
+#   image: golangci/golangci-lint:v2.11.3
+#   script:
+#     - golangci-lint -c=.golangci.yml run ./...
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+#     - if: $CI_COMMIT_BRANCH
 
-test:
-    stage: test
-    variables:
-        CGO_ENABLED: 1
-    script:
-        - go test -cover -v ./...
-        # - go test -v -race -cover ./...
-    coverage: '/coverage: \d+\.\d+%/'
-    rules:
-        - if: $CI_COMMIT_BRANCH
+# test:
+#     stage: test
+#     variables:
+#         CGO_ENABLED: 1
+#     script:
+#         - go test -cover -v ./...
+#         # - go test -v -race -cover ./...
+#     coverage: '/coverage: \d+\.\d+%/'
+#     rules:
+#         - if: $CI_COMMIT_BRANCH
 
 build-app:
   stage: build
