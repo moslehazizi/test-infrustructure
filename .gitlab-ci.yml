@@ -95,8 +95,8 @@ deploy:
       - |
         kubectl create secret docker-registry gitlab-registry \
         --docker-server="$CI_REGISTRY" \
-        --docker-username="$CI_REGISTRY_USER" \
-        --docker-password="$CI_REGISTRY_PASSWORD" \
+        --docker-username="$GITLAB_REGISTRY_USER" \
+        --docker-password="$GITLAB_REGISTRY_PASSWORD" \
         --namespace "$KUBE_NAMESPACE" \
         --dry-run=client -o yaml | kubectl apply -f -
         
@@ -115,6 +115,7 @@ deploy:
       # - sed -i "s|IMAGE_TAG|$CI_COMMIT_SHA|g" k8s/deployment.yaml
       # - kubectl set image deployment/app app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
       - |
+        IMAGE_NAME="$KUBE_NAMESPACE/$IMAGE_NAME"
         for f in k8s/*.yaml; do
           envsubst < $f | kubectl apply -f -
         done
