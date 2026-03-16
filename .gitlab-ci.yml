@@ -92,9 +92,13 @@ deploy:
 # kubeconfig-secret
     script:
       # - kubectl config use-context $KUBE_NAMESPACE
-      - kubectl --namespace "$KUBE_NAMESPACE" create secret docker-registry \
-          gitlab-registry --docker-server="$CI_REGISTRY" --docker-username="$CI_REGISTRY_USER" \
-          --docker-password="$CI_REGISTRY_PASSWORD" --dry-run=client -o yaml | kubectl apply -f -
+      - |
+        kubectl create secret docker-registry gitlab-registry \
+        --docker-server="$CI_REGISTRY" \
+        --docker-username="$CI_REGISTRY_USER" \
+        --docker-password="$CI_REGISTRY_PASSWORD" \
+        --namespace "$KUBE_NAMESPACE" \
+        --dry-run=client -o yaml | kubectl apply -f -
         
       - kubectl -n "$KUBE_NAMESPACE" patch serviceaccount default -p '{"imagePullSecrets":[{"name":"gitlab-registry"}]}' 
 
