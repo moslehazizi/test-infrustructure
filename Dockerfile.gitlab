@@ -7,11 +7,9 @@ RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
 COPY main ./main
-COPY .env.example .env
 
 # Change ownership to non-root user
 RUN chown appuser:appgroup main
-
 
 # Switch to non-root user
 USER appuser
