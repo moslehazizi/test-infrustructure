@@ -83,7 +83,7 @@ deploy:
 
     variables:
       IMAGE_NAME: $CI_PROJECT_NAME
-      IMAGE_TAG: $CI_COMMIT_SHA
+      IMAGE_TAG: $CI_COMMIT_SHORT_SHA
       CONTAINER_REGISTRY_URL: $CI_REGISTRY
       GIT_STRATEGY: none
     before_script:
