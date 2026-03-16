@@ -91,7 +91,7 @@ deploy:
       - export KUBECONFIG=$PWD/kubeconfig
 # kubeconfig-secret
     script:
-      - kubectl config use-context $KUBE_NAMESPACE
+      # - kubectl config use-context $KUBE_NAMESPACE
       - kubectl create secret docker-registry gitlab-registry \
           --docker-server=$CI_REGISTRY \
           --docker-username=$CI_REGISTRY_USER \
