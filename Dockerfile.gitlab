@@ -6,8 +6,8 @@ WORKDIR /app
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
-
-COPY main /app/main
+COPY main ./main
+COPY .env.example .env
 
 # Change ownership to non-root user
 RUN chown appuser:appgroup main
@@ -19,4 +19,4 @@ USER appuser
 EXPOSE 8080
 
 # Set the default command to run the application
-ENTRYPOINT ["/app/main", "serve"]
+ENTRYPOINT ["./main", "serve"]
