@@ -62,7 +62,6 @@ docker-build:
     services:
         - docker:24-dind
     variables:
-        # DOCKER_TLS_CERTDIR: ""
         GIT_STRATEGY: none
     before_script:
         - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
@@ -89,9 +88,8 @@ deploy:
     before_script:
       - echo "$KUBE_CONFIG" > kubeconfig
       - export KUBECONFIG=$PWD/kubeconfig
-# kubeconfig-secret
+
     script:
-      # - kubectl config use-context $KUBE_NAMESPACE
       - |
         kubectl create secret docker-registry gitlab-registry \
         --docker-server="$CI_REGISTRY" \
@@ -112,14 +110,11 @@ deploy:
           --from-file=kubeconfig=$KUBECONFIG \
           --dry-run=client -n $KUBE_NAMESPACE -o yaml | kubectl apply -f -
 
-      # - sed -i "s|IMAGE_TAG|$CI_COMMIT_SHA|g" k8s/deployment.yaml
-      # - kubectl set image deployment/app app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
       - |
         CONTAINER_REGISTRY_URL="$CONTAINER_REGISTRY_URL/$KUBE_NAMESPACE"
         for f in k8s/*.yaml; do
           envsubst < $f | kubectl apply -f -
         done
-      # - kubectl rollout status deployment/app -n $KUBE_NAMESPACE
 
     rules:
       - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
