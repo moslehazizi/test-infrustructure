@@ -181,10 +181,11 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Logger.Format, expectedLogFormat)
 		assert.Equal(t, cfg.Logger.Output, expectedLogOutput)
 	})
-
 	t.Run("success_fetch_kubernets_config", func(t *testing.T) {
 		expectedKubernetesNameSpace := "control-panel-service"
 		expectedKubernetesContainerRegistryUrl := "chalenge.azurecr.io/"
+		expectedKubernetesIngressClassName := "traefik"
+		expectedKubernetesIngressHost := "127.0.0.1"
 		expectedKubernetesMotherSvcImage := "challenge-mother-service:0.1"
 		expectedKubernetesMotherSvcAPPServe := "mother-service-serve"
 		expectedKubernetesMotherSvcAPPServeWaitReady := 10 * time.Second
@@ -211,6 +212,8 @@ func TestLoadConfig(t *testing.T) {
 
 		os.Setenv("KUBERNETES_NAMESPACE", expectedKubernetesNameSpace)
 		os.Setenv("CONTAINER_REGISTRY_URL", expectedKubernetesContainerRegistryUrl)
+		os.Setenv("INGRESS_CLASS_NAME", expectedKubernetesIngressClassName)
+		os.Setenv("INGRESS_HOST", expectedKubernetesIngressHost)
 		os.Setenv("MOTHER_SERVICE_IMAGE", expectedKubernetesMotherSvcImage)
 		os.Setenv("MOTHER_SERVICE_APP_SERVE", expectedKubernetesMotherSvcAPPServe)
 		os.Setenv("MOTHER_SERVICE_APP_SERVE_WAIT_READY", expectedKubernetesMotherSvcAPPServeWaitReady.String())
@@ -240,6 +243,8 @@ func TestLoadConfig(t *testing.T) {
 
 		assert.Equal(t, cfg.Kubernetese.NameSpace, expectedKubernetesNameSpace)
 		assert.Equal(t, cfg.Kubernetese.ContainerRegistryUrl, expectedKubernetesContainerRegistryUrl)
+		assert.Equal(t, cfg.Kubernetese.IngressClassName, expectedKubernetesIngressClassName)
+		assert.Equal(t, cfg.Kubernetese.IngressHost, expectedKubernetesIngressHost)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceImage, expectedKubernetesMotherSvcImage)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServe, expectedKubernetesMotherSvcAPPServe)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServeWaitReady, expectedKubernetesMotherSvcAPPServeWaitReady)
@@ -262,7 +267,6 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.TestServiceLiveFeedTopic, expectedKubernetesTestServiceKafkaLiveFeedTopic)
 
 	})
-
 	t.Run("check_default_values_config", func(t *testing.T) {
 		expectedDefaultPort := 8080
 		expectedDefaultHTTPHost := "localhost"
@@ -282,7 +286,9 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultLogLevel := "info"
 		expectedDefaultLogFormat := "json"
 		expectedDefaultLogOutput := "stdout"
-		expectedDefaultKubernetesNameSpace := "control-panel-service"
+		expectedDefaultKubernetesNameSpace := "default"
+		expectedDefaultKubernetesIngressClassName := "traefik"
+		expectedDefaultKubernetesIngressHost := "127.0.0.1"
 		expectedDefaultKubernetesContainerRegistryUrl := "chalenge.azurecr.io/"
 		expectedDefaultKubernetesMotherSvcImage := "challenge-mother-service:0.1"
 		expectedDefaultKubernetesMotherSvcAPPServe := "mother-service-serve"
@@ -320,6 +326,8 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("LOG_OUTPUT")
 		os.Unsetenv("KUBERNETES_NAMESPACE")
 		os.Unsetenv("CONTAINER_REGISTRY_URL")
+		os.Unsetenv("INGRESS_CLASS_NAME")
+		os.Unsetenv("INGRESS_HOST")
 		os.Unsetenv("MOTHER_SERVICE_IMAGE")
 		os.Unsetenv("MOTHER_SERVICE_APP_SERVE")
 		os.Unsetenv("MOTHER_SERVICE_APP_SERVE_WAIT_READY")
@@ -368,6 +376,8 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Logger.Output, expectedDefaultLogOutput)
 		assert.Equal(t, cfg.Kubernetese.NameSpace, expectedDefaultKubernetesNameSpace)
 		assert.Equal(t, cfg.Kubernetese.ContainerRegistryUrl, expectedDefaultKubernetesContainerRegistryUrl)
+		assert.Equal(t, cfg.Kubernetese.IngressClassName, expectedDefaultKubernetesIngressClassName)
+		assert.Equal(t, cfg.Kubernetese.IngressHost, expectedDefaultKubernetesIngressHost)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceImage, expectedDefaultKubernetesMotherSvcImage)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServe, expectedDefaultKubernetesMotherSvcAPPServe)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServeWaitReady, expectedDefaultKubernetesMotherSvcAPPServeWaitReady)
@@ -389,7 +399,6 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaCounsumerGroup, expectedDefaultKubernetesTestServiceKafkaConsumerGroup)
 		assert.Equal(t, cfg.Kubernetese.TestServiceLiveFeedTopic, expectedDefaultKubernetesTestServiceKafkaLiveFeedTopic)
 	})
-
 	t.Run("error_invalid_environment_variable_value", func(t *testing.T) {
 		// Set an invalid value for POSTGRES_PORT that can't be parsed as int
 		os.Setenv("POSTGRES_PORT", "invalid_port")

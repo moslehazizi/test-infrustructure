@@ -28,15 +28,32 @@ var (
 )
 
 type Kubernetese interface {
+	// ApplyDeployment is responsible to apply new deployment by spec , config and secret map.
 	ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec, configMap, Secret map[string]string) error
+	// GetDeploymentReplicas is responsible to fetch number of replication for a deployment.
 	GetDeploymentReplicas(ctx context.Context, name string) (int32, error)
+	// ScaleDeployment is responsible to scale up or down a deployment.
 	ScaleDeployment(ctx context.Context, name string, replicas int32) error
+	// DeleteDeployment is responsible to delete deployment by name.
 	DeleteDeployment(ctx context.Context, name string) error
-	ApplyService(ctx context.Context, spec entity.ServiceSpec, configMap, Secret map[string]string) error
+
+	// ApplyService is responsible to apply new service by spec ,config and secret map.
+	ApplyService(ctx context.Context, spec entity.ServiceSpec) error
+	// DeleteService is responsible to delete service by name.
 	DeleteService(ctx context.Context, name string) error
+
+	// ApplyIngress is responsible to apply new ingress by spec.
+	ApplyIngress(ctx context.Context, spec entity.IngressSpec) error
+	// DeleteIngress is responsible to delete ingress by name.
+	DeleteIngress(ctx context.Context, name string) error
+
+	// DeleteConfigMap is responsible to delete a config map by name.
 	DeleteConfigMap(ctx context.Context, name string) error
+	// DeleteSecret is responsible to delete a secret map by name.
 	DeleteSecret(ctx context.Context, name string) error
+	// WaitForDeployment is responsible for waiting unitll a deployment being running.
 	WaitForDeployment(ctx context.Context, name string, timeout time.Duration) error
+	// Client retuen kubernetes.Clientset.
 	Client() *kubernetes.Clientset
 }
 
@@ -156,17 +173,7 @@ func (k *Kuber) ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec,
 }
 
 // applyService creates a service if it doesn't exist, otherwise updates it.
-func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec, configMap, secretMap map[string]string) error {
-	err := k.applyConfigMap(ctx, configMap, spec.Name)
-	if err != nil {
-		return err
-	}
-
-	err = k.applySecret(ctx, secretMap, spec.Name)
-	if err != nil {
-		return err
-	}
-
+func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec) error {
 	existing, err := k.Clientset.CoreV1().Services(k.cfg.NameSpace).Get(ctx, spec.Name, metav1.GetOptions{})
 
 	if apierrors.IsNotFound(err) {
@@ -184,6 +191,26 @@ func (k *Kuber) ApplyService(ctx context.Context, spec entity.ServiceSpec, confi
 	spec.Service.ResourceVersion = existing.ResourceVersion
 	spec.Service.Spec.ClusterIP = existing.Spec.ClusterIP
 	_, err = k.Clientset.CoreV1().Services(k.cfg.NameSpace).Update(ctx, spec.Service, metav1.UpdateOptions{})
+
+	return err
+}
+
+func (k *Kuber) ApplyIngress(ctx context.Context, spec entity.IngressSpec) error {
+	existing, err := k.Clientset.NetworkingV1().Ingresses(k.cfg.NameSpace).Get(ctx, spec.Name, metav1.GetOptions{})
+
+	if apierrors.IsNotFound(err) {
+		zap.L().Info("creating ingress ...", zap.String("application", spec.Name))
+		_, err = k.Clientset.NetworkingV1().Ingresses(k.cfg.NameSpace).Create(ctx, spec.Ingress, metav1.CreateOptions{})
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+
+	zap.L().Info("updating ingress ...", zap.String("application", spec.Name))
+	spec.Ingress.ResourceVersion = existing.ResourceVersion
+	_, err = k.Clientset.NetworkingV1().Ingresses(k.cfg.NameSpace).Update(ctx, spec.Ingress, metav1.UpdateOptions{})
 
 	return err
 }
@@ -253,6 +280,15 @@ func (k *Kuber) DeleteDeployment(ctx context.Context, name string) error {
 // DeleteService deletes a service.
 func (k *Kuber) DeleteService(ctx context.Context, name string) error {
 	err := k.Clientset.CoreV1().Services(k.cfg.NameSpace).Delete(ctx, name, metav1.DeleteOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+
+	return err
+}
+
+func (k *Kuber) DeleteIngress(ctx context.Context, name string) error {
+	err := k.Clientset.NetworkingV1().Ingresses(k.cfg.NameSpace).Delete(ctx, name, metav1.DeleteOptions{})
 	if apierrors.IsNotFound(err) {
 		return nil
 	}

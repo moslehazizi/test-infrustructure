@@ -18,6 +18,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -27,6 +28,7 @@ const (
 	Main  = "./main"
 	Serve = "serve"
 	Jobs  = "jobs"
+	SSLIP = "sslip.io"
 
 	Replication = 1
 	Config      = "-config"
@@ -133,6 +135,9 @@ func (ps *provisioningService) DeprovisionTestServiceByName(ctx context.Context,
 		return err
 	}
 	if err := ps.kubernetes.DeleteService(ctx, serveName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteIngress(ctx, serveName); err != nil {
 		return err
 	}
 
@@ -253,6 +258,9 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 	// Create service spec
 	serveSvcSpec := testServeSvcSpecByName(ps.cfg, uniqueID, testScenario.ID)
 
+	// Create ingress spec
+	serveIngrSpec := testServeIngressSpecByName(ps.cfg, uniqueID, testScenario.ID)
+
 	// Call ApplyDeployment from kubernetese interface
 	err = ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
@@ -265,9 +273,20 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 	}
 
 	// Call ApplyService from kubernetese interface
-	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec, configMap, secretMap)
+	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec)
 	if err != nil {
-		zap.L().Error("apply serive fail",
+		zap.L().Error("apply service fail",
+			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Call ApplyIngress from kubernetes interface
+	err = ps.kubernetes.ApplyIngress(ctx, serveIngrSpec)
+	if err != nil {
+		zap.L().Error("apply ingress fail",
 			zap.String("apllication", serveSvcSpec.Name),
 			zap.String("error", err.Error()),
 		)
@@ -406,6 +425,9 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	// Create service spec
 	serveSvcSpec := testServeSvcSpec(ps.cfg, testScenario.ID)
 
+	// Create ingress spec
+	serveIngrSpec := testServeIngressSpec(ps.cfg, testScenario.ID)
+
 	// Call ApplyDeployment from kubernetese interface
 	err = ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
@@ -418,9 +440,20 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	}
 
 	// Call ApplyService from kubernetese interface
-	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec, configMap, secretMap)
+	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec)
 	if err != nil {
-		zap.L().Error("apply serive fail",
+		zap.L().Error("apply service fail",
+			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Call ApplyIngress from kubernetes interface
+	err = ps.kubernetes.ApplyIngress(ctx, serveIngrSpec)
+	if err != nil {
+		zap.L().Error("apply ingress fail",
 			zap.String("apllication", serveSvcSpec.Name),
 			zap.String("error", err.Error()),
 		)
@@ -478,6 +511,9 @@ func (ps *provisioningService) DeprovisionTestService(ctx context.Context, testS
 		return err
 	}
 	if err := ps.kubernetes.DeleteService(ctx, serveName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteIngress(ctx, serveName); err != nil {
 		return err
 	}
 
@@ -567,6 +603,9 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	// Create service spec
 	serveSvcSpec := motherServeSvcSpec(ps.cfg, motherService.ID)
 
+	// Create ingress spec
+	serveIngrSpec := motherServeIngressSpec(ps.cfg, motherService.ID)
+
 	// Call ApplyDeployment from kubernetese interface
 	err := ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
@@ -579,9 +618,20 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	}
 
 	// Call ApplyService from kubernetese interface
-	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec, configMap, secretMap)
+	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec)
 	if err != nil {
-		zap.L().Error("apply serive fail",
+		zap.L().Error("apply service fail",
+			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Call ApplyIngress from kubernetes interface
+	err = ps.kubernetes.ApplyIngress(ctx, serveIngrSpec)
+	if err != nil {
+		zap.L().Error("apply ingress fail",
 			zap.String("apllication", serveSvcSpec.Name),
 			zap.String("error", err.Error()),
 		)
@@ -647,6 +697,9 @@ func (ps *provisioningService) DeprovisionMotherService(ctx context.Context, mot
 		return err
 	}
 	if err := ps.kubernetes.DeleteService(ctx, serveName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteIngress(ctx, serveName); err != nil {
 		return err
 	}
 
@@ -715,6 +768,44 @@ func testServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
 				Selector: map[string]string{App: appName},
 				Type:     corev1.ServiceTypeClusterIP,
 				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}}, // #nosec G115 -- port from config
+			},
+		},
+	}
+}
+
+func testServeIngressSpec(cfg *config.Config, appId uint64) inEntity.IngressSpec {
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.TestServiceAPPServe, appId)
+	host := fmt.Sprintf("%s.%s.%s", appName, cfg.Kubernetese.IngressHost, SSLIP)
+	pathType := networkingv1.PathTypePrefix
+	ingressClassName := cfg.Kubernetese.IngressClassName
+
+	return inEntity.IngressSpec{
+		Name: appName,
+		Ingress: &networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: networkingv1.IngressSpec{
+				IngressClassName: &ingressClassName,
+				Rules: []networkingv1.IngressRule{
+					{
+						Host: host,
+						IngressRuleValue: networkingv1.IngressRuleValue{
+							HTTP: &networkingv1.HTTPIngressRuleValue{
+								Paths: []networkingv1.HTTPIngressPath{
+									{
+										Path:     "/",
+										PathType: &pathType,
+										Backend: networkingv1.IngressBackend{
+											Service: &networkingv1.IngressServiceBackend{
+												Name: appName,
+												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -805,6 +896,44 @@ func motherServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
 				Selector: map[string]string{App: appName},
 				Type:     corev1.ServiceTypeClusterIP,
 				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}}, // #nosec G115 -- port from config
+			},
+		},
+	}
+}
+
+func motherServeIngressSpec(cfg *config.Config, appId uint64) inEntity.IngressSpec {
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
+	host := fmt.Sprintf("%s.%s.%s", appName, cfg.Kubernetese.IngressHost, SSLIP)
+	pathType := networkingv1.PathTypePrefix
+	ingressClassName := cfg.Kubernetese.IngressClassName
+
+	return inEntity.IngressSpec{
+		Name: appName,
+		Ingress: &networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: networkingv1.IngressSpec{
+				IngressClassName: &ingressClassName,
+				Rules: []networkingv1.IngressRule{
+					{
+						Host: host,
+						IngressRuleValue: networkingv1.IngressRuleValue{
+							HTTP: &networkingv1.HTTPIngressRuleValue{
+								Paths: []networkingv1.HTTPIngressPath{
+									{
+										Path:     "/",
+										PathType: &pathType,
+										Backend: networkingv1.IngressBackend{
+											Service: &networkingv1.IngressServiceBackend{
+												Name: appName,
+												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -927,6 +1056,44 @@ func testJobsDepSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64)
 								EnvFrom: []corev1.EnvFromSource{
 									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
 									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func testServeIngressSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64) inEntity.IngressSpec {
+	appName := fmt.Sprintf("%s-%v-%s", cfg.Kubernetese.TestServiceAPPServe, appId, uniqueId)
+	host := fmt.Sprintf("%s.%s.%s", appName, cfg.Kubernetese.IngressHost, SSLIP)
+	pathType := networkingv1.PathTypePrefix
+	ingressClassName := cfg.Kubernetese.IngressClassName
+
+	return inEntity.IngressSpec{
+		Name: appName,
+		Ingress: &networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: networkingv1.IngressSpec{
+				IngressClassName: &ingressClassName,
+				Rules: []networkingv1.IngressRule{
+					{
+						Host: host,
+						IngressRuleValue: networkingv1.IngressRuleValue{
+							HTTP: &networkingv1.HTTPIngressRuleValue{
+								Paths: []networkingv1.HTTPIngressPath{
+									{
+										Path:     "/",
+										PathType: &pathType,
+										Backend: networkingv1.IngressBackend{
+											Service: &networkingv1.IngressServiceBackend{
+												Name: appName,
+												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)},
+											},
+										},
+									},
 								},
 							},
 						},

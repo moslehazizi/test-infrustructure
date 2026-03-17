@@ -24,8 +24,18 @@ func (kuberneteseMock *KuberneteseMock) ApplyDeployment(ctx context.Context, spe
 	return nil
 }
 
-func (kuberneteseMock *KuberneteseMock) ApplyService(ctx context.Context, spec entity.ServiceSpec, ConfigMap, Secret map[string]string) error {
-	args := kuberneteseMock.Called(ctx, spec, ConfigMap, Secret)
+func (kuberneteseMock *KuberneteseMock) ApplyService(ctx context.Context, spec entity.ServiceSpec) error {
+	args := kuberneteseMock.Called(ctx, spec)
+
+	if args.Error(0) != nil {
+		return fmt.Errorf("%w", args.Error(0))
+	}
+
+	return nil
+}
+
+func (kuberneteseMock *KuberneteseMock) ApplyIngress(ctx context.Context, spec entity.IngressSpec) error {
+	args := kuberneteseMock.Called(ctx, spec)
 
 	if args.Error(0) != nil {
 		return fmt.Errorf("%w", args.Error(0))
@@ -60,6 +70,11 @@ func (kuberneteseMock *KuberneteseMock) DeleteDeployment(ctx context.Context, na
 }
 
 func (kuberneteseMock *KuberneteseMock) DeleteService(ctx context.Context, name string) error {
+	args := kuberneteseMock.Called(ctx, name)
+	return args.Error(0)
+}
+
+func (kuberneteseMock *KuberneteseMock) DeleteIngress(ctx context.Context, name string) error {
 	args := kuberneteseMock.Called(ctx, name)
 	return args.Error(0)
 }
