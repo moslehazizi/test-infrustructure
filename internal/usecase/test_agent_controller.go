@@ -18,14 +18,18 @@ import (
 const (
 	provisioningRetries      = 3
 	provisioningRetriesSleep = time.Second
+	SSLIP                    = "sslip.io"
+	HOST                     = "Host"
+	CONTENT_TYPE             = "Content-Type"
 )
 
 func NewTestAgentController(
 	provisioningService provider.ProvisioningService,
 	testServiceSDK provider.SDKTestService,
 	scenario *entity.TestScenario,
-	testSvcServe string,
-	testSvcPort int,
+	serviceHost string,
+	ingressHost string,
+	ingressPort int,
 ) interfaces.TestAgentController {
 	return &testAgentController{
 		provisioningService:      provisioningService,
@@ -33,8 +37,9 @@ func NewTestAgentController(
 		scenario:                 scenario,
 		provisioningRetries:      provisioningRetries,
 		provisioningRetriesSleep: provisioningRetriesSleep,
-		testSvcServe:             testSvcServe,
-		testSvcPort:              testSvcPort,
+		serviceHost:              serviceHost,
+		ingressHost:              ingressHost,
+		ingressPort:              ingressPort,
 	}
 }
 
@@ -45,8 +50,9 @@ type testAgentController struct {
 	uniqueID                 uuid.UUID
 	provisioningRetries      int
 	provisioningRetriesSleep time.Duration
-	testSvcServe             string
-	testSvcPort              int
+	serviceHost              string
+	ingressHost              string
+	ingressPort              int
 }
 
 func (c *testAgentController) Run() error {
@@ -116,11 +122,12 @@ func (c *testAgentController) provisionTestService(ctx context.Context, scenario
 
 func (c *testAgentController) Healthy() bool {
 	ctx := context.Background()
-	baseUrl := c.baseUrlGenerator()
-	health, err := c.testServiceSDK.Health(ctx, baseUrl)
+	url := c.urlGenerator()
+	health, err := c.testServiceSDK.Health(ctx, url)
 	if err != nil {
 		zap.L().Error("health error",
-			zap.String("base_url", baseUrl),
+			zap.String("base_url", url.BaseURL),
+			zap.Any("header", url.Header),
 			zap.Error(err),
 		)
 		return false
@@ -130,11 +137,12 @@ func (c *testAgentController) Healthy() bool {
 
 func (c *testAgentController) ReadyForTesting() bool {
 	ctx := context.Background()
-	baseUrl := c.baseUrlGenerator()
-	ready, err := c.testServiceSDK.ReadyForTest(ctx, baseUrl)
+	url := c.urlGenerator()
+	ready, err := c.testServiceSDK.ReadyForTest(ctx, url)
 	if err != nil {
 		zap.L().Error("ready for test error",
-			zap.String("base_url", baseUrl),
+			zap.String("base_url", url.BaseURL),
+			zap.Any("header", url.Header),
 			zap.Error(err),
 		)
 
@@ -145,11 +153,12 @@ func (c *testAgentController) ReadyForTesting() bool {
 }
 
 func (c *testAgentController) StartTesting(ctx context.Context, req request.RunRequest) error {
-	baseUrl := c.baseUrlGenerator()
-	_, err := c.testServiceSDK.RunExecute(ctx, baseUrl, req)
+	url := c.urlGenerator()
+	_, err := c.testServiceSDK.RunExecute(ctx, url, req)
 	if err != nil {
 		zap.L().Error("run execute error",
-			zap.String("base_url", baseUrl),
+			zap.String("base_url", url.BaseURL),
+			zap.Any("header", url.Header),
 			zap.Error(err),
 		)
 
@@ -173,11 +182,12 @@ func (c *testAgentController) AbortTesting(ctx context.Context) error {
 }
 
 func (c *testAgentController) PauseTesting(ctx context.Context) error {
-	baseUrl := c.baseUrlGenerator()
-	_, err := c.testServiceSDK.Pause(ctx, baseUrl)
+	url := c.urlGenerator()
+	_, err := c.testServiceSDK.Pause(ctx, url)
 	if err != nil {
 		zap.L().Error("pause test service error",
-			zap.String("base_url", baseUrl),
+			zap.String("base_url", url.BaseURL),
+			zap.Any("header", url.Header),
 			zap.Error(err),
 		)
 
@@ -188,11 +198,12 @@ func (c *testAgentController) PauseTesting(ctx context.Context) error {
 }
 
 func (c *testAgentController) ResumeTesting(ctx context.Context) error {
-	baseUrl := c.baseUrlGenerator()
-	_, err := c.testServiceSDK.Resume(ctx, baseUrl)
+	url := c.urlGenerator()
+	_, err := c.testServiceSDK.Resume(ctx, url)
 	if err != nil {
 		zap.L().Error("resume test service error",
-			zap.String("base_url", baseUrl),
+			zap.String("base_url", url.BaseURL),
+			zap.Any("header", url.Header),
 			zap.Error(err),
 		)
 
@@ -203,11 +214,12 @@ func (c *testAgentController) ResumeTesting(ctx context.Context) error {
 }
 
 func (c *testAgentController) StopTesting(ctx context.Context) error {
-	baseUrl := c.baseUrlGenerator()
-	_, err := c.testServiceSDK.Stop(ctx, baseUrl)
+	url := c.urlGenerator()
+	_, err := c.testServiceSDK.Stop(ctx, url)
 	if err != nil {
 		zap.L().Error("stop test service error",
-			zap.String("base_url", baseUrl),
+			zap.String("base_url", url.BaseURL),
+			zap.Any("header", url.Header),
 			zap.Error(err),
 		)
 
@@ -217,6 +229,12 @@ func (c *testAgentController) StopTesting(ctx context.Context) error {
 	return nil
 }
 
-func (c *testAgentController) baseUrlGenerator() string {
-	return fmt.Sprintf("%s%s-%v-%s:%v", "http://", c.testSvcServe, c.scenario.ID, c.uniqueID, c.testSvcPort) // http://chalenge-tese-srvice-serve-{sid}-{uuid}:8080
+func (c *testAgentController) urlGenerator() request.URL {
+	return request.URL{
+		BaseURL: fmt.Sprintf("http://%s:%d", c.ingressHost, c.ingressPort),
+		Header: map[string]string{
+			CONTENT_TYPE: "application/json",
+			HOST:         fmt.Sprintf("%s-%d-%s.%s.%s", c.serviceHost, c.scenario.ID, c.uniqueID, c.ingressHost, SSLIP), // chalenge-tese-srvice-serve-{sid}-{uuid}.127.0.0.1.sslip.io
+		},
+	}
 }

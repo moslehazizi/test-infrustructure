@@ -40,8 +40,15 @@ func TestSDKTestService_Health(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Health(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Health(context.Background(), url)
 
 		require.NoError(t, err)
 		assert.True(t, resp.OK)
@@ -57,8 +64,15 @@ func TestSDKTestService_Health(t *testing.T) {
 			Return(nil, errors.New("network error"))
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		_, err := sdk.Health(context.Background(), "http://localhost:8085")
+		_, err := sdk.Health(context.Background(), url)
 
 		assert.Error(t, err)
 
@@ -80,8 +94,15 @@ func TestSDKTestService_Health(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Health(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Health(context.Background(), url)
 
 		assert.Error(t, err)
 		assert.False(t, resp.OK)
@@ -116,8 +137,15 @@ func TestSDKTestService_GetMetric(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.GetMetrics(context.Background(), "http://localhost:8085")
+		resp, err := sdk.GetMetrics(context.Background(), url)
 
 		require.NoError(t, err)
 		assert.Equal(t, int64(10), resp.Requests)
@@ -134,8 +162,15 @@ func TestSDKTestService_GetMetric(t *testing.T) {
 			Return(nil, errors.New("network error"))
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		_, err := sdk.GetMetrics(context.Background(), "http://localhost:8085")
+		_, err := sdk.GetMetrics(context.Background(), url)
 
 		assert.Error(t, err)
 
@@ -159,8 +194,15 @@ func TestSDKTestService_GetMetric(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.GetMetrics(context.Background(), "http://localhost:8085")
+		resp, err := sdk.GetMetrics(context.Background(), url)
 
 		assert.Error(t, err)
 		assert.Equal(t, int64(0), resp.Requests)
@@ -188,8 +230,15 @@ func TestSDKTestService_Live(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Live(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Live(context.Background(), url)
 
 		require.NoError(t, err)
 		assert.True(t, resp.OK)
@@ -205,8 +254,15 @@ func TestSDKTestService_Live(t *testing.T) {
 			Return(nil, errors.New("network error"))
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Live(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Live(context.Background(), url)
 
 		assert.Error(t, err)
 		assert.False(t, resp.OK)
@@ -229,8 +285,15 @@ func TestSDKTestService_Live(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Live(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Live(context.Background(), url)
 
 		assert.Error(t, err)
 		assert.False(t, resp.OK)
@@ -269,8 +332,15 @@ func TestSDKTestService_Run(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.RunExecute(context.Background(), "http://localhost:8085", runReq)
+		resp, err := sdk.RunExecute(context.Background(), url, runReq)
 
 		require.NoError(t, err)
 		assert.Equal(t, int64(5), resp.SuccessCount)
@@ -291,8 +361,15 @@ func TestSDKTestService_Run(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		_, err := sdk.RunExecute(context.Background(), "http://localhost:8085", request.RunRequest{})
+		_, err := sdk.RunExecute(context.Background(), url, request.RunRequest{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrRunAlreadyInProgress)
@@ -313,8 +390,15 @@ func TestSDKTestService_Run(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		_, err := sdk.RunExecute(context.Background(), "http://localhost:8085", request.RunRequest{})
+		_, err := sdk.RunExecute(context.Background(), url, request.RunRequest{})
 
 		assert.Error(t, err)
 
@@ -329,8 +413,15 @@ func TestSDKTestService_Run(t *testing.T) {
 			Return(nil, errors.New("network error"))
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		_, err := sdk.RunExecute(context.Background(), "http://localhost:8085", request.RunRequest{})
+		_, err := sdk.RunExecute(context.Background(), url, request.RunRequest{})
 
 		assert.Error(t, err)
 
@@ -354,8 +445,15 @@ func TestSDKTestService_ReadyForTesting(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.ReadyForTest(context.Background(), "http://localhost:8085")
+		resp, err := sdk.ReadyForTest(context.Background(), url)
 
 		require.NoError(t, err)
 		assert.True(t, resp.OK)
@@ -371,8 +469,15 @@ func TestSDKTestService_ReadyForTesting(t *testing.T) {
 			Return(nil, errors.New("network error"))
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		_, err := sdk.ReadyForTest(context.Background(), "http://localhost:8085")
+		_, err := sdk.ReadyForTest(context.Background(), url)
 
 		assert.Error(t, err)
 
@@ -394,8 +499,15 @@ func TestSDKTestService_ReadyForTesting(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.ReadyForTest(context.Background(), "http://localhost:8085")
+		resp, err := sdk.ReadyForTest(context.Background(), url)
 
 		assert.Error(t, err)
 		assert.False(t, resp.OK)
@@ -420,8 +532,15 @@ func TestSDKTestService_Pause(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Pause(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Pause(context.Background(), url)
 
 		require.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToPauseTestService)
@@ -444,8 +563,15 @@ func TestSDKTestService_Pause(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Pause(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Pause(context.Background(), url)
 
 		require.NoError(t, err)
 		assert.Equal(t, "done", resp.Message)
@@ -461,8 +587,15 @@ func TestSDKTestService_Pause(t *testing.T) {
 			Return(nil, errors.New("network error"))
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Pause(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Pause(context.Background(), url)
 
 		assert.Error(t, err)
 		assert.Nil(t, resp)
@@ -486,8 +619,15 @@ func TestSDKTestService_Resume(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Resume(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Resume(context.Background(), url)
 
 		require.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToResumeTestService)
@@ -510,8 +650,15 @@ func TestSDKTestService_Resume(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Resume(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Resume(context.Background(), url)
 
 		require.NoError(t, err)
 		assert.Equal(t, "done", resp.Message)
@@ -527,8 +674,15 @@ func TestSDKTestService_Resume(t *testing.T) {
 			Return(nil, errors.New("network error"))
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Resume(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Resume(context.Background(), url)
 
 		assert.Error(t, err)
 		assert.Nil(t, resp)
@@ -552,8 +706,15 @@ func TestSDKTestService_Stop(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Stop(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Stop(context.Background(), url)
 
 		require.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToStopTestService)
@@ -576,8 +737,15 @@ func TestSDKTestService_Stop(t *testing.T) {
 			Return(mockResp, nil)
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Stop(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Stop(context.Background(), url)
 
 		require.NoError(t, err)
 		assert.Equal(t, "done", resp.Message)
@@ -592,8 +760,15 @@ func TestSDKTestService_Stop(t *testing.T) {
 			Return(nil, errors.New("network error"))
 
 		sdk := NewSDKTestService(mockClient)
+		url := request.URL{
+			BaseURL: "http://127.0.0.1:8081",
+			Header: map[string]string{
+				"Host":         "challenge-test-service-1-f8ed884e-96f4-428d-b522-8906b5ed315a.127.0.0.1.sslip.io",
+				"Content-Type": "application/json",
+			},
+		}
 
-		resp, err := sdk.Stop(context.Background(), "http://localhost:8085")
+		resp, err := sdk.Stop(context.Background(), url)
 
 		assert.Error(t, err)
 		assert.Nil(t, resp)

@@ -89,8 +89,10 @@ type Logger struct {
 type Kubernetese struct {
 	NameSpace                      string        `envconfig:"KUBERNETES_NAMESPACE" default:"default"`
 	ContainerRegistryUrl           string        `envconfig:"CONTAINER_REGISTRY_URL" default:"chalenge.azurecr.io/"`
+	ImagePullPolicy                string        `envconfig:"IMAGE_PULL_POLICY" default:"Always"`
 	IngressClassName               string        `envconfig:"INGRESS_CLASS_NAME" default:"traefik"`
 	IngressHost                    string        `envconfig:"INGRESS_HOST" default:"127.0.0.1"`
+	IngressPort                    int           `envconfig:"INGRESS_PORT" default:"8081"`
 	MotherServiceImage             string        `envconfig:"MOTHER_SERVICE_IMAGE" default:"challenge-mother-service:0.1"`
 	MotherServiceAPPServe          string        `envconfig:"MOTHER_SERVICE_APP_SERVE" default:"mother-service-serve"`
 	MotherServiceAPPServeWaitReady time.Duration `envconfig:"MOTHER_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`

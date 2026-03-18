@@ -741,7 +741,7 @@ func testServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
-								ImagePullPolicy: corev1.PullAlways,
+								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
 								Command:         []string{Main, Serve},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
@@ -832,7 +832,7 @@ func testJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.D
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
-								ImagePullPolicy: corev1.PullAlways,
+								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
 								Command:         []string{Main, Jobs},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
@@ -869,7 +869,7 @@ func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
-								ImagePullPolicy: corev1.PullAlways,
+								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
 								Command:         []string{Main, Serve},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
@@ -960,7 +960,7 @@ func motherJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
-								ImagePullPolicy: corev1.PullAlways,
+								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
 								Command:         []string{Main, Jobs},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
@@ -997,7 +997,7 @@ func testServDepSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64)
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
-								ImagePullPolicy: corev1.PullAlways,
+								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
 								Command:         []string{Main, Serve},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{
@@ -1050,7 +1050,7 @@ func testJobsDepSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64)
 							{
 								Name:            App,
 								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
-								ImagePullPolicy: corev1.PullAlways,
+								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
 								Command:         []string{Main, Jobs},
 								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
 								EnvFrom: []corev1.EnvFromSource{

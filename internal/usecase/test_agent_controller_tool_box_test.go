@@ -11,11 +11,12 @@ import (
 
 func TestTestAgentControllerToolBox_Build(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
-		testSvcServe := "challenge-test-service"
-		testSvcPort := 8080
+		serviceHost := "challenge-test-service"
+		ingressHost := "127.0.0.1"
+		ingressPort := 8081
 
 		b := usecase.
-			NewTestAgentControllerToolBox(new(mocks.MockProvisioningService), new(mocks.MockTestServiceSDK), testSvcServe, testSvcPort).
+			NewTestAgentControllerToolBox(new(mocks.MockProvisioningService), new(mocks.MockTestServiceSDK), serviceHost, ingressHost, ingressPort).
 			Build(&entity.TestScenario{})
 
 		assert.NotNil(t, b)

@@ -53,3 +53,8 @@ func NewRunRequestFromTestServiceConfig(stepNum int, executionID uuid.UUID, cfg 
 		DatabaseTableName:     cfg.DatabaseTableName,
 	}
 }
+
+type URL struct {
+	BaseURL string
+	Header  map[string]string
+}

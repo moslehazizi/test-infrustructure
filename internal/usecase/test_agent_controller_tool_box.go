@@ -6,22 +6,24 @@ import (
 	"control-panel-service/internal/usecase/interfaces"
 )
 
-func NewTestAgentControllerToolBox(provisioningService provider.ProvisioningService, testServiceSDK provider.SDKTestService, testSvcServe string, testSvcPort int) interfaces.TestAgentControllerToolBox {
+func NewTestAgentControllerToolBox(provisioningService provider.ProvisioningService, testServiceSDK provider.SDKTestService, serviceHost, ingressHost string, ingressPort int) interfaces.TestAgentControllerToolBox {
 	return &testAgentControllerToolBox{
 		provisioningService: provisioningService,
 		testServiceSDK:      testServiceSDK,
-		testSvcServe:        testSvcServe,
-		testSvcPort:         testSvcPort,
+		serviceHost:         serviceHost,
+		ingressHost:         ingressHost,
+		ingressPort:         ingressPort,
 	}
 }
 
 type testAgentControllerToolBox struct {
 	provisioningService provider.ProvisioningService
 	testServiceSDK      provider.SDKTestService
-	testSvcServe        string
-	testSvcPort         int
+	serviceHost         string
+	ingressHost         string
+	ingressPort         int
 }
 
 func (b *testAgentControllerToolBox) Build(scenario *entity.TestScenario) interfaces.TestAgentController {
-	return NewTestAgentController(b.provisioningService, b.testServiceSDK, scenario, b.testSvcServe, b.testSvcPort)
+	return NewTestAgentController(b.provisioningService, b.testServiceSDK, scenario, b.serviceHost, b.ingressHost, b.ingressPort)
 }

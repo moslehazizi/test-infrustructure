@@ -11,23 +11,27 @@ import (
 	"net/http"
 )
 
+const (
+	HOST = "Host"
+)
+
 type SDKTestService interface {
 	// Health is for check test service and its connections to database and kafka.
-	Health(ctx context.Context, baseURL string) (response.HealthResponse, error)
+	Health(ctx context.Context, url request.URL) (response.HealthResponse, error)
 	// GetMetrics is for see live situation of test service. how many request sent at the moment, average duration of requests and etc.
-	GetMetrics(ctx context.Context, baseURL string) (response.MetricsSnapshot, error)
+	GetMetrics(ctx context.Context, url request.URL) (response.MetricsSnapshot, error)
 	// Live is light version of Health, it is just for check test service pod is created or not.
-	Live(ctx context.Context, baseURL string) (response.HealthResponse, error)
+	Live(ctx context.Context, url request.URL) (response.HealthResponse, error)
 	// RunExecute is for run test service to send requests to mother service based on its params.
-	RunExecute(ctx context.Context, baseURL string, req request.RunRequest) (response.FactorialExecutionResult, error)
+	RunExecute(ctx context.Context, url request.URL, req request.RunRequest) (response.FactorialExecutionResult, error)
 	// ReadyForTesting is for checking test service is ready for start or no.
-	ReadyForTest(ctx context.Context, baseURL string) (response.HealthResponse, error)
+	ReadyForTest(ctx context.Context, url request.URL) (response.HealthResponse, error)
 	// Pause is for pause running test service.
-	Pause(ctx context.Context, baseURL string) (*response.PauseResponse, error)
+	Pause(ctx context.Context, url request.URL) (*response.PauseResponse, error)
 	// Resume is for resume paused test service
-	Resume(ctx context.Context, baseURL string) (*response.ResumeResponse, error)
+	Resume(ctx context.Context, url request.URL) (*response.ResumeResponse, error)
 	// Stop is for stop running or paused test service
-	Stop(ctx context.Context, baseURL string) (*response.StopResponse, error)
+	Stop(ctx context.Context, url request.URL) (*response.StopResponse, error)
 }
 
 type sdkTestService struct {
@@ -44,19 +48,21 @@ type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-func (s *sdkTestService) Health(
-	ctx context.Context,
-	baseURL string,
-) (response.HealthResponse, error) {
-	url := baseURL + "/api/v1/health"
+func (s *sdkTestService) Health(ctx context.Context, url request.URL) (response.HealthResponse, error) {
+	baseUrl := url.BaseURL + "/api/v1/health"
 	var result response.HealthResponse
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseUrl, nil)
 	if err != nil {
 		result.OK = false
 
 		return result, fmt.Errorf("failed to create request to health check: %w", err)
 	}
+
+	for head, value := range url.Header {
+		req.Header.Set(head, value)
+	}
+	req.Host = url.Header[HOST]
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -85,18 +91,20 @@ func (s *sdkTestService) Health(
 	return result, nil
 }
 
-func (s *sdkTestService) GetMetrics(
-	ctx context.Context,
-	baseURL string,
-) (response.MetricsSnapshot, error) {
-	url := baseURL + "/api/v1/metrics"
+func (s *sdkTestService) GetMetrics(ctx context.Context, url request.URL) (response.MetricsSnapshot, error) {
+	baseURL := url.BaseURL + "/api/v1/metrics"
 
 	var result response.MetricsSnapshot
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL, nil)
 	if err != nil {
 		return result, fmt.Errorf("failed to create request to metrics: %w", err)
 	}
+
+	for head, value := range url.Header {
+		req.Header.Set(head, value)
+	}
+	req.Host = url.Header[HOST]
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -123,16 +131,21 @@ func (s *sdkTestService) GetMetrics(
 	return result, nil
 }
 
-func (s *sdkTestService) Live(ctx context.Context, baseURL string) (response.HealthResponse, error) {
-	url := baseURL + "/api/v1/live"
+func (s *sdkTestService) Live(ctx context.Context, url request.URL) (response.HealthResponse, error) {
+	baseUrl := url.BaseURL + "/api/v1/live"
 
 	var result response.HealthResponse
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseUrl, nil)
 	if err != nil {
 		result.OK = false
 		return result, fmt.Errorf("failed to create request to live check: %w", err)
 	}
+
+	for head, value := range url.Header {
+		req.Header.Set(head, value)
+	}
+	req.Host = url.Header[HOST]
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -162,12 +175,8 @@ func (s *sdkTestService) Live(ctx context.Context, baseURL string) (response.Hea
 	return result, nil
 }
 
-func (s *sdkTestService) RunExecute(
-	ctx context.Context,
-	baseURL string,
-	runReq request.RunRequest,
-) (response.FactorialExecutionResult, error) {
-	url := baseURL + "/api/v1/run"
+func (s *sdkTestService) RunExecute(ctx context.Context, url request.URL, runReq request.RunRequest) (response.FactorialExecutionResult, error) {
+	baseUrl := url.BaseURL + "/api/v1/run"
 
 	var result response.FactorialExecutionResult
 
@@ -179,14 +188,17 @@ func (s *sdkTestService) RunExecute(
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		url,
+		baseUrl,
 		bytes.NewBuffer(bodyBytes),
 	)
 	if err != nil {
 		return result, fmt.Errorf("failed to create run execute request: %w", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	for head, value := range url.Header {
+		req.Header.Set(head, value)
+	}
+	req.Host = url.Header[HOST]
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -213,19 +225,21 @@ func (s *sdkTestService) RunExecute(
 	return result, nil
 }
 
-func (s *sdkTestService) ReadyForTest(
-	ctx context.Context,
-	baseURL string,
-) (response.HealthResponse, error) {
-	url := baseURL + "/api/v1/ready-for-testing"
+func (s *sdkTestService) ReadyForTest(ctx context.Context, url request.URL) (response.HealthResponse, error) {
+	baseUrl := url.BaseURL + "/api/v1/ready-for-testing"
 	var result response.HealthResponse
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseUrl, nil)
 	if err != nil {
 		result.OK = false
 
 		return result, fmt.Errorf("failed to create request to check ready for testing: %w", err)
 	}
+
+	for head, value := range url.Header {
+		req.Header.Set(head, value)
+	}
+	req.Host = url.Header[HOST]
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -254,15 +268,20 @@ func (s *sdkTestService) ReadyForTest(
 	return result, nil
 }
 
-func (s *sdkTestService) Pause(ctx context.Context, baseURL string) (*response.PauseResponse, error) {
-	url := baseURL + "/api/v1/pause"
+func (s *sdkTestService) Pause(ctx context.Context, url request.URL) (*response.PauseResponse, error) {
+	baseUrl := url.BaseURL + "/api/v1/pause"
 	var result response.PauseResponse
 	var errorResult response.ErrorResponse
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseUrl, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request to pause test service: %w", err)
 	}
+
+	for head, value := range url.Header {
+		req.Header.Set(head, value)
+	}
+	req.Host = url.Header[HOST]
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -285,15 +304,20 @@ func (s *sdkTestService) Pause(ctx context.Context, baseURL string) (*response.P
 	return &result, nil
 }
 
-func (s *sdkTestService) Resume(ctx context.Context, baseURL string) (*response.ResumeResponse, error) {
-	url := baseURL + "/api/v1/resume"
+func (s *sdkTestService) Resume(ctx context.Context, url request.URL) (*response.ResumeResponse, error) {
+	baseUrl := url.BaseURL + "/api/v1/resume"
 	var result response.ResumeResponse
 	var errorResult response.ErrorResponse
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseUrl, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request to resume test service: %w", err)
 	}
+
+	for head, value := range url.Header {
+		req.Header.Set(head, value)
+	}
+	req.Host = url.Header[HOST]
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -316,15 +340,20 @@ func (s *sdkTestService) Resume(ctx context.Context, baseURL string) (*response.
 	return &result, nil
 }
 
-func (s *sdkTestService) Stop(ctx context.Context, baseURL string) (*response.StopResponse, error) {
-	url := baseURL + "/api/v1/stop"
+func (s *sdkTestService) Stop(ctx context.Context, url request.URL) (*response.StopResponse, error) {
+	baseUrl := url.BaseURL + "/api/v1/stop"
 	var result response.StopResponse
 	var errorResult response.ErrorResponse
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseUrl, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request to stop test service: %w", err)
 	}
+
+	for head, value := range url.Header {
+		req.Header.Set(head, value)
+	}
+	req.Host = url.Header[HOST]
 
 	resp, err := s.client.Do(req)
 	if err != nil {
