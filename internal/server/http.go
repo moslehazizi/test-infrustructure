@@ -149,14 +149,15 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	provisionService := provider.NewProvisioningService(cfg, kubernetes)
 	testServiceSDK := provider.NewSDKTestService(&http.Client{})
+	testScenarioRepository := postgres.NewTestScenarioRepository(db)
 
 	agentBuilder := usecase.NewTestAgentControllerToolBox(provisionService, testServiceSDK, cfg.Kubernetese.TestServiceAPPServe, cfg.Kubernetese.IngressHost, cfg.Kubernetese.IngressPort)
-	stressTestExecutionManager := usecase.NewStressTestExecutionManager(agentBuilder)
+	stressTestExecutionManager := usecase.NewStressTestExecutionManager(agentBuilder, testScenarioRepository)
 	go stressTestExecutionManager.Run()
 
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
 		db,
-		postgres.NewTestScenarioRepository(db),
+		testScenarioRepository,
 		postgres.NewTestCategoryRepository(db),
 		postgres.NewTestServiceConfigRepository(db),
 		postgres.NewMotherServiceRepository(db),

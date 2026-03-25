@@ -4,6 +4,7 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider/dto/request"
+	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"fmt"
@@ -24,14 +25,13 @@ var healthyCheckSleep = time.Second
 var readyForTestingCheckSleep = time.Second
 
 // See: https://github.com/farbodan/challenge-control-panel-service/blob/main/internal/usecase/test_scenario_runner.md.
-func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAgentControllerToolBox) interfaces.ExecutionManager {
-	mng := &StressTestExecutionManager{
+func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAgentControllerToolBox, scenarioRepo repository.TestScenarioRepository) interfaces.ExecutionManager {
+	return &StressTestExecutionManager{
 		testAgentControllerToolBox: testAgentControllerToolBox,
+		scenarios:                  make(map[uint64]interfaces.ScenarioExecutor),
+		scenarioRepo:               scenarioRepo,
+		running:                    true,
 	}
-	mng.scenarios = make(map[uint64]interfaces.ScenarioExecutor)
-	mng.running = true
-
-	return mng
 }
 
 type scenarioExecutor struct {
@@ -42,6 +42,7 @@ type scenarioExecutor struct {
 	allAgentsReadyForTesting bool
 	running                  bool
 	once                     sync.Once
+	scenarioRepo             repository.TestScenarioRepository
 }
 
 func (sc *scenarioExecutor) IsRunning() bool {
@@ -88,9 +89,7 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 			sc.awaitAgentsToBeHealthy()
 
 			// NOW: all agents are healthy.
-
 			// we can send scheduled commands.
-
 			// we need a loop based on len of steps:
 			for i := int64(1); i <= sc.scenario.NumSteps; i++ {
 				if !sc.running {
@@ -120,6 +119,16 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 				if i < sc.scenario.NumSteps {
 					// wait for all agents to be ready to execute next step.
 					sc.awaitAgentsToBeReadyToStartTesting()
+				} else {
+					// set status ScenarioStatusPending
+					err := sc.scenarioRepo.SetStatus(ctx, sc.scenario.ID, entity.ScenarioStatusPending, true)
+					if err != nil {
+						zap.L().Error("failed to update scenario executor status", zap.Error(err))
+
+						return
+					}
+					// set running false , to privent run again and again
+					sc.SetRunning(false)
 				}
 			}
 
@@ -177,6 +186,7 @@ type StressTestExecutionManager struct {
 	running                    bool
 	scenarios                  map[uint64]interfaces.ScenarioExecutor
 	testAgentControllerToolBox interfaces.TestAgentControllerToolBox
+	scenarioRepo               repository.TestScenarioRepository
 	mx                         sync.Mutex
 }
 
@@ -219,9 +229,10 @@ func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario 
 		_, ok := ex.scenarios[scenario.ID]
 		if !ok {
 			ex.scenarios[scenario.ID] = &scenarioExecutor{
-				scenario: scenario,
-				agents:   []interfaces.TestAgentController{agent},
-				running:  false,
+				scenario:     scenario,
+				agents:       []interfaces.TestAgentController{agent},
+				running:      false,
+				scenarioRepo: ex.scenarioRepo,
 			}
 		} else {
 			ex.scenarios[scenario.ID].AddAgent(agent)
