@@ -797,7 +797,7 @@ func testServeIngressSpec(cfg *config.Config, appId uint64) inEntity.IngressSpec
 										Backend: networkingv1.IngressBackend{
 											Service: &networkingv1.IngressServiceBackend{
 												Name: appName,
-												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)},
+												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)}, // #nosec G115 -- port from config
 											},
 										},
 									},
@@ -925,7 +925,7 @@ func motherServeIngressSpec(cfg *config.Config, appId uint64) inEntity.IngressSp
 										Backend: networkingv1.IngressBackend{
 											Service: &networkingv1.IngressServiceBackend{
 												Name: appName,
-												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)},
+												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)}, // #nosec G115 -- port from config
 											},
 										},
 									},
@@ -1090,7 +1090,7 @@ func testServeIngressSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId ui
 										Backend: networkingv1.IngressBackend{
 											Service: &networkingv1.IngressServiceBackend{
 												Name: appName,
-												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)},
+												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)}, // #nosec G115 -- port from config
 											},
 										},
 									},

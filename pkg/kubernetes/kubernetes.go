@@ -27,6 +27,7 @@ var (
 	ErrDeploymentNotReady = errors.New("deployment did not become ready within timeout")
 )
 
+// nolint
 type Kubernetese interface {
 	// ApplyDeployment is responsible to apply new deployment by spec , config and secret map.
 	ApplyDeployment(ctx context.Context, spec entity.DeploymentSpec, configMap, Secret map[string]string) error

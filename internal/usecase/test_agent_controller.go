@@ -231,7 +231,7 @@ func (c *testAgentController) StopTesting(ctx context.Context) error {
 
 func (c *testAgentController) urlGenerator() request.URL {
 	return request.URL{
-		BaseURL: fmt.Sprintf("http://%s:%d", c.ingressHost, c.ingressPort),
+		BaseURL: fmt.Sprintf("%s://%s:%d", "http", c.ingressHost, c.ingressPort),
 		Header: map[string]string{
 			CONTENT_TYPE: "application/json",
 			HOST:         fmt.Sprintf("%s-%d-%s.%s.%s", c.serviceHost, c.scenario.ID, c.uniqueID, c.ingressHost, SSLIP), // chalenge-tese-srvice-serve-{sid}-{uuid}.127.0.0.1.sslip.io
