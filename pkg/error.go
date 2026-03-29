@@ -237,6 +237,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrNumStepsNotSet):
 		status = http.StatusUnprocessableEntity
 		msg = NumStepsNotSet
+	case errors.Is(err, ErrNumStepsShouldBeOne):
+		status = http.StatusUnprocessableEntity
+		msg = NumStepsShouldBeOne
 
 	default:
 		status = http.StatusInternalServerError
@@ -356,4 +359,5 @@ var (
 	ErrFailedToProvisionTestService                       = errors.New("failed to provision test service")
 	ErrFailedToRunAgentControllerDueToProvisioningFailure = errors.New("unable to run test agent controller due to provisioning test service failure")
 	ErrNumStepsNotSet                                     = errors.New("num steps not set")
+	ErrNumStepsShouldBeOne                                = errors.New("num steps should be one")
 )

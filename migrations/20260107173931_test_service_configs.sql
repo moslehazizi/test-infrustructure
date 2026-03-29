@@ -9,7 +9,7 @@ create table if not exists test_service_configs (
     max_requests int NOT NULL DEFAULT 0 CHECK (max_requests >= 0),
     
     -- 0 = unlimited
-    "max_duration" int NOT NULL DEFAULT 0 CHECK ("max_duration" >= 0),
+    "max_duration" BIGINT NOT NULL DEFAULT 0 CHECK ("max_duration" >= 0),
 
     --#region REQUEST DELAY CONFIG
     request_delay_duration int NOT NULL CHECK (request_delay_duration >= 0),
@@ -78,6 +78,9 @@ create table if not exists test_service_configs (
     ),
 
     --#endregion BAD VALUES
+
+    "database_name" varchar(512) NOT NULL DEFAULT 'test_service',
+    "database_table_name" varchar(512) NOT NULL DEFAULT 'executor',
 
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP

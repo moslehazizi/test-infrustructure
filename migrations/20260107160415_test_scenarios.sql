@@ -24,16 +24,9 @@ create table if not exists test_scenarios (
         max_test_service_count IS NULL OR max_test_service_count >= 1
     ),
 
-    -- مدت زمان اجرایی | مانایی در هر مرحله
-    execution_duration int NULL CHECK (
-        execution_duration IS NULL OR execution_duration >= 1
-    ),
-
-    -- معیار افزایش
-    auto_step_change_rate int NULL CHECK (
-        auto_step_change_rate IS NULL OR auto_step_change_rate >= 1
-    ),
-    
+    deployment_number INTEGER NOT NULL DEFAULT 0,
+    "editable" boolean NOT NULL DEFAULT true,
+    num_steps int NOT NULL DEFAULT 1,
 
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP,

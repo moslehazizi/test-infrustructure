@@ -62,4 +62,5 @@ const (
 	TestServiceConfigNotFound         = "تنظیمات سرویس تست یافت نشد."
 	UpdateTestScenarioSuccessfully    = "سناریو تست با موفقیت ویرایش شد"
 	NumStepsNotSet                    = "تعداد مراحل تست باید بیشتر از صفر باشد."
+	NumStepsShouldBeOne               = "تعداد استپ ها باید ۱ باشد."
 )

@@ -1608,8 +1608,7 @@ func TestTestScenarioRepository_GetByStatus(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"num_steps",
-				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "editable",
+				"max_test_service_count", "editable",
 			}).
 				AddRow(
 					expectedTestScenario[0].ID,

@@ -115,6 +115,10 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestCategory, err)
 	}
 
+	if !testCat.HasNumSteps {
+		testScenario.NumSteps = int64(1)
+	}
+
 	err = testScenario.Validate(testCat)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "validation_error"), attribute.String("error.message", err.Error()))
