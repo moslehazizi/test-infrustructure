@@ -63,8 +63,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 				Name:                   "load",
 				Label:                  "Load Test",
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            true,
 				Active:                 true,
 			},
 			{
@@ -74,8 +73,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 				Name:                   "smoke",
 				Label:                  "Smoke Test",
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            true,
 				Active:                 true,
 			},
 		}
@@ -102,8 +100,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 				Name:                   "load",
 				Label:                  "Load Test",
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            true,
 				Active:                 true,
 			},
 			{
@@ -113,8 +110,7 @@ func TestTestCategory_GetAll(t *testing.T) {
 				Name:                   "smoke",
 				Label:                  "Smoke Test",
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            true,
 				Active:                 true,
 			},
 		}
@@ -221,8 +217,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 			Name:                   "load",
 			Label:                  "Load Test",
 			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  false,
+			HasNumSteps:            true,
 			Active:                 true,
 		}
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
@@ -247,8 +242,7 @@ func TestTestCategory_GetByID(t *testing.T) {
 			Name:                   "load",
 			Label:                  "Load Test",
 			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  false,
+			HasNumSteps:            true,
 			Active:                 true,
 		}
 		var got response.TestCategory

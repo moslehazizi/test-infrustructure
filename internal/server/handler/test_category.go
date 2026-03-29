@@ -60,8 +60,7 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 				Name:                   svcResult.Name,
 				Label:                  svcResult.Label,
 				HasMaxTestServiceCount: svcResult.HasMaxTestServiceCount,
-				HasExecutionDuration:   svcResult.HasExecutionDuration,
-				HasAutoStepChangeRate:  svcResult.HasAutoStepChangeRate,
+				HasNumSteps:            svcResult.HasNumSteps,
 				Active:                 svcResult.Active,
 			})
 		}
@@ -119,8 +118,7 @@ func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 			Name:                   svcResult.Name,
 			Label:                  svcResult.Label,
 			HasMaxTestServiceCount: svcResult.HasMaxTestServiceCount,
-			HasExecutionDuration:   svcResult.HasExecutionDuration,
-			HasAutoStepChangeRate:  svcResult.HasAutoStepChangeRate,
+			HasNumSteps:            svcResult.HasNumSteps,
 			Active:                 svcResult.Active,
 		}
 
