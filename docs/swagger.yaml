@@ -79,10 +79,6 @@ definitions:
     type: object
   request.TestScenario:
     properties:
-      auto_step_change_rate:
-        type: integer
-      execution_duration:
-        type: integer
       max_test_service_count:
         type: integer
       mother_service_id:
@@ -105,10 +101,6 @@ definitions:
     type: object
   request.TestScenarioUpdateRequest:
     properties:
-      auto_step_change_rate:
-        type: integer
-      execution_duration:
-        type: integer
       id:
         type: integer
       max_test_service_count:
@@ -248,11 +240,9 @@ definitions:
         type: boolean
       created_at:
         type: string
-      has_auto_step_change_rate:
-        type: boolean
-      has_execution_duration:
-        type: boolean
       has_max_test_service_count:
+        type: boolean
+      has_num_steps:
         type: boolean
       id:
         type: integer
@@ -265,14 +255,10 @@ definitions:
     type: object
   response.TestScenario:
     properties:
-      auto_step_change_rate:
-        type: integer
       created_at:
         type: string
       editable:
         type: boolean
-      execution_duration:
-        type: integer
       id:
         type: integer
       max_test_service_count:
