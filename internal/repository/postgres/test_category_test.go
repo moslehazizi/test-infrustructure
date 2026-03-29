@@ -31,7 +31,7 @@ func TestNewTestCategoryRepository(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-t.Run("success_case_with_empty_result", func(t *testing.T) {
+	t.Run("success_case_with_empty_result", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -41,8 +41,7 @@ t.Run("success_case_with_empty_result", func(t *testing.T) {
 			"name",
 			"label",
 			"has_max_test_service_count",
-			"has_execution_duration",
-			"has_auto_step_change_rate",
+			"has_num_steps",
 			"created_at",
 			"updated_at",
 		}))
@@ -53,7 +52,7 @@ t.Run("success_case_with_empty_result", func(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Len(t, result, 0)
 	})
-t.Run("success_case_with_some_results", func(t *testing.T) {
+	t.Run("success_case_with_some_results", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -66,8 +65,7 @@ t.Run("success_case_with_some_results", func(t *testing.T) {
 				Name:                   "load",
 				Label:                  "Load Test",
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            false,
 			},
 			{
 				ID:                     2,
@@ -76,8 +74,7 @@ t.Run("success_case_with_some_results", func(t *testing.T) {
 				Name:                   "smoke",
 				Label:                  "Smoke Test",
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            false,
 			},
 		}
 
@@ -86,8 +83,7 @@ t.Run("success_case_with_some_results", func(t *testing.T) {
 			"name",
 			"label",
 			"has_max_test_service_count",
-			"has_execution_duration",
-			"has_auto_step_change_rate",
+			"has_num_steps",
 			"created_at",
 			"updated_at",
 		}).AddRow(
@@ -95,8 +91,7 @@ t.Run("success_case_with_some_results", func(t *testing.T) {
 			expected[0].Name,
 			expected[0].Label,
 			expected[0].HasMaxTestServiceCount,
-			expected[0].HasExecutionDuration,
-			expected[0].HasAutoStepChangeRate,
+			expected[0].HasNumSteps,
 			expected[0].CreatedAt,
 			expected[0].UpdatedAt,
 		).AddRow(
@@ -104,8 +99,7 @@ t.Run("success_case_with_some_results", func(t *testing.T) {
 			expected[1].Name,
 			expected[1].Label,
 			expected[1].HasMaxTestServiceCount,
-			expected[1].HasExecutionDuration,
-			expected[1].HasAutoStepChangeRate,
+			expected[1].HasNumSteps,
 			expected[1].CreatedAt,
 			expected[1].UpdatedAt,
 		))
@@ -118,7 +112,7 @@ t.Run("success_case_with_some_results", func(t *testing.T) {
 
 		assert.True(t, reflect.DeepEqual(result, expected))
 	})
-t.Run("error_case", func(t *testing.T) {
+	t.Run("error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -133,7 +127,7 @@ t.Run("error_case", func(t *testing.T) {
 }
 
 func TestTestCategory_GetByID(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -147,9 +141,8 @@ t.Run("success_case", func(t *testing.T) {
 			UpdatedAt:              now,
 			Name:                   "load",
 			Label:                  "my load",
-			HasAutoStepChangeRate:  false,
 			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
+			HasNumSteps:            true,
 		}
 
 		mock.ExpectQuery(regexp.QuoteMeta(
@@ -157,8 +150,7 @@ t.Run("success_case", func(t *testing.T) {
 			WithArgs(2, 1).
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "name", "label",
-				"has_max_test_service_count", "has_execution_duration",
-				"has_auto_step_change_rate",
+				"has_max_test_service_count", "has_num_steps",
 			}).
 				AddRow(
 					expectedTestCategory.ID,
@@ -167,8 +159,7 @@ t.Run("success_case", func(t *testing.T) {
 					expectedTestCategory.Name,
 					expectedTestCategory.Label,
 					expectedTestCategory.HasMaxTestServiceCount,
-					expectedTestCategory.HasExecutionDuration,
-					expectedTestCategory.HasAutoStepChangeRate,
+					expectedTestCategory.HasNumSteps,
 				))
 
 		result, err := repo.GetByID(context.Background(), uint64(2))
@@ -178,14 +169,12 @@ t.Run("success_case", func(t *testing.T) {
 		assert.Equal(t, expectedTestCategory.ID, result.ID)
 		assert.Equal(t, expectedTestCategory.Name, result.Name)
 		assert.Equal(t, expectedTestCategory.Label, result.Label)
-		assert.Equal(t, expectedTestCategory.HasExecutionDuration, result.HasExecutionDuration)
+		assert.Equal(t, expectedTestCategory.HasNumSteps, result.HasNumSteps)
 		assert.Equal(t, expectedTestCategory.HasMaxTestServiceCount, result.HasMaxTestServiceCount)
-		assert.Equal(t, expectedTestCategory.HasAutoStepChangeRate, result.HasAutoStepChangeRate)
-
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("failed_case_not_found", func(t *testing.T) {
+	t.Run("failed_case_not_found", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -203,7 +192,7 @@ t.Run("failed_case_not_found", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("failed_case_database_error", func(t *testing.T) {
+	t.Run("failed_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)

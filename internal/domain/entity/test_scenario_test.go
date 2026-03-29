@@ -32,8 +32,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
+			HasNumSteps:            true,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -58,8 +57,8 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   false,
-			HasAutoStepChangeRate:  false,
+
+			HasNumSteps: false,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -86,8 +85,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
+			HasNumSteps:            true,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -115,8 +113,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
+			HasNumSteps:            true,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -144,8 +141,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
+			HasNumSteps:            true,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -176,8 +172,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
+			HasNumSteps:            true,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -209,8 +204,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
+			HasNumSteps:            true,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -239,8 +233,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
+			HasNumSteps:            true,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -271,8 +264,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   false,
-			HasAutoStepChangeRate:  true,
+			HasNumSteps:            true,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -299,8 +291,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   false,
-			HasAutoStepChangeRate:  true,
+			HasNumSteps:            true,
 		}
 
 		err := testSci.Validate(TestCategory)
@@ -328,8 +319,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Name:                   "load",
 			Label:                  "my load",
 			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   false,
-			HasAutoStepChangeRate:  false,
+			HasNumSteps:            false,
 		}
 
 		err := testSci.Validate(TestCategory)

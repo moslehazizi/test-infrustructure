@@ -747,8 +747,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 					CreatedAt:              someTime,
 					UpdatedAt:              someTime,
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherServiceID: 200,
 				MotherService: &entity.MotherService{
@@ -802,8 +801,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 						CreatedAt:              someTime,
 						UpdatedAt:              someTime,
 						HasMaxTestServiceCount: true,
-						HasExecutionDuration:   true,
-						HasAutoStepChangeRate:  false,
+						HasNumSteps:            true,
 					},
 					MotherService: &response.MotherService{
 						ID:                     200,
@@ -1044,8 +1042,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 				CreatedAt:              someTime,
 				UpdatedAt:              someTime,
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            true,
 			},
 			MotherService: &entity.MotherService{
 				ID:                     200,
@@ -1123,8 +1120,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 				CreatedAt:              someTime,
 				UpdatedAt:              someTime,
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            true,
 			},
 			MotherService: &response.MotherService{
 				ID:                     200,
