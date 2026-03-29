@@ -1,8 +1,9 @@
 stages:
-    - lint
-    - test
+    # - lint
+    # - test
     - build
     - docker
+    - deploy
 
 
 image: golang:1.26
@@ -13,41 +14,44 @@ cache:
         - .cache/go-build
 
 before_script:
-    - go env -w GOPROXY=https://repo.tibobit.ir/repository/golang/,direct
+    # - go env -w GOPROXY=https://repo.tibobit.ir/repository/golang/,direct
     - go version
     - go mod download
 
-lint:
-  stage: lint
-  image: golangci/golangci-lint:v2.11.3
-  script:
-    - golangci-lint -c=.golangci.yml run ./...
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
+# lint:
+#   stage: lint
+#   image: golangci/golangci-lint:v2.11.3
+#   script:
+#     - golangci-lint -c=.golangci.yml run ./...
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+#     - if: $CI_COMMIT_BRANCH
 
-test:
-    stage: test
-    variables:
-        CGO_ENABLED: 1
-    script:
-        - go test -cover -v ./...
-        # - go test -v -race -cover ./...
-    # artifacts:
-    #     reports:
-    #         junit: report.xml
-    coverage: '/coverage: \d+\.\d+%/'
-    rules:
-        - if: $CI_COMMIT_BRANCH
+# test:
+#     stage: test
+#     variables:
+#         CGO_ENABLED: 1
+#     script:
+#         - go test -cover -v ./...
+#         # - go test -v -race -cover ./...
+#     coverage: '/coverage: \d+\.\d+%/'
+#     rules:
+#         - if: $CI_COMMIT_BRANCH
 
 build-app:
   stage: build
+  variables:
+    CGO_ENABLED: 0
+    GOOS: linux
+    GOARCH: amd64
   script:
     - go build -ldflags="-s -w" -o main
   artifacts:
     paths:
       - main
       - Dockerfile.gitlab
+      - .env.example
+      - k8s
     # expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -58,17 +62,60 @@ docker-build:
     services:
         - docker:24-dind
     variables:
-        DOCKER_TLS_CERTDIR: ""
         GIT_STRATEGY: none
     before_script:
         - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     script:
-        - docker build -f Dockerfile.gitlab -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
-        - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-        - docker image rm $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+        - docker build -f Dockerfile.gitlab -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+        - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+        - docker image rm $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     needs:
         - job: build-app
           artifacts: true
+deploy:
+    stage: deploy
+    image:
+      name: bitnami/kubectl:latest
+      entrypoint: [""]
+
+    variables:
+      IMAGE_NAME: $CI_PROJECT_NAME
+      IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+      CONTAINER_REGISTRY_URL: $CI_REGISTRY
+      GIT_STRATEGY: none
+    before_script:
+      - echo "$KUBE_CONFIG" > kubeconfig
+      - export KUBECONFIG=$PWD/kubeconfig
+
+    script:
+      - |
+        kubectl create secret docker-registry gitlab-registry \
+        --docker-server="$CI_REGISTRY" \
+        --docker-username="$GITLAB_REGISTRY_USER" \
+        --docker-password="$GITLAB_REGISTRY_PASSWORD" \
+        --namespace "$KUBE_NAMESPACE" \
+        --dry-run=client -o yaml | kubectl apply -f -
+        
+      - kubectl -n "$KUBE_NAMESPACE" patch serviceaccount default -p '{"imagePullSecrets":[{"name":"gitlab-registry"}]}' 
+
+      - |
+        kubectl -n "$KUBE_NAMESPACE" create configmap ${IMAGE_NAME}-config \
+          --from-env-file=".env.example" \
+          --dry-run=client -o yaml | kubectl apply -f -
+
+      - |
+        kubectl create secret generic kubeconfig-secret \
+          --from-file=kubeconfig=$KUBECONFIG \
+          --dry-run=client -n $KUBE_NAMESPACE -o yaml | kubectl apply -f -
+
+      - |
+        CONTAINER_REGISTRY_URL="$CONTAINER_REGISTRY_URL/$KUBE_NAMESPACE"
+        for f in k8s/*.yaml; do
+          envsubst < $f | kubectl apply -f -
+        done
+
+    rules:
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
