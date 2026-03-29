@@ -328,7 +328,6 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 			},
 			MaxTestServiceCount: new(int64(2)),
 			NumSteps:            1,
-			ExecutionDuration:   new(int64(100)),
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                    1,
 				TestScenarioID:        1,
@@ -408,7 +407,6 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 			},
 			MaxTestServiceCount: new(int64(2)),
 			NumSteps:            2,
-			ExecutionDuration:   new(int64(100)),
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID:                    1,
 				TestScenarioID:        1,

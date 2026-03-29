@@ -47,16 +47,14 @@ t.Run("success_case", func(t *testing.T) {
 			MotherServiceID:     uint64(1),
 			Status:              entity.ScenarioStatus(entity.ScenarioStatusPending),
 			MaxTestServiceCount: nil,
-			ExecutionDuration:   nil,
-			AutoStepChangeRate:  nil,
 			StartedAt:           nil,
 			NumSteps:            2,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			// `INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","num_steps","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "id"`)).
+			// `INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","num_steps","max_test_service_count","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id"`)).
 			WithArgs(
 				testScenario.CreatedAt,
 				testScenario.UpdatedAt,
@@ -66,8 +64,6 @@ t.Run("success_case", func(t *testing.T) {
 				testScenario.MotherServiceID,
 				testScenario.Status,
 				testScenario.NumSteps,
-				nil,
-				nil,
 				nil,
 				int32(0),
 				testScenario.StartedAt,
@@ -99,16 +95,14 @@ t.Run("failed_case", func(t *testing.T) {
 			MotherServiceID:     uint64(1),
 			Status:              entity.ScenarioStatus(entity.ScenarioStatusPending),
 			MaxTestServiceCount: nil,
-			ExecutionDuration:   nil,
-			AutoStepChangeRate:  nil,
 			StartedAt:           nil,
 			NumSteps:            2,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			// `INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
-			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","num_steps","max_test_service_count","execution_duration","auto_step_change_rate","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "id"`)).
+			// `INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","max_test_service_count","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","num_steps","max_test_service_count","deployment_number","started_at","editable") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id"`)).
 			WithArgs(testScenario.CreatedAt,
 				testScenario.UpdatedAt,
 				testScenario.DeletedAt,
@@ -117,7 +111,7 @@ t.Run("failed_case", func(t *testing.T) {
 				testScenario.MotherServiceID,
 				testScenario.Status,
 				testScenario.NumSteps,
-				nil, nil, nil, int32(0), testScenario.StartedAt, true).
+				nil, int32(0), testScenario.StartedAt, true).
 			WillReturnError(errors.New("insert failed"))
 		mock.ExpectRollback()
 
@@ -148,8 +142,6 @@ t.Run("success_case", func(t *testing.T) {
 			Name:                "some test",
 			Status:              entity.ScenarioStatusPending,
 			MaxTestServiceCount: nil,
-			ExecutionDuration:   nil,
-			AutoStepChangeRate:  nil,
 			TestCategoryID:      3,
 			MotherServiceID:     2,
 			StartedAt:           nil,
@@ -208,8 +200,6 @@ t.Run("success_case", func(t *testing.T) {
 				"status",
 				"num_steps",
 				"max_test_service_count",
-				"execution_duration",
-				"auto_step_change_rate",
 				"started_at",
 				"editable",
 			}).
@@ -224,8 +214,6 @@ t.Run("success_case", func(t *testing.T) {
 					expectedTestScenario.Status,
 					expectedTestScenario.NumSteps,
 					expectedTestScenario.MaxTestServiceCount,
-					expectedTestScenario.ExecutionDuration,
-					expectedTestScenario.AutoStepChangeRate,
 					expectedTestScenario.StartedAt,
 					expectedTestScenario.Editable,
 				))
@@ -411,8 +399,6 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -439,8 +425,6 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 		}
@@ -472,8 +456,6 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 				"status",
 				"num_steps",
 				"max_test_service_count",
-				"execution_duration",
-				"auto_step_change_rate",
 				"started_at",
 				"editable",
 			}).
@@ -488,8 +470,6 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[0].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
-					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
 					expectedTestScenarios[0].Editable,
 				).
@@ -504,8 +484,6 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 					expectedTestScenarios[1].Status,
 					expectedTestScenarios[1].NumSteps,
 					expectedTestScenarios[1].MaxTestServiceCount,
-					expectedTestScenarios[1].ExecutionDuration,
-					expectedTestScenarios[1].AutoStepChangeRate,
 					expectedTestScenarios[1].StartedAt,
 					expectedTestScenarios[1].Editable,
 				))
@@ -594,8 +572,6 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -622,8 +598,6 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 		}
@@ -647,8 +621,7 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"num_steps",
-				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at", "editable",
+				"max_test_service_count", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -661,8 +634,6 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[0].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
-					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
 					expectedTestScenarios[0].Editable,
 				).
@@ -677,8 +648,6 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 					expectedTestScenarios[1].Status,
 					expectedTestScenarios[1].NumSteps,
 					expectedTestScenarios[1].MaxTestServiceCount,
-					expectedTestScenarios[1].ExecutionDuration,
-					expectedTestScenarios[1].AutoStepChangeRate,
 					expectedTestScenarios[1].StartedAt,
 					expectedTestScenarios[1].Editable,
 				))
@@ -769,8 +738,6 @@ t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 		}
@@ -794,8 +761,7 @@ t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"num_steps",
-				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at", "editable",
+				"max_test_service_count", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -808,8 +774,6 @@ t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[0].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
-					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
 					expectedTestScenarios[0].Editable,
 				))
@@ -888,8 +852,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -917,8 +879,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -946,8 +906,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -975,8 +933,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -1004,8 +960,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 		}
@@ -1029,8 +983,7 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"num_steps",
-				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at", "editable",
+				"max_test_service_count", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -1043,8 +996,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[1].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
-					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
 					expectedTestScenarios[0].Editable,
 				).
@@ -1059,8 +1010,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					expectedTestScenarios[1].Status,
 					expectedTestScenarios[1].NumSteps,
 					expectedTestScenarios[1].MaxTestServiceCount,
-					expectedTestScenarios[1].ExecutionDuration,
-					expectedTestScenarios[1].AutoStepChangeRate,
 					expectedTestScenarios[1].StartedAt,
 					expectedTestScenarios[1].Editable,
 				).
@@ -1075,8 +1024,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					expectedTestScenarios[2].Status,
 					expectedTestScenarios[2].NumSteps,
 					expectedTestScenarios[2].MaxTestServiceCount,
-					expectedTestScenarios[2].ExecutionDuration,
-					expectedTestScenarios[2].AutoStepChangeRate,
 					expectedTestScenarios[2].StartedAt,
 					expectedTestScenarios[2].Editable,
 				).
@@ -1091,8 +1038,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					expectedTestScenarios[3].Status,
 					expectedTestScenarios[3].NumSteps,
 					expectedTestScenarios[3].MaxTestServiceCount,
-					expectedTestScenarios[3].ExecutionDuration,
-					expectedTestScenarios[3].AutoStepChangeRate,
 					expectedTestScenarios[3].StartedAt,
 					expectedTestScenarios[3].Editable,
 				).
@@ -1107,8 +1052,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					expectedTestScenarios[4].Status,
 					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[4].MaxTestServiceCount,
-					expectedTestScenarios[4].ExecutionDuration,
-					expectedTestScenarios[4].AutoStepChangeRate,
 					expectedTestScenarios[4].StartedAt,
 					expectedTestScenarios[4].Editable,
 				))
@@ -1186,8 +1129,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -1214,8 +1155,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -1242,8 +1181,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -1270,8 +1207,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 			{
@@ -1298,8 +1233,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 				},
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				Editable:            true,
 			},
 		}
@@ -1322,8 +1255,7 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
 				"num_steps",
-				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at", "editable",
+				"max_test_service_count", "started_at", "editable",
 			}).
 				AddRow(
 					expectedTestScenarios[0].ID,
@@ -1336,8 +1268,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					expectedTestScenarios[0].Status,
 					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[0].MaxTestServiceCount,
-					expectedTestScenarios[0].ExecutionDuration,
-					expectedTestScenarios[0].AutoStepChangeRate,
 					expectedTestScenarios[0].StartedAt,
 					expectedTestScenarios[0].Editable,
 				).
@@ -1352,8 +1282,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					expectedTestScenarios[1].Status,
 					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[1].MaxTestServiceCount,
-					expectedTestScenarios[1].ExecutionDuration,
-					expectedTestScenarios[1].AutoStepChangeRate,
 					expectedTestScenarios[1].StartedAt,
 					expectedTestScenarios[1].Editable,
 				).
@@ -1368,8 +1296,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					expectedTestScenarios[2].Status,
 					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[2].MaxTestServiceCount,
-					expectedTestScenarios[2].ExecutionDuration,
-					expectedTestScenarios[2].AutoStepChangeRate,
 					expectedTestScenarios[2].StartedAt,
 					expectedTestScenarios[2].Editable,
 				).
@@ -1384,8 +1310,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					expectedTestScenarios[3].Status,
 					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[3].MaxTestServiceCount,
-					expectedTestScenarios[3].ExecutionDuration,
-					expectedTestScenarios[3].AutoStepChangeRate,
 					expectedTestScenarios[3].StartedAt,
 					expectedTestScenarios[3].Editable,
 				).
@@ -1400,8 +1324,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					expectedTestScenarios[4].Status,
 					expectedTestScenarios[4].NumSteps,
 					expectedTestScenarios[4].MaxTestServiceCount,
-					expectedTestScenarios[4].ExecutionDuration,
-					expectedTestScenarios[4].AutoStepChangeRate,
 					expectedTestScenarios[4].StartedAt,
 					expectedTestScenarios[4].Editable,
 				))
@@ -1470,8 +1392,7 @@ t.Run("success_case_empty_result_page_beyond_available_data", func(t *testing.T)
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "deleted_at", "name",
 				"test_category_id", "mother_service_id", "status",
-				"max_test_service_count", "execution_duration",
-				"auto_step_change_rate", "started_at", "editable",
+				"max_test_service_count", "started_at", "editable",
 			}))
 
 		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -1625,8 +1546,6 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 				Name:                "some test",
 				Status:              entity.ScenarioStatusRunning,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				TestCategoryID:      3,
 				MotherServiceID:     2,
 				NumSteps:            2,
@@ -1674,8 +1593,6 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 				Name:                "some test",
 				Status:              entity.ScenarioStatusRunning,
 				MaxTestServiceCount: nil,
-				ExecutionDuration:   nil,
-				AutoStepChangeRate:  nil,
 				TestCategoryID:      6,
 				MotherServiceID:     5,
 				NumSteps:            2,
@@ -1736,8 +1653,6 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 					expectedTestScenario[0].Status,
 					expectedTestScenario[0].NumSteps,
 					expectedTestScenario[0].MaxTestServiceCount,
-					expectedTestScenario[0].ExecutionDuration,
-					expectedTestScenario[0].AutoStepChangeRate,
 					expectedTestScenario[0].Editable,
 				).
 				AddRow(
@@ -1751,8 +1666,6 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 					expectedTestScenario[1].Status,
 					expectedTestScenario[1].NumSteps,
 					expectedTestScenario[1].MaxTestServiceCount,
-					expectedTestScenario[1].ExecutionDuration,
-					expectedTestScenario[1].AutoStepChangeRate,
 					expectedTestScenario[1].Editable,
 				))
 
@@ -2040,11 +1953,9 @@ t.Run("success_case", func(t *testing.T) {
 		mock.ExpectBegin()
 
 		mock.ExpectExec(regexp.QuoteMeta(
-			`UPDATE "test_scenarios" SET "auto_step_change_rate"=$1,"execution_duration"=$2,"max_test_service_count"=$3,"mother_service_id"=$4,"name"=$5,"updated_at"=$6 WHERE id = $7 AND "test_scenarios"."deleted_at" IS NULL`,
+			`UPDATE "test_scenarios" SET "max_test_service_count"=$1,"mother_service_id"=$2,"name"=$3,"updated_at"=$4 WHERE id = $5 AND "test_scenarios"."deleted_at" IS NULL`,
 		)).
 			WithArgs(
-				scenario.AutoStepChangeRate,
-				scenario.ExecutionDuration,
 				scenario.MaxTestServiceCount,
 				scenario.MotherServiceID,
 				scenario.Name,

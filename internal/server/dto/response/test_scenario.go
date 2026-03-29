@@ -15,8 +15,6 @@ type TestScenario struct {
 	MotherService       *MotherService        `json:"mother_service"`
 	Status              entity.ScenarioStatus `json:"status"`
 	MaxTestServiceCount *int64                `json:"max_test_service_count"`
-	ExecutionDuration   *int64                `json:"execution_duration"`
-	AutoStepChangeRate  *int64                `json:"auto_step_change_rate"`
 	TestServiceConfig   *TestServiceConfig    `json:"test_service_config"`
 	Editable            bool                  `json:"editable"`
 	NumSteps            int64                 `json:"num_steps"`

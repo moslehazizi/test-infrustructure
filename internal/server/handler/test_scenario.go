@@ -65,8 +65,6 @@ func (handler *TestScenario) Create() fiber.Handler {
 			TestCategoryID:      req.TestCategoryID,
 			MotherServiceID:     req.MotherServiceID,
 			MaxTestServiceCount: req.MaxTestServiceCount,
-			ExecutionDuration:   req.ExecutionDuration,
-			AutoStepChangeRate:  req.AutoStepChangeRate,
 			NumSteps:            req.NumSteps,
 			TestServiceConfig: func() *entity.TestServiceConfig {
 				if req.Config == nil {
@@ -156,8 +154,6 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 				StartedAt:           item.StartedAt,
 				Status:              item.Status,
 				MaxTestServiceCount: item.MaxTestServiceCount,
-				AutoStepChangeRate:  item.AutoStepChangeRate,
-				ExecutionDuration:   item.ExecutionDuration,
 				NumSteps:            item.NumSteps,
 				TestCategory: func() *response.TestCategory {
 					if item.TestCategory == nil {
@@ -259,8 +255,6 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 			Name:                svcResult.Name,
 			Status:              svcResult.Status,
 			MaxTestServiceCount: svcResult.MaxTestServiceCount,
-			ExecutionDuration:   svcResult.ExecutionDuration,
-			AutoStepChangeRate:  svcResult.AutoStepChangeRate,
 			TestCategory: func() *response.TestCategory {
 				if svcResult.TestCategory == nil {
 					return nil

@@ -45,8 +45,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"test_category_id": 1,
 			"mother_service_id": 1,
 			"max_test_service_count": 1,
-			"execution_duration": 1,
-			"auto_step_change_rate": 1,
 			"num_steps": 2,
 			"test_service_config": {
 				"max_requests": 1,
@@ -82,8 +80,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt64,
-			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt64,
 			NumSteps:            2,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:           sampleInt,
@@ -135,8 +131,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"test_category_id": 1,
 			"mother_service_id": 1,
 			"max_test_service_count": 1,
-			"execution_duration": 1,
-			"auto_step_change_rate": 1,
 			"num_steps": 2,
 			"test_service_config": {
 				"max_requests": 1,
@@ -172,8 +166,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt64,
-			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt64,
 			NumSteps:            2,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:           sampleInt,
@@ -218,8 +210,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"test_category_id": 1,
 			"mother_service_id": 1,
 			"max_test_service_count": 1,
-			"execution_duration": 1,
-			"auto_step_change_rate": 1,
 			"num_steps": 2,
 			"test_service_config": {
 				"max_requests": 1,
@@ -255,8 +245,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt64,
-			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt64,
 			NumSteps:            2,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:           sampleInt,
@@ -300,8 +288,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"test_category_id": 1,
 			"mother_service_id": 1,
 			"max_test_service_count": 1,
-			"execution_duration": 1,
-			"auto_step_change_rate": 1,
 			"num_steps": 2,
 			"test_service_config": {
 				"max_requests": 1,
@@ -335,8 +321,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt64,
-			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt64,
 			NumSteps:            2,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
@@ -379,8 +363,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"test_category_id": 1,
 			"mother_service_id": 1,
 			"max_test_service_count": null,
-			"execution_duration": null,
-			"auto_step_change_rate": null,
 			"num_steps": 2,
 			"test_service_config": {
 				"max_requests": 1,
@@ -479,8 +461,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"test_category_id": 1,
 			"mother_service_id": 1,
 			"max_test_service_count": 1,
-			"execution_duration": 1,
-			"auto_step_change_rate": 1,
 			"num_steps": 2,
 			"test_service_config": {
 				"max_requests": 1,
@@ -514,8 +494,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt64,
-			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt64,
 			NumSteps:            2,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
@@ -558,8 +536,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"test_category_id": 1,
 			"mother_service_id": 1,
 			"max_test_service_count": 1,
-			"execution_duration": 1,
-			"auto_step_change_rate": 1,
 			"num_steps": 2,
 			"test_service_config": {
 				"max_requests": 1,
@@ -593,8 +569,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &sampleInt64,
-			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt64,
 			NumSteps:            2,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
@@ -637,8 +611,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			"test_category_id": 1,
 			"mother_service_id": 1,
 			"max_test_service_count": -1,
-			"execution_duration": 1,
-			"auto_step_change_rate": 1,
 			"num_steps": 2,
 			"test_service_config": {
 				"max_requests": 1,
@@ -663,7 +635,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 
 		sampleUin64 := uint64(1)
 		sampleInt := 1
-		sampleInt64 := int64(1)
 		ncnt := int64(-1)
 		dur := int64(1)
 		databaseName := "test_service_db"
@@ -673,8 +644,6 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 			TestCategoryID:      sampleUin64,
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: &ncnt,
-			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt64,
 			NumSteps:            2,
 			TestServiceConfig: &entity.TestServiceConfig{
 				MaxRequests:          sampleInt,
@@ -725,8 +694,6 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
 
 		cnt := int64(100)
-		rate := int64(50)
-		dur := int64(500000)
 		serviceResult := []*entity.TestScenario{
 			{
 				ID:                  1,
@@ -736,8 +703,6 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 				StartedAt:           &someTime,
 				Status:              entity.ScenarioStatusPending,
 				MaxTestServiceCount: &cnt,
-				AutoStepChangeRate:  &rate,
-				ExecutionDuration:   &dur,
 				TestCategoryID:      100,
 				NumSteps:            2,
 				TestCategory: &entity.TestCategory{
@@ -791,8 +756,6 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 					UpdatedAt:           someTime,
 					Status:              entity.ScenarioStatusPending,
 					MaxTestServiceCount: &cnt,
-					AutoStepChangeRate:  &rate,
-					ExecutionDuration:   &dur,
 					StartedAt:           &someTime,
 					NumSteps:            2,
 					TestCategory: &response.TestCategory{
@@ -1018,8 +981,6 @@ func TestTestScenario_GetByID(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := int64(100)
-		rate := int64(50)
-		exe := int64(500000)
 		num := 10
 		sampleName := "test-name"
 
@@ -1032,8 +993,6 @@ func TestTestScenario_GetByID(t *testing.T) {
 			StartedAt:           &someTime,
 			Status:              entity.ScenarioStatusPending,
 			MaxTestServiceCount: &cnt,
-			AutoStepChangeRate:  &rate,
-			ExecutionDuration:   &exe,
 			TestCategoryID:      100,
 			MotherServiceID:     200,
 			NumSteps:            2,
@@ -1113,8 +1072,6 @@ func TestTestScenario_GetByID(t *testing.T) {
 			Status:              entity.ScenarioStatusPending,
 			StartedAt:           &someTime,
 			MaxTestServiceCount: &cnt,
-			AutoStepChangeRate:  &rate,
-			ExecutionDuration:   &exe,
 			NumSteps:            2,
 			TestCategory: &response.TestCategory{
 				ID:                     100,
@@ -1177,8 +1134,6 @@ func TestTestScenario_GetByID(t *testing.T) {
 	t.Run("success_case_category_and_mother_service_are_null", func(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := int64(100)
-		rate := int64(50)
-		exe := int64(500000)
 
 		srv := new(mocks.MockTestScenario)
 		item := &entity.TestScenario{
@@ -1188,8 +1143,6 @@ func TestTestScenario_GetByID(t *testing.T) {
 			UpdatedAt:           someTime,
 			Status:              entity.ScenarioStatusPending,
 			MaxTestServiceCount: &cnt,
-			AutoStepChangeRate:  &rate,
-			ExecutionDuration:   &exe,
 			TestCategoryID:      100,
 			MotherServiceID:     200,
 			TestCategory:        nil,
@@ -1220,8 +1173,6 @@ func TestTestScenario_GetByID(t *testing.T) {
 			UpdatedAt:           someTime,
 			Status:              entity.ScenarioStatusPending,
 			MaxTestServiceCount: &cnt,
-			AutoStepChangeRate:  &rate,
-			ExecutionDuration:   &exe,
 			TestCategory:        nil,
 			MotherService:       nil,
 			TestServiceConfig:   nil,
@@ -1823,8 +1774,6 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 			Name:                "load1",
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: new(int64(1)),
-			ExecutionDuration:   new(int64(1)),
-			AutoStepChangeRate:  new(int64(1)),
 			NumSteps:            2,
 			Config: &request.TestServiceConfigRequest{
 				MaxRequests:           sampleInt,
@@ -1907,8 +1856,6 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 			Name:                "load1",
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: new(int64(1)),
-			ExecutionDuration:   new(int64(1)),
-			AutoStepChangeRate:  new(int64(1)),
 			NumSteps:            2,
 			Config: &request.TestServiceConfigRequest{
 				MaxRequests:           sampleInt,

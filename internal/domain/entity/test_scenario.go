@@ -31,8 +31,6 @@ type TestScenario struct {
 	Status              ScenarioStatus     `gorm:"column:status"`
 	NumSteps            int64              `gorm:"column:num_steps"`
 	MaxTestServiceCount *int64             `gorm:"column:max_test_service_count"`
-	ExecutionDuration   *int64             `gorm:"column:execution_duration"`
-	AutoStepChangeRate  *int64             `gorm:"column:auto_step_change_rate"`
 	TestServiceConfig   *TestServiceConfig `gorm:"ForeignKey:TestScenarioID"`
 	DeploymentNumber    int32              `gorm:"column:deployment_number"`
 	StartedAt           *time.Time         `gorm:"column:started_at"`
@@ -53,14 +51,6 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 		return pkg.ErrMaxTestServiceCountLessThanOne
 	}
 
-	if ts.ExecutionDuration != nil && *ts.ExecutionDuration < 1 {
-		return pkg.ErrExecutionDurationLessThanOne
-	}
-
-	if ts.AutoStepChangeRate != nil && *ts.AutoStepChangeRate < 1 {
-		return pkg.ErrAutoStepChangeRateLessThanOne
-	}
-
 	if ts.NumSteps < 1 {
 		return pkg.ErrNumStepsNotSet
 	}
@@ -72,26 +62,6 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 	} else {
 		if ts.MaxTestServiceCount != nil {
 			return pkg.ErrNoNeedMaxTestServiceCount
-		}
-	}
-
-	if testCat.HasExecutionDuration {
-		if ts.ExecutionDuration == nil {
-			return pkg.ErrExecutionDurationNotSet
-		}
-	} else {
-		if ts.ExecutionDuration != nil {
-			return pkg.ErrNoNeedExecutionDuration
-		}
-	}
-
-	if testCat.HasAutoStepChangeRate {
-		if ts.AutoStepChangeRate == nil {
-			return pkg.ErrAutoStepChangeNotSet
-		}
-	} else {
-		if ts.AutoStepChangeRate != nil {
-			return pkg.ErrNoNeedAutoStepChange
 		}
 	}
 

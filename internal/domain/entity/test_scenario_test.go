@@ -11,7 +11,6 @@ import (
 func TestTestScenarioValidation(t *testing.T) {
 	t.Run("success_case_test_category_config_matches_inputs", func(t *testing.T) {
 		sampleInt := int64(2)
-		dur := int64(2)
 		testSci := TestScenario{
 			ID:                  uint64(1),
 			CreatedAt:           time.Now(),
@@ -22,8 +21,6 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:     uint64(5),
 			Status:              ScenarioStatusPending,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt,
 			NumSteps:            int64(2),
 		}
 
@@ -96,67 +93,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountLessThanOne)
 	})
 
-	t.Run("failed_case_execution_duration_should_be_more_than_1", func(t *testing.T) {
-		dur := int64(-1)
-		testSci := TestScenario{
-			ID:                uint64(1),
-			CreatedAt:         time.Now(),
-			UpdatedAt:         time.Now(),
-			DeletedAt:         nil,
-			Name:              "load1",
-			TestCategoryID:    uint64(4),
-			MotherServiceID:   uint64(5),
-			Status:            ScenarioStatusPending,
-			ExecutionDuration: &dur,
-			NumSteps:          int64(2),
-		}
-		TestCategory := &TestCategory{
-			ID:                     testSci.TestCategoryID,
-			Name:                   "load",
-			Label:                  "my load",
-			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
-		}
-
-		err := testSci.Validate(TestCategory)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrExecutionDurationLessThanOne)
-	})
-
-	t.Run("failed_case_auto_step_change_rate_should_be_more_than_1", func(t *testing.T) {
-		sampleIntLessThanOne := int64(-1)
-		testSci := TestScenario{
-			ID:                 uint64(1),
-			CreatedAt:          time.Now(),
-			UpdatedAt:          time.Now(),
-			DeletedAt:          nil,
-			Name:               "load1",
-			TestCategoryID:     uint64(4),
-			MotherServiceID:    uint64(5),
-			Status:             ScenarioStatusPending,
-			AutoStepChangeRate: &sampleIntLessThanOne,
-			NumSteps:           int64(2),
-		}
-		TestCategory := &TestCategory{
-			ID:                     testSci.TestCategoryID,
-			Name:                   "load",
-			Label:                  "my load",
-			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
-		}
-
-		err := testSci.Validate(TestCategory)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrAutoStepChangeRateLessThanOne)
-	})
-
 	t.Run("failed_case_max_test_service_count_not_set", func(t *testing.T) {
-		sampleInt := int64(2)
-		dur := int64(2)
 		testSci := TestScenario{
 			ID:                 uint64(1),
 			CreatedAt:          time.Now(),
@@ -166,8 +103,6 @@ func TestTestScenarioValidation(t *testing.T) {
 			TestCategoryID:     uint64(4),
 			MotherServiceID:    uint64(5),
 			Status:             ScenarioStatusPending,
-			ExecutionDuration:  &dur,
-			AutoStepChangeRate: &sampleInt,
 			NumSteps:           int64(2),
 		}
 
@@ -188,7 +123,6 @@ func TestTestScenarioValidation(t *testing.T) {
 
 	t.Run("failed_case_no_need_to_max_test_service_count", func(t *testing.T) {
 		sampleInt := int64(2)
-		dur := int64(2)
 		testSci := TestScenario{
 			ID:                  uint64(1),
 			CreatedAt:           time.Now(),
@@ -199,8 +133,6 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:     uint64(5),
 			Status:              ScenarioStatusPending,
 			MaxTestServiceCount: &sampleInt,
-			ExecutionDuration:   &dur,
-			AutoStepChangeRate:  &sampleInt,
 			NumSteps:            int64(2),
 		}
 
@@ -217,125 +149,6 @@ func TestTestScenarioValidation(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrNoNeedMaxTestServiceCount)
-	})
-
-	t.Run("failed_case_execution_duration_not_set", func(t *testing.T) {
-		sampleInt := int64(2)
-		testSci := TestScenario{
-			ID:                 uint64(1),
-			CreatedAt:          time.Now(),
-			UpdatedAt:          time.Now(),
-			DeletedAt:          nil,
-			Name:               "load1",
-			TestCategoryID:     uint64(4),
-			MotherServiceID:    uint64(5),
-			Status:             ScenarioStatusPending,
-			AutoStepChangeRate: &sampleInt,
-			NumSteps:           int64(2),
-		}
-
-		TestCategory := &TestCategory{
-			ID:                     testSci.TestCategoryID,
-			Name:                   "load",
-			Label:                  "my load",
-			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  true,
-		}
-
-		err := testSci.Validate(TestCategory)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrExecutionDurationNotSet)
-	})
-
-	t.Run("failed_case_no_need_execution_duration", func(t *testing.T) {
-		sampleInt := int64(2)
-		dur := int64(2)
-		testSci := TestScenario{
-			ID:                 uint64(1),
-			CreatedAt:          time.Now(),
-			UpdatedAt:          time.Now(),
-			DeletedAt:          nil,
-			Name:               "load1",
-			TestCategoryID:     uint64(4),
-			MotherServiceID:    uint64(5),
-			Status:             ScenarioStatusPending,
-			ExecutionDuration:  &dur,
-			AutoStepChangeRate: &sampleInt,
-			NumSteps:           int64(2),
-		}
-
-		TestCategory := &TestCategory{
-			ID:                     testSci.TestCategoryID,
-			Name:                   "load",
-			Label:                  "my load",
-			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   false,
-			HasAutoStepChangeRate:  true,
-		}
-
-		err := testSci.Validate(TestCategory)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrNoNeedExecutionDuration)
-	})
-
-	t.Run("failed_case_auto_step_change_not_set", func(t *testing.T) {
-		testSci := TestScenario{
-			ID:              uint64(1),
-			CreatedAt:       time.Now(),
-			UpdatedAt:       time.Now(),
-			DeletedAt:       nil,
-			Name:            "load1",
-			TestCategoryID:  uint64(4),
-			MotherServiceID: uint64(5),
-			Status:          ScenarioStatusPending,
-			NumSteps:        int64(2),
-		}
-
-		TestCategory := &TestCategory{
-			ID:                     testSci.TestCategoryID,
-			Name:                   "load",
-			Label:                  "my load",
-			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   false,
-			HasAutoStepChangeRate:  true,
-		}
-
-		err := testSci.Validate(TestCategory)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrAutoStepChangeNotSet)
-	})
-	t.Run("failed_case_no_need_to_auto_step_change", func(t *testing.T) {
-		sampleInt := int64(1)
-		testSci := TestScenario{
-			ID:                 uint64(1),
-			CreatedAt:          time.Now(),
-			UpdatedAt:          time.Now(),
-			DeletedAt:          nil,
-			Name:               "load1",
-			TestCategoryID:     uint64(4),
-			MotherServiceID:    uint64(5),
-			Status:             ScenarioStatusPending,
-			AutoStepChangeRate: &sampleInt,
-			NumSteps:           int64(2),
-		}
-
-		TestCategory := &TestCategory{
-			ID:                     testSci.TestCategoryID,
-			Name:                   "load",
-			Label:                  "my load",
-			HasMaxTestServiceCount: false,
-			HasExecutionDuration:   false,
-			HasAutoStepChangeRate:  false,
-		}
-
-		err := testSci.Validate(TestCategory)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrNoNeedAutoStepChange)
 	})
 
 	t.Run("failed_case_num_steps_not_set_(zero)", func(t *testing.T) {

@@ -604,12 +604,7 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 	if testScenarioUpdateRequest.MaxTestServiceCount != nil {
 		existing.MaxTestServiceCount = testScenarioUpdateRequest.MaxTestServiceCount
 	}
-	if testScenarioUpdateRequest.ExecutionDuration != nil {
-		existing.ExecutionDuration = testScenarioUpdateRequest.ExecutionDuration
-	}
-	if testScenarioUpdateRequest.AutoStepChangeRate != nil {
-		existing.AutoStepChangeRate = testScenarioUpdateRequest.AutoStepChangeRate
-	}
+
 	if testScenarioUpdateRequest.NumSteps >= 1 {
 		existing.NumSteps = testScenarioUpdateRequest.NumSteps
 	}

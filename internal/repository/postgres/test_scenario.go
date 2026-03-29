@@ -300,8 +300,6 @@ func (repo *testScenario) Update(ctx context.Context, scenario *entity.TestScena
 			"name":                   scenario.Name,
 			"mother_service_id":      scenario.MotherServiceID,
 			"max_test_service_count": scenario.MaxTestServiceCount,
-			"execution_duration":     scenario.ExecutionDuration,
-			"auto_step_change_rate":  scenario.AutoStepChangeRate,
 			"updated_at":             time.Now(),
 		}).Error
 
