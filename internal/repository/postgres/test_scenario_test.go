@@ -30,7 +30,7 @@ func TestTestScenarioRepository_New(t *testing.T) {
 }
 
 func TestTestScenarioRepository_Create(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -78,7 +78,7 @@ t.Run("success_case", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("failed_case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -125,7 +125,7 @@ t.Run("failed_case", func(t *testing.T) {
 }
 
 func TestGetByID(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -154,8 +154,7 @@ t.Run("success_case", func(t *testing.T) {
 				Name:                   "peak",
 				Label:                  "peak test",
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            true,
 			},
 			MotherService: &entity.MotherService{
 				ID:   2,
@@ -233,8 +232,7 @@ t.Run("success_case", func(t *testing.T) {
 			"name",
 			"label",
 			"has_max_test_service_count",
-			"has_execution_duration",
-			"has_auto_step_change_rate",
+			"has_num_steps",
 		}).AddRow(
 			3,
 			someTime,
@@ -243,7 +241,6 @@ t.Run("success_case", func(t *testing.T) {
 			"peak test",
 			true,
 			true,
-			false,
 		))
 
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_service_configs" WHERE "test_service_configs"."test_scenario_id" = $1`)).WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{
@@ -300,7 +297,7 @@ t.Run("success_case", func(t *testing.T) {
 		assert.Equal(t, expectedTestScenario, result)
 	})
 
-t.Run("failed_case_record_not_found", func(t *testing.T) {
+	t.Run("failed_case_record_not_found", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -319,7 +316,7 @@ t.Run("failed_case_record_not_found", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("failed_case_database_error", func(t *testing.T) {
+	t.Run("failed_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -340,7 +337,7 @@ t.Run("failed_case_database_error", func(t *testing.T) {
 }
 
 func TestGetPaginated(t *testing.T) {
-t.Run("failed_case_failed_to_get_database_records_count", func(t *testing.T) {
+	t.Run("failed_case_failed_to_get_database_records_count", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -365,7 +362,8 @@ t.Run("failed_case_failed_to_get_database_records_count", func(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
+
+	t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -390,8 +388,7 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -416,8 +413,7 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 					Name:                   "spike",
 					Label:                  "spike test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   4,
@@ -506,8 +502,7 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 			"name",
 			"label",
 			"has_max_test_service_count",
-			"has_execution_duration",
-			"has_auto_step_change_rate",
+			"has_num_steps",
 		}).AddRow(
 			4,
 			now,
@@ -516,7 +511,6 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 			"peak test",
 			true,
 			true,
-			false,
 		).AddRow(
 			5,
 			now,
@@ -525,7 +519,6 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 			"spike test",
 			true,
 			true,
-			false,
 		))
 
 		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -538,7 +531,7 @@ t.Run("success_case_page_1_per_page_2", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
+	t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -563,8 +556,7 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -589,8 +581,7 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 					Name:                   "spike",
 					Label:                  "spike test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   4,
@@ -670,8 +661,7 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 			"name",
 			"label",
 			"has_max_test_service_count",
-			"has_execution_duration",
-			"has_auto_step_change_rate",
+			"has_num_steps",
 		}).AddRow(
 			4,
 			now,
@@ -680,7 +670,6 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 			"peak test",
 			true,
 			true,
-			false,
 		).AddRow(
 			5,
 			now,
@@ -689,7 +678,6 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 			"spike test",
 			true,
 			true,
-			false,
 		))
 
 		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -704,7 +692,7 @@ t.Run("success_case_page_2_per_page_2", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
+	t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -729,8 +717,7 @@ t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -793,8 +780,7 @@ t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
 			"name",
 			"label",
 			"has_max_test_service_count",
-			"has_execution_duration",
-			"has_auto_step_change_rate",
+			"has_num_steps",
 		}).AddRow(
 			4,
 			now,
@@ -803,7 +789,6 @@ t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
 			"peak test",
 			true,
 			true,
-			false,
 		))
 
 		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -818,7 +803,7 @@ t.Run("success_case_page_2_per_page_1", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
+	t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -843,8 +828,7 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -870,8 +854,7 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -897,8 +880,7 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -924,8 +906,7 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -951,8 +932,7 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -1071,8 +1051,7 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 			"name",
 			"label",
 			"has_max_test_service_count",
-			"has_execution_duration",
-			"has_auto_step_change_rate",
+			"has_num_steps",
 		}).AddRow(
 			4,
 			now,
@@ -1081,7 +1060,6 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 			"peak test",
 			true,
 			true,
-			false,
 		))
 
 		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -1096,7 +1074,7 @@ t.Run("success_case_page_3_per_page_5", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
+	t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1120,8 +1098,7 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -1146,8 +1123,7 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -1172,8 +1148,7 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -1198,8 +1173,7 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -1224,8 +1198,7 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   3,
@@ -1343,8 +1316,7 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 			"name",
 			"label",
 			"has_max_test_service_count",
-			"has_execution_duration",
-			"has_auto_step_change_rate",
+			"has_num_steps",
 		}).AddRow(
 			4,
 			now,
@@ -1353,7 +1325,6 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 			"peak test",
 			true,
 			true,
-			false,
 		))
 
 		result, count, err := repo.GetPaginated(context.Background(), paginationRequest)
@@ -1368,7 +1339,7 @@ t.Run("success_case_page_0_per_page_0_return_all_records", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("success_case_empty_result_page_beyond_available_data", func(t *testing.T) {
+	t.Run("success_case_empty_result_page_beyond_available_data", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1404,7 +1375,7 @@ t.Run("success_case_empty_result_page_beyond_available_data", func(t *testing.T)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("failed_case_database_error", func(t *testing.T) {
+	t.Run("failed_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1436,7 +1407,7 @@ t.Run("failed_case_database_error", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("failed_case_negative_page", func(t *testing.T) {
+	t.Run("failed_case_negative_page", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, _, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1454,7 +1425,7 @@ t.Run("failed_case_negative_page", func(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrNegativePageOrPerPageNotAllowed)
 	})
 
-t.Run("failed_case_negative_per_page", func(t *testing.T) {
+	t.Run("failed_case_negative_per_page", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, _, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1474,7 +1445,7 @@ t.Run("failed_case_negative_per_page", func(t *testing.T) {
 }
 
 func TestTestScenarioRepository_SetStatus(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1500,7 +1471,7 @@ t.Run("success_case", func(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-t.Run("failed_case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1529,7 +1500,7 @@ t.Run("failed_case", func(t *testing.T) {
 }
 
 func TestTestScenarioRepository_GetByStatus(t *testing.T) {
-t.Run("success_case_get_running_status", func(t *testing.T) {
+	t.Run("success_case_get_running_status", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1556,8 +1527,7 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 					Name:                   "peak",
 					Label:                  "peak test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   2,
@@ -1603,8 +1573,7 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 					Name:                   "spike",
 					Label:                  "spike test",
 					HasMaxTestServiceCount: true,
-					HasExecutionDuration:   true,
-					HasAutoStepChangeRate:  false,
+					HasNumSteps:            true,
 				},
 				MotherService: &entity.MotherService{
 					ID:   5,
@@ -1687,8 +1656,7 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 			"name",
 			"label",
 			"has_max_test_service_count",
-			"has_execution_duration",
-			"has_auto_step_change_rate",
+			"has_num_steps",
 		}).AddRow(
 			3,
 			someTime,
@@ -1697,7 +1665,6 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 			"peak test",
 			true,
 			true,
-			false,
 		).AddRow(
 			6,
 			someTime,
@@ -1706,7 +1673,6 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 			"spike test",
 			true,
 			true,
-			false,
 		))
 
 		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_service_configs" WHERE "test_service_configs"."test_scenario_id" IN ($1,$2)`)).WithArgs(1, 4).WillReturnRows(sqlmock.NewRows([]string{
@@ -1779,7 +1745,7 @@ t.Run("success_case_get_running_status", func(t *testing.T) {
 		assert.Equal(t, expectedTestScenario, result)
 	})
 
-t.Run("failed_case_database_connection_error", func(t *testing.T) {
+	t.Run("failed_case_database_connection_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1798,7 +1764,7 @@ t.Run("failed_case_database_connection_error", func(t *testing.T) {
 }
 
 func TestGetDeploymentNumberByScenarioID(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1821,7 +1787,7 @@ t.Run("success_case", func(t *testing.T) {
 		assert.Equal(t, int32(5), result)
 	})
 
-t.Run("failed_case_record_not_found", func(t *testing.T) {
+	t.Run("failed_case_record_not_found", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1842,7 +1808,7 @@ t.Run("failed_case_record_not_found", func(t *testing.T) {
 		assert.Equal(t, int32(0), result)
 	})
 
-t.Run("failed_case_database_error", func(t *testing.T) {
+	t.Run("failed_case_database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1865,7 +1831,7 @@ t.Run("failed_case_database_error", func(t *testing.T) {
 }
 
 func TestUpdateDeploymentNumber(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1885,7 +1851,7 @@ t.Run("success_case", func(t *testing.T) {
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("record_not_found", func(t *testing.T) {
+	t.Run("record_not_found", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1906,7 +1872,7 @@ t.Run("record_not_found", func(t *testing.T) {
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("database_error", func(t *testing.T) {
+	t.Run("database_error", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1930,7 +1896,7 @@ t.Run("database_error", func(t *testing.T) {
 }
 
 func TestTestScenarioRepository_Update(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -1972,7 +1938,7 @@ t.Run("success_case", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("update_fails", func(t *testing.T) {
+	t.Run("update_fails", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)

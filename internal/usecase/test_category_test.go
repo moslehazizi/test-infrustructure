@@ -34,8 +34,7 @@ func TestGetAll(t *testing.T) {
 				Name:                   "load",
 				Label:                  "Load Test",
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            true,
 			},
 			{
 				ID:                     2,
@@ -44,8 +43,7 @@ func TestGetAll(t *testing.T) {
 				Name:                   "smoke",
 				Label:                  "Smoke Test",
 				HasMaxTestServiceCount: true,
-				HasExecutionDuration:   true,
-				HasAutoStepChangeRate:  false,
+				HasNumSteps:            true,
 			},
 		}
 		testCategoryRepo.On("GetAll", mock.Anything).Return(expected, nil)
@@ -87,8 +85,7 @@ func TestGetByID(t *testing.T) {
 			Name:                   "load",
 			Label:                  "Load Test",
 			HasMaxTestServiceCount: true,
-			HasExecutionDuration:   true,
-			HasAutoStepChangeRate:  false,
+			HasNumSteps:            true,
 		}
 		testCategoryRepo.On("GetByID", mock.Anything, uint64(1)).Return(want, nil)
 

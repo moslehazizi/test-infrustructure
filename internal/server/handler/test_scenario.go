@@ -165,8 +165,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 						Name:                   item.TestCategory.Name,
 						Label:                  item.TestCategory.Label,
 						HasMaxTestServiceCount: item.TestCategory.HasMaxTestServiceCount,
-						HasExecutionDuration:   item.TestCategory.HasExecutionDuration,
-						HasAutoStepChangeRate:  item.TestCategory.HasAutoStepChangeRate,
+						HasNumSteps:            item.TestCategory.HasNumSteps,
 						CreatedAt:              item.TestCategory.CreatedAt,
 						UpdatedAt:              item.TestCategory.UpdatedAt,
 					}
@@ -265,8 +264,7 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 					Name:                   svcResult.TestCategory.Name,
 					Label:                  svcResult.TestCategory.Label,
 					HasMaxTestServiceCount: svcResult.TestCategory.HasMaxTestServiceCount,
-					HasExecutionDuration:   svcResult.TestCategory.HasExecutionDuration,
-					HasAutoStepChangeRate:  svcResult.TestCategory.HasAutoStepChangeRate,
+					HasNumSteps:            svcResult.TestCategory.HasNumSteps,
 					CreatedAt:              svcResult.TestCategory.CreatedAt,
 					UpdatedAt:              svcResult.TestCategory.UpdatedAt,
 				}

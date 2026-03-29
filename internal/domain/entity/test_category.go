@@ -20,7 +20,6 @@ type TestCategory struct {
 	Name                   string
 	Label                  string
 	HasMaxTestServiceCount bool
-	HasExecutionDuration   bool
-	HasAutoStepChangeRate  bool
+	HasNumSteps            bool
 	Active                 bool
 }
