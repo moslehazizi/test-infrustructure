@@ -18,29 +18,33 @@ type TestScenario struct {
 	TestServiceConfig   *TestServiceConfig    `json:"test_service_config"`
 	Editable            bool                  `json:"editable"`
 	NumSteps            int64                 `json:"num_steps"`
+	IncreaseAgentNumber int64                 `json:"increase_agent_number"`
+	ExecNumMultiAgent   int64                 `json:"execution_number_multi_agent"`
 }
 
 type TestServiceConfig struct {
-	ID                    uint64    `json:"id"`
-	MaxRequests           int       `json:"max_requests"`
-	MaxDuration           int64     `json:"max_duration"`
-	RequestDelayDuration  *int      `json:"request_delay_duration"`
-	RandomRequestDelayMin *int      `json:"random_request_delay_min"`
-	RandomRequestDelayMax *int      `json:"random_request_delay_max"`
-	FixedTestNumber       *int      `json:"fixed_test_number"`
-	RandomTestNumberMin   *int      `json:"random_test_number_min"`
-	RandomTestNumberMax   *int      `json:"random_test_number_max"`
-	BadValueRate          int       `json:"bad_value_rate"`
-	NegativeValueRate     int       `json:"negative_value_rate"`
-	RealValueRate         int       `json:"real_value_rate"`
-	ZeroValueRate         int       `json:"zero_value_rate"`
-	StringValueRate       int       `json:"string_value_rate"`
-	LongStringValueRate   int       `json:"long_string_value_rate"`
-	NullValueRate         int       `json:"null_value_rate"`
-	CreatedAt             time.Time `json:"created_at"`
-	UpdatedAt             time.Time `json:"updated_at"`
-	DatabaseName          string    `json:"database_name"`
-	DatabaseTableName     string    `json:"database_table_name"`
+	ID                     uint64    `json:"id"`
+	MaxRequests            int       `json:"max_requests"`
+	MaxDuration            int64     `json:"max_duration"`
+	RequestDelayDuration   *int      `json:"request_delay_duration"`
+	RandomRequestDelayMin  *int      `json:"random_request_delay_min"`
+	RandomRequestDelayMax  *int      `json:"random_request_delay_max"`
+	FixedTestNumber        *int      `json:"fixed_test_number"`
+	RandomTestNumberMin    *int      `json:"random_test_number_min"`
+	RandomTestNumberMax    *int      `json:"random_test_number_max"`
+	BadValueRate           int       `json:"bad_value_rate"`
+	NegativeValueRate      int       `json:"negative_value_rate"`
+	RealValueRate          int       `json:"real_value_rate"`
+	ZeroValueRate          int       `json:"zero_value_rate"`
+	StringValueRate        int       `json:"string_value_rate"`
+	LongStringValueRate    int       `json:"long_string_value_rate"`
+	NullValueRate          int       `json:"null_value_rate"`
+	CreatedAt              time.Time `json:"created_at"`
+	UpdatedAt              time.Time `json:"updated_at"`
+	DatabaseName           string    `json:"database_name"`
+	DatabaseTableName      string    `json:"database_table_name"`
+	IncreaseFixedInput     int64     `json:"increase_fixed_input"`
+	ExecNumMultiFixedInput int64     `json:"execution_number_multi_fixed_input"`
 }
 
 type PaginatedTestScenario struct {

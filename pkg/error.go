@@ -240,6 +240,18 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrNumStepsShouldBeOne):
 		status = http.StatusUnprocessableEntity
 		msg = NumStepsShouldBeOne
+	case errors.Is(err, ErrIncreaseAgentNumNotBeNegative):
+		status = http.StatusUnprocessableEntity
+		msg = IncreaseAgentNumNotBeNegative
+	case errors.Is(err, ErrExecNumMultiAgentShouldBePositive):
+		status = http.StatusUnprocessableEntity
+		msg = ExecNumMultiAgentShouldBePositive
+	case errors.Is(err, ErrIncreaseFixedInputNotBeNegative):
+		status = http.StatusUnprocessableEntity
+		msg = IncreaseFixedNumberNotBeNegative
+	case errors.Is(err, ErrExecNumMultiFixedInputShouldBePositive):
+		status = http.StatusUnprocessableEntity
+		msg = ExecNumMultiFixedInputShouldBePositive
 
 	default:
 		status = http.StatusInternalServerError
@@ -360,4 +372,8 @@ var (
 	ErrFailedToRunAgentControllerDueToProvisioningFailure = errors.New("unable to run test agent controller due to provisioning test service failure")
 	ErrNumStepsNotSet                                     = errors.New("num steps not set")
 	ErrNumStepsShouldBeOne                                = errors.New("num steps should be one")
+	ErrIncreaseAgentNumNotBeNegative                      = errors.New("increase agent number couldn't be negative")
+	ErrExecNumMultiAgentShouldBePositive                  = errors.New("execution number scenario in multi agent should be 1 or more")
+	ErrIncreaseFixedInputNotBeNegative                    = errors.New("increase fixed number couldn't be negative")
+	ErrExecNumMultiFixedInputShouldBePositive             = errors.New("execution number of multi fixed input should be 1 or more")
 )

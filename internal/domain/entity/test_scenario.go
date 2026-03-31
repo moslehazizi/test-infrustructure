@@ -35,6 +35,8 @@ type TestScenario struct {
 	DeploymentNumber    int32              `gorm:"column:deployment_number"`
 	StartedAt           *time.Time         `gorm:"column:started_at"`
 	Editable            bool               `gorm:"column:editable;default:true;not null"`
+	IncreaseAgentNumber int64              `gorm:"column:increase_agent_number"`
+	ExecNumMultiAgent   int64              `gorm:"column:execution_number_multi_agent"`
 }
 
 func (TestScenario) TableName() string {
@@ -70,6 +72,13 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 		if ts.MaxTestServiceCount != nil {
 			return pkg.ErrNoNeedMaxTestServiceCount
 		}
+	}
+
+	if ts.IncreaseAgentNumber < 0 {
+		return pkg.ErrIncreaseAgentNumNotBeNegative
+	}
+	if ts.ExecNumMultiAgent < 1 {
+		return pkg.ErrExecNumMultiAgentShouldBePositive
 	}
 
 	return nil
