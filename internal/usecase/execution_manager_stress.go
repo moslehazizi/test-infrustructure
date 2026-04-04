@@ -91,46 +91,7 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 			// NOW: all agents are healthy.
 			// we can send scheduled commands.
 			// we need a loop based on len of steps:
-			for i := int64(1); i <= sc.scenario.NumSteps; i++ {
-				if !sc.running {
-					zap.L().Info("scenario executor is not running; exiting scenarioExecutor.Run")
-
-					break
-				}
-				req := request.NewRunRequestFromTestServiceConfig(
-					int(i),
-					sc.executionID,
-					sc.scenario.TestServiceConfig,
-				)
-
-				// send command to all agents.
-				wg := sync.WaitGroup{}
-				for _, agent := range sc.agents {
-					wg.Add(1)
-					//nolint
-					go func() {
-						defer wg.Done()
-						_ = agent.StartTesting(context.Background(), *req)
-					}()
-				}
-
-				wg.Wait()
-
-				if i < sc.scenario.NumSteps {
-					// wait for all agents to be ready to execute next step.
-					sc.awaitAgentsToBeReadyToStartTesting()
-				} else {
-					// set status ScenarioStatusPending
-					err := sc.scenarioRepo.SetStatus(ctx, sc.scenario.ID, entity.ScenarioStatusPending, true)
-					if err != nil {
-						zap.L().Error("failed to update scenario executor status", zap.Error(err))
-
-						return
-					}
-					// set running false , to privent run again and again
-					sc.SetRunning(false)
-				}
-			}
+			_ = sc.executeScenarioSteps(ctx)
 
 			goto start
 		}
@@ -179,6 +140,51 @@ func (sc *scenarioExecutor) awaitAgentsToBeReadyToStartTesting() {
 
 		time.Sleep(readyForTestingCheckSleep)
 	}
+}
+
+func (sc *scenarioExecutor) executeScenarioSteps(ctx context.Context) error {
+	for i := int64(1); i <= sc.scenario.NumSteps; i++ {
+		if !sc.running {
+			zap.L().Info("scenario executor is not running; exiting scenarioExecutor.Run")
+
+			return pkg.ErrScenarioIsNotRunning
+		}
+		req := request.NewRunRequestFromTestServiceConfig(
+			int(i),
+			sc.executionID,
+			sc.scenario.TestServiceConfig,
+		)
+
+		// send command to all agents.
+		wg := sync.WaitGroup{}
+		for _, agent := range sc.agents {
+			wg.Add(1)
+			//nolint
+			go func() {
+				defer wg.Done()
+				_ = agent.StartTesting(context.Background(), *req)
+			}()
+		}
+
+		wg.Wait()
+
+		if i < sc.scenario.NumSteps {
+			// wait for all agents to be ready to execute next step.
+			sc.awaitAgentsToBeReadyToStartTesting()
+		} else {
+			// set status ScenarioStatusPending
+			err := sc.scenarioRepo.SetStatus(ctx, sc.scenario.ID, entity.ScenarioStatusPending, true)
+			if err != nil {
+				zap.L().Error("failed to update scenario executor status", zap.Error(err))
+
+				return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
+			}
+			// set running false , to privent run again and again
+			sc.SetRunning(false)
+		}
+	}
+
+	return nil
 }
 
 // #region StressTestExecutionManager
