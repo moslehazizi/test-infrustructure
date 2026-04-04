@@ -77,13 +77,15 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		databaseTableName := "factorial"
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID:       expectedID,
-			MaxRequests:          1,
-			MaxDuration:          1,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			DatabaseName:         databaseName,
-			DatabaseTableName:    databaseTableName,
+			TestScenarioID:         expectedID,
+			MaxRequests:            1,
+			MaxDuration:            1,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		testSci := &entity.TestScenario{
@@ -93,6 +95,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MaxTestServiceCount: &sampleInt64,
 			TestServiceConfig:   testServiceConfig,
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -154,6 +158,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MaxTestServiceCount: &sampleInt64,
 			TestServiceConfig:   nil,
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -208,13 +214,15 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		databaseTableName := "factorial"
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID:       expectedID,
-			MaxRequests:          1,
-			MaxDuration:          1,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			DatabaseName:         databaseName,
-			DatabaseTableName:    databaseTableName,
+			TestScenarioID:         expectedID,
+			MaxRequests:            1,
+			MaxDuration:            1,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     1,
@@ -231,6 +239,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			TestServiceConfig:   testServiceConfig,
 			TestCategory:        testCat,
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		motherService := &entity.MotherService{
 			ID:                testSci.MotherServiceID,
@@ -280,13 +290,15 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		databaseTableName := "factorial"
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID:       expectedID,
-			MaxRequests:          1,
-			MaxDuration:          1,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			DatabaseName:         databaseName,
-			DatabaseTableName:    databaseTableName,
+			TestScenarioID:         expectedID,
+			MaxRequests:            1,
+			MaxDuration:            1,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     1,
@@ -303,6 +315,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			TestServiceConfig:   testServiceConfig,
 			TestCategory:        testCat,
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		motherService := &entity.MotherService{
 			ID:                testSci.MotherServiceID,
@@ -351,13 +365,15 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		databaseTableName := "factorial"
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID:       expectedID,
-			MaxRequests:          1,
-			MaxDuration:          1,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			DatabaseName:         databaseName,
-			DatabaseTableName:    databaseTableName,
+			TestScenarioID:         expectedID,
+			MaxRequests:            1,
+			MaxDuration:            1,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     1,
@@ -374,6 +390,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			TestServiceConfig:   testServiceConfig,
 			TestCategory:        testCat,
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		motherService := &entity.MotherService{
 			ID:                testSci.MotherServiceID,
@@ -422,12 +440,14 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		sampleInt := 1
 		sampleInt64 := int64(1)
 		testServiceCfg := &entity.TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          1,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			DatabaseName:         databaseName,
-			DatabaseTableName:    databaseTableName,
+			MaxRequests:            1,
+			MaxDuration:            1,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 		testSci := &entity.TestScenario{
 			Name:                "load1",
@@ -436,6 +456,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MaxTestServiceCount: &sampleInt64,
 			TestServiceConfig:   testServiceCfg,
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -493,6 +515,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MotherServiceID:     uint64(1),
 			MaxTestServiceCount: &sampleInt64,
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -541,10 +565,12 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		)
 
 		testSci := &entity.TestScenario{
-			Name:            "load1",
-			TestCategoryID:  uint64(2),
-			MotherServiceID: uint64(1),
-			NumSteps:        2,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		motherService := &entity.MotherService{
 			ID:                testSci.MotherServiceID,
@@ -586,10 +612,12 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			provisioningService,
 		)
 		testSci := &entity.TestScenario{
-			Name:            "load1",
-			TestCategoryID:  uint64(2),
-			MotherServiceID: uint64(1),
-			NumSteps:        2,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		motherService := &entity.MotherService{
 			ID:                testSci.MotherServiceID,
@@ -631,10 +659,12 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			provisioningService,
 		)
 		testSci := &entity.TestScenario{
-			Name:            "load1",
-			TestCategoryID:  uint64(2),
-			MotherServiceID: uint64(1),
-			NumSteps:        2,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     testSci.TestCategoryID,
@@ -685,15 +715,19 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		databaseName := "db1"
 		databaseTableName := "factorial"
 		testSci := &entity.TestScenario{
-			Name:            "load1",
-			TestCategoryID:  uint64(2),
-			MotherServiceID: uint64(1),
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 			TestServiceConfig: &entity.TestServiceConfig{
-				MaxRequests:       1,
-				MaxDuration:       0,
-				BadValueRate:      -1,
-				DatabaseName:      databaseName,
-				DatabaseTableName: databaseTableName,
+				MaxRequests:            1,
+				MaxDuration:            0,
+				BadValueRate:           -1,
+				DatabaseName:           databaseName,
+				DatabaseTableName:      databaseTableName,
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
 			},
 			NumSteps: 2,
 		}
@@ -750,13 +784,15 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		databaseTableName := "factorial"
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID:       expectedID,
-			MaxRequests:          1,
-			MaxDuration:          1,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			DatabaseName:         databaseName,
-			DatabaseTableName:    databaseTableName,
+			TestScenarioID:         expectedID,
+			MaxRequests:            1,
+			MaxDuration:            1,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 		testSci := &entity.TestScenario{
 			Name:                "load1",
@@ -765,6 +801,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			MaxTestServiceCount: &sampleInt64,
 			TestServiceConfig:   testServiceConfig,
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 
 		mockMotherService.On("GetByID", mock.Anything, testSci.MotherServiceID).Return(nil, pkg.ErrMotherServiceNotFound)
@@ -804,13 +842,15 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		databaseTableName := "factorial"
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID:       expectedID,
-			MaxRequests:          1,
-			MaxDuration:          1,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			DatabaseName:         databaseName,
-			DatabaseTableName:    databaseTableName,
+			TestScenarioID:         expectedID,
+			MaxRequests:            1,
+			MaxDuration:            1,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 		testCat := &entity.TestCategory{
 			ID:                     1,
@@ -827,6 +867,8 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 			TestServiceConfig:   testServiceConfig,
 			TestCategory:        testCat,
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 		}
 		motherService := &entity.MotherService{
 			ID:                testSci.MotherServiceID,
