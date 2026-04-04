@@ -143,6 +143,11 @@ func (sc *scenarioExecutor) awaitAgentsToBeReadyToStartTesting() {
 }
 
 func (sc *scenarioExecutor) executeScenarioSteps(ctx context.Context) error {
+	// sc.scenario.IncreaseAgentNumber
+	// sc.scenario.ExecNumMultiAgent
+	// sc.scenario.TestServiceConfig.IncreaseFixedInput
+	// sc.scenario.TestServiceConfig.ExecNumMultiFixedInput
+
 	for i := int64(1); i <= sc.scenario.NumSteps; i++ {
 		if !sc.running {
 			zap.L().Info("scenario executor is not running; exiting scenarioExecutor.Run")
@@ -212,6 +217,8 @@ func (ex *StressTestExecutionManager) Run() {
 	zap.L().Info("exiting from StressTestExecutionManager.Run")
 }
 
+// AddScenario
+// @Deprecated no longer needed.
 func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario *entity.TestScenario) error {
 	tracer := otel.Tracer("StressTestExecutionManager")
 	_, span := tracer.Start(ctx, "AddScenario")
@@ -252,30 +259,55 @@ func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario 
 
 func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario *entity.TestScenario) error {
 	tracer := otel.Tracer("StressTestExecutionManager")
-	_, span := tracer.Start(ctx, "RunScenario")
+	_, span := tracer.Start(ctx, "AddScenario")
 	defer span.End()
-
-	if scenario == nil {
-		zap.L().Error("test scenario is nil")
-
-		return pkg.ErrTestScenarioServiceIsNil
-	}
 
 	ex.mx.Lock()
 	defer ex.mx.Unlock()
-
 	testScenario, ok := ex.scenarios[scenario.ID]
-	if !ok {
-		zap.L().Error("test scenario not found")
+	if ok {
+		// set scenario as running
+		testScenario.SetRunning(true)
 
-		return fmt.Errorf("%w", pkg.ErrTestScenarioNotFound)
+		return nil
 	}
 
-	testScenario.SetExecutionID(uuid.New())
-	testScenario.SetRunning(true)
+	ex.scenarios[scenario.ID] = &scenarioExecutor{
+		scenario:     scenario,
+		agents:       []interfaces.TestAgentController{},
+		running:      true,
+		scenarioRepo: ex.scenarioRepo,
+	}
 
 	return nil
 }
+
+// func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario *entity.TestScenario) error {
+// 	tracer := otel.Tracer("StressTestExecutionManager")
+// 	_, span := tracer.Start(ctx, "RunScenario")
+// 	defer span.End()
+
+// 	if scenario == nil {
+// 		zap.L().Error("test scenario is nil")
+
+// 		return pkg.ErrTestScenarioServiceIsNil
+// 	}
+
+// 	ex.mx.Lock()
+// 	defer ex.mx.Unlock()
+
+// 	testScenario, ok := ex.scenarios[scenario.ID]
+// 	if !ok {
+// 		zap.L().Error("test scenario not found")
+
+// 		return fmt.Errorf("%w", pkg.ErrTestScenarioNotFound)
+// 	}
+
+// 	testScenario.SetExecutionID(uuid.New())
+// 	testScenario.SetRunning(true)
+
+// 	return nil
+// }
 
 func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenario *entity.TestScenario) error {
 	tracer := otel.Tracer("StressTestExecutionManager")

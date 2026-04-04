@@ -772,6 +772,102 @@ func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
 		agent2.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
 		repo.AssertCalled(t, "SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true)
 	})
+	t.Run("success_single_step_dynamic_agents", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		// setting up agents
+		scenario := &entity.TestScenario{
+			ID: 1,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(2)),
+			NumSteps:            1,
+			IncreaseAgentNumber: 1,
+			ExecNumMultiAgent:   5,
+			TestServiceConfig: &entity.TestServiceConfig{
+				ID:                     1,
+				TestScenarioID:         1,
+				MaxRequests:            100,
+				MaxDuration:            1000,
+				RequestDelayDuration:   new(10),
+				RandomRequestDelayMin:  nil,
+				RandomRequestDelayMax:  nil,
+				FixedTestNumber:        new(43),
+				RandomTestNumberMin:    nil,
+				RandomTestNumberMax:    nil,
+				BadValueRate:           2,
+				NegativeValueRate:      10,
+				RealValueRate:          10,
+				ZeroValueRate:          0,
+				StringValueRate:        80,
+				LongStringValueRate:    0,
+				NullValueRate:          0,
+				DatabaseName:           "dbname",
+				DatabaseTableName:      "tbl",
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
+			},
+		}
+
+		healthyCheckSleep = time.Millisecond * 10
+
+		// #region 1st
+		// 1 agent + 1 step
+		agent1 := new(mocks.MockTestAgentController)
+		repo := new(repoMocks.MockTestScenario)
+		ex := &scenarioExecutor{
+			scenario:         scenario,
+			executionID:      uuid.New(),
+			agents:           []interfaces.TestAgentController{agent1},
+			allAgentsHealthy: true,
+			running:          false,
+			scenarioRepo:     repo,
+		}
+
+		time.Sleep(time.Millisecond)
+		time.Sleep(time.Millisecond * 10)
+		ex.SetRunning(true)
+
+		agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
+		repo.On("SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true).Return(nil)
+		err := ex.executeScenarioSteps(ctx)
+		assert.NoError(t, err)
+		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
+		repo.AssertCalled(t, "SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true)
+
+		// #endregion 1st
+
+		// // #region 1st
+		// // 1 agent + 1 step
+		// agent1 := new(mocks.MockTestAgentController)
+		// repo := new(repoMocks.MockTestScenario)
+		// ex := &scenarioExecutor{
+		// 	scenario:         scenario,
+		// 	executionID:      uuid.New(),
+		// 	agents:           []interfaces.TestAgentController{agent1},
+		// 	allAgentsHealthy: true,
+		// 	running:          false,
+		// 	scenarioRepo:     repo,
+		// }
+
+		// time.Sleep(time.Millisecond)
+		// time.Sleep(time.Millisecond * 10)
+		// ex.SetRunning(true)
+
+		// agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
+		// repo.On("SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true).Return(nil)
+		// err := ex.executeScenarioSteps(ctx)
+		// assert.NoError(t, err)
+		// agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
+		// repo.AssertCalled(t, "SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true)
+
+		// // #endregion 1st
+
+	})
 }
 
 //#endregion scenarioExecutor
@@ -824,6 +920,48 @@ func TestStressTestExecutionManager_AddScenario(t *testing.T) {
 }
 
 func TestStressTestExecutionManager_RunScenario(t *testing.T) {
+	t.Run("success_case_does_not_exist", func(t *testing.T) {
+		scenario := &entity.TestScenario{
+			ID: 1,
+		}
+		builder := new(mocks.MockTestAgentControllerToolBox)
+		repo := new(repoMocks.MockTestScenario)
+
+		ex := NewStressTestExecutionManager(builder, repo)
+		err := ex.RunScenario(context.Background(), scenario)
+		assert.NoError(t, err)
+
+		mng, ok := ex.(*StressTestExecutionManager)
+		assert.True(t, ok)
+		assert.Contains(t, mng.scenarios, scenario.ID)
+	})
+	t.Run("success_case_scenario_already_exists_in_manager", func(t *testing.T) {
+		scenario := &entity.TestScenario{
+			ID: 1,
+		}
+		builder := new(mocks.MockTestAgentControllerToolBox)
+		repo := new(repoMocks.MockTestScenario)
+
+		// add for first time
+		ex := NewStressTestExecutionManager(builder, repo)
+		err := ex.RunScenario(context.Background(), scenario)
+		assert.NoError(t, err)
+
+		mng, ok := ex.(*StressTestExecutionManager)
+		assert.True(t, ok)
+		assert.Contains(t, mng.scenarios, scenario.ID)
+
+		// make sure scenario is not running
+		mng.scenarios[scenario.ID].SetRunning(false)
+
+		// try to run it again
+		err = ex.RunScenario(context.Background(), scenario)
+		assert.NoError(t, err)
+		assert.True(t, mng.scenarios[scenario.ID].IsRunning())
+	})
+}
+
+func TestStressTestExecutionManager_RunScenario_(t *testing.T) {
 	t.Run("failed_case_scenario_is_null", func(t *testing.T) {
 		var scenario *entity.TestScenario
 
