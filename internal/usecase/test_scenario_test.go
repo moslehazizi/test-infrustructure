@@ -243,7 +243,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo.On("GetByID", mock.Anything, testSci.TestCategoryID).Return(testCat, nil)
 		mockRepo.On("Create", mock.Anything, testSci).Return(expectedID, nil)
 		mockTestServiceConfig.On("Create", mock.Anything, testServiceConfig).Return(nil)
-		mockStressTestExecutor.On("AddScenario", mock.Anything, testSci).Return(nil)
 
 		err := service.Create(ctx, testSci)
 
@@ -251,7 +250,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 		mockTestCatRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-		mockStressTestExecutor.AssertExpectations(t)
+
 	})
 	t.Run("failed_case_category_not_implement", func(t *testing.T) {
 		ctx := context.Background()
@@ -386,16 +385,13 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo.On("GetByID", mock.Anything, testSci.TestCategoryID).Return(testCat, nil)
 		mockRepo.On("Create", mock.Anything, testSci).Return(expectedID, nil)
 		mockTestServiceConfig.On("Create", mock.Anything, testServiceConfig).Return(nil)
-		mockStressTestExecutor.On("AddScenario", mock.Anything, testSci).Return(errors.New("some thing went wrong"))
 
 		err := service.Create(ctx, testSci)
 
 		assert.NotNil(t, err)
-		assert.ErrorIs(t, err, pkg.ErrFailedToAddScenarioToExecutionManager)
 		mockRepo.AssertExpectations(t)
 		mockTestCatRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-		mockStressTestExecutor.AssertExpectations(t)
 	})
 	t.Run("failed_case_when_create_test_scenario", func(t *testing.T) {
 		ctx := context.Background()
@@ -839,7 +835,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestCatRepo.On("GetByID", mock.Anything, testSci.TestCategoryID).Return(testCat, nil)
 		mockRepo.On("Create", mock.Anything, testSci).Return(expectedID, nil)
 		mockTestServiceConfig.On("Create", mock.Anything, testServiceConfig).Return(nil)
-		mockStressTestExecutor.On("AddScenario", mock.Anything, testSci).Return(nil)
 
 		err := service.Create(ctx, testSci)
 
@@ -848,7 +843,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 		mockTestCatRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-		mockStressTestExecutor.AssertExpectations(t)
 	})
 }
 
