@@ -4,8 +4,6 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider/dto/request"
-
-	"github.com/google/uuid"
 )
 
 type ExecutionManager interface {
@@ -27,7 +25,6 @@ type ScenarioExecutor interface {
 	Run(ctx context.Context) error
 	IsRunning() bool
 	SetRunning(status bool)
-	SetExecutionID(execID uuid.UUID)
 	AllAgentsAreHealthy() bool
 	AddAgent(agent TestAgentController)
 	GetAgents() []TestAgentController

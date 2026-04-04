@@ -25,14 +25,15 @@ var (
 )
 
 type scenarioExecutor struct {
-	scenario                 *entity.TestScenario
-	executionID              uuid.UUID
-	agents                   []interfaces.TestAgentController
-	allAgentsHealthy         bool
-	allAgentsReadyForTesting bool
-	running                  bool
-	once                     sync.Once
-	scenarioRepo             repository.TestScenarioRepository
+	scenario                   *entity.TestScenario
+	executionID                uuid.UUID
+	agents                     []interfaces.TestAgentController
+	allAgentsHealthy           bool
+	allAgentsReadyForTesting   bool
+	running                    bool
+	once                       sync.Once
+	scenarioRepo               repository.TestScenarioRepository
+	testAgentControllerToolBox interfaces.TestAgentControllerToolBox
 }
 
 func (sc *scenarioExecutor) IsRunning() bool {
@@ -43,8 +44,8 @@ func (sc *scenarioExecutor) SetRunning(status bool) {
 	sc.running = status
 }
 
-func (sc *scenarioExecutor) SetExecutionID(execID uuid.UUID) {
-	sc.executionID = execID
+func (sc *scenarioExecutor) assignExecutionID() {
+	sc.executionID = uuid.New()
 }
 
 func (sc *scenarioExecutor) AddAgent(agent interfaces.TestAgentController) {
@@ -60,48 +61,101 @@ func (sc *scenarioExecutor) AllAgentsAreHealthy() bool {
 }
 
 func (sc *scenarioExecutor) Run(ctx context.Context) error {
-	sc.once.Do(func() {
-		zap.L().Info("scenarioExecutor.RunOnce Called")
-		// ------------
-		// check scenario is running
-		//  => true
-		// loop
-		// // provision required agents
-		// // await to be healthy
-		// // await to be ready to start testing
-		// // executing tests
-		// end loop
-		// deprovision all agents
-		// remove scenario from memory
-		// ------------
+	zap.L().Info("scenarioExecutor.Run Called")
 
-		// start:
-		// 	select {
-		// 	case <-ctx.Done():
-		// 		return
-		// 	default:
-		// 		for !sc.running {
-		// 			time.Sleep(RunOnceDelay)
+	sc.assignExecutionID()
+	// check scenario is running
+	if !sc.running {
+		zap.L().Error(
+			"scenarioExecutor Run called but scenario is not running",
+			zap.Any("scenarioID", sc.scenario.ID),
+			zap.Any("executionID", sc.executionID.String()),
+		)
 
-		// 			zap.L().Debug("scenarioExecutor.RunOnce waiting to be run")
-		// 		}
+		return pkg.ErrScenarioIsNotRunning
+	}
 
-		// 		zap.L().Info("scenarioExecutor.RunOnce Running")
+	if sc.scenario.MaxTestServiceCount == nil {
+		return pkg.ErrMaxTestServiceCountNotSet
+	}
 
-		// 		// provision agents
+	if *sc.scenario.MaxTestServiceCount < 1 {
+		return pkg.ErrMaxTestServiceCountLessThanOne
+	}
 
-		// 		// Make sure all agents are healthy.
-		// 		sc.awaitAgentsToBeHealthy()
+	for range *sc.scenario.MaxTestServiceCount {
+		agent := sc.testAgentControllerToolBox.Build(sc.scenario)
+		go func() {
+			_ = agent.Run()
+		}()
 
-		// 		// NOW: all agents are healthy.
-		// 		// we can send scheduled commands.
-		// 		// we need a loop based on len of steps:
-		// 		_ = sc.executeScenarioSteps(ctx)
+		sc.agents = append(sc.agents, agent)
+	}
 
-		// 		goto start
-		// 	}
-	})
+	// run scenario
 
+	// iteration of agent count increment.
+	for range sc.scenario.ExecNumMultiAgent {
+		for range sc.scenario.IncreaseAgentNumber {
+			agent := sc.testAgentControllerToolBox.Build(sc.scenario)
+			go func() {
+				_ = agent.Run()
+			}()
+			sc.agents = append(sc.agents, agent)
+		}
+
+		// iteration of factorial number increment.
+		// for {
+		// }
+		// run scenario
+	}
+
+	// TODO: complete implementation
+	panic("complete implementation")
+	// loop
+	// run scenario(
+	// // await to be healthy
+	// // await to be ready to start testing
+	// // executing tests
+	// )
+	// end loop
+	// deprovision all agents
+	// remove scenario from memory
+	// ------------
+
+	// start:
+	// 	select {
+	// 	case <-ctx.Done():
+	// 		return
+	// 	default:
+	// 		for !sc.running {
+	// 			time.Sleep(RunOnceDelay)
+
+	// 			zap.L().Debug("scenarioExecutor.RunOnce waiting to be run")
+	// 		}
+
+	// 		zap.L().Info("scenarioExecutor.RunOnce Running")
+
+	// 		// provision agents
+
+	// 		// Make sure all agents are healthy.
+	// 		sc.awaitAgentsToBeHealthy()
+
+	// 		// NOW: all agents are healthy.
+	// 		// we can send scheduled commands.
+	// 		// we need a loop based on len of steps:
+	// 		_ = sc.executeScenarioSteps(ctx)
+
+	// 		goto start
+	// 	}
+
+	return nil
+}
+
+func (sc *scenarioExecutor) execute(ctx context.Context) error {
+	// await to be healthy
+	// await to be ready to start testing
+	// executing tests
 	return nil
 }
 
