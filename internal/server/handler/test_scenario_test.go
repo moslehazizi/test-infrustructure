@@ -1821,6 +1821,8 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
 			"num_steps": 2,
+			"increase_agent_number": 0,
+			"execution_number_multi_agent": 1,
 			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
@@ -1838,7 +1840,9 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 				"long_string_value_rate": 10,
 				"null_value_rate": 10 , 
 		        "database_name": "test_service_db",
-        		"database_table_name": "test_service_table"
+        		"database_table_name": "test_service_table",
+				"increase_fixed_input": 0,
+				"execution_number_multi_fixed_input": 1
 			}
     	}`
 
@@ -1851,22 +1855,26 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: new(int64(1)),
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 			Config: &request.TestServiceConfigRequest{
-				MaxRequests:           sampleInt,
-				MaxDuration:           1,
-				RandomRequestDelayMin: new(10),
-				RandomRequestDelayMax: new(20),
-				RandomTestNumberMin:   new(10),
-				RandomTestNumberMax:   new(20),
-				BadValueRate:          50,
-				NegativeValueRate:     10,
-				RealValueRate:         20,
-				ZeroValueRate:         40,
-				StringValueRate:       10,
-				LongStringValueRate:   10,
-				NullValueRate:         10,
-				DatabaseName:          databaseName,
-				DatabaseTableName:     databaseTableName,
+				MaxRequests:            sampleInt,
+				MaxDuration:            1,
+				RandomRequestDelayMin:  new(10),
+				RandomRequestDelayMax:  new(20),
+				RandomTestNumberMin:    new(10),
+				RandomTestNumberMax:    new(20),
+				BadValueRate:           50,
+				NegativeValueRate:      10,
+				RealValueRate:          20,
+				ZeroValueRate:          40,
+				StringValueRate:        10,
+				LongStringValueRate:    10,
+				NullValueRate:          10,
+				DatabaseName:           databaseName,
+				DatabaseTableName:      databaseTableName,
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
 			},
 		}
 
@@ -1903,6 +1911,8 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 			"execution_duration": 1,
 			"auto_step_change_rate": 1,
 			"num_steps": 2,
+			"increase_agent_number": 0,
+			"execution_number_multi_agent": 1,
 			"test_service_config": {
 				"max_requests": 1,
 				"max_duration": 1,
@@ -1920,7 +1930,9 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 				"long_string_value_rate": 10,
 				"null_value_rate": 10 , 
 		        "database_name": "test_service_db",
-        		"database_table_name": "test_service_table"
+        		"database_table_name": "test_service_table",
+				"increase_fixed_input": 0,
+				"execution_number_multi_fixed_input": 1
 			}
     	}`
 
@@ -1933,22 +1945,26 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 			MotherServiceID:     sampleUin64,
 			MaxTestServiceCount: new(int64(1)),
 			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
 			Config: &request.TestServiceConfigRequest{
-				MaxRequests:           sampleInt,
-				MaxDuration:           1,
-				RandomRequestDelayMin: new(10),
-				RandomRequestDelayMax: new(20),
-				RandomTestNumberMin:   new(10),
-				RandomTestNumberMax:   new(20),
-				BadValueRate:          50,
-				NegativeValueRate:     10,
-				RealValueRate:         20,
-				ZeroValueRate:         40,
-				StringValueRate:       10,
-				LongStringValueRate:   10,
-				NullValueRate:         10,
-				DatabaseName:          databaseName,
-				DatabaseTableName:     databaseTableName,
+				MaxRequests:            sampleInt,
+				MaxDuration:            1,
+				RandomRequestDelayMin:  new(10),
+				RandomRequestDelayMax:  new(20),
+				RandomTestNumberMin:    new(10),
+				RandomTestNumberMax:    new(20),
+				BadValueRate:           50,
+				NegativeValueRate:      10,
+				RealValueRate:          20,
+				ZeroValueRate:          40,
+				StringValueRate:        10,
+				LongStringValueRate:    10,
+				NullValueRate:          10,
+				DatabaseName:           databaseName,
+				DatabaseTableName:      databaseTableName,
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
 			},
 		}
 

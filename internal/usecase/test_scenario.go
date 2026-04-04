@@ -604,6 +604,8 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 	existing.Name = testScenarioUpdateRequest.Name
 	existing.MotherServiceID = testScenarioUpdateRequest.MotherServiceID
 	existing.MotherService = motherService
+	existing.IncreaseAgentNumber = testScenarioUpdateRequest.IncreaseAgentNumber
+	existing.ExecNumMultiAgent = testScenarioUpdateRequest.ExecNumMultiAgent
 
 	if testScenarioUpdateRequest.MaxTestServiceCount != nil {
 		existing.MaxTestServiceCount = testScenarioUpdateRequest.MaxTestServiceCount
@@ -640,6 +642,8 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 	testSvcConfig.NullValueRate = cfg.NullValueRate
 	testSvcConfig.DatabaseName = cfg.DatabaseName
 	testSvcConfig.DatabaseTableName = cfg.DatabaseTableName
+	testSvcConfig.IncreaseFixedInput = cfg.IncreaseFixedInput
+	testSvcConfig.ExecNumMultiFixedInput = cfg.ExecNumMultiFixedInput
 
 	existing.TestServiceConfig = testSvcConfig
 

@@ -40,6 +40,8 @@ type TestScenarioUpdateRequest struct {
 	MaxTestServiceCount *int64                    `json:"max_test_service_count"`
 	Config              *TestServiceConfigRequest `json:"test_service_config"`
 	NumSteps            int64                     `json:"num_steps"`
+	IncreaseAgentNumber int64                     `json:"increase_agent_number"`
+	ExecNumMultiAgent   int64                     `json:"execution_number_multi_agent"`
 }
 
 type TestScenarioPaginationRequest struct {
