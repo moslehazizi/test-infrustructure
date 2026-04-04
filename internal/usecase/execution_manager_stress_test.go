@@ -105,63 +105,6 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 	})
 }
 
-func TestStressTestExecutionManager_RunScenario_(t *testing.T) {
-	t.Run("failed_case_scenario_is_null", func(t *testing.T) {
-		var scenario *entity.TestScenario
-
-		builder := new(mocks.MockTestAgentControllerToolBox)
-		repo := new(repoMocks.MockTestScenario)
-
-		ex := NewStressTestExecutionManager(builder, repo)
-		err := ex.RunScenario(context.Background(), scenario)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrTestScenarioServiceIsNil)
-	})
-
-	t.Run("failed_case_scenario_not_found", func(t *testing.T) {
-		scenario := &entity.TestScenario{
-			MaxTestServiceCount: nil,
-			NumSteps:            2,
-		}
-
-		builder := new(mocks.MockTestAgentControllerToolBox)
-		repo := new(repoMocks.MockTestScenario)
-
-		ex := NewStressTestExecutionManager(builder, repo)
-		err := ex.RunScenario(context.Background(), scenario)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
-	})
-
-	t.Run("success_case", func(t *testing.T) {
-		ctx := context.Background()
-		executionID := uuid.New()
-		scenario := &entity.TestScenario{
-			MaxTestServiceCount: new(int64(1)),
-			NumSteps:            2,
-		}
-
-		builder := new(mocks.MockTestAgentControllerToolBox)
-		repo := new(repoMocks.MockTestScenario)
-
-		ex := NewStressTestExecutionManager(builder, repo)
-		agent := new(mocks.MockTestAgentController)
-
-		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
-			scenario:    scenario,
-			executionID: executionID,
-			agents:      []interfaces.TestAgentController{agent},
-		}
-
-		err := ex.RunScenario(ctx, scenario)
-
-		assert.NoError(t, err)
-	})
-}
-
 func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 	t.Run("failed_case_scenario_max_service_count_is_null", func(t *testing.T) {
 		scenario := entity.TestScenario{
