@@ -306,54 +306,6 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 	})
 }
 
-func TestStressTestExecutionManager_Run(t *testing.T) {
-	t.Run("all_executors_are_running", func(t *testing.T) {
-		t.Parallel()
-
-		scenario := &entity.TestScenario{
-			ID: 1,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(1)),
-			NumSteps:            2,
-		}
-
-		builder := new(mocks.MockTestAgentControllerToolBox)
-		repo := new(repoMocks.MockTestScenario)
-
-		agent := new(mocks.MockTestAgentController)
-		agent.On("Run").Return(nil).Times(1)
-		agent.On("Healthy").Return(false)
-
-		builder.On("Build", scenario).Times(1).Return(agent)
-
-		ex := NewStressTestExecutionManager(builder, repo)
-
-		err := ex.AddScenario(context.Background(), scenario)
-		assert.NoError(t, err)
-
-		// will wait to all goroutines be called.
-		time.Sleep(time.Millisecond)
-
-		agent.AssertCalled(t, "Run")
-		builder.AssertCalled(t, "Build", scenario)
-
-		checkLoopSleep = time.Millisecond * 10
-
-		// now, we should watch on manager Run function
-		go ex.Run()
-		time.Sleep(time.Millisecond)
-		stEx := ex.(*StressTestExecutionManager)
-		assert.False(t, stEx.scenarios[1].IsRunning())
-
-		// make sure if already is running, it hit continue.
-		time.Sleep(time.Millisecond * 11)
-		assert.False(t, stEx.scenarios[1].IsRunning())
-	})
-}
-
 func TestStressTestExecutionManager_Stop(t *testing.T) {
 	t.Run("failed_case_scenario_max_service_count_is_null", func(t *testing.T) {
 		scenario := entity.TestScenario{

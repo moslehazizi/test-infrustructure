@@ -9,8 +9,6 @@ import (
 )
 
 type ExecutionManager interface {
-	// Run will run ExecutionManager as a background job.
-	Run()
 	// Add will initialize new TestAgentControllers based on scenario config.
 	AddScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// RunScenario is for run scenario.

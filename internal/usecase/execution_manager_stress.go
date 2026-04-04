@@ -35,22 +35,6 @@ type StressTestExecutionManager struct {
 	mx                         sync.Mutex
 }
 
-func (ex *StressTestExecutionManager) Run() {
-	ctx := context.Background()
-	for ex.running {
-		// check all scenarios
-		// for each scenario, make sure the executor is running.
-		for _, sc := range ex.scenarios {
-			go func() {
-				_ = sc.Run(ctx)
-			}()
-		}
-		time.Sleep(checkLoopSleep)
-	}
-
-	zap.L().Info("exiting from StressTestExecutionManager.Run")
-}
-
 // AddScenario
 // @Deprecated no longer needed.
 func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario *entity.TestScenario) error {
@@ -103,6 +87,11 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 		// set scenario as running
 		testScenario.SetRunning(true)
 
+		//nolint
+		go func() {
+			_ = testScenario.Run(context.Background())
+		}()
+
 		return nil
 	}
 
@@ -112,6 +101,11 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 		running:      true,
 		scenarioRepo: ex.scenarioRepo,
 	}
+
+	//nolint
+	go func() {
+		_ = ex.scenarios[scenario.ID].Run(context.Background())
+	}()
 
 	return nil
 }

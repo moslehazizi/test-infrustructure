@@ -62,29 +62,44 @@ func (sc *scenarioExecutor) AllAgentsAreHealthy() bool {
 func (sc *scenarioExecutor) Run(ctx context.Context) error {
 	sc.once.Do(func() {
 		zap.L().Info("scenarioExecutor.RunOnce Called")
+		// ------------
+		// check scenario is running
+		//  => true
+		// loop
+		// // provision required agents
+		// // await to be healthy
+		// // await to be ready to start testing
+		// // executing tests
+		// end loop
+		// deprovision all agents
+		// remove scenario from memory
+		// ------------
 
-	start:
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			for !sc.running {
-				time.Sleep(RunOnceDelay)
+		// start:
+		// 	select {
+		// 	case <-ctx.Done():
+		// 		return
+		// 	default:
+		// 		for !sc.running {
+		// 			time.Sleep(RunOnceDelay)
 
-				zap.L().Debug("scenarioExecutor.RunOnce waiting to be run")
-			}
-			zap.L().Info("scenarioExecutor.RunOnce Running")
+		// 			zap.L().Debug("scenarioExecutor.RunOnce waiting to be run")
+		// 		}
 
-			// Make sure all agents are healthy.
-			sc.awaitAgentsToBeHealthy()
+		// 		zap.L().Info("scenarioExecutor.RunOnce Running")
 
-			// NOW: all agents are healthy.
-			// we can send scheduled commands.
-			// we need a loop based on len of steps:
-			_ = sc.executeScenarioSteps(ctx)
+		// 		// provision agents
 
-			goto start
-		}
+		// 		// Make sure all agents are healthy.
+		// 		sc.awaitAgentsToBeHealthy()
+
+		// 		// NOW: all agents are healthy.
+		// 		// we can send scheduled commands.
+		// 		// we need a loop based on len of steps:
+		// 		_ = sc.executeScenarioSteps(ctx)
+
+		// 		goto start
+		// 	}
 	})
 
 	return nil

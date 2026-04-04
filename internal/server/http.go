@@ -153,7 +153,6 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	agentBuilder := usecase.NewTestAgentControllerToolBox(provisionService, testServiceSDK, cfg.Kubernetese.TestServiceAPPServe, cfg.Kubernetese.IngressHost, cfg.Kubernetese.IngressPort)
 	stressTestExecutionManager := usecase.NewStressTestExecutionManager(agentBuilder, testScenarioRepository)
-	go stressTestExecutionManager.Run()
 
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
 		db,
