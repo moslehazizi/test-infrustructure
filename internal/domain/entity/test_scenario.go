@@ -35,8 +35,27 @@ type TestScenario struct {
 	DeploymentNumber    int32              `gorm:"column:deployment_number"`
 	StartedAt           *time.Time         `gorm:"column:started_at"`
 	Editable            bool               `gorm:"column:editable;default:true;not null"`
-	IncreaseAgentNumber int64              `gorm:"column:increase_agent_number"`
-	ExecNumMultiAgent   int64              `gorm:"column:execution_number_multi_agent"`
+	// سناریو را میتوان با افزایش تعداد ایجنت های تست به صورت خودکار مجدد اجرا کرد.
+	// این فیلد تعداد ایجنت هایی که در هر اجرای سناریو از ابتدا لازم هست
+	// که به تعداد مرحله قبلش اضافه شود را مشخص میکند.
+	// برای مثال در هر اجرای کامل سناریو، ۵ ایجنت اضافه شود.
+	// این به این معنا است که زمانیکه سناریو تا انتها رفت،
+	// مجدد از ابتدا تکرار میشود و اینبار، تعداد ایجنت ۵ تا
+	// بیشتر از اجرای قبلی خواهد بود.
+	// نکته مهم اینکه فیلد اگزکیوشن آی دی در هر اجرای از ابتدا،
+	// متفاوت خواهد بود و میتوان تمایز داد.
+	IncreaseAgentNumber int64 `gorm:"column:increase_agent_number"`
+	// این فیلد در کنار فیلد بالا معنا دار میشود.
+	// این فیلد تعیین میکند که افزایش ایجنت ها چند بار رخ دهد.
+	// برای مثال اگر این عدد ۱۰ باشد، یعنی ۱۰ بار کل سناریو رو تکرار کن
+	// و هر بار به میزان تعریف شده در فیلد بالا، تعداد ایجنت ها را افزایش بده.
+	//
+	// فرض کنید:
+	// IncreaseAgentNumber=5 & ExecNumMultiAgent=10 & MaxTestServiceCount = 5
+	// در این حالت، ابتدا با ۵ ایجنت سناریو انجام میشود.
+	// سپس با ۵ واحد افزایش، کل سناریو با ۱۰ ایجنت تکرار میشود.
+	// این فرایند ۱۰ بار تکرار میشود و آخرین مرحله با ۵۵ ایجنت تست خواهد شد.
+	ExecNumMultiAgent int64 `gorm:"column:execution_number_multi_agent"`
 }
 
 func (TestScenario) TableName() string {

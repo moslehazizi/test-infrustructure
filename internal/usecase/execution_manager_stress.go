@@ -81,7 +81,7 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 			for !sc.running {
 				time.Sleep(RunOnceDelay)
 
-				zap.L().Info("scenarioExecutor.RunOnce waiting to be run")
+				zap.L().Debug("scenarioExecutor.RunOnce waiting to be run")
 			}
 			zap.L().Info("scenarioExecutor.RunOnce Running")
 
