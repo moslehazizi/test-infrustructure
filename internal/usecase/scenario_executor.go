@@ -92,7 +92,7 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 	}
 
 	// run scenario
-	ss := sc.scenarioExecutorBuilder.Build(
+	sseb := sc.scenarioExecutorBuilder.Build(
 		sc.agents,
 		sc.allAgentsHealthy,
 		sc.allAgentsReadyForTesting,
@@ -101,10 +101,12 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 		sc.running,
 	)
 
-	err := ss.Execute(ctx)
+	err := sseb.Execute(ctx)
 	if err != nil {
-		// return nil, err
+		return err
 	}
+
+	return nil
 
 	// iteration of agent count increment.
 	for range sc.scenario.ExecNumMultiAgent {
@@ -120,6 +122,11 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 		// for {
 		// }
 		// run scenario
+		err := sseb.Execute(ctx)
+		if err != nil {
+			// return nil, err
+		}
+
 	}
 
 	// TODO: complete implementation

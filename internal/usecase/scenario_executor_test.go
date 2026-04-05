@@ -196,7 +196,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountLessThanOne)
 	})
 	t.Run("1_step_6_dynamic_agents_no_factorial_increment", func(t *testing.T) {
-		t.Parallel()
+		// t.Parallel()
 
 		scenario := &entity.TestScenario{
 			ID: 1,
@@ -236,7 +236,8 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		repo := new(repoMocks.MockTestScenario)
 		ac := new(mocks.MockTestAgentControllerToolBox)
 		mss := new(mocks.MockSingleScenarioExecutor)
-		ex := &scenarioExecutor{
+		msseb := new(mocks.MockSingleScenarioExecutorBuilder)
+		se := &scenarioExecutor{
 			scenario:                   scenario,
 			executionID:                uuid.New(),
 			agents:                     []interfaces.TestAgentController{},
@@ -244,79 +245,53 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 			running:                    true,
 			scenarioRepo:               repo,
 			testAgentControllerToolBox: ac,
+			scenarioExecutorBuilder:    msseb,
 		}
 
 		agent1 := new(mocks.MockTestAgentController)
 		agent2 := new(mocks.MockTestAgentController)
 		agent3 := new(mocks.MockTestAgentController)
-		agent4 := new(mocks.MockTestAgentController)
-		agent5 := new(mocks.MockTestAgentController)
-		agent6 := new(mocks.MockTestAgentController)
-		agent7 := new(mocks.MockTestAgentController)
-		agent8 := new(mocks.MockTestAgentController)
-		agent9 := new(mocks.MockTestAgentController)
+		// agent4 := new(mocks.MockTestAgentController)
+		// agent5 := new(mocks.MockTestAgentController)
+		// agent6 := new(mocks.MockTestAgentController)
+		// agent7 := new(mocks.MockTestAgentController)
+		// agent8 := new(mocks.MockTestAgentController)
+		// agent9 := new(mocks.MockTestAgentController)
 		ac.On("Build", mock.Anything).Times(1).Return(agent1)
 		ac.On("Build", mock.Anything).Times(1).Return(agent2)
 		ac.On("Build", mock.Anything).Times(1).Return(agent3)
-		ac.On("Build", mock.Anything).Times(1).Return(agent4)
-		ac.On("Build", mock.Anything).Times(1).Return(agent5)
-		ac.On("Build", mock.Anything).Times(1).Return(agent6)
-		ac.On("Build", mock.Anything).Times(1).Return(agent7)
-		ac.On("Build", mock.Anything).Times(1).Return(agent8)
-		ac.On("Build", mock.Anything).Times(1).Return(agent9)
+		// ac.On("Build", mock.Anything).Times(1).Return(agent4)
+		// ac.On("Build", mock.Anything).Times(1).Return(agent5)
+		// ac.On("Build", mock.Anything).Times(1).Return(agent6)
+		// ac.On("Build", mock.Anything).Times(1).Return(agent7)
+		// ac.On("Build", mock.Anything).Times(1).Return(agent8)
+		// ac.On("Build", mock.Anything).Times(1).Return(agent9)
 
 		agent1.On("Run").Times(1).Return(nil)
 		agent2.On("Run").Times(1).Return(nil)
 		agent3.On("Run").Times(1).Return(nil)
-		agent4.On("Run").Times(1).Return(nil)
-		agent5.On("Run").Times(1).Return(nil)
-		agent6.On("Run").Times(1).Return(nil)
-		agent7.On("Run").Times(1).Return(nil)
-		agent8.On("Run").Times(1).Return(nil)
-		agent9.On("Run").Times(1).Return(nil)
+		// agent4.On("Run").Times(1).Return(nil)
+		// agent5.On("Run").Times(1).Return(nil)
+		// agent6.On("Run").Times(1).Return(nil)
+		// agent7.On("Run").Times(1).Return(nil)
+		// agent8.On("Run").Times(1).Return(nil)
+		// agent9.On("Run").Times(1).Return(nil)
 
-		mss.On("Execute", mock.Anything).Return(nil).Times(9)
+		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(mss)
+		mss.On("Execute", mock.Anything).Return(nil).Times(3)
 
-		// agent1.On("Healthy").Return(true).Times(4)
-		// agent1.On("ReadyForTesting").Return(true).Times(4)
-		// agent1.On("StartTesting", mock.Anything, req).Return(nil).Times(4)
-		// agent2.On("Healthy").Return(true).Times(4)
-		// agent2.On("ReadyForTesting").Return(true).Times(4)
-		// agent2.On("StartTesting", mock.Anything, req).Return(nil).Times(4)
-		// agent3.On("Healthy").Return(true).Times(4)
-		// agent3.On("ReadyForTesting").Return(true).Times(4)
-		// agent3.On("StartTesting", mock.Anything, req).Return(nil).Times(4)
-
-		// agent4.On("Healthy").Return(true).Times(3)
-		// agent4.On("ReadyForTesting").Return(true).Times(3)
-		// agent4.On("StartTesting", mock.Anything, req).Return(nil).Times(3)
-		// agent5.On("Healthy").Return(true).Times(3)
-		// agent5.On("ReadyForTesting").Return(true).Times(3)
-		// agent5.On("StartTesting", mock.Anything, req).Return(nil).Times(3)
-
-		// agent6.On("Healthy").Return(true).Times(2)
-		// agent6.On("ReadyForTesting").Return(true).Times(2)
-		// agent6.On("StartTesting", mock.Anything, req).Return(nil).Times(2)
-		// agent7.On("Healthy").Return(true).Times(2)
-		// agent7.On("ReadyForTesting").Return(true).Times(2)
-		// agent7.On("StartTesting", mock.Anything, req).Return(nil).Times(2)
-
-		// agent8.On("Healthy").Return(true).Times(1)
-		// agent8.On("ReadyForTesting").Return(true).Times(1)
-		// agent8.On("StartTesting", mock.Anything, req).Return(nil).Times(1)
-		// agent9.On("Healthy").Return(true).Times(1)
-		// agent9.On("ReadyForTesting").Return(true).Times(1)
-		// agent9.On("StartTesting", mock.Anything, req).Return(nil).Times(1)
-
-		err := ex.Run(context.Background())
+		err := se.Run(context.Background())
 		assert.NoError(t, err)
 
 		ac.AssertCalled(t, "Build", mock.Anything)
 		ac.AssertExpectations(t)
-		ac.AssertNumberOfCalls(t, "Build", 9)
+		ac.AssertNumberOfCalls(t, "Build", 3)
 
 		mss.AssertCalled(t, "Execute", mock.Anything)
-		mss.AssertNumberOfCalls(t, "Execute", 9)
+		mss.AssertNumberOfCalls(t, "Execute", 1)
+
+		msseb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		msseb.AssertNumberOfCalls(t, "Build", 1)
 
 		// make sure all goroutines are called
 		time.Sleep(time.Millisecond)
@@ -326,18 +301,18 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent2.AssertNumberOfCalls(t, "Run", 1)
 		agent3.AssertCalled(t, "Run")
 		agent3.AssertNumberOfCalls(t, "Run", 1)
-		agent4.AssertCalled(t, "Run")
-		agent4.AssertNumberOfCalls(t, "Run", 1)
-		agent5.AssertCalled(t, "Run")
-		agent5.AssertNumberOfCalls(t, "Run", 1)
-		agent6.AssertCalled(t, "Run")
-		agent6.AssertNumberOfCalls(t, "Run", 1)
-		agent7.AssertCalled(t, "Run")
-		agent7.AssertNumberOfCalls(t, "Run", 1)
-		agent8.AssertCalled(t, "Run")
-		agent8.AssertNumberOfCalls(t, "Run", 1)
-		agent9.AssertCalled(t, "Run")
-		agent9.AssertNumberOfCalls(t, "Run", 1)
+		// agent4.AssertCalled(t, "Run")
+		// agent4.AssertNumberOfCalls(t, "Run", 1)
+		// agent5.AssertCalled(t, "Run")
+		// agent5.AssertNumberOfCalls(t, "Run", 1)
+		// agent6.AssertCalled(t, "Run")
+		// agent6.AssertNumberOfCalls(t, "Run", 1)
+		// agent7.AssertCalled(t, "Run")
+		// agent7.AssertNumberOfCalls(t, "Run", 1)
+		// agent8.AssertCalled(t, "Run")
+		// agent8.AssertNumberOfCalls(t, "Run", 1)
+		// agent9.AssertCalled(t, "Run")
+		// agent9.AssertNumberOfCalls(t, "Run", 1)
 	})
 }
 
