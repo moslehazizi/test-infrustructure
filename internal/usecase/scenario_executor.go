@@ -6,6 +6,7 @@ import (
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
+	"fmt"
 	"sync"
 	"time"
 
@@ -92,7 +93,7 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 	}
 
 	// run scenario
-	sseb := sc.scenarioExecutorBuilder.Build(
+	sse := sc.scenarioExecutorBuilder.Build(
 		sc.agents,
 		sc.allAgentsHealthy,
 		sc.allAgentsReadyForTesting,
@@ -101,12 +102,10 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 		sc.running,
 	)
 
-	err := sseb.Execute(ctx)
+	err := sse.Execute(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
 	}
-
-	return nil
 
 	// iteration of agent count increment.
 	for range sc.scenario.ExecNumMultiAgent {
@@ -118,19 +117,25 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 			sc.agents = append(sc.agents, agent)
 		}
 
-		// iteration of factorial number increment.
-		// for {
-		// }
 		// run scenario
-		err := sseb.Execute(ctx)
+		sse := sc.scenarioExecutorBuilder.Build(
+			sc.agents,
+			sc.allAgentsHealthy,
+			sc.allAgentsReadyForTesting,
+			sc.scenario,
+			sc.executionID,
+			sc.running,
+		)
+
+		err := sse.Execute(ctx)
 		if err != nil {
-			// return nil, err
+			return err
 		}
 
 	}
 
 	// TODO: complete implementation
-	panic("complete implementation")
+	// panic("complete implementation")
 	// loop
 	// run scenario(
 	// // await to be healthy

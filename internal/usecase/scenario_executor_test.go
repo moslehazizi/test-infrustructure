@@ -7,6 +7,7 @@ import (
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
+	"errors"
 	"testing"
 	"time"
 
@@ -235,7 +236,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 
 		repo := new(repoMocks.MockTestScenario)
 		ac := new(mocks.MockTestAgentControllerToolBox)
-		mss := new(mocks.MockSingleScenarioExecutor)
+		msse := new(mocks.MockSingleScenarioExecutor)
 		msseb := new(mocks.MockSingleScenarioExecutorBuilder)
 		se := &scenarioExecutor{
 			scenario:                   scenario,
@@ -251,68 +252,144 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent1 := new(mocks.MockTestAgentController)
 		agent2 := new(mocks.MockTestAgentController)
 		agent3 := new(mocks.MockTestAgentController)
-		// agent4 := new(mocks.MockTestAgentController)
-		// agent5 := new(mocks.MockTestAgentController)
-		// agent6 := new(mocks.MockTestAgentController)
-		// agent7 := new(mocks.MockTestAgentController)
-		// agent8 := new(mocks.MockTestAgentController)
-		// agent9 := new(mocks.MockTestAgentController)
+		agent4 := new(mocks.MockTestAgentController)
+		agent5 := new(mocks.MockTestAgentController)
+		agent6 := new(mocks.MockTestAgentController)
+		agent7 := new(mocks.MockTestAgentController)
+		agent8 := new(mocks.MockTestAgentController)
+		agent9 := new(mocks.MockTestAgentController)
+
 		ac.On("Build", mock.Anything).Times(1).Return(agent1)
 		ac.On("Build", mock.Anything).Times(1).Return(agent2)
 		ac.On("Build", mock.Anything).Times(1).Return(agent3)
-		// ac.On("Build", mock.Anything).Times(1).Return(agent4)
-		// ac.On("Build", mock.Anything).Times(1).Return(agent5)
-		// ac.On("Build", mock.Anything).Times(1).Return(agent6)
-		// ac.On("Build", mock.Anything).Times(1).Return(agent7)
-		// ac.On("Build", mock.Anything).Times(1).Return(agent8)
-		// ac.On("Build", mock.Anything).Times(1).Return(agent9)
+		ac.On("Build", mock.Anything).Times(1).Return(agent4)
+		ac.On("Build", mock.Anything).Times(1).Return(agent5)
+		ac.On("Build", mock.Anything).Times(1).Return(agent6)
+		ac.On("Build", mock.Anything).Times(1).Return(agent7)
+		ac.On("Build", mock.Anything).Times(1).Return(agent8)
+		ac.On("Build", mock.Anything).Times(1).Return(agent9)
 
 		agent1.On("Run").Times(1).Return(nil)
 		agent2.On("Run").Times(1).Return(nil)
 		agent3.On("Run").Times(1).Return(nil)
-		// agent4.On("Run").Times(1).Return(nil)
-		// agent5.On("Run").Times(1).Return(nil)
-		// agent6.On("Run").Times(1).Return(nil)
-		// agent7.On("Run").Times(1).Return(nil)
-		// agent8.On("Run").Times(1).Return(nil)
-		// agent9.On("Run").Times(1).Return(nil)
+		agent4.On("Run").Times(1).Return(nil)
+		agent5.On("Run").Times(1).Return(nil)
+		agent6.On("Run").Times(1).Return(nil)
+		agent7.On("Run").Times(1).Return(nil)
+		agent8.On("Run").Times(1).Return(nil)
+		agent9.On("Run").Times(1).Return(nil)
 
-		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(mss)
-		mss.On("Execute", mock.Anything).Return(nil).Times(3)
+		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			Return(msse).
+			Times(1)
+		msse.On("Execute", mock.Anything).Return(nil).Times(1)
 
 		err := se.Run(context.Background())
 		assert.NoError(t, err)
 
 		ac.AssertCalled(t, "Build", mock.Anything)
 		ac.AssertExpectations(t)
-		ac.AssertNumberOfCalls(t, "Build", 3)
-
-		mss.AssertCalled(t, "Execute", mock.Anything)
-		mss.AssertNumberOfCalls(t, "Execute", 1)
-
-		msseb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-		msseb.AssertNumberOfCalls(t, "Build", 1)
+		ac.AssertNumberOfCalls(t, "Build", 9) // 3 in stage zero + 6 in multi stage
 
 		// make sure all goroutines are called
 		time.Sleep(time.Millisecond)
+
 		agent1.AssertCalled(t, "Run")
 		agent1.AssertNumberOfCalls(t, "Run", 1)
 		agent2.AssertCalled(t, "Run")
 		agent2.AssertNumberOfCalls(t, "Run", 1)
 		agent3.AssertCalled(t, "Run")
 		agent3.AssertNumberOfCalls(t, "Run", 1)
-		// agent4.AssertCalled(t, "Run")
-		// agent4.AssertNumberOfCalls(t, "Run", 1)
-		// agent5.AssertCalled(t, "Run")
-		// agent5.AssertNumberOfCalls(t, "Run", 1)
-		// agent6.AssertCalled(t, "Run")
-		// agent6.AssertNumberOfCalls(t, "Run", 1)
-		// agent7.AssertCalled(t, "Run")
-		// agent7.AssertNumberOfCalls(t, "Run", 1)
-		// agent8.AssertCalled(t, "Run")
-		// agent8.AssertNumberOfCalls(t, "Run", 1)
-		// agent9.AssertCalled(t, "Run")
-		// agent9.AssertNumberOfCalls(t, "Run", 1)
+		agent4.AssertCalled(t, "Run")
+		agent4.AssertNumberOfCalls(t, "Run", 1)
+		agent5.AssertCalled(t, "Run")
+		agent5.AssertNumberOfCalls(t, "Run", 1)
+		agent6.AssertCalled(t, "Run")
+		agent6.AssertNumberOfCalls(t, "Run", 1)
+		agent7.AssertCalled(t, "Run")
+		agent7.AssertNumberOfCalls(t, "Run", 1)
+		agent8.AssertCalled(t, "Run")
+		agent8.AssertNumberOfCalls(t, "Run", 1)
+		agent9.AssertCalled(t, "Run")
+		agent9.AssertNumberOfCalls(t, "Run", 1)
+
+		msseb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		msseb.AssertNumberOfCalls(t, "Build", 4) // 1 in stage zero + 3 in mult stage
+
+		msse.AssertCalled(t, "Execute", mock.Anything)
+		msse.AssertNumberOfCalls(t, "Execute", 4) // 1 in stage zero + 3 in multi stage
+	})
+
+	t.Run("1_step_6_dynamic_agents_no_factorial_increment_failed_execute", func(t *testing.T) {
+		// t.Parallel()
+
+		scenario := &entity.TestScenario{
+			ID: 1,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(3)),
+			NumSteps:            1,
+			IncreaseAgentNumber: 2,
+			ExecNumMultiAgent:   3,
+			TestServiceConfig: &entity.TestServiceConfig{
+				ID:                     1,
+				TestScenarioID:         1,
+				MaxRequests:            100,
+				MaxDuration:            1000,
+				RequestDelayDuration:   new(10),
+				RandomRequestDelayMin:  nil,
+				RandomRequestDelayMax:  nil,
+				FixedTestNumber:        new(43),
+				RandomTestNumberMin:    nil,
+				RandomTestNumberMax:    nil,
+				BadValueRate:           2,
+				NegativeValueRate:      10,
+				RealValueRate:          10,
+				ZeroValueRate:          0,
+				StringValueRate:        80,
+				LongStringValueRate:    0,
+				NullValueRate:          0,
+				DatabaseName:           "dbname",
+				DatabaseTableName:      "tbl",
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
+			},
+		}
+
+		repo := new(repoMocks.MockTestScenario)
+		ac := new(mocks.MockTestAgentControllerToolBox)
+		msse := new(mocks.MockSingleScenarioExecutor)
+		msseb := new(mocks.MockSingleScenarioExecutorBuilder)
+		se := &scenarioExecutor{
+			scenario:                   scenario,
+			executionID:                uuid.New(),
+			agents:                     []interfaces.TestAgentController{},
+			allAgentsHealthy:           false,
+			running:                    true,
+			scenarioRepo:               repo,
+			testAgentControllerToolBox: ac,
+			scenarioExecutorBuilder:    msseb,
+		}
+
+		agent1 := new(mocks.MockTestAgentController)
+		agent2 := new(mocks.MockTestAgentController)
+		agent3 := new(mocks.MockTestAgentController)
+		ac.On("Build", mock.Anything).Times(1).Return(agent1)
+		ac.On("Build", mock.Anything).Times(1).Return(agent2)
+		ac.On("Build", mock.Anything).Times(1).Return(agent3)
+
+		agent1.On("Run").Times(1).Return(nil)
+		agent2.On("Run").Times(1).Return(nil)
+		agent3.On("Run").Times(1).Return(nil)
+
+		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(msse)
+		msse.On("Execute", mock.Anything).Return(errors.New("something went wrong"))
+
+		err := se.Run(context.Background())
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToExecuteSingleScenario)
 	})
 }
 

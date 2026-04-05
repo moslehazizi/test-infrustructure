@@ -297,6 +297,7 @@ var (
 	ErrFailedToResumeTestService        = errors.New("failed to resume test service")
 	ErrFailedToStopTestService          = errors.New("failed to stop test services")
 	ErrFailedToAbortTestService         = errors.New("failed to abort test services")
+	ErrFailedToExecuteSingleScenario    = errors.New("failed to execute single scenario")
 
 	// Validation errors.
 	ErrFailedToGetTestServiceConfig                       = errors.New("failed to get test service config by id")
