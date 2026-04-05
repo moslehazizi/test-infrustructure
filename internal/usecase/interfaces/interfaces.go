@@ -4,6 +4,8 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider/dto/request"
+
+	"github.com/google/uuid"
 )
 
 type ExecutionManager interface {
@@ -28,6 +30,23 @@ type ScenarioExecutor interface {
 	AllAgentsAreHealthy() bool
 	AddAgent(agent TestAgentController)
 	GetAgents() []TestAgentController
+}
+
+type SingleScenarioExecutor interface {
+	Execute(ctx context.Context) error
+	// AwaitAgentsToBeHealthy()
+	// AwaitAgentsToBeReadyToStartTesting()
+}
+
+type SingleScenarioExecutorBuilder interface {
+	Build(
+		agents []TestAgentController,
+		allAgentsHealthy bool,
+		allAgentsReadyForTesting bool,
+		scenario *entity.TestScenario,
+		executionID uuid.UUID,
+		running bool,
+	) SingleScenarioExecutor
 }
 
 type TestAgentController interface {

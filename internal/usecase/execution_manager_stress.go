@@ -36,7 +36,8 @@ type StressTestExecutionManager struct {
 }
 
 // AddScenario
-// @Deprecated no longer needed.
+//
+//	@Deprecated	no longer needed.
 func (ex *StressTestExecutionManager) AddScenario(ctx context.Context, scenario *entity.TestScenario) error {
 	tracer := otel.Tracer("StressTestExecutionManager")
 	_, span := tracer.Start(ctx, "AddScenario")

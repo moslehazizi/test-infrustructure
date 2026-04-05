@@ -7,7 +7,6 @@ import (
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
-	"errors"
 	"testing"
 	"time"
 
@@ -135,181 +134,7 @@ func Test_scenarioExecutor_SetRunning(t *testing.T) {
 	assert.False(t, ex.IsRunning())
 
 }
-func Test_scenarioExecutor_awaitAgentsToBeHealthy(t *testing.T) {
-	t.Run("all_agents_test_services_are_healthy_single_agent", func(t *testing.T) {
-		t.Parallel()
 
-		scenario := &entity.TestScenario{
-			ID:       1,
-			NumSteps: 2,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(1)),
-		}
-
-		agent := new(mocks.MockTestAgentController)
-		agent.On("Healthy").Times(1).Return(true)
-
-		ex := &scenarioExecutor{
-			scenario:         scenario,
-			executionID:      uuid.New(),
-			agents:           []interfaces.TestAgentController{agent},
-			allAgentsHealthy: false,
-			running:          false,
-		}
-
-		ex.awaitAgentsToBeHealthy()
-
-		agent.AssertCalled(t, "Healthy")
-
-		assert.True(t, ex.allAgentsHealthy)
-	})
-
-	t.Run("all_agents_test_services_are_healthy_2_agents", func(t *testing.T) {
-		t.Parallel()
-
-		scenario := &entity.TestScenario{
-			ID:       1,
-			NumSteps: 2,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(1)),
-		}
-
-		agent1 := new(mocks.MockTestAgentController)
-		agent2 := new(mocks.MockTestAgentController)
-
-		ex := &scenarioExecutor{
-			scenario:         scenario,
-			executionID:      uuid.New(),
-			agents:           []interfaces.TestAgentController{agent1, agent2},
-			allAgentsHealthy: false,
-			running:          false,
-		}
-
-		healthyCheckSleep = time.Millisecond * 10
-		agent1.On("Healthy").Return(true) // may be called multiple times in the health-check loop
-		agent2.On("Healthy").Return(true)
-
-		go ex.awaitAgentsToBeHealthy()
-		time.Sleep(time.Millisecond)
-		time.Sleep(time.Millisecond * 10)
-		assert.True(t, ex.allAgentsHealthy)
-
-		agent1.AssertCalled(t, "Healthy")
-		agent2.AssertCalled(t, "Healthy")
-	})
-}
-func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
-	t.Run("all_agents_test_services_are_ready_single_agent", func(t *testing.T) {
-		scenario := &entity.TestScenario{
-			ID:       1,
-			NumSteps: 2,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(1)),
-		}
-
-		agent := new(mocks.MockTestAgentController)
-		agent.On("ReadyForTesting").Times(1).Return(true)
-
-		ex := &scenarioExecutor{
-			scenario:                 scenario,
-			executionID:              uuid.New(),
-			agents:                   []interfaces.TestAgentController{agent},
-			allAgentsHealthy:         false,
-			allAgentsReadyForTesting: false,
-			running:                  false,
-		}
-
-		ex.awaitAgentsToBeReadyToStartTesting()
-
-		agent.AssertCalled(t, "ReadyForTesting")
-
-		assert.True(t, ex.allAgentsReadyForTesting)
-	})
-
-	t.Run("all_agents_test_services_are_ready_single_agent_first_time_is_not_ready", func(t *testing.T) {
-		t.Parallel()
-
-		scenario := &entity.TestScenario{
-			ID:       1,
-			NumSteps: 2,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(1)),
-		}
-
-		agent := new(mocks.MockTestAgentController)
-		agent.On("ReadyForTesting").Times(1).Return(false)
-
-		ex := &scenarioExecutor{
-			scenario:                 scenario,
-			executionID:              uuid.New(),
-			agents:                   []interfaces.TestAgentController{agent},
-			allAgentsHealthy:         false,
-			allAgentsReadyForTesting: false,
-			running:                  false,
-		}
-
-		go ex.awaitAgentsToBeReadyToStartTesting()
-		time.Sleep(time.Millisecond)
-
-		agent.AssertCalled(t, "ReadyForTesting")
-
-		assert.False(t, ex.allAgentsReadyForTesting)
-
-		agent.On("ReadyForTesting").Times(1).Return(true)
-		time.Sleep(readyForTestingCheckSleep)
-
-		time.Sleep(time.Millisecond)
-
-		agent.AssertCalled(t, "ReadyForTesting")
-		assert.True(t, ex.allAgentsReadyForTesting)
-	})
-
-	t.Run("all_agents_test_services_are_ready_two_agents", func(t *testing.T) {
-		scenario := &entity.TestScenario{
-			ID:       1,
-			NumSteps: 2,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(2)),
-		}
-
-		agent1 := new(mocks.MockTestAgentController)
-		agent1.On("ReadyForTesting").Times(1).Return(true)
-
-		agent2 := new(mocks.MockTestAgentController)
-		agent2.On("ReadyForTesting").Times(1).Return(true)
-
-		ex := &scenarioExecutor{
-			scenario:                 scenario,
-			executionID:              uuid.New(),
-			agents:                   []interfaces.TestAgentController{agent1, agent2},
-			allAgentsHealthy:         false,
-			allAgentsReadyForTesting: false,
-			running:                  false,
-		}
-
-		ex.awaitAgentsToBeReadyToStartTesting()
-
-		agent1.AssertCalled(t, "ReadyForTesting")
-		agent2.AssertCalled(t, "ReadyForTesting")
-
-		assert.True(t, ex.allAgentsReadyForTesting)
-	})
-}
 func Test_scenarioExecutor_Run(t *testing.T) {
 	t.Run("make_sure_execution_id_is_set", func(t *testing.T) {
 		repo := new(repoMocks.MockTestScenario)
@@ -325,7 +150,6 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEqual(t, ex.executionID.String(), "00000000-0000-0000-0000-000000000000")
 	})
-
 	t.Run("scenario_is_not_running", func(t *testing.T) {
 		repo := new(repoMocks.MockTestScenario)
 		ex := &scenarioExecutor{
@@ -371,7 +195,6 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountLessThanOne)
 	})
-
 	t.Run("1_step_6_dynamic_agents_no_factorial_increment", func(t *testing.T) {
 		t.Parallel()
 
@@ -412,6 +235,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 
 		repo := new(repoMocks.MockTestScenario)
 		ac := new(mocks.MockTestAgentControllerToolBox)
+		mss := new(mocks.MockSingleScenarioExecutor)
 		ex := &scenarioExecutor{
 			scenario:                   scenario,
 			executionID:                uuid.New(),
@@ -450,7 +274,39 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent7.On("Run").Times(1).Return(nil)
 		agent8.On("Run").Times(1).Return(nil)
 		agent9.On("Run").Times(1).Return(nil)
-		// agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
+
+		mss.On("Execute", mock.Anything).Return(nil).Times(9)
+
+		// agent1.On("Healthy").Return(true).Times(4)
+		// agent1.On("ReadyForTesting").Return(true).Times(4)
+		// agent1.On("StartTesting", mock.Anything, req).Return(nil).Times(4)
+		// agent2.On("Healthy").Return(true).Times(4)
+		// agent2.On("ReadyForTesting").Return(true).Times(4)
+		// agent2.On("StartTesting", mock.Anything, req).Return(nil).Times(4)
+		// agent3.On("Healthy").Return(true).Times(4)
+		// agent3.On("ReadyForTesting").Return(true).Times(4)
+		// agent3.On("StartTesting", mock.Anything, req).Return(nil).Times(4)
+
+		// agent4.On("Healthy").Return(true).Times(3)
+		// agent4.On("ReadyForTesting").Return(true).Times(3)
+		// agent4.On("StartTesting", mock.Anything, req).Return(nil).Times(3)
+		// agent5.On("Healthy").Return(true).Times(3)
+		// agent5.On("ReadyForTesting").Return(true).Times(3)
+		// agent5.On("StartTesting", mock.Anything, req).Return(nil).Times(3)
+
+		// agent6.On("Healthy").Return(true).Times(2)
+		// agent6.On("ReadyForTesting").Return(true).Times(2)
+		// agent6.On("StartTesting", mock.Anything, req).Return(nil).Times(2)
+		// agent7.On("Healthy").Return(true).Times(2)
+		// agent7.On("ReadyForTesting").Return(true).Times(2)
+		// agent7.On("StartTesting", mock.Anything, req).Return(nil).Times(2)
+
+		// agent8.On("Healthy").Return(true).Times(1)
+		// agent8.On("ReadyForTesting").Return(true).Times(1)
+		// agent8.On("StartTesting", mock.Anything, req).Return(nil).Times(1)
+		// agent9.On("Healthy").Return(true).Times(1)
+		// agent9.On("ReadyForTesting").Return(true).Times(1)
+		// agent9.On("StartTesting", mock.Anything, req).Return(nil).Times(1)
 
 		err := ex.Run(context.Background())
 		assert.NoError(t, err)
@@ -458,6 +314,9 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		ac.AssertCalled(t, "Build", mock.Anything)
 		ac.AssertExpectations(t)
 		ac.AssertNumberOfCalls(t, "Build", 9)
+
+		mss.AssertCalled(t, "Execute", mock.Anything)
+		mss.AssertNumberOfCalls(t, "Execute", 9)
 
 		// make sure all goroutines are called
 		time.Sleep(time.Millisecond)
@@ -479,392 +338,6 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent8.AssertNumberOfCalls(t, "Run", 1)
 		agent9.AssertCalled(t, "Run")
 		agent9.AssertNumberOfCalls(t, "Run", 1)
-	})
-}
-
-func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
-	t.Run("scenario_is_not_running", func(t *testing.T) {
-		ctx := context.Background()
-
-		// setting up agents
-		scenario := &entity.TestScenario{
-			ID: 1,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(2)),
-			NumSteps:            1,
-			IncreaseAgentNumber: 0,
-			ExecNumMultiAgent:   1,
-			TestServiceConfig: &entity.TestServiceConfig{
-				ID:                     1,
-				TestScenarioID:         1,
-				MaxRequests:            100,
-				MaxDuration:            1000,
-				RequestDelayDuration:   new(10),
-				RandomRequestDelayMin:  nil,
-				RandomRequestDelayMax:  nil,
-				FixedTestNumber:        new(43),
-				RandomTestNumberMin:    nil,
-				RandomTestNumberMax:    nil,
-				BadValueRate:           2,
-				NegativeValueRate:      10,
-				RealValueRate:          10,
-				ZeroValueRate:          0,
-				StringValueRate:        80,
-				LongStringValueRate:    0,
-				NullValueRate:          0,
-				DatabaseName:           "dbname",
-				DatabaseTableName:      "tbl",
-				IncreaseFixedInput:     0,
-				ExecNumMultiFixedInput: 1,
-			},
-		}
-
-		agent1 := new(mocks.MockTestAgentController)
-		agent2 := new(mocks.MockTestAgentController)
-		repo := new(repoMocks.MockTestScenario)
-
-		ex := &scenarioExecutor{
-			scenario:         scenario,
-			executionID:      uuid.New(),
-			agents:           []interfaces.TestAgentController{agent1, agent2},
-			allAgentsHealthy: false,
-			running:          false,
-			scenarioRepo:     repo,
-		}
-
-		healthyCheckSleep = time.Millisecond * 10
-		ex.SetRunning(false)
-
-		err := ex.executeScenarioSteps(ctx)
-		assert.ErrorIs(t, err, pkg.ErrScenarioIsNotRunning)
-	})
-	t.Run("success_single_step", func(t *testing.T) {
-		t.Parallel()
-
-		ctx := context.Background()
-
-		// setting up agents
-		scenario := &entity.TestScenario{
-			ID: 1,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(2)),
-			NumSteps:            1,
-			IncreaseAgentNumber: 0,
-			ExecNumMultiAgent:   1,
-			TestServiceConfig: &entity.TestServiceConfig{
-				ID:                     1,
-				TestScenarioID:         1,
-				MaxRequests:            100,
-				MaxDuration:            1000,
-				RequestDelayDuration:   new(10),
-				RandomRequestDelayMin:  nil,
-				RandomRequestDelayMax:  nil,
-				FixedTestNumber:        new(43),
-				RandomTestNumberMin:    nil,
-				RandomTestNumberMax:    nil,
-				BadValueRate:           2,
-				NegativeValueRate:      10,
-				RealValueRate:          10,
-				ZeroValueRate:          0,
-				StringValueRate:        80,
-				LongStringValueRate:    0,
-				NullValueRate:          0,
-				DatabaseName:           "dbname",
-				DatabaseTableName:      "tbl",
-				IncreaseFixedInput:     0,
-				ExecNumMultiFixedInput: 1,
-			},
-		}
-
-		agent1 := new(mocks.MockTestAgentController)
-		agent2 := new(mocks.MockTestAgentController)
-		repo := new(repoMocks.MockTestScenario)
-
-		ex := &scenarioExecutor{
-			scenario:         scenario,
-			executionID:      uuid.New(),
-			agents:           []interfaces.TestAgentController{agent1, agent2},
-			allAgentsHealthy: true,
-			running:          false,
-			scenarioRepo:     repo,
-		}
-
-		healthyCheckSleep = time.Millisecond * 10
-
-		time.Sleep(time.Millisecond)
-		time.Sleep(time.Millisecond * 10)
-
-		ex.SetRunning(true)
-
-		// we have 2 agents ready
-
-		agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
-		agent2.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
-		repo.On("SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true).Return(nil)
-		err := ex.executeScenarioSteps(ctx)
-		assert.NoError(t, err)
-
-		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-		agent2.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-		repo.AssertCalled(t, "SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true)
-	})
-	t.Run("success_2_steps", func(t *testing.T) {
-		t.Parallel()
-
-		ctx := context.Background()
-
-		// setting up agents
-		scenario := &entity.TestScenario{
-			ID: 1,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(2)),
-			NumSteps:            2,
-			IncreaseAgentNumber: 0,
-			ExecNumMultiAgent:   1,
-			TestServiceConfig: &entity.TestServiceConfig{
-				ID:                     1,
-				TestScenarioID:         1,
-				MaxRequests:            100,
-				MaxDuration:            1000,
-				RequestDelayDuration:   new(10),
-				RandomRequestDelayMin:  nil,
-				RandomRequestDelayMax:  nil,
-				FixedTestNumber:        new(43),
-				RandomTestNumberMin:    nil,
-				RandomTestNumberMax:    nil,
-				BadValueRate:           2,
-				NegativeValueRate:      10,
-				RealValueRate:          10,
-				ZeroValueRate:          0,
-				StringValueRate:        80,
-				LongStringValueRate:    0,
-				NullValueRate:          0,
-				DatabaseName:           "dbname",
-				DatabaseTableName:      "tbl",
-				IncreaseFixedInput:     0,
-				ExecNumMultiFixedInput: 1,
-			},
-		}
-
-		agent1 := new(mocks.MockTestAgentController)
-		agent2 := new(mocks.MockTestAgentController)
-		repo := new(repoMocks.MockTestScenario)
-
-		ex := &scenarioExecutor{
-			scenario:         scenario,
-			executionID:      uuid.New(),
-			agents:           []interfaces.TestAgentController{agent1, agent2},
-			allAgentsHealthy: true,
-			running:          false,
-			scenarioRepo:     repo,
-		}
-
-		healthyCheckSleep = time.Millisecond * 10
-
-		time.Sleep(time.Millisecond)
-		time.Sleep(time.Millisecond * 10)
-
-		ex.SetRunning(true)
-
-		// we have 2 agents ready
-
-		agent1.On("StartTesting", mock.Anything, mock.Anything).Times(2).Return(nil)
-		agent2.On("StartTesting", mock.Anything, mock.Anything).Times(2).Return(nil)
-
-		agent1.On("ReadyForTesting").Times(1).Return(true)
-		agent2.On("ReadyForTesting").Times(1).Return(true)
-
-		repo.On("SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true).
-			Times(1).
-			Return(nil)
-		err := ex.executeScenarioSteps(ctx)
-		assert.NoError(t, err)
-
-		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-		agent2.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-
-		agent1.AssertCalled(t, "ReadyForTesting")
-		agent2.AssertCalled(t, "ReadyForTesting")
-
-		repo.AssertCalled(t, "SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true)
-	})
-	t.Run("failed_to_set_scenario_status", func(t *testing.T) {
-		t.Parallel()
-
-		ctx := context.Background()
-
-		// setting up agents
-		scenario := &entity.TestScenario{
-			ID: 1,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(2)),
-			NumSteps:            1,
-			IncreaseAgentNumber: 0,
-			ExecNumMultiAgent:   1,
-			TestServiceConfig: &entity.TestServiceConfig{
-				ID:                     1,
-				TestScenarioID:         1,
-				MaxRequests:            100,
-				MaxDuration:            1000,
-				RequestDelayDuration:   new(10),
-				RandomRequestDelayMin:  nil,
-				RandomRequestDelayMax:  nil,
-				FixedTestNumber:        new(43),
-				RandomTestNumberMin:    nil,
-				RandomTestNumberMax:    nil,
-				BadValueRate:           2,
-				NegativeValueRate:      10,
-				RealValueRate:          10,
-				ZeroValueRate:          0,
-				StringValueRate:        80,
-				LongStringValueRate:    0,
-				NullValueRate:          0,
-				DatabaseName:           "dbname",
-				DatabaseTableName:      "tbl",
-				IncreaseFixedInput:     0,
-				ExecNumMultiFixedInput: 1,
-			},
-		}
-
-		agent1 := new(mocks.MockTestAgentController)
-		agent2 := new(mocks.MockTestAgentController)
-		repo := new(repoMocks.MockTestScenario)
-
-		ex := &scenarioExecutor{
-			scenario:         scenario,
-			executionID:      uuid.New(),
-			agents:           []interfaces.TestAgentController{agent1, agent2},
-			allAgentsHealthy: true,
-			running:          false,
-			scenarioRepo:     repo,
-		}
-
-		healthyCheckSleep = time.Millisecond * 10
-
-		time.Sleep(time.Millisecond)
-		time.Sleep(time.Millisecond * 10)
-
-		ex.SetRunning(true)
-
-		// we have 2 agents ready
-
-		agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
-		agent2.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
-		repo.On("SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true).Return(errors.New("something went wrong"))
-		err := ex.executeScenarioSteps(ctx)
-		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
-
-		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-		agent2.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-		repo.AssertCalled(t, "SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true)
-	})
-	t.Run("success_single_step_dynamic_agents", func(t *testing.T) {
-		t.Parallel()
-
-		ctx := context.Background()
-
-		// setting up agents
-		scenario := &entity.TestScenario{
-			ID: 1,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(2)),
-			NumSteps:            1,
-			IncreaseAgentNumber: 1,
-			ExecNumMultiAgent:   5,
-			TestServiceConfig: &entity.TestServiceConfig{
-				ID:                     1,
-				TestScenarioID:         1,
-				MaxRequests:            100,
-				MaxDuration:            1000,
-				RequestDelayDuration:   new(10),
-				RandomRequestDelayMin:  nil,
-				RandomRequestDelayMax:  nil,
-				FixedTestNumber:        new(43),
-				RandomTestNumberMin:    nil,
-				RandomTestNumberMax:    nil,
-				BadValueRate:           2,
-				NegativeValueRate:      10,
-				RealValueRate:          10,
-				ZeroValueRate:          0,
-				StringValueRate:        80,
-				LongStringValueRate:    0,
-				NullValueRate:          0,
-				DatabaseName:           "dbname",
-				DatabaseTableName:      "tbl",
-				IncreaseFixedInput:     0,
-				ExecNumMultiFixedInput: 1,
-			},
-		}
-
-		healthyCheckSleep = time.Millisecond * 10
-
-		// #region 1st
-		// 1 agent + 1 step
-		agent1 := new(mocks.MockTestAgentController)
-		repo := new(repoMocks.MockTestScenario)
-		ex := &scenarioExecutor{
-			scenario:         scenario,
-			executionID:      uuid.New(),
-			agents:           []interfaces.TestAgentController{agent1},
-			allAgentsHealthy: true,
-			running:          false,
-			scenarioRepo:     repo,
-		}
-
-		time.Sleep(time.Millisecond)
-		time.Sleep(time.Millisecond * 10)
-		ex.SetRunning(true)
-
-		agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
-		repo.On("SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true).Return(nil)
-		err := ex.executeScenarioSteps(ctx)
-		assert.NoError(t, err)
-		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-		repo.AssertCalled(t, "SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true)
-
-		// #endregion 1st
-
-		// // #region 1st
-		// // 1 agent + 1 step
-		// agent1 := new(mocks.MockTestAgentController)
-		// repo := new(repoMocks.MockTestScenario)
-		// ex := &scenarioExecutor{
-		// 	scenario:         scenario,
-		// 	executionID:      uuid.New(),
-		// 	agents:           []interfaces.TestAgentController{agent1},
-		// 	allAgentsHealthy: true,
-		// 	running:          false,
-		// 	scenarioRepo:     repo,
-		// }
-
-		// time.Sleep(time.Millisecond)
-		// time.Sleep(time.Millisecond * 10)
-		// ex.SetRunning(true)
-
-		// agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
-		// repo.On("SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true).Return(nil)
-		// err := ex.executeScenarioSteps(ctx)
-		// assert.NoError(t, err)
-		// agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-		// repo.AssertCalled(t, "SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true)
-
-		// // #endregion 1st
-
 	})
 }
 

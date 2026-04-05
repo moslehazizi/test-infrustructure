@@ -79,6 +79,10 @@ definitions:
     type: object
   request.TestScenario:
     properties:
+      execution_number_multi_agent:
+        type: integer
+      increase_agent_number:
+        type: integer
       max_test_service_count:
         type: integer
       mother_service_id:
@@ -101,7 +105,11 @@ definitions:
     type: object
   request.TestScenarioUpdateRequest:
     properties:
+      execution_number_multi_agent:
+        type: integer
       id:
+        type: integer
+      increase_agent_number:
         type: integer
       max_test_service_count:
         type: integer
@@ -122,7 +130,11 @@ definitions:
         type: string
       database_table_name:
         type: string
+      execution_number_multi_fixed_input:
+        type: integer
       fixed_test_number:
+        type: integer
+      increase_fixed_input:
         type: integer
       long_string_value_rate:
         type: integer
@@ -259,7 +271,11 @@ definitions:
         type: string
       editable:
         type: boolean
+      execution_number_multi_agent:
+        type: integer
       id:
+        type: integer
+      increase_agent_number:
         type: integer
       max_test_service_count:
         type: integer
@@ -295,9 +311,13 @@ definitions:
         type: string
       database_table_name:
         type: string
+      execution_number_multi_fixed_input:
+        type: integer
       fixed_test_number:
         type: integer
       id:
+        type: integer
+      increase_fixed_input:
         type: integer
       long_string_value_rate:
         type: integer

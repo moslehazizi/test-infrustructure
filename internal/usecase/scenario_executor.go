@@ -3,11 +3,9 @@ package usecase
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/provider/dto/request"
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
-	"fmt"
 	"sync"
 	"time"
 
@@ -34,6 +32,7 @@ type scenarioExecutor struct {
 	once                       sync.Once
 	scenarioRepo               repository.TestScenarioRepository
 	testAgentControllerToolBox interfaces.TestAgentControllerToolBox
+	scenarioExecutorBuilder    interfaces.SingleScenarioExecutorBuilder
 }
 
 func (sc *scenarioExecutor) IsRunning() bool {
@@ -93,6 +92,19 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 	}
 
 	// run scenario
+	ss := sc.scenarioExecutorBuilder.Build(
+		sc.agents,
+		sc.allAgentsHealthy,
+		sc.allAgentsReadyForTesting,
+		sc.scenario,
+		sc.executionID,
+		sc.running,
+	)
+
+	err := ss.Execute(ctx)
+	if err != nil {
+		// return nil, err
+	}
 
 	// iteration of agent count increment.
 	for range sc.scenario.ExecNumMultiAgent {
@@ -148,105 +160,6 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 
 	// 		goto start
 	// 	}
-
-	return nil
-}
-
-func (sc *scenarioExecutor) execute(ctx context.Context) error {
-	// await to be healthy
-	// await to be ready to start testing
-	// executing tests
-	return nil
-}
-
-func (sc *scenarioExecutor) awaitAgentsToBeHealthy() {
-	for {
-		allHealthy := true
-		for _, agent := range sc.agents {
-			if !agent.Healthy() {
-				allHealthy = false
-
-				break
-			}
-		}
-
-		sc.allAgentsHealthy = allHealthy
-
-		if allHealthy {
-			break
-		}
-
-		time.Sleep(healthyCheckSleep)
-	}
-}
-
-func (sc *scenarioExecutor) awaitAgentsToBeReadyToStartTesting() {
-	for {
-		allReady := true
-		for _, agent := range sc.agents {
-			if !agent.ReadyForTesting() {
-				allReady = false
-
-				break
-			}
-		}
-
-		sc.allAgentsReadyForTesting = allReady
-
-		if allReady {
-			break
-		}
-
-		time.Sleep(readyForTestingCheckSleep)
-	}
-}
-
-func (sc *scenarioExecutor) executeScenarioSteps(ctx context.Context) error {
-	// sc.scenario.IncreaseAgentNumber
-	// sc.scenario.ExecNumMultiAgent
-	// sc.scenario.TestServiceConfig.IncreaseFixedInput
-	// sc.scenario.TestServiceConfig.ExecNumMultiFixedInput
-
-	for i := int64(1); i <= sc.scenario.NumSteps; i++ {
-		if !sc.running {
-			zap.L().Info("scenario executor is not running; exiting scenarioExecutor.Run")
-
-			return pkg.ErrScenarioIsNotRunning
-		}
-		req := request.NewRunRequestFromTestServiceConfig(
-			int(i),
-			sc.executionID,
-			sc.scenario.TestServiceConfig,
-		)
-
-		// send command to all agents.
-		wg := sync.WaitGroup{}
-		for _, agent := range sc.agents {
-			wg.Add(1)
-			//nolint
-			go func() {
-				defer wg.Done()
-				_ = agent.StartTesting(context.Background(), *req)
-			}()
-		}
-
-		wg.Wait()
-
-		if i < sc.scenario.NumSteps {
-			// wait for all agents to be ready to execute next step.
-			sc.awaitAgentsToBeReadyToStartTesting()
-		} else {
-			// set status ScenarioStatusPending
-			err := sc.scenarioRepo.SetStatus(ctx, sc.scenario.ID, entity.ScenarioStatusPending, true)
-			if err != nil {
-				zap.L().Error("failed to update scenario executor status", zap.Error(err))
-
-				return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
-			}
-			// set running false , to privent run again and again
-			sc.SetRunning(false)
-		}
-	}
 
 	return nil
 }
