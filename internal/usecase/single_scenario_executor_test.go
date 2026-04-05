@@ -6,7 +6,6 @@ import (
 	"control-panel-service/internal/provider/dto/request"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/internal/usecase/mocks"
-	"control-panel-service/pkg"
 	"testing"
 	"time"
 
@@ -16,60 +15,6 @@ import (
 )
 
 func Test_ScenarioExecutor_execute(t *testing.T) {
-	t.Run("failed_case_scenario_is_not_running", func(t *testing.T) {
-		agent := new(mocks.MockTestAgentController)
-
-		ctx := context.Background()
-
-		ex := &singleScenarioExecutor{
-			scenario: &entity.TestScenario{
-				ID: 1,
-				TestCategory: &entity.TestCategory{
-					ID:   7,
-					Name: entity.STRESS,
-				},
-				MaxTestServiceCount: new(int64(1)),
-				NumSteps:            int64(1),
-				TestServiceConfig: &entity.TestServiceConfig{
-					ID:                     1,
-					TestScenarioID:         1,
-					MaxRequests:            100,
-					MaxDuration:            1000,
-					RequestDelayDuration:   new(10),
-					RandomRequestDelayMin:  nil,
-					RandomRequestDelayMax:  nil,
-					FixedTestNumber:        new(43),
-					RandomTestNumberMin:    nil,
-					RandomTestNumberMax:    nil,
-					BadValueRate:           2,
-					NegativeValueRate:      10,
-					RealValueRate:          10,
-					ZeroValueRate:          0,
-					StringValueRate:        80,
-					LongStringValueRate:    0,
-					NullValueRate:          0,
-					DatabaseName:           "dbname",
-					DatabaseTableName:      "tbl",
-					IncreaseFixedInput:     0,
-					ExecNumMultiFixedInput: 1,
-				},
-			},
-			agents:                   []interfaces.TestAgentController{agent},
-			allAgentsHealthy:         true,
-			running:                  false,
-			allAgentsReadyForTesting: true,
-		}
-
-		agent.On("Healthy").Return(true)
-		agent.On("ReadyForTesting").Return(true)
-
-		err := ex.Execute(ctx)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrScenarioIsNotRunning)
-		agent.AssertCalled(t, "Healthy")
-		agent.AssertCalled(t, "ReadyForTesting")
-	})
 	t.Run("success_case", func(t *testing.T) {
 		agent := new(mocks.MockTestAgentController)
 		ctx := context.Background()
@@ -109,7 +54,6 @@ func Test_ScenarioExecutor_execute(t *testing.T) {
 			},
 			agents:                   []interfaces.TestAgentController{agent},
 			allAgentsHealthy:         true,
-			running:                  true,
 			allAgentsReadyForTesting: true,
 		}
 
@@ -153,7 +97,6 @@ func Test_scenarioExecutor_awaitAgentsToBeHealthy(t *testing.T) {
 			executionID:      uuid.New(),
 			agents:           []interfaces.TestAgentController{agent},
 			allAgentsHealthy: false,
-			running:          false,
 		}
 
 		ss.awaitAgentsToBeHealthy()
@@ -183,7 +126,6 @@ func Test_scenarioExecutor_awaitAgentsToBeHealthy(t *testing.T) {
 			executionID:      uuid.New(),
 			agents:           []interfaces.TestAgentController{agent1, agent2},
 			allAgentsHealthy: false,
-			running:          false,
 		}
 
 		healthyCheckSleep = time.Millisecond * 10
@@ -220,7 +162,6 @@ func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
 			agents:                   []interfaces.TestAgentController{agent},
 			allAgentsHealthy:         false,
 			allAgentsReadyForTesting: false,
-			running:                  false,
 		}
 
 		ss.awaitAgentsToBeReadyToStartTesting()
@@ -251,7 +192,6 @@ func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
 			agents:                   []interfaces.TestAgentController{agent},
 			allAgentsHealthy:         false,
 			allAgentsReadyForTesting: false,
-			running:                  false,
 		}
 
 		go ss.awaitAgentsToBeReadyToStartTesting()
@@ -291,7 +231,6 @@ func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
 			agents:                   []interfaces.TestAgentController{agent1, agent2},
 			allAgentsHealthy:         false,
 			allAgentsReadyForTesting: false,
-			running:                  false,
 		}
 
 		ss.awaitAgentsToBeReadyToStartTesting()
@@ -303,60 +242,6 @@ func Test_scenarioExecutor_awaitAgentsToBeReadyToStartTesting(t *testing.T) {
 	})
 }
 func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
-	t.Run("scenario_is_not_running", func(t *testing.T) {
-		ctx := context.Background()
-
-		// setting up agents
-		scenario := &entity.TestScenario{
-			ID: 1,
-			TestCategory: &entity.TestCategory{
-				ID:   7,
-				Name: entity.STRESS,
-			},
-			MaxTestServiceCount: new(int64(2)),
-			NumSteps:            1,
-			IncreaseAgentNumber: 0,
-			ExecNumMultiAgent:   1,
-			TestServiceConfig: &entity.TestServiceConfig{
-				ID:                     1,
-				TestScenarioID:         1,
-				MaxRequests:            100,
-				MaxDuration:            1000,
-				RequestDelayDuration:   new(10),
-				RandomRequestDelayMin:  nil,
-				RandomRequestDelayMax:  nil,
-				FixedTestNumber:        new(43),
-				RandomTestNumberMin:    nil,
-				RandomTestNumberMax:    nil,
-				BadValueRate:           2,
-				NegativeValueRate:      10,
-				RealValueRate:          10,
-				ZeroValueRate:          0,
-				StringValueRate:        80,
-				LongStringValueRate:    0,
-				NullValueRate:          0,
-				DatabaseName:           "dbname",
-				DatabaseTableName:      "tbl",
-				IncreaseFixedInput:     0,
-				ExecNumMultiFixedInput: 1,
-			},
-		}
-
-		agent1 := new(mocks.MockTestAgentController)
-		agent2 := new(mocks.MockTestAgentController)
-
-		ss := &singleScenarioExecutor{scenario: scenario,
-			executionID:      uuid.New(),
-			agents:           []interfaces.TestAgentController{agent1, agent2},
-			allAgentsHealthy: false,
-			running:          false,
-		}
-
-		healthyCheckSleep = time.Millisecond * 10
-
-		err := ss.executeScenarioSteps(ctx)
-		assert.ErrorIs(t, err, pkg.ErrScenarioIsNotRunning)
-	})
 	t.Run("success_single_step", func(t *testing.T) {
 		t.Parallel()
 
@@ -405,7 +290,6 @@ func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
 			executionID:      uuid.New(),
 			agents:           []interfaces.TestAgentController{agent1, agent2},
 			allAgentsHealthy: true,
-			running:          true,
 		}
 
 		healthyCheckSleep = time.Millisecond * 10
@@ -471,7 +355,6 @@ func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
 			executionID:      uuid.New(),
 			agents:           []interfaces.TestAgentController{agent1, agent2},
 			allAgentsHealthy: true,
-			running:          true,
 		}
 
 		healthyCheckSleep = time.Millisecond * 10
@@ -548,7 +431,6 @@ func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
 			executionID:      uuid.New(),
 			agents:           []interfaces.TestAgentController{agent1},
 			allAgentsHealthy: true,
-			running:          true,
 		}
 
 		time.Sleep(time.Millisecond)
@@ -570,7 +452,6 @@ func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
 		// 	executionID:      uuid.New(),
 		// 	agents:           []interfaces.TestAgentController{agent1},
 		// 	allAgentsHealthy: true,
-		// 	running:          false,
 		// 	scenarioRepo:     repo,
 		// }
 

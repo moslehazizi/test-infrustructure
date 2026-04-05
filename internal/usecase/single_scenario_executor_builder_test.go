@@ -20,13 +20,10 @@ func TestSingleScenarioExecutorBuilder(t *testing.T) {
 
 		sseb := new(singleScenarioExecutorBuilder)
 
-		sse := sseb.Build(agents, true, true, &entity.TestScenario{ID: scenarioId}, executionID, true)
+		sse := sseb.Build(agents, &entity.TestScenario{ID: scenarioId}, executionID)
 		e, ok := sse.(*singleScenarioExecutor)
 		assert.True(t, ok)
 		assert.Equal(t, e.agents, agents)
-		assert.True(t, e.allAgentsHealthy)
-		assert.True(t, e.allAgentsReadyForTesting)
-		assert.True(t, e.running)
 		assert.Equal(t, e.executionID.String(), executionID.String())
 		assert.Equal(t, e.scenario.ID, scenarioId)
 	})

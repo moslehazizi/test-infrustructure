@@ -5,13 +5,11 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider/dto/request"
 	"control-panel-service/internal/usecase/interfaces"
-	"control-panel-service/pkg"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 type singleScenarioExecutor struct {
@@ -20,7 +18,6 @@ type singleScenarioExecutor struct {
 	allAgentsReadyForTesting bool
 	scenario                 *entity.TestScenario
 	executionID              uuid.UUID
-	running                  bool
 }
 
 func (ss *singleScenarioExecutor) Execute(ctx context.Context) error {
@@ -87,11 +84,6 @@ func (ss *singleScenarioExecutor) executeScenarioSteps(ctx context.Context) erro
 	// sc.scenario.TestServiceConfig.ExecNumMultiFixedInput
 
 	for i := int64(1); i <= ss.scenario.NumSteps; i++ {
-		if !ss.running {
-			zap.L().Info("scenario executor is not running; exiting scenarioExecutor.Run")
-
-			return pkg.ErrScenarioIsNotRunning
-		}
 		req := request.NewRunRequestFromTestServiceConfig(
 			int(i),
 			ss.executionID,
