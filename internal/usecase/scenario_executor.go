@@ -66,10 +66,9 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 	sc.assignExecutionID()
 	// check scenario is running
 	if !sc.running {
-		zap.L().Error(
-			"scenarioExecutor Run called but scenario is not running",
-			zap.Any("scenarioID", sc.scenario.ID),
-			zap.Any("executionID", sc.executionID.String()),
+		zap.L().Error("scenarioExecutor Run called but scenario is not running",
+			zap.Uint64("scenarioID", sc.scenario.ID),
+			zap.String("executionID", sc.executionID.String()),
 		)
 
 		return pkg.ErrScenarioIsNotRunning
@@ -92,19 +91,37 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 		sc.agents = append(sc.agents, agent)
 	}
 
-	// run scenario
 	sse := sc.scenarioExecutorBuilder.Build(
 		sc.agents,
-		sc.allAgentsHealthy,
-		sc.allAgentsReadyForTesting,
 		sc.scenario,
 		sc.executionID,
-		sc.running,
 	)
 
 	err := sse.Execute(ctx)
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
+	}
+
+	if sc.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 && sc.scenario.ExecNumMultiAgent == 0 {
+		for _, agent := range sc.agents {
+			err := agent.AbortTesting(ctx)
+			if err != nil {
+				zap.L().Error("failed to deprovision test agent",
+					zap.Uint64("scenarioID", sc.scenario.ID),
+					zap.String("executionID", sc.executionID.String()),
+				)
+			}
+		}
+
+		return nil
+	}
+
+	if sc.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 {
+		sc.scenario.TestServiceConfig.ExecNumMultiFixedInput++
+	}
+
+	if sc.scenario.ExecNumMultiAgent == 0 {
+		sc.scenario.ExecNumMultiAgent++
 	}
 
 	// iteration of agent count increment.
@@ -117,21 +134,32 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 			sc.agents = append(sc.agents, agent)
 		}
 
-		// run scenario
-		sse := sc.scenarioExecutorBuilder.Build(
-			sc.agents,
-			sc.allAgentsHealthy,
-			sc.allAgentsReadyForTesting,
-			sc.scenario,
-			sc.executionID,
-			sc.running,
-		)
+		for range sc.scenario.TestServiceConfig.ExecNumMultiFixedInput {
+			if sc.scenario.TestServiceConfig.FixedTestNumber != nil {
+				*sc.scenario.TestServiceConfig.FixedTestNumber += sc.scenario.TestServiceConfig.IncreaseFixedInput
+			}
 
-		err := sse.Execute(ctx)
-		if err != nil {
-			return err
+			sse := sc.scenarioExecutorBuilder.Build(
+				sc.agents,
+				sc.scenario,
+				sc.executionID,
+			)
+
+			err := sse.Execute(ctx)
+			if err != nil {
+				return err
+			}
 		}
+	}
 
+	for _, agent := range sc.agents {
+		err := agent.AbortTesting(ctx)
+		if err != nil {
+			zap.L().Error("failed to deprovision test agent",
+				zap.Uint64("scenarioID", sc.scenario.ID),
+				zap.String("executionID", sc.executionID.String()),
+			)
+		}
 	}
 
 	// TODO: complete implementation
@@ -146,32 +174,6 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 	// deprovision all agents
 	// remove scenario from memory
 	// ------------
-
-	// start:
-	// 	select {
-	// 	case <-ctx.Done():
-	// 		return
-	// 	default:
-	// 		for !sc.running {
-	// 			time.Sleep(RunOnceDelay)
-
-	// 			zap.L().Debug("scenarioExecutor.RunOnce waiting to be run")
-	// 		}
-
-	// 		zap.L().Info("scenarioExecutor.RunOnce Running")
-
-	// 		// provision agents
-
-	// 		// Make sure all agents are healthy.
-	// 		sc.awaitAgentsToBeHealthy()
-
-	// 		// NOW: all agents are healthy.
-	// 		// we can send scheduled commands.
-	// 		// we need a loop based on len of steps:
-	// 		_ = sc.executeScenarioSteps(ctx)
-
-	// 		goto start
-	// 	}
 
 	return nil
 }

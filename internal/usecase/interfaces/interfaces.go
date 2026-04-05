@@ -41,11 +41,8 @@ type SingleScenarioExecutor interface {
 type SingleScenarioExecutorBuilder interface {
 	Build(
 		agents []TestAgentController,
-		allAgentsHealthy bool,
-		allAgentsReadyForTesting bool,
 		scenario *entity.TestScenario,
 		executionID uuid.UUID,
-		running bool,
 	) SingleScenarioExecutor
 }
 

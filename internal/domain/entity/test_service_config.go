@@ -27,16 +27,18 @@ type TestServiceConfig struct {
 	UpdatedAt             time.Time `gorm:"column:updated_at"`
 	DatabaseName          string    `gorm:"column:database_name"`
 	DatabaseTableName     string    `gorm:"column:database_table_name"`
-	// این فیلد معیار افزایش عدد ثابت برای تست را مشخص میکند.
-	// کاربرد این فیلد جایی است که میخواهیم کل سناریو را مجدد تست کنیم
-	// و در تست مجدد میخواهیم عدد ثابت تست، هر بار افزایش داشته باشد.
-	// این عدد معیار افزایش آن عدد است.
-	// مثلا اگر عدد ثابت ۱۰۰۰ باشد و این معیار ۲۰۰۰ باشد،
-	// در اجرای اول، عدد ثابت ۱۰۰۰ ارسال میشود، در تکرار بعدی اجرای سناریو،
-	// این عدد ۳۰۰۰ خواهد بود.
-	IncreaseFixedInput int64 `gorm:"column:increase_fixed_input"`
-	// این فیلد در کنار فیلد بالا معنا دارد و تعداد تکرار افزایش عدد ثابت را تعیین میکند.
-	ExecNumMultiFixedInput int64 `gorm:"column:execution_number_multi_fixed_input"`
+	// This field specifies the increment value for the fixed test number.
+	// It is used when we want to re‑run the entire scenario,
+	// and in each re-run we want the fixed test number to increase.
+	// This number represents the increment amount.
+	// For example, if the fixed test number is 1000 and this increment value is 2000,
+	// then in the first run, the fixed number will be 1000, and in the next run of the scenario,
+	// the number will become 3000.
+
+	IncreaseFixedInput int `gorm:"column:increase_fixed_input"`
+	// This field works together with the previous one and determines
+	// how many times the fixed test number should be incremented.
+	ExecNumMultiFixedInput int `gorm:"column:execution_number_multi_fixed_input"`
 }
 
 func (TestServiceConfig) TableName() string {

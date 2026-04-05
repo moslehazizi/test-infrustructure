@@ -14,13 +14,10 @@ type MockSingleScenarioExecutorBuilder struct {
 
 func (m *MockSingleScenarioExecutorBuilder) Build(
 	agents []interfaces.TestAgentController,
-	allAgentsHealthy bool,
-	allAgentsReadyForTesting bool,
 	scenario *entity.TestScenario,
 	executionID uuid.UUID,
-	running bool,
 ) interfaces.SingleScenarioExecutor {
-	args := m.Called(agents, allAgentsHealthy, allAgentsReadyForTesting, scenario, executionID, running)
+	args := m.Called(agents, scenario, executionID)
 
 	return args.Get(0).(interfaces.SingleScenarioExecutor)
 }

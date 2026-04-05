@@ -43,8 +43,8 @@ type TestServiceConfig struct {
 	UpdatedAt              time.Time `json:"updated_at"`
 	DatabaseName           string    `json:"database_name"`
 	DatabaseTableName      string    `json:"database_table_name"`
-	IncreaseFixedInput     int64     `json:"increase_fixed_input"`
-	ExecNumMultiFixedInput int64     `json:"execution_number_multi_fixed_input"`
+	IncreaseFixedInput     int       `json:"increase_fixed_input"`
+	ExecNumMultiFixedInput int       `json:"execution_number_multi_fixed_input"`
 }
 
 type PaginatedTestScenario struct {

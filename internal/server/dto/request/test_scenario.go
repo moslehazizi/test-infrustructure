@@ -29,8 +29,8 @@ type TestServiceConfigRequest struct {
 	NullValueRate          int    `json:"null_value_rate"`
 	DatabaseName           string `json:"database_name"`
 	DatabaseTableName      string `json:"database_table_name"`
-	IncreaseFixedInput     int64  `json:"increase_fixed_input"`
-	ExecNumMultiFixedInput int64  `json:"execution_number_multi_fixed_input"`
+	IncreaseFixedInput     int    `json:"increase_fixed_input"`
+	ExecNumMultiFixedInput int    `json:"execution_number_multi_fixed_input"`
 }
 
 type TestScenarioUpdateRequest struct {
