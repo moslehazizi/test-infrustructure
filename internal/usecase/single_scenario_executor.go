@@ -23,24 +23,6 @@ type singleScenarioExecutor struct {
 	running                  bool
 }
 
-// func NewSingleScenarioExecutor(
-// 	agents []interfaces.TestAgentController,
-// 	allAgentsHealthy bool,
-// 	allAgentsReadyForTesting bool,
-// 	scenario *entity.TestScenario,
-// 	executionID uuid.UUID,
-// 	running bool,
-// ) interfaces.SingleScenarioExecutor {
-// 	return &singleScenarioExecutor{
-// 		agents,
-// 		allAgentsHealthy,
-// 		allAgentsReadyForTesting,
-// 		scenario,
-// 		executionID,
-// 		running,
-// 	}
-// }
-
 func (ss *singleScenarioExecutor) Execute(ctx context.Context) error {
 	// await to be healthy
 	ss.awaitAgentsToBeHealthy()
