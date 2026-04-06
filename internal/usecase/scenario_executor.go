@@ -64,16 +64,16 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 	zap.L().Info("scenarioExecutor.Run Called")
 
 	defer func() {
-		for _, agent := range se.agents {
-			err := agent.AbortTesting(ctx)
-			if err != nil {
-				// returning err is not required.
-				zap.L().Error("failed to deprovision test agent",
-					zap.Uint64("scenarioID", se.scenario.ID),
-					zap.String("executionID", se.executionID.String()),
-				)
-			}
-		}
+		// for _, agent := range se.agents {
+		// 	err := agent.AbortTesting(ctx)
+		// 	if err != nil {
+		// 		// returning err is not required.
+		// 		zap.L().Error("failed to deprovision test agent",
+		// 			zap.Uint64("scenarioID", se.scenario.ID),
+		// 			zap.String("executionID", se.executionID.String()),
+		// 		)
+		// 	}
+		// }
 
 		// set running false
 		se.SetRunning(false)
@@ -84,7 +84,6 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 		}
 	}()
 
-	se.assignExecutionID()
 	// check scenario is running
 	if !se.running {
 		zap.L().Error("scenarioExecutor Run called but scenario is not running",
@@ -107,6 +106,11 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 	se.scenario.TestServiceConfig.ExecNumMultiFixedInput++
 	se.scenario.ExecNumMultiAgent++
 
+	var originalFixedNumber int
+	if se.scenario.TestServiceConfig.FixedTestNumber != nil {
+		originalFixedNumber = *se.scenario.TestServiceConfig.FixedTestNumber
+	}
+
 	// iteration of agent count increment.
 	for s := range se.scenario.ExecNumMultiAgent {
 		if s == 0 {
@@ -128,15 +132,18 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 		}
 
 		if se.scenario.TestServiceConfig.FixedTestNumber != nil {
-			number := *se.scenario.TestServiceConfig.FixedTestNumber
+			number := originalFixedNumber
 			for range se.scenario.TestServiceConfig.ExecNumMultiFixedInput {
+				*se.scenario.TestServiceConfig.FixedTestNumber = number
 				sse := se.scenarioExecutorBuilder.Build(
 					se.agents,
 					se.scenario,
 					se.executionID,
 				)
 
+				se.assignExecutionID()
 				err := sse.Execute(ctx)
+
 				if err != nil {
 					return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
 				}
@@ -151,6 +158,7 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 				se.executionID,
 			)
 
+			se.assignExecutionID()
 			err := sse.Execute(ctx)
 			if err != nil {
 				return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
