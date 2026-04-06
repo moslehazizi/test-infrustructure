@@ -103,32 +103,7 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 		return pkg.ErrMaxTestServiceCountLessThanOne
 	}
 
-	// for range *se.scenario.MaxTestServiceCount {
-	// 	agent := se.testAgentControllerToolBox.Build(se.scenario)
-	// 	go func() {
-	// 		_ = agent.Run()
-	// 	}()
-
-	// 	se.agents = append(se.agents, agent)
-	// }
-
-	// sse := se.scenarioExecutorBuilder.Build(
-	// 	se.agents,
-	// 	se.scenario,
-	// 	se.executionID,
-	// )
-
-	// err := sse.Execute(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
-	// }
-
-	// if both ExecNumMultiFixedInput && ExecNumMultiAgent are eqaul to zero then scenario execute for one stage.
-	// if se.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 && se.scenario.ExecNumMultiAgent == 0 {
-	// 	return nil
-	// }
-
-	// As we need stage zero in all scenarioes , this addition is neccessary.
+	// As we need stage zero in all scenarios , this addition is necessary.
 	se.scenario.TestServiceConfig.ExecNumMultiFixedInput++
 	se.scenario.ExecNumMultiAgent++
 
@@ -152,13 +127,24 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 			}
 		}
 
-		stageNumber := se.scenario.TestServiceConfig.ExecNumMultiFixedInput
+		if se.scenario.TestServiceConfig.FixedTestNumber != nil {
+			number := *se.scenario.TestServiceConfig.FixedTestNumber
+			for range se.scenario.TestServiceConfig.ExecNumMultiFixedInput {
+				sse := se.scenarioExecutorBuilder.Build(
+					se.agents,
+					se.scenario,
+					se.executionID,
+				)
 
-		for range stageNumber {
-			if se.scenario.TestServiceConfig.FixedTestNumber != nil {
-				*se.scenario.TestServiceConfig.FixedTestNumber += se.scenario.TestServiceConfig.IncreaseFixedInput
+				err := sse.Execute(ctx)
+				if err != nil {
+					return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
+				}
+
+				number += se.scenario.TestServiceConfig.IncreaseFixedInput
+
 			}
-
+		} else {
 			sse := se.scenarioExecutorBuilder.Build(
 				se.agents,
 				se.scenario,
