@@ -17,11 +17,12 @@ import (
 var checkLoopSleep = time.Second
 
 // See: https://github.com/farbodan/challenge-control-panel-service/blob/main/internal/usecase/test_scenario_runner.md.
-func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAgentControllerToolBox, scenarioRepo repository.TestScenarioRepository) interfaces.ExecutionManager {
+func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAgentControllerToolBox, scenarioRepo repository.TestScenarioRepository, scenarioExecutorBuilder interfaces.ScenarioExecutorBuilder) interfaces.ExecutionManager {
 	return &StressTestExecutionManager{
 		testAgentControllerToolBox: testAgentControllerToolBox,
 		scenarios:                  make(map[uint64]interfaces.ScenarioExecutor),
 		scenarioRepo:               scenarioRepo,
+		scenarioExecutorBuilder:    scenarioExecutorBuilder,
 	}
 }
 
@@ -31,6 +32,7 @@ type StressTestExecutionManager struct {
 	testAgentControllerToolBox interfaces.TestAgentControllerToolBox
 	scenarioRepo               repository.TestScenarioRepository
 	mx                         sync.Mutex
+	scenarioExecutorBuilder    interfaces.ScenarioExecutorBuilder
 }
 
 func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario *entity.TestScenario) error {
@@ -49,22 +51,20 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 		go func() {
 			_ = testScenario.Run(context.Background())
 			// delete scenario from memory
+			delete(ex.scenarios, scenario.ID)
 		}()
 
 		return nil
 	}
 
-	ex.scenarios[scenario.ID] = &scenarioExecutor{
-		scenario:     scenario,
-		agents:       []interfaces.TestAgentController{},
-		running:      true,
-		scenarioRepo: ex.scenarioRepo,
-	}
+	ex.scenarios[scenario.ID] = ex.scenarioExecutorBuilder.Build(scenario, ex.scenarioRepo, ex.testAgentControllerToolBox, &singleScenarioExecutorBuilder{})
+	ex.scenarios[scenario.ID].SetRunning(true)
 
 	//nolint
 	go func() {
 		_ = ex.scenarios[scenario.ID].Run(context.Background())
 		// delete scenario from memory
+		delete(ex.scenarios, scenario.ID)
 	}()
 
 	return nil

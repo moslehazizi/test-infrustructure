@@ -4,6 +4,7 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider/dto/request"
+	"control-panel-service/internal/repository"
 
 	"github.com/google/uuid"
 )
@@ -42,6 +43,15 @@ type SingleScenarioExecutorBuilder interface {
 		scenario *entity.TestScenario,
 		executionID uuid.UUID,
 	) SingleScenarioExecutor
+}
+
+type ScenarioExecutorBuilder interface {
+	Build(
+		scenario *entity.TestScenario,
+		scenarioRepo repository.TestScenarioRepository,
+		testAgentControllerToolBox TestAgentControllerToolBox,
+		scenarioExecutorBuilder SingleScenarioExecutorBuilder,
+	) ScenarioExecutor
 }
 
 type TestAgentController interface {

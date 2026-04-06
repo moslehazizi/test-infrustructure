@@ -18,38 +18,96 @@ import (
 
 // #region StressTestExecutionManager
 func TestStressTestExecutionManager_RunScenario(t *testing.T) {
-	t.Run("success_case_does_not_exist", func(t *testing.T) {
+	t.Run("success_case_delete_scenario_from_memory_when_scenario_added_to_manager_for_first_time", func(t *testing.T) {
 		scenario := &entity.TestScenario{
 			ID: 1,
 		}
-		builder := new(mocks.MockTestAgentControllerToolBox)
+		toolbox := new(mocks.MockTestAgentControllerToolBox)
+		sseb := new(mocks.MockSingleScenarioExecutorBuilder)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilderWithWait)
+		seb.Wait = time.Second
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		sampleSE := &scenarioExecutor{
+			scenario:                   scenario,
+			scenarioRepo:               repo,
+			testAgentControllerToolBox: toolbox,
+			scenarioExecutorBuilder:    sseb,
+		}
+
+		ex := NewStressTestExecutionManager(toolbox, repo, seb)
 		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(sampleSE)
+
+		mng, ok := ex.(*StressTestExecutionManager)
+		assert.True(t, ok)
+		assert.NotContains(t, mng.scenarios, scenario.ID)
 
 		err := ex.RunScenario(context.Background(), scenario)
 		assert.NoError(t, err)
 
-		mng, ok := ex.(*StressTestExecutionManager)
-		assert.True(t, ok)
 		assert.Contains(t, mng.scenarios, scenario.ID)
+
+		time.Sleep(1100 * time.Millisecond)
+
+		assert.NotContains(t, mng.scenarios, scenario.ID)
+
+		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
-	t.Run("success_case_scenario_already_exists_in_manager", func(t *testing.T) {
+	t.Run("success_case_scenario_does_not_exist_in_execution_manager", func(t *testing.T) {
 		scenario := &entity.TestScenario{
 			ID: 1,
 		}
-		builder := new(mocks.MockTestAgentControllerToolBox)
+		toolbox := new(mocks.MockTestAgentControllerToolBox)
+		sseb := new(mocks.MockSingleScenarioExecutorBuilder)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+
+		sampleSE := &scenarioExecutor{
+			scenario:                   scenario,
+			scenarioRepo:               repo,
+			testAgentControllerToolBox: toolbox,
+			scenarioExecutorBuilder:    sseb,
+		}
+
+		ex := NewStressTestExecutionManager(toolbox, repo, seb)
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(sampleSE)
+
+		err := ex.RunScenario(context.Background(), scenario)
+		assert.NoError(t, err)
+
+		_, ok := ex.(*StressTestExecutionManager)
+		assert.True(t, ok)
+
+		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	})
+	t.Run("success_case_scenario_already_exists_in_execution_manager", func(t *testing.T) {
+		scenario := &entity.TestScenario{
+			ID: 1,
+		}
+		toolbox := new(mocks.MockTestAgentControllerToolBox)
+		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+		sseb := new(mocks.MockSingleScenarioExecutorBuilder)
+
+		sampleSE := &scenarioExecutor{
+			scenario:                   scenario,
+			scenarioRepo:               repo,
+			testAgentControllerToolBox: toolbox,
+			scenarioExecutorBuilder:    sseb,
+		}
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(sampleSE)
 
 		// add for first time
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(toolbox, repo, seb)
 		err := ex.RunScenario(context.Background(), scenario)
 		assert.NoError(t, err)
+		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 
 		mng, ok := ex.(*StressTestExecutionManager)
 		assert.True(t, ok)
-		assert.Contains(t, mng.scenarios, scenario.ID)
 
 		// make sure scenario is not running
 		mng.scenarios[scenario.ID].SetRunning(false)
@@ -57,6 +115,7 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 		// try to run it again
 		err = ex.RunScenario(context.Background(), scenario)
 		assert.NoError(t, err)
+
 		assert.True(t, mng.scenarios[scenario.ID].IsRunning())
 	})
 }
@@ -70,8 +129,8 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
-
-		ex := NewStressTestExecutionManager(builder, repo)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		err := ex.PauseScenario(context.Background(), &scenario)
 
@@ -87,8 +146,9 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 		err := ex.PauseScenario(context.Background(), scenario)
 
 		assert.Error(t, err)
@@ -104,10 +164,12 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+
 		agent := new(mocks.MockTestAgentController)
 		agent.On("PauseTesting", mock.Anything).Return(errors.New("something went wrong"))
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
 		stem.scenarios[scenario.ID] = &scenarioExecutor{
@@ -137,10 +199,12 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+
 		agent := new(mocks.MockTestAgentController)
 		agent.On("PauseTesting", mock.Anything).Return(nil)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
 		stem.scenarios[scenario.ID] = &scenarioExecutor{
@@ -170,8 +234,9 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		err := ex.ResumeScenario(context.Background(), &scenario)
 
@@ -187,8 +252,9 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 		err := ex.ResumeScenario(context.Background(), scenario)
 
 		assert.Error(t, err)
@@ -204,10 +270,12 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+
 		agent := new(mocks.MockTestAgentController)
 		agent.On("ResumeTesting", mock.Anything).Return(errors.New("something went wrong"))
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
 		stem.scenarios[scenario.ID] = &scenarioExecutor{
@@ -237,11 +305,13 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+
 		agent := new(mocks.MockTestAgentController)
 		builder.On("Get", scenario).Times(3).Return(agent)
 		agent.On("ResumeTesting", mock.Anything).Return(nil)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
 		stem.scenarios[scenario.ID] = &scenarioExecutor{
@@ -271,8 +341,9 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		err := ex.StopScenario(context.Background(), &scenario)
 
@@ -288,8 +359,9 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 		err := ex.StopScenario(context.Background(), scenario)
 
 		assert.Error(t, err)
@@ -305,10 +377,12 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+
 		agent := new(mocks.MockTestAgentController)
 		agent.On("StopTesting", mock.Anything).Return(errors.New("something went wrong"))
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
 		stem.scenarios[scenario.ID] = &scenarioExecutor{
@@ -334,8 +408,9 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		agent := new(mocks.MockTestAgentController)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		executionID := uuid.New()
 		stem, _ := ex.(*StressTestExecutionManager)
@@ -366,8 +441,9 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		err := ex.AbortScenario(context.Background(), &scenario)
 
@@ -383,8 +459,9 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 		err := ex.AbortScenario(context.Background(), scenario)
 
 		assert.Error(t, err)
@@ -400,10 +477,12 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+
 		agent := new(mocks.MockTestAgentController)
 		agent.On("AbortTesting", mock.Anything).Return(errors.New("something went wrong"))
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
 		stem.scenarios[scenario.ID] = &scenarioExecutor{
@@ -429,8 +508,9 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 		builder := new(mocks.MockTestAgentControllerToolBox)
 		agent := new(mocks.MockTestAgentController)
 		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
 
-		ex := NewStressTestExecutionManager(builder, repo)
+		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		executionID := uuid.New()
 		stem, _ := ex.(*StressTestExecutionManager)
