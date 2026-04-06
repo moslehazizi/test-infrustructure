@@ -11,10 +11,6 @@ type MockExecutionManage struct {
 	mock.Mock
 }
 
-func (m *MockExecutionManage) Run() {
-	m.Called()
-}
-
 func (m *MockExecutionManage) RunScenario(ctx context.Context, scenario *entity.TestScenario) error {
 	args := m.Called(ctx, scenario)
 

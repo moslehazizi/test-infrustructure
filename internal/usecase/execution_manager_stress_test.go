@@ -26,6 +26,8 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 		repo := new(repoMocks.MockTestScenario)
 
 		ex := NewStressTestExecutionManager(builder, repo)
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 		err := ex.RunScenario(context.Background(), scenario)
 		assert.NoError(t, err)
 

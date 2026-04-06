@@ -48,7 +48,7 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 		//nolint
 		go func() {
 			_ = testScenario.Run(context.Background())
-			// delete scenario from memmory
+			// delete scenario from memory
 		}()
 
 		return nil
@@ -64,7 +64,7 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 	//nolint
 	go func() {
 		_ = ex.scenarios[scenario.ID].Run(context.Background())
-		// delete scenario from memmory
+		// delete scenario from memory
 	}()
 
 	return nil
