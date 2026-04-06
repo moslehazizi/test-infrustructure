@@ -102,6 +102,7 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
 	}
 
+	// if both ExecNumMultiFixedInput && ExecNumMultiAgent are eqaul to zero then scenario execute for one stage.
 	if sc.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 && sc.scenario.ExecNumMultiAgent == 0 {
 		for _, agent := range sc.agents {
 			err := agent.AbortTesting(ctx)
@@ -116,10 +117,12 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 		return nil
 	}
 
+	// if ExecNumMultiFixedInput is equal to zero then we add one to run neasted loop.
 	if sc.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 {
 		sc.scenario.TestServiceConfig.ExecNumMultiFixedInput++
 	}
 
+	// if ExecNumMultiAgent is equal to zero then we add one to run neasted loop.
 	if sc.scenario.ExecNumMultiAgent == 0 {
 		sc.scenario.ExecNumMultiAgent++
 	}

@@ -35,26 +35,25 @@ type TestScenario struct {
 	DeploymentNumber    int32              `gorm:"column:deployment_number"`
 	StartedAt           *time.Time         `gorm:"column:started_at"`
 	Editable            bool               `gorm:"column:editable;default:true;not null"`
-	// سناریو را میتوان با افزایش تعداد ایجنت های تست به صورت خودکار مجدد اجرا کرد.
-	// این فیلد تعداد ایجنت هایی که در هر اجرای سناریو از ابتدا لازم هست
-	// که به تعداد مرحله قبلش اضافه شود را مشخص میکند.
-	// برای مثال در هر اجرای کامل سناریو، ۵ ایجنت اضافه شود.
-	// این به این معنا است که زمانیکه سناریو تا انتها رفت،
-	// مجدد از ابتدا تکرار میشود و اینبار، تعداد ایجنت ۵ تا
-	// بیشتر از اجرای قبلی خواهد بود.
-	// نکته مهم اینکه فیلد اگزکیوشن آی دی در هر اجرای از ابتدا،
-	// متفاوت خواهد بود و میتوان تمایز داد.
+	// The scenario can be automatically re-executed by increasing the number of test agents.
+	// This field specifies how many agents should be added at the beginning of each new run
+	// compared to the previous run.
+	// For example, in every full execution of the scenario, 5 agents are added.
+	// This means that when the scenario reaches the end,
+	// it starts again from the beginning, and this time the number of agents
+	// will be 5 more than in the previous execution.
+	// An important note is that the execution_id field will be different
+	// for each run that starts from the beginning, allowing them to be distinguished.
 	IncreaseAgentNumber int64 `gorm:"column:increase_agent_number"`
-	// این فیلد در کنار فیلد بالا معنا دار میشود.
-	// این فیلد تعیین میکند که افزایش ایجنت ها چند بار رخ دهد.
-	// برای مثال اگر این عدد ۱۰ باشد، یعنی ۱۰ بار کل سناریو رو تکرار کن
-	// و هر بار به میزان تعریف شده در فیلد بالا، تعداد ایجنت ها را افزایش بده.
-	//
-	// فرض کنید:
-	// IncreaseAgentNumber=5 & ExecNumMultiAgent=10 & MaxTestServiceCount = 5
-	// در این حالت، ابتدا با ۵ ایجنت سناریو انجام میشود.
-	// سپس با ۵ واحد افزایش، کل سناریو با ۱۰ ایجنت تکرار میشود.
-	// این فرایند ۱۰ بار تکرار میشود و آخرین مرحله با ۵۵ ایجنت تست خواهد شد.
+	// This field becomes meaningful when used together with the field above.
+	// It specifies how many times the agent increment should occur.
+	// For example, if this value is 10, it means the entire scenario will be repeated 10 times,
+	// and in each run, the number of agents will increase by the amount defined in the field above.
+	// Assume:
+	// IncreaseAgentNumber = 5 & ExecNumMultiAgent = 10 & MaxTestServiceCount = 5
+	// In this case, the scenario first runs with 5 agents.
+	// Then, with an increase of 5 agents, the entire scenario is repeated with 10 agents.
+	// This process repeats 10 times, and the final run will be tested with 55 agents.
 	ExecNumMultiAgent int64 `gorm:"column:execution_number_multi_agent"`
 }
 

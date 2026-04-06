@@ -34,7 +34,6 @@ type TestServiceConfig struct {
 	// For example, if the fixed test number is 1000 and this increment value is 2000,
 	// then in the first run, the fixed number will be 1000, and in the next run of the scenario,
 	// the number will become 3000.
-
 	IncreaseFixedInput int `gorm:"column:increase_fixed_input"`
 	// This field works together with the previous one and determines
 	// how many times the fixed test number should be incremented.
