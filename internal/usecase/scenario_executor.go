@@ -103,52 +103,58 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 		return pkg.ErrMaxTestServiceCountLessThanOne
 	}
 
-	for range *se.scenario.MaxTestServiceCount {
-		agent := se.testAgentControllerToolBox.Build(se.scenario)
-		go func() {
-			_ = agent.Run()
-		}()
+	// for range *se.scenario.MaxTestServiceCount {
+	// 	agent := se.testAgentControllerToolBox.Build(se.scenario)
+	// 	go func() {
+	// 		_ = agent.Run()
+	// 	}()
 
-		se.agents = append(se.agents, agent)
-	}
+	// 	se.agents = append(se.agents, agent)
+	// }
 
-	sse := se.scenarioExecutorBuilder.Build(
-		se.agents,
-		se.scenario,
-		se.executionID,
-	)
+	// sse := se.scenarioExecutorBuilder.Build(
+	// 	se.agents,
+	// 	se.scenario,
+	// 	se.executionID,
+	// )
 
-	err := sse.Execute(ctx)
-	if err != nil {
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
-	}
+	// err := sse.Execute(ctx)
+	// if err != nil {
+	// 	return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
+	// }
 
 	// if both ExecNumMultiFixedInput && ExecNumMultiAgent are eqaul to zero then scenario execute for one stage.
-	if se.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 && se.scenario.ExecNumMultiAgent == 0 {
-		return nil
-	}
+	// if se.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 && se.scenario.ExecNumMultiAgent == 0 {
+	// 	return nil
+	// }
 
-	// if ExecNumMultiFixedInput is equal to zero then we add one to run neasted loop.
-	if se.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 {
-		se.scenario.TestServiceConfig.ExecNumMultiFixedInput++
-	}
-
-	// if ExecNumMultiAgent is equal to zero then we add one to run neasted loop.
-	if se.scenario.ExecNumMultiAgent == 0 {
-		se.scenario.ExecNumMultiAgent++
-	}
+	// As we need stage zero in all scenarioes , this addition is neccessary.
+	se.scenario.TestServiceConfig.ExecNumMultiFixedInput++
+	se.scenario.ExecNumMultiAgent++
 
 	// iteration of agent count increment.
-	for range se.scenario.ExecNumMultiAgent {
-		for range se.scenario.IncreaseAgentNumber {
-			agent := se.testAgentControllerToolBox.Build(se.scenario)
-			go func() {
-				_ = agent.Run()
-			}()
-			se.agents = append(se.agents, agent)
+	for s := range se.scenario.ExecNumMultiAgent {
+		if s == 0 {
+			for range *se.scenario.MaxTestServiceCount {
+				agent := se.testAgentControllerToolBox.Build(se.scenario)
+				go func() {
+					_ = agent.Run()
+				}()
+				se.agents = append(se.agents, agent)
+			}
+		} else {
+			for range se.scenario.IncreaseAgentNumber {
+				agent := se.testAgentControllerToolBox.Build(se.scenario)
+				go func() {
+					_ = agent.Run()
+				}()
+				se.agents = append(se.agents, agent)
+			}
 		}
 
-		for range se.scenario.TestServiceConfig.ExecNumMultiFixedInput {
+		stageNumber := se.scenario.TestServiceConfig.ExecNumMultiFixedInput
+
+		for range stageNumber {
 			if se.scenario.TestServiceConfig.FixedTestNumber != nil {
 				*se.scenario.TestServiceConfig.FixedTestNumber += se.scenario.TestServiceConfig.IncreaseFixedInput
 			}
