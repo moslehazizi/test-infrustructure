@@ -22,13 +22,11 @@ func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAge
 		testAgentControllerToolBox: testAgentControllerToolBox,
 		scenarios:                  make(map[uint64]interfaces.ScenarioExecutor),
 		scenarioRepo:               scenarioRepo,
-		running:                    true,
 	}
 }
 
 // #region StressTestExecutionManager
 type StressTestExecutionManager struct {
-	running                    bool
 	scenarios                  map[uint64]interfaces.ScenarioExecutor
 	testAgentControllerToolBox interfaces.TestAgentControllerToolBox
 	scenarioRepo               repository.TestScenarioRepository
@@ -50,6 +48,7 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 		//nolint
 		go func() {
 			_ = testScenario.Run(context.Background())
+			// delete scenario from memmory
 		}()
 
 		return nil
@@ -65,6 +64,7 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 	//nolint
 	go func() {
 		_ = ex.scenarios[scenario.ID].Run(context.Background())
+		// delete scenario from memmory
 	}()
 
 	return nil

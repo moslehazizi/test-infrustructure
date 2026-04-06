@@ -148,10 +148,16 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 			scenarioRepo:     repo,
 		}
 
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 		err := ex.Run(context.Background())
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrScenarioIsNotRunning)
+		assert.False(t, ex.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
+
 	t.Run("scenario_max_test_service_count_is_null", func(t *testing.T) {
 		repo := new(repoMocks.MockTestScenario)
 		ex := &scenarioExecutor{
@@ -163,10 +169,17 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 			scenarioRepo:     repo,
 		}
 
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 		err := ex.Run(context.Background())
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountNotSet)
+
+		assert.False(t, ex.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
+
 	t.Run("scenario_max_test_service_count_is_less_than_one", func(t *testing.T) {
 		repo := new(repoMocks.MockTestScenario)
 		ex := &scenarioExecutor{
@@ -178,9 +191,13 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 			scenarioRepo:     repo,
 		}
 
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 		err := ex.Run(context.Background())
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountLessThanOne)
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
 
 	t.Run("1_step_no_dynamic_agents_no_factorial_increment", func(t *testing.T) {
@@ -253,6 +270,8 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent2.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent3.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 		err := se.Run(context.Background())
 		assert.NoError(t, err)
 
@@ -282,6 +301,118 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent1.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent2.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent3.AssertNumberOfCalls(t, "AbortTesting", 1)
+
+		assert.False(t, se.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
+	})
+
+	t.Run("1_step_no_dynamic_agents_no_factorial_increment_failed_set_status", func(t *testing.T) {
+		scenario := &entity.TestScenario{
+			ID: 1,
+			TestCategory: &entity.TestCategory{
+				ID:   7,
+				Name: entity.STRESS,
+			},
+			MaxTestServiceCount: new(int64(3)),
+			NumSteps:            1,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   0,
+			TestServiceConfig: &entity.TestServiceConfig{
+				ID:                     1,
+				TestScenarioID:         1,
+				MaxRequests:            100,
+				MaxDuration:            1000,
+				RequestDelayDuration:   new(10),
+				RandomRequestDelayMin:  nil,
+				RandomRequestDelayMax:  nil,
+				FixedTestNumber:        new(43),
+				RandomTestNumberMin:    nil,
+				RandomTestNumberMax:    nil,
+				BadValueRate:           2,
+				NegativeValueRate:      10,
+				RealValueRate:          10,
+				ZeroValueRate:          0,
+				StringValueRate:        80,
+				LongStringValueRate:    0,
+				NullValueRate:          0,
+				DatabaseName:           "dbname",
+				DatabaseTableName:      "tbl",
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 0,
+			},
+		}
+
+		repo := new(repoMocks.MockTestScenario)
+		ac := new(mocks.MockTestAgentControllerToolBox)
+		msse := new(mocks.MockSingleScenarioExecutor)
+		msseb := new(mocks.MockSingleScenarioExecutorBuilder)
+		se := &scenarioExecutor{
+			scenario:                   scenario,
+			executionID:                uuid.New(),
+			agents:                     []interfaces.TestAgentController{},
+			allAgentsHealthy:           false,
+			running:                    true,
+			scenarioRepo:               repo,
+			testAgentControllerToolBox: ac,
+			scenarioExecutorBuilder:    msseb,
+		}
+
+		agent1 := new(mocks.MockTestAgentController)
+		agent2 := new(mocks.MockTestAgentController)
+		agent3 := new(mocks.MockTestAgentController)
+
+		ac.On("Build", mock.Anything).Times(1).Return(agent1)
+		ac.On("Build", mock.Anything).Times(1).Return(agent2)
+		ac.On("Build", mock.Anything).Times(1).Return(agent3)
+
+		agent1.On("Run").Times(1).Return(nil)
+		agent2.On("Run").Times(1).Return(nil)
+		agent3.On("Run").Times(1).Return(nil)
+
+		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(msse).Times(1)
+		msse.On("Execute", mock.Anything).Return(nil).Times(1)
+
+		agent1.On("AbortTesting", mock.Anything).Times(1).Return(nil)
+		agent2.On("AbortTesting", mock.Anything).Times(1).Return(nil)
+		agent3.On("AbortTesting", mock.Anything).Times(1).Return(nil)
+
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("something went wrong"))
+
+		err := se.Run(context.Background())
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
+
+		ac.AssertCalled(t, "Build", mock.Anything)
+		ac.AssertExpectations(t)
+		ac.AssertNumberOfCalls(t, "Build", 3) // 3 in stage zero
+
+		// make sure all goroutines are called
+		time.Sleep(time.Millisecond)
+
+		agent1.AssertCalled(t, "Run")
+		agent2.AssertCalled(t, "Run")
+		agent3.AssertCalled(t, "Run")
+		agent1.AssertNumberOfCalls(t, "Run", 1)
+		agent2.AssertNumberOfCalls(t, "Run", 1)
+		agent3.AssertNumberOfCalls(t, "Run", 1)
+
+		msseb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything)
+		msseb.AssertNumberOfCalls(t, "Build", 1) // 1 in stage zero
+
+		msse.AssertCalled(t, "Execute", mock.Anything)
+		msse.AssertNumberOfCalls(t, "Execute", 1) // 1 in stage zero
+
+		agent1.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent2.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent3.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent1.AssertNumberOfCalls(t, "AbortTesting", 1)
+		agent2.AssertNumberOfCalls(t, "AbortTesting", 1)
+		agent3.AssertNumberOfCalls(t, "AbortTesting", 1)
+
+		assert.False(t, se.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
 
 	t.Run("1_step_no_dynamic_agents_no_factorial_increment_failed_deprovision", func(t *testing.T) {
@@ -354,6 +485,8 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent2.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent3.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 		err := se.Run(context.Background())
 		assert.NoError(t, err)
 
@@ -383,6 +516,10 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent1.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent2.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent3.AssertNumberOfCalls(t, "AbortTesting", 1)
+
+		assert.False(t, se.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
 
 	t.Run("1_step_6_dynamic_agents_no_factorial_increment", func(t *testing.T) {
@@ -466,6 +603,9 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent8.On("Run").Times(1).Return(nil)
 		agent9.On("Run").Times(1).Return(nil)
 
+		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(msse).Times(4)
+		msse.On("Execute", mock.Anything).Return(nil).Times(4)
+
 		agent1.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent2.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent3.On("AbortTesting", mock.Anything).Times(1).Return(nil)
@@ -476,8 +616,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent8.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent9.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 
-		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(msse).Times(4)
-		msse.On("Execute", mock.Anything).Return(nil).Times(4)
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 		err := se.Run(context.Background())
 		assert.NoError(t, err)
@@ -532,6 +671,10 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent7.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent8.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent9.AssertNumberOfCalls(t, "AbortTesting", 1)
+
+		assert.False(t, se.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
 
 	t.Run("1_step_6_dynamic_agents_2_factorial_increment", func(t *testing.T) {
@@ -615,6 +758,9 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent8.On("Run").Times(1).Return(nil)
 		agent9.On("Run").Times(1).Return(nil)
 
+		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(msse).Times(10)
+		msse.On("Execute", mock.Anything).Return(nil).Times(10)
+
 		agent1.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent2.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent3.On("AbortTesting", mock.Anything).Times(1).Return(nil)
@@ -625,8 +771,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent8.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent9.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 
-		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(msse).Times(10)
-		msse.On("Execute", mock.Anything).Return(nil).Times(10)
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 		err := se.Run(context.Background())
 		assert.NoError(t, err)
@@ -681,6 +826,10 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent7.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent8.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent9.AssertNumberOfCalls(t, "AbortTesting", 1)
+
+		assert.False(t, se.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
 
 	t.Run("1_step_6_dynamic_agents_2_factorial_increment_ExecNumMultiFixedInput_is_0", func(t *testing.T) {
@@ -764,6 +913,9 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent8.On("Run").Times(1).Return(nil)
 		agent9.On("Run").Times(1).Return(nil)
 
+		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(msse).Times(4)
+		msse.On("Execute", mock.Anything).Return(nil).Times(4)
+
 		agent1.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent2.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent3.On("AbortTesting", mock.Anything).Times(1).Return(nil)
@@ -774,8 +926,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent8.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent9.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 
-		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(msse).Times(4)
-		msse.On("Execute", mock.Anything).Return(nil).Times(4)
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 		err := se.Run(context.Background())
 		assert.NoError(t, err)
@@ -830,6 +981,10 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent7.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent8.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent9.AssertNumberOfCalls(t, "AbortTesting", 1)
+
+		assert.False(t, se.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
 
 	t.Run("1_step_6_dynamic_agents_2_factorial_increment_ExecNumMultiAgent_is_0", func(t *testing.T) {
@@ -902,6 +1057,8 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent2.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent3.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 		err := se.Run(context.Background())
 		assert.NoError(t, err)
 
@@ -931,6 +1088,10 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent1.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent2.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent3.AssertNumberOfCalls(t, "AbortTesting", 1)
+
+		assert.False(t, se.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
 
 	t.Run("1_step_6_dynamic_agents_2_factorial_increment_FixedTestNumber_is_nil", func(t *testing.T) {
@@ -1015,6 +1176,9 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent8.On("Run").Times(1).Return(nil)
 		agent9.On("Run").Times(1).Return(nil)
 
+		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(msse).Times(4)
+		msse.On("Execute", mock.Anything).Return(nil).Times(4)
+
 		agent1.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent2.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent3.On("AbortTesting", mock.Anything).Times(1).Return(nil)
@@ -1025,8 +1189,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent8.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 		agent9.On("AbortTesting", mock.Anything).Times(1).Return(nil)
 
-		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything).Return(msse).Times(4)
-		msse.On("Execute", mock.Anything).Return(nil).Times(4)
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 		err := se.Run(context.Background())
 		assert.NoError(t, err)
@@ -1039,22 +1202,22 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		time.Sleep(time.Millisecond)
 
 		agent1.AssertCalled(t, "Run")
-		agent1.AssertNumberOfCalls(t, "Run", 1)
 		agent2.AssertCalled(t, "Run")
-		agent2.AssertNumberOfCalls(t, "Run", 1)
 		agent3.AssertCalled(t, "Run")
-		agent3.AssertNumberOfCalls(t, "Run", 1)
 		agent4.AssertCalled(t, "Run")
-		agent4.AssertNumberOfCalls(t, "Run", 1)
 		agent5.AssertCalled(t, "Run")
-		agent5.AssertNumberOfCalls(t, "Run", 1)
 		agent6.AssertCalled(t, "Run")
-		agent6.AssertNumberOfCalls(t, "Run", 1)
 		agent7.AssertCalled(t, "Run")
-		agent7.AssertNumberOfCalls(t, "Run", 1)
 		agent8.AssertCalled(t, "Run")
-		agent8.AssertNumberOfCalls(t, "Run", 1)
 		agent9.AssertCalled(t, "Run")
+		agent1.AssertNumberOfCalls(t, "Run", 1)
+		agent2.AssertNumberOfCalls(t, "Run", 1)
+		agent3.AssertNumberOfCalls(t, "Run", 1)
+		agent4.AssertNumberOfCalls(t, "Run", 1)
+		agent5.AssertNumberOfCalls(t, "Run", 1)
+		agent6.AssertNumberOfCalls(t, "Run", 1)
+		agent7.AssertNumberOfCalls(t, "Run", 1)
+		agent8.AssertNumberOfCalls(t, "Run", 1)
 		agent9.AssertNumberOfCalls(t, "Run", 1)
 
 		msseb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything)
@@ -1081,6 +1244,10 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent7.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent8.AssertNumberOfCalls(t, "AbortTesting", 1)
 		agent9.AssertNumberOfCalls(t, "AbortTesting", 1)
+
+		assert.False(t, se.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
 
 	t.Run("1_step_6_dynamic_agents_no_factorial_increment_failed_execute", func(t *testing.T) {
@@ -1137,6 +1304,7 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		agent1 := new(mocks.MockTestAgentController)
 		agent2 := new(mocks.MockTestAgentController)
 		agent3 := new(mocks.MockTestAgentController)
+
 		ac.On("Build", mock.Anything).Times(1).Return(agent1)
 		ac.On("Build", mock.Anything).Times(1).Return(agent2)
 		ac.On("Build", mock.Anything).Times(1).Return(agent3)
@@ -1148,9 +1316,26 @@ func Test_scenarioExecutor_Run(t *testing.T) {
 		msseb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(msse)
 		msse.On("Execute", mock.Anything).Return(errors.New("something went wrong"))
 
+		agent1.On("AbortTesting", mock.Anything).Times(1).Return(nil)
+		agent2.On("AbortTesting", mock.Anything).Times(1).Return(nil)
+		agent3.On("AbortTesting", mock.Anything).Times(1).Return(nil)
+
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 		err := se.Run(context.Background())
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToExecuteSingleScenario)
+
+		agent1.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent2.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent3.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent1.AssertNumberOfCalls(t, "AbortTesting", 1)
+		agent2.AssertNumberOfCalls(t, "AbortTesting", 1)
+		agent3.AssertNumberOfCalls(t, "AbortTesting", 1)
+
+		assert.False(t, se.IsRunning())
+		repo.AssertCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		repo.AssertNumberOfCalls(t, "SetStatus", 1)
 	})
 }
 

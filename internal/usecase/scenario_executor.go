@@ -36,65 +36,86 @@ type scenarioExecutor struct {
 	scenarioExecutorBuilder    interfaces.SingleScenarioExecutorBuilder
 }
 
-func (sc *scenarioExecutor) IsRunning() bool {
-	return sc.running
+func (se *scenarioExecutor) IsRunning() bool {
+	return se.running
 }
 
-func (sc *scenarioExecutor) SetRunning(status bool) {
-	sc.running = status
+func (se *scenarioExecutor) SetRunning(status bool) {
+	se.running = status
 }
 
-func (sc *scenarioExecutor) assignExecutionID() {
-	sc.executionID = uuid.New()
+func (se *scenarioExecutor) assignExecutionID() {
+	se.executionID = uuid.New()
 }
 
-func (sc *scenarioExecutor) AddAgent(agent interfaces.TestAgentController) {
-	sc.agents = append(sc.agents, agent)
+func (se *scenarioExecutor) AddAgent(agent interfaces.TestAgentController) {
+	se.agents = append(se.agents, agent)
 }
 
-func (sc *scenarioExecutor) GetAgents() []interfaces.TestAgentController {
-	return sc.agents
+func (se *scenarioExecutor) GetAgents() []interfaces.TestAgentController {
+	return se.agents
 }
 
-func (sc *scenarioExecutor) AllAgentsAreHealthy() bool {
-	return sc.allAgentsHealthy
+func (se *scenarioExecutor) AllAgentsAreHealthy() bool {
+	return se.allAgentsHealthy
 }
 
-func (sc *scenarioExecutor) Run(ctx context.Context) error {
+func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 	zap.L().Info("scenarioExecutor.Run Called")
 
-	sc.assignExecutionID()
+	defer func() {
+		for _, agent := range se.agents {
+			err := agent.AbortTesting(ctx)
+			if err != nil {
+				// returning err is not required.
+				zap.L().Error("failed to deprovision test agent",
+					zap.Uint64("scenarioID", se.scenario.ID),
+					zap.String("executionID", se.executionID.String()),
+				)
+			}
+		}
+
+		// set running false
+		se.SetRunning(false)
+		// set status
+		err := se.scenarioRepo.SetStatus(ctx, se.scenario.ID, entity.ScenarioStatusPending, true)
+		if err != nil && e == nil {
+			e = fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
+		}
+	}()
+
+	se.assignExecutionID()
 	// check scenario is running
-	if !sc.running {
+	if !se.running {
 		zap.L().Error("scenarioExecutor Run called but scenario is not running",
-			zap.Uint64("scenarioID", sc.scenario.ID),
-			zap.String("executionID", sc.executionID.String()),
+			zap.Uint64("scenarioID", se.scenario.ID),
+			zap.String("executionID", se.executionID.String()),
 		)
 
 		return pkg.ErrScenarioIsNotRunning
 	}
 
-	if sc.scenario.MaxTestServiceCount == nil {
+	if se.scenario.MaxTestServiceCount == nil {
 		return pkg.ErrMaxTestServiceCountNotSet
 	}
 
-	if *sc.scenario.MaxTestServiceCount < 1 {
+	if *se.scenario.MaxTestServiceCount < 1 {
 		return pkg.ErrMaxTestServiceCountLessThanOne
 	}
 
-	for range *sc.scenario.MaxTestServiceCount {
-		agent := sc.testAgentControllerToolBox.Build(sc.scenario)
+	for range *se.scenario.MaxTestServiceCount {
+		agent := se.testAgentControllerToolBox.Build(se.scenario)
 		go func() {
 			_ = agent.Run()
 		}()
 
-		sc.agents = append(sc.agents, agent)
+		se.agents = append(se.agents, agent)
 	}
 
-	sse := sc.scenarioExecutorBuilder.Build(
-		sc.agents,
-		sc.scenario,
-		sc.executionID,
+	sse := se.scenarioExecutorBuilder.Build(
+		se.agents,
+		se.scenario,
+		se.executionID,
 	)
 
 	err := sse.Execute(ctx)
@@ -103,80 +124,47 @@ func (sc *scenarioExecutor) Run(ctx context.Context) error {
 	}
 
 	// if both ExecNumMultiFixedInput && ExecNumMultiAgent are eqaul to zero then scenario execute for one stage.
-	if sc.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 && sc.scenario.ExecNumMultiAgent == 0 {
-		for _, agent := range sc.agents {
-			err := agent.AbortTesting(ctx)
-			if err != nil {
-				zap.L().Error("failed to deprovision test agent",
-					zap.Uint64("scenarioID", sc.scenario.ID),
-					zap.String("executionID", sc.executionID.String()),
-				)
-			}
-		}
-
+	if se.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 && se.scenario.ExecNumMultiAgent == 0 {
 		return nil
 	}
 
 	// if ExecNumMultiFixedInput is equal to zero then we add one to run neasted loop.
-	if sc.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 {
-		sc.scenario.TestServiceConfig.ExecNumMultiFixedInput++
+	if se.scenario.TestServiceConfig.ExecNumMultiFixedInput == 0 {
+		se.scenario.TestServiceConfig.ExecNumMultiFixedInput++
 	}
 
 	// if ExecNumMultiAgent is equal to zero then we add one to run neasted loop.
-	if sc.scenario.ExecNumMultiAgent == 0 {
-		sc.scenario.ExecNumMultiAgent++
+	if se.scenario.ExecNumMultiAgent == 0 {
+		se.scenario.ExecNumMultiAgent++
 	}
 
 	// iteration of agent count increment.
-	for range sc.scenario.ExecNumMultiAgent {
-		for range sc.scenario.IncreaseAgentNumber {
-			agent := sc.testAgentControllerToolBox.Build(sc.scenario)
+	for range se.scenario.ExecNumMultiAgent {
+		for range se.scenario.IncreaseAgentNumber {
+			agent := se.testAgentControllerToolBox.Build(se.scenario)
 			go func() {
 				_ = agent.Run()
 			}()
-			sc.agents = append(sc.agents, agent)
+			se.agents = append(se.agents, agent)
 		}
 
-		for range sc.scenario.TestServiceConfig.ExecNumMultiFixedInput {
-			if sc.scenario.TestServiceConfig.FixedTestNumber != nil {
-				*sc.scenario.TestServiceConfig.FixedTestNumber += sc.scenario.TestServiceConfig.IncreaseFixedInput
+		for range se.scenario.TestServiceConfig.ExecNumMultiFixedInput {
+			if se.scenario.TestServiceConfig.FixedTestNumber != nil {
+				*se.scenario.TestServiceConfig.FixedTestNumber += se.scenario.TestServiceConfig.IncreaseFixedInput
 			}
 
-			sse := sc.scenarioExecutorBuilder.Build(
-				sc.agents,
-				sc.scenario,
-				sc.executionID,
+			sse := se.scenarioExecutorBuilder.Build(
+				se.agents,
+				se.scenario,
+				se.executionID,
 			)
 
 			err := sse.Execute(ctx)
 			if err != nil {
-				return err
+				return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
 			}
 		}
 	}
-
-	for _, agent := range sc.agents {
-		err := agent.AbortTesting(ctx)
-		if err != nil {
-			zap.L().Error("failed to deprovision test agent",
-				zap.Uint64("scenarioID", sc.scenario.ID),
-				zap.String("executionID", sc.executionID.String()),
-			)
-		}
-	}
-
-	// TODO: complete implementation
-	// panic("complete implementation")
-	// loop
-	// run scenario(
-	// // await to be healthy
-	// // await to be ready to start testing
-	// // executing tests
-	// )
-	// end loop
-	// deprovision all agents
-	// remove scenario from memory
-	// ------------
 
 	return nil
 }

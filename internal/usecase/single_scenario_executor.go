@@ -78,11 +78,6 @@ func (ss *singleScenarioExecutor) awaitAgentsToBeReadyToStartTesting() {
 	}
 }
 func (ss *singleScenarioExecutor) executeScenarioSteps(ctx context.Context) error {
-	// sc.scenario.IncreaseAgentNumber
-	// sc.scenario.ExecNumMultiAgent
-	// sc.scenario.TestServiceConfig.IncreaseFixedInput
-	// sc.scenario.TestServiceConfig.ExecNumMultiFixedInput
-
 	for i := int64(1); i <= ss.scenario.NumSteps; i++ {
 		req := request.NewRunRequestFromTestServiceConfig(
 			int(i),
@@ -106,16 +101,6 @@ func (ss *singleScenarioExecutor) executeScenarioSteps(ctx context.Context) erro
 		if i < ss.scenario.NumSteps {
 			// wait for all agents to be ready to execute next step.
 			ss.awaitAgentsToBeReadyToStartTesting()
-		} else {
-			// // set status ScenarioStatusPending
-			// err := sc.scenarioRepo.SetStatus(ctx, sc.scenario.ID, entity.ScenarioStatusPending, true)
-			// if err != nil {
-			// 	zap.L().Error("failed to update scenario executor status", zap.Error(err))
-
-			// 	return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
-			// }
-			// // set running false , to prevent run again and again
-			// sc.SetRunning(false)
 		}
 	}
 
