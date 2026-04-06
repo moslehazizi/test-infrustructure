@@ -9,8 +9,6 @@ import (
 )
 
 type ExecutionManager interface {
-	// Add will initialize new TestAgentControllers based on scenario config.
-	AddScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// RunScenario is for run scenario.
 	RunScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// PauseScenario is for pause ran scenario.

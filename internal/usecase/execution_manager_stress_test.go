@@ -17,52 +17,6 @@ import (
 )
 
 // #region StressTestExecutionManager
-func TestStressTestExecutionManager_AddScenario(t *testing.T) {
-	t.Run("failed_case_scenario_max_service_count_is_null", func(t *testing.T) {
-		scenario := entity.TestScenario{
-			MaxTestServiceCount: nil,
-			NumSteps:            2,
-		}
-
-		builder := new(mocks.MockTestAgentControllerToolBox)
-		repo := new(repoMocks.MockTestScenario)
-
-		ex := NewStressTestExecutionManager(builder, repo)
-
-		err := ex.AddScenario(context.Background(), &scenario)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountNotSet)
-	})
-
-	t.Run("success_case", func(t *testing.T) {
-		scenario := &entity.TestScenario{
-			MaxTestServiceCount: new(int64(3)),
-			NumSteps:            2,
-		}
-
-		builder := new(mocks.MockTestAgentControllerToolBox)
-		repo := new(repoMocks.MockTestScenario)
-
-		agent := new(mocks.MockTestAgentController)
-		agent.On("Run").Return(nil).Times(3)
-		builder.On("Build", scenario).Times(3).Return(agent)
-
-		ex := NewStressTestExecutionManager(builder, repo)
-
-		err := ex.AddScenario(context.Background(), scenario)
-
-		// will wait to all goroutines be called.
-		time.Sleep(time.Millisecond)
-
-		assert.NoError(t, err)
-
-		agent.AssertCalled(t, "Run")
-		builder.AssertCalled(t, "Build", scenario)
-
-	})
-}
-
 func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 	t.Run("success_case_does_not_exist", func(t *testing.T) {
 		scenario := &entity.TestScenario{
