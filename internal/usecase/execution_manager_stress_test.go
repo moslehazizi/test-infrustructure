@@ -54,6 +54,7 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 
 		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
+
 	t.Run("success_case_scenario_does_not_exist_in_execution_manager", func(t *testing.T) {
 		scenario := &entity.TestScenario{
 			ID: 1,
@@ -81,42 +82,6 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 		assert.True(t, ok)
 
 		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-	})
-	t.Run("success_case_scenario_already_exists_in_execution_manager", func(t *testing.T) {
-		scenario := &entity.TestScenario{
-			ID: 1,
-		}
-		toolbox := new(mocks.MockTestAgentControllerToolBox)
-		repo := new(repoMocks.MockTestScenario)
-		seb := new(mocks.MockScenarioExecutorBuilder)
-		sseb := new(mocks.MockSingleScenarioExecutorBuilder)
-
-		sampleSE := &scenarioExecutor{
-			scenario:                   scenario,
-			scenarioRepo:               repo,
-			testAgentControllerToolBox: toolbox,
-			scenarioExecutorBuilder:    sseb,
-		}
-		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(sampleSE)
-
-		// add for first time
-		ex := NewStressTestExecutionManager(toolbox, repo, seb)
-		err := ex.RunScenario(context.Background(), scenario)
-		assert.NoError(t, err)
-		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-
-		mng, ok := ex.(*StressTestExecutionManager)
-		assert.True(t, ok)
-
-		// make sure scenario is not running
-		mng.scenarios[scenario.ID].SetRunning(false)
-
-		// try to run it again
-		err = ex.RunScenario(context.Background(), scenario)
-		assert.NoError(t, err)
-
-		assert.True(t, mng.scenarios[scenario.ID].IsRunning())
 	})
 }
 

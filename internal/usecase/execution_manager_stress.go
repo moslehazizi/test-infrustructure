@@ -42,21 +42,6 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 
 	ex.mx.Lock()
 	defer ex.mx.Unlock()
-	testScenario, ok := ex.scenarios[scenario.ID]
-	if ok {
-		// set scenario as running
-		testScenario.SetRunning(true)
-
-		//nolint
-		go func() {
-			_ = testScenario.Run(context.Background())
-			// delete scenario from memory
-			delete(ex.scenarios, scenario.ID)
-		}()
-
-		return nil
-	}
-
 	ex.scenarios[scenario.ID] = ex.scenarioExecutorBuilder.Build(scenario, ex.scenarioRepo, ex.testAgentControllerToolBox, &singleScenarioExecutorBuilder{})
 	ex.scenarios[scenario.ID].SetRunning(true)
 

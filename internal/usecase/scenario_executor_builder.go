@@ -6,6 +6,10 @@ import (
 	"control-panel-service/internal/usecase/interfaces"
 )
 
+func NewScenarioExecutorBuilder() *scenarioExecutorBuilder {
+	return &scenarioExecutorBuilder{}
+}
+
 type scenarioExecutorBuilder struct {
 }
 
