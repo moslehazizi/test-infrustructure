@@ -68,4 +68,5 @@ const (
 	IncreaseFixedNumberNotBeNegative       = "مقدار افزایش عدد ارسالی از سمت سرویس تست نمیتواند عدد منفی باشد."
 	ExecNumMultiFixedInputShouldBePositive = "تعداد اجرای سناریو برای عدد ثابت باید یک یا بیشتر باشد."
 	MultiFixedInputConfigNotTrue           = "تنظیمات افزایش عدد ثابت درست نمی باشد"
+	MultiAgentConfigNotTrue                = "تنظیمات افزایش تعداد ایجنت درست نمی باشد"
 )

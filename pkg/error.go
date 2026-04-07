@@ -255,6 +255,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrMultiFixedInputConfigNotTrue):
 		status = http.StatusUnprocessableEntity
 		msg = MultiFixedInputConfigNotTrue
+	case errors.Is(err, ErrMultiAgentConfigNotTrue):
+		status = http.StatusUnprocessableEntity
+		msg = MultiAgentConfigNotTrue
 
 	default:
 		status = http.StatusInternalServerError
@@ -381,5 +384,6 @@ var (
 	ErrIncreaseFixedInputNotBeNegative                    = errors.New("increase fixed number couldn't be negative")
 	ErrExecNumMultiFixedInputShouldBePositive             = errors.New("execution number of multi fixed input should be positive")
 	ErrScenarioIsNotRunning                               = errors.New("scenario is not running")
-	ErrMultiFixedInputConfigNotTrue                       = errors.New("only one of execution number of multi fixed input and increase fixed input cannot be zero")
+	ErrMultiFixedInputConfigNotTrue                       = errors.New("both or none of execution number of multi fixed input and increase fixed input should be zero")
+	ErrMultiAgentConfigNotTrue                            = errors.New("both or none of execution number of multi agent and increase agent should be zero")
 )
