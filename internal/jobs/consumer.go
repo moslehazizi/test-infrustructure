@@ -66,6 +66,10 @@ func (c *consumerJob) RunFactorialConsumer(ctx context.Context, topic string, ch
 	go func() {
 		err := c.consumerUseCase.Consume(ctx, topic, ch)
 		if err != nil {
+			logger.WithContext(ctx).Error("could not consume factorial result",
+				zap.Error(err),
+				zap.String(logger.FieldOperation, "consume_factorial_result"),
+			)
 			cancel()
 
 			return
@@ -97,6 +101,10 @@ func (c *consumerJob) RunExecutorConsumer(ctx context.Context, topic string, ch 
 	go func() {
 		err := c.consumerUseCase.Consume(ctx, topic, ch)
 		if err != nil {
+			logger.WithContext(ctx).Error("could not consume executor result",
+				zap.Error(err),
+				zap.String(logger.FieldOperation, "consume_executor_result"),
+			)
 			cancel()
 
 			return
