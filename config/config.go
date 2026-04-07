@@ -99,7 +99,6 @@ type Kubernetese struct {
 	MotherServiceAPPJobs            string        `envconfig:"MOTHER_SERVICE_APP_JOBS" default:"mother-service-jobs"`
 	MotherServiceAPPJobsWaitReady   time.Duration `envconfig:"MOTHER_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
 	MotherServiceKafkaDatabaseTopic string        `envconfig:"MOTHER_SERVICE_KAFKA_DATABASE_TOPIC" default:"mother-db"`
-	MotherServiceKafkaConsumerGroup string        `envconfig:"MOTHER_SERVICE_KAFKA_CONSUMER_GROUP" default:"mother-db-consumer-group"`
 	MotherServiceLiveFeedTopic      string        `envconfig:"MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"mother-live-feed"`
 	MotherServiceKafkaHost          string        `envconfig:"MOTHER_SERVICE_KAFKA_HOST" default:"kafka"`
 	MotherServicePostgresHost       string        `envconfig:"MOTHER_SERVICE_POSTGRES_HOST" default:"postgres"`
@@ -111,7 +110,6 @@ type Kubernetese struct {
 	TestServicePostgresHost         string        `envconfig:"TEST_SERVICE_POSTGRES_HOST" default:"localhost"`
 	TestServiceKafkaHost            string        `envconfig:"TEST_SERVICE_KAFKA_HOST" default:"localhost"`
 	TestServiceKafkaDatabaseTopic   string        `envconfig:"TEST_SERVICE_KAFKA_DATABASE_TOPIC" default:"test-db"`
-	TestServiceKafkaConsumerGroup   string        `envconfig:"TEST_SERVICE_KAFKA_CONSUMER_GROUP" default:"test-db-consumer-group"`
 	TestServiceLiveFeedTopic        string        `envconfig:"TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"test-live-feed"`
 }
 
