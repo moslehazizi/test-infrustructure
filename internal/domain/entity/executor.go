@@ -16,6 +16,7 @@ type Executor struct {
 	StepNum         int
 	ExecutionId     string
 	ScenarioId      int
+	Scenario        *TestScenario
 	StepIncrement   int
 	DurationTx      time.Duration
 	DelayBeforeTx   time.Duration

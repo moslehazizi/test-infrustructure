@@ -31,7 +31,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		return fmt.Errorf("could not open postgres connection: %w", err)
 	}
 	factRepo := postgres.NewFactorialRepository(db)
-	execRepo := postgres.NewExecutorRepository(db)
+	execRepo := postgres.NewTestServiceExecutorResultRepository(cfg)
 
 	eventConsumer, err := provider.NewKafkaEventConsumer(ctx, cfg)
 	if err != nil {
@@ -47,7 +47,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		}
 	}()
 
-	consumer := usecase.NewCounsumer(factRepo, execRepo, eventConsumer)
+	consumer := usecase.NewConsumer(factRepo, execRepo, eventConsumer, psql.DBInitializerFn)
 	consumerJob := &consumerJob{consumer}
 
 	consumerFactChannel := make(chan []byte)

@@ -7,6 +7,7 @@ import (
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/logger"
 	"encoding/json"
 	"fmt"
@@ -16,8 +17,9 @@ import (
 
 type consumer struct {
 	factorialRepo repository.FactorialRepository
-	executorRepo  repository.ExecutorRepository
+	executorRepo  repository.TestServiceExecutorResultRepository
 	eventConsumer provider.EventConsumer
+	dbInitializer database.DBInitializerFn
 }
 
 type Consumer interface {
@@ -26,7 +28,13 @@ type Consumer interface {
 	StoreFactorialResult(ctx context.Context, msg []byte) error
 }
 
-func NewCounsumer(factorialRepo repository.FactorialRepository, executorRepo repository.ExecutorRepository, eventConsumer provider.EventConsumer) Consumer {
+func NewConsumer(
+	factorialRepo repository.FactorialRepository,
+	executorRepo repository.TestServiceExecutorResultRepository,
+	eventConsumer provider.EventConsumer,
+	dbInitializer database.DBInitializerFn,
+
+) Consumer {
 	return &consumer{
 		factorialRepo: factorialRepo,
 		executorRepo:  executorRepo,
@@ -51,6 +59,7 @@ func (mse *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error 
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToUnmarshalEventData, err)
 	}
 
+	// load scenario by id from database
 	execute := &sharedentity.Executor{
 		Input:           data.Input,
 		Output:          data.Output,
@@ -59,6 +68,7 @@ func (mse *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error 
 		StepNum:         data.StepNum,
 		ExecutionId:     data.ExecutionId,
 		ScenarioId:      data.ScenarioId,
+		Scenario: ??,
 		StepIncrement:   data.StepIncrement,
 		StartTxTime:     data.StartTxTime,
 		DurationTx:      data.DurationTx,
@@ -66,7 +76,7 @@ func (mse *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error 
 		HttpStatusCode:  data.HttpStatusCode,
 	}
 
-	err = mse.executorRepo.Create(ctx, execute)
+	err = mse.executorRepo.Create(ctx, execute, mse.dbInitializer)
 	if err != nil {
 		logger.WithContext(ctx).Error("failed to store execute result",
 			zap.Error(err),

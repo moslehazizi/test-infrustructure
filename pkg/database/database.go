@@ -1,6 +1,8 @@
 package database
 
-import "context"
+import (
+	"context"
+)
 
 type Database interface {
 	Ping() error
@@ -22,3 +24,5 @@ func (c ContextKey) String() string {
 const (
 	ContextKeyDBTx ContextKey = "tx"
 )
+
+type DBInitializerFn func(cfg any) (Database, error)

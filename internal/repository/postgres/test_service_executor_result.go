@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg/database"
@@ -13,21 +14,26 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
+	"gorm.io/gorm/clause"
 )
 
-type executorRepository struct {
-	db database.Database
+type testServiceExecutorResultRepository struct {
+	config *config.Config
 }
 
-func NewExecutorRepository(db database.Database) repository.ExecutorRepository {
+func NewTestServiceExecutorResultRepository(config *config.Config) repository.TestServiceExecutorResultRepository {
 	zap.L().Info("initializing executor repository", zap.String(logger.FieldOperation, "initialize_executor_repository"))
 
-	return &executorRepository{
-		db: db,
+	return &testServiceExecutorResultRepository{
+		config: config,
 	}
 }
 
-func (r *executorRepository) Create(ctx context.Context, executor *entity.Executor) error {
+func (r *testServiceExecutorResultRepository) Create(
+	ctx context.Context,
+	executor *entity.Executor,
+	dbInitializer database.DBInitializerFn,
+) error {
 	tracer := otel.Tracer("test-service-repository")
 	ctx, span := tracer.Start(ctx, "ExecutorRepository.Create")
 	defer span.End()
@@ -36,7 +42,24 @@ func (r *executorRepository) Create(ctx context.Context, executor *entity.Execut
 
 	span.SetAttributes(attribute.String("executor.input", fmt.Sprint(executor.Input)))
 
-	err := postgres.QueryBuilder(ctx, r.db).WithContext(ctx).Create(executor).Error
+	db, err := dbInitializer(postgres.DatabaseConfig{
+		Host:               r.config.Postgres.Host,
+		Port:               r.config.Postgres.Port,
+		User:               r.config.Postgres.User,
+		Password:           r.config.Postgres.Password,
+		Database:           executor.Scenario.TestServiceConfig.DatabaseName,
+		MaxOpenConnections: r.config.Postgres.MaxOpenConnections,
+		LogLevel:           postgres.Silent,
+	})
+	if err != nil {
+		return fmt.Errorf("could not open postgres connection: %w", err)
+	}
+	err = postgres.QueryBuilder(ctx, db).
+		WithContext(ctx).
+		Table(executor.Scenario.TestServiceConfig.DatabaseTableName).
+		Omit(clause.Associations).
+		Create(executor).
+		Error
 	if err != nil {
 		logger.WithContext(ctx).Error("failed to create executor record with input",
 			zap.Any("executer_input", executor.Input),

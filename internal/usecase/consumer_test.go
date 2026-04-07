@@ -7,6 +7,8 @@ import (
 	"control-panel-service/internal/provider/mocks"
 	repoMock "control-panel-service/internal/repository/mocks"
 	"control-panel-service/pkg"
+	"control-panel-service/pkg/database"
+	dbmock "control-panel-service/pkg/database/postgres/mocks"
 	"encoding/json"
 	"errors"
 	"math/big"
@@ -19,10 +21,17 @@ import (
 
 func TestNewNewCounsumer(t *testing.T) {
 	factorialRepo := new(repoMock.FactorialRepository)
-	executorRepo := new(repoMock.ExecutorRepository)
+	executorRepo := new(repoMock.MockMotherServiceExecutorResultRepository)
 	kafkaConsumer := new(mocks.KafkaMock)
 
-	service := NewCounsumer(factorialRepo, executorRepo, kafkaConsumer)
+	service := NewConsumer(
+		factorialRepo,
+		executorRepo,
+		kafkaConsumer,
+		func(cfg any) (database.Database, error) {
+			return nil, nil
+		},
+	)
 	s, ok := service.(*consumer)
 
 	assert.NotNil(t, service)
@@ -32,14 +41,26 @@ func TestNewNewCounsumer(t *testing.T) {
 	assert.True(t, ok)
 }
 
+func mockDBInitializer() database.DBInitializerFn {
+	conn := new(dbmock.Connection)
+	db, _, err := conn.OpenConnection()
+	if err != nil {
+		panic(err)
+	}
+
+	return func(cfg any) (database.Database, error) {
+		return db, nil
+	}
+}
+
 func TestStoreExecuteResult(t *testing.T) {
 	t.Run("success_stores_factorial_event_to_database", func(t *testing.T) {
 		factorialRepo := new(repoMock.FactorialRepository)
-		executorRepo := new(repoMock.ExecutorRepository)
+		executorRepo := new(repoMock.MockMotherServiceExecutorResultRepository)
 		kafkaConsumer := new(mocks.KafkaMock)
 		ctx := context.Background()
 
-		service := NewCounsumer(factorialRepo, executorRepo, kafkaConsumer)
+		service := NewConsumer(factorialRepo, executorRepo, kafkaConsumer, mockDBInitializer())
 
 		input := "5"
 		eventData := sharedentity.ExecutorEvent{
@@ -62,22 +83,22 @@ func TestStoreExecuteResult(t *testing.T) {
 			HttpStatusCode:  eventData.HttpStatusCode,
 		}
 
-		executorRepo.On("Create", ctx, expectedExecutor).Return(nil)
+		executorRepo.On("Create", ctx, expectedExecutor, mock.Anything).Return(nil)
 
 		bts, _ := json.Marshal(&eventData)
 		err := service.StoreExecutorResult(ctx, bts)
 
 		assert.NoError(t, err)
-		executorRepo.AssertCalled(t, "Create", mock.Anything, expectedExecutor)
+		executorRepo.AssertCalled(t, "Create", mock.Anything, expectedExecutor, mock.Anything)
 	})
 
 	t.Run("error_on_unmarshalling_data", func(t *testing.T) {
 		factorialRepo := new(repoMock.FactorialRepository)
-		executorRepo := new(repoMock.ExecutorRepository)
+		executorRepo := new(repoMock.MockMotherServiceExecutorResultRepository)
 		kafkaConsumer := new(mocks.KafkaMock)
 		ctx := context.Background()
 
-		service := NewCounsumer(factorialRepo, executorRepo, kafkaConsumer)
+		service := NewConsumer(factorialRepo, executorRepo, kafkaConsumer, mockDBInitializer())
 
 		err := service.StoreExecutorResult(ctx, []byte("invalid data"))
 		assert.Error(t, err)
@@ -86,11 +107,11 @@ func TestStoreExecuteResult(t *testing.T) {
 
 	t.Run("error_saving_database_result", func(t *testing.T) {
 		factorialRepo := new(repoMock.FactorialRepository)
-		executorRepo := new(repoMock.ExecutorRepository)
+		executorRepo := new(repoMock.MockMotherServiceExecutorResultRepository)
 		kafkaConsumer := new(mocks.KafkaMock)
 		ctx := context.Background()
 
-		service := NewCounsumer(factorialRepo, executorRepo, kafkaConsumer)
+		service := NewConsumer(factorialRepo, executorRepo, kafkaConsumer, mockDBInitializer())
 
 		input := "5"
 		eventData := sharedentity.ExecutorEvent{
@@ -115,7 +136,7 @@ func TestStoreExecuteResult(t *testing.T) {
 			HttpStatusCode:  eventData.HttpStatusCode,
 		}
 
-		executorRepo.On("Create", mock.Anything, expectedExecutor).Return(errors.New("database error"))
+		executorRepo.On("Create", mock.Anything, expectedExecutor, mock.Anything).Return(errors.New("database error"))
 
 		err := service.StoreExecutorResult(ctx, bts)
 		assert.Error(t, err)
@@ -126,10 +147,10 @@ func TestStoreExecuteResult(t *testing.T) {
 func TestStoreFactorialResult(t *testing.T) {
 	t.Run("success - stores factorial event to database", func(t *testing.T) {
 		factorialRepo := new(repoMock.FactorialRepository)
-		executorRepo := new(repoMock.ExecutorRepository)
+		executorRepo := new(repoMock.MockMotherServiceExecutorResultRepository)
 		kafkaConsumer := new(mocks.KafkaMock)
 
-		service := NewCounsumer(factorialRepo, executorRepo, kafkaConsumer)
+		service := NewConsumer(factorialRepo, executorRepo, kafkaConsumer, mockDBInitializer())
 
 		eventData := entity.FactorialEvent{
 			Input:  big.NewInt(5),
@@ -145,7 +166,7 @@ func TestStoreFactorialResult(t *testing.T) {
 		factorialRepo.On("Create", mock.Anything, mock.MatchedBy(func(factorial *entity.Factorial) bool {
 			return factorial.Input == expectedFactorial.Input &&
 				factorial.Output == expectedFactorial.Output
-		})).Return(nil)
+		}), mock.Anything).Return(nil)
 
 		err := service.StoreFactorialResult(context.Background(), bts)
 
@@ -153,15 +174,15 @@ func TestStoreFactorialResult(t *testing.T) {
 		factorialRepo.AssertCalled(t, "Create", mock.Anything, mock.MatchedBy(func(factorial *entity.Factorial) bool {
 			return factorial.Input == expectedFactorial.Input &&
 				factorial.Output == expectedFactorial.Output
-		}))
+		}), mock.Anything)
 	})
 
 	t.Run("error on unmarshalling data", func(t *testing.T) {
 		factorialRepo := new(repoMock.FactorialRepository)
-		executorRepo := new(repoMock.ExecutorRepository)
+		executorRepo := new(repoMock.MockMotherServiceExecutorResultRepository)
 		kafkaConsumer := new(mocks.KafkaMock)
 
-		service := NewCounsumer(factorialRepo, executorRepo, kafkaConsumer)
+		service := NewConsumer(factorialRepo, executorRepo, kafkaConsumer, mockDBInitializer())
 
 		err := service.StoreFactorialResult(context.Background(), []byte("invalid data"))
 		assert.Error(t, err)
@@ -170,10 +191,10 @@ func TestStoreFactorialResult(t *testing.T) {
 
 	t.Run("error saving database result", func(t *testing.T) {
 		factorialRepo := new(repoMock.FactorialRepository)
-		executorRepo := new(repoMock.ExecutorRepository)
+		executorRepo := new(repoMock.MockMotherServiceExecutorResultRepository)
 		kafkaConsumer := new(mocks.KafkaMock)
 
-		service := NewCounsumer(factorialRepo, executorRepo, kafkaConsumer)
+		service := NewConsumer(factorialRepo, executorRepo, kafkaConsumer, mockDBInitializer())
 
 		eventData := entity.FactorialEvent{
 			Input:  big.NewInt(5),
@@ -189,7 +210,7 @@ func TestStoreFactorialResult(t *testing.T) {
 		factorialRepo.On("Create", mock.Anything, mock.MatchedBy(func(factorial *entity.Factorial) bool {
 			return factorial.Input == expectedFactorial.Input &&
 				factorial.Output == expectedFactorial.Output
-		})).Return(errors.New("database error"))
+		}), mock.Anything).Return(errors.New("database error"))
 
 		err := service.StoreFactorialResult(context.Background(), bts)
 		assert.Error(t, err)
@@ -200,10 +221,10 @@ func TestStoreFactorialResult(t *testing.T) {
 func TestConsumer(t *testing.T) {
 	t.Run("failed_return_error", func(t *testing.T) {
 		factorialRepo := new(repoMock.FactorialRepository)
-		executorRepo := new(repoMock.ExecutorRepository)
+		executorRepo := new(repoMock.MockMotherServiceExecutorResultRepository)
 		kafkaConsumer := new(mocks.KafkaMock)
 
-		service := NewCounsumer(factorialRepo, executorRepo, kafkaConsumer)
+		service := NewConsumer(factorialRepo, executorRepo, kafkaConsumer, mockDBInitializer())
 
 		topic := "test"
 		ch := make(chan []byte)
@@ -217,10 +238,10 @@ func TestConsumer(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		factorialRepo := new(repoMock.FactorialRepository)
-		executorRepo := new(repoMock.ExecutorRepository)
+		executorRepo := new(repoMock.MockMotherServiceExecutorResultRepository)
 		kafkaConsumer := new(mocks.KafkaMock)
 
-		service := NewCounsumer(factorialRepo, executorRepo, kafkaConsumer)
+		service := NewConsumer(factorialRepo, executorRepo, kafkaConsumer, mockDBInitializer())
 
 		topic := "test"
 		ch := make(chan []byte)

@@ -378,4 +378,5 @@ var (
 	ErrIncreaseFixedInputNotBeNegative                    = errors.New("increase fixed number couldn't be negative")
 	ErrExecNumMultiFixedInputShouldBePositive             = errors.New("execution number of multi fixed input should be 1 or more")
 	ErrScenarioIsNotRunning                               = errors.New("scenario is not running")
+	ErrInvalidDatabaseConfig                              = errors.New("invalid config applied to postgres database initializer")
 )
