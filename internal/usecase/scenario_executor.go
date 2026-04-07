@@ -135,13 +135,13 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 			number := originalFixedNumber
 			for range se.scenario.TestServiceConfig.ExecNumMultiFixedInput {
 				*se.scenario.TestServiceConfig.FixedTestNumber = number
+				se.assignExecutionID()
 				sse := se.scenarioExecutorBuilder.Build(
 					se.agents,
 					se.scenario,
 					se.executionID,
 				)
 
-				se.assignExecutionID()
 				err := sse.Execute(ctx)
 
 				if err != nil {
@@ -152,13 +152,13 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 
 			}
 		} else {
+			se.assignExecutionID()
 			sse := se.scenarioExecutorBuilder.Build(
 				se.agents,
 				se.scenario,
 				se.executionID,
 			)
 
-			se.assignExecutionID()
 			err := sse.Execute(ctx)
 			if err != nil {
 				return fmt.Errorf("%w: %w", pkg.ErrFailedToExecuteSingleScenario, err)
