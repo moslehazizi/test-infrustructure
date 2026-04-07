@@ -6,7 +6,6 @@ import (
 	sharedentity "control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
-	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
 	"encoding/json"
@@ -21,7 +20,13 @@ type consumer struct {
 	eventConsumer provider.EventConsumer
 }
 
-func NewCounsumer(factorialRepo repository.FactorialRepository, executorRepo repository.ExecutorRepository, eventConsumer provider.EventConsumer) interfaces.Consumer {
+type Consumer interface {
+	Consume(ctx context.Context, topic string, ch chan []byte) error
+	StoreExecutorResult(ctx context.Context, msg []byte) error
+	StoreFactorialResult(ctx context.Context, msg []byte) error
+}
+
+func NewCounsumer(factorialRepo repository.FactorialRepository, executorRepo repository.ExecutorRepository, eventConsumer provider.EventConsumer) Consumer {
 	return &consumer{
 		factorialRepo: factorialRepo,
 		executorRepo:  executorRepo,

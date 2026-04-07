@@ -78,9 +78,3 @@ type TestAgentControllerToolBox interface {
 	// Build will define new TestAgentController based on given config.
 	Build(scenario *entity.TestScenario) TestAgentController
 }
-
-type Consumer interface {
-	Consume(ctx context.Context, topic string, ch chan []byte) error
-	StoreExecutorResult(ctx context.Context, msg []byte) error
-	StoreFactorialResult(ctx context.Context, msg []byte) error
-}

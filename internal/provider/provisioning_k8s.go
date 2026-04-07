@@ -183,7 +183,7 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
 		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic, testScenario.ID),
-		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaCounsumerGroup, testScenario.ID),
+		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaConsumerGroup, testScenario.ID),
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
@@ -350,7 +350,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
 		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic, testScenario.ID),
-		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaCounsumerGroup, testScenario.ID),
+		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaConsumerGroup, testScenario.ID),
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
@@ -556,8 +556,8 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		KafkaHost:          ps.cfg.Kubernetese.MotherServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.MotherServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.MotherServiceLiveFeedTopic,
-		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceKafkaDbTopic, motherService.ID),
-		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceKafkaDbGroup, motherService.ID),
+		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceKafkaDatabaseTopic, motherService.ID),
+		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceKafkaConsumerGroup, motherService.ID),
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
