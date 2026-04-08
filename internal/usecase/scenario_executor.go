@@ -64,16 +64,16 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 	zap.L().Info("scenarioExecutor.Run Called")
 
 	defer func() {
-		// for _, agent := range se.agents {
-		// 	err := agent.AbortTesting(ctx)
-		// 	if err != nil {
-		// 		// returning err is not required.
-		// 		zap.L().Error("failed to deprovision test agent",
-		// 			zap.Uint64("scenarioID", se.scenario.ID),
-		// 			zap.String("executionID", se.executionID.String()),
-		// 		)
-		// 	}
-		// }
+		for _, agent := range se.agents {
+			err := agent.AbortTesting(ctx)
+			if err != nil {
+				// returning err is not required.
+				zap.L().Error("failed to deprovision test agent",
+					zap.Uint64("scenarioID", se.scenario.ID),
+					zap.String("executionID", se.executionID.String()),
+				)
+			}
+		}
 
 		// set running false
 		se.SetRunning(false)

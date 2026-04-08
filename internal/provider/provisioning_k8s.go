@@ -59,6 +59,9 @@ const (
 	KafkaBatchBytes                 = "KAFKA_BATCH_BYTES"
 	KafkaDatabaseTopic              = "KAFKA_DATABASE_TOPIC"
 	KafkaLiveFeedTopic              = "KAFKA_LIVE_FEED_TOPIC"
+	KafkaMaxAttempts                = "KAFKA_MAX_ATTEMPT"
+	KafkaWriteTimeOut               = "KAFKA_WRITE_TIME_OUT"
+	KafkaAttemptsSleepTime          = "KAFKA_ATTEMPTS_SLEEP_TIME"
 	PostgresHost                    = "POSTGRES_HOST"
 	PostgresPort                    = "POSTGRES_PORT"
 	PostgresDatabase                = "POSTGRES_DATABASE"
@@ -168,7 +171,7 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 		KafkaHost:          ps.cfg.Kubernetese.TestServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
-		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic, testScenario.ID),
+		KafkaDatabaseTopic: ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic,
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
@@ -186,6 +189,9 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
 		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
 		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
+		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
+		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
+		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
 		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
 		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
 		PostgresMaxOpenConnection:       strconv.Itoa(ps.cfg.Postgres.MaxOpenConnections),
@@ -305,7 +311,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		KafkaHost:          ps.cfg.Kubernetese.TestServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
-		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic, testScenario.ID),
+		KafkaDatabaseTopic: ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic,
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
@@ -323,6 +329,9 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
 		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
 		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
+		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
+		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
+		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
 		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
 		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
 		PostgresMaxOpenConnection:       strconv.Itoa(ps.cfg.Postgres.MaxOpenConnections),
@@ -473,7 +482,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		KafkaHost:          ps.cfg.Kubernetese.MotherServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.MotherServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.MotherServiceLiveFeedTopic,
-		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceKafkaDatabaseTopic, motherService.ID),
+		KafkaDatabaseTopic: ps.cfg.Kubernetese.MotherServiceKafkaDatabaseTopic,
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
@@ -491,6 +500,9 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
 		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
 		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
+		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
+		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
+		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
 		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
 		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
 		PostgresMaxOpenConnection:       strconv.Itoa(ps.cfg.Postgres.MaxOpenConnections),
