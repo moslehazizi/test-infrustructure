@@ -58,7 +58,6 @@ type Kafka struct {
 	Port              int           `envconfig:"KAFKA_PORT"`
 	Username          string        `envconfig:"KAFKA_USERNAME"`
 	Password          string        `envconfig:"KAFKA_PASSWORD" json:"-"`
-	ProvisioningTopic string        `envconfig:"KAFKA_PROVISIONING_TOPIC" default:"provisioning"`
 	DialerTimeout     time.Duration `envconfig:"KAFKA_DIALER_TIMEOUT" default:"10s"`
 	MaxBytes          int           `envconfig:"KAFKA_MAX_BYTES" default:"10485760"` // 10MB = 10 * 1024 * 1024
 	ConsumerGroup     string        `envconfig:"KAFKA_CONSUMER_GROUP" default:"factorial-consumer-group"`

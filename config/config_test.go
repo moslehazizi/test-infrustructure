@@ -109,7 +109,6 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.Port, expectedKafkaPort)
 		assert.Equal(t, cfg.Kafka.Username, expectedKafkaUsername)
 		assert.Equal(t, cfg.Kafka.Password, expectedKafkaPassword)
-		assert.Equal(t, cfg.Kafka.ProvisioningTopic, expectedKafkaProvisioningTopic)
 		assert.Equal(t, cfg.Kafka.DialerTimeout, expectedKafkaDialerTimeout)
 		assert.Equal(t, cfg.Kafka.MaxBytes, expectedKafkaMaxBytes)
 		assert.Equal(t, cfg.Kafka.ConsumerGroup, expectedKafkaConsumerGroup)
@@ -141,7 +140,6 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.Port, expectedKafkaPort)
 		assert.Equal(t, cfg.Kafka.Username, "")
 		assert.Equal(t, cfg.Kafka.Password, "")
-		assert.Equal(t, cfg.Kafka.ProvisioningTopic, expectedKafkaProvisioningTopic)
 
 	})
 	t.Run("success_fetch_postgres_config", func(t *testing.T) {
@@ -297,7 +295,6 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKafkaBatchTimeout := 5 * time.Millisecond
 		expectedDefaultKafkaBatchSize := 1000
 		expectedDefaultKafkaBatchBytes := 1000000 // 1MB
-		expectedDefaultKafkaProvisioningTopic := "provisioning"
 		expectedDefaultLogLevel := "info"
 		expectedDefaultLogFormat := "json"
 		expectedDefaultLogOutput := "stdout"
@@ -395,7 +392,6 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.BatchTimeout, expectedDefaultKafkaBatchTimeout)
 		assert.Equal(t, cfg.Kafka.BatchSize, expectedDefaultKafkaBatchSize)
 		assert.Equal(t, cfg.Kafka.BatchBytes, expectedDefaultKafkaBatchBytes)
-		assert.Equal(t, cfg.Kafka.ProvisioningTopic, expectedDefaultKafkaProvisioningTopic)
 		assert.Equal(t, cfg.Logger.Level, expectedDefaultLogLevel)
 		assert.Equal(t, cfg.Logger.Format, expectedDefaultLogFormat)
 		assert.Equal(t, cfg.Logger.Output, expectedDefaultLogOutput)

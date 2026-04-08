@@ -9,6 +9,7 @@ import (
 	psql "control-panel-service/pkg/database/postgres"
 	"control-panel-service/pkg/logger"
 	"fmt"
+	"os"
 
 	"go.uber.org/zap"
 )
@@ -35,28 +36,57 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	motherServiceRepo := postgres.NewMotherServiceRepository(db)
 	testScenarioRepo := postgres.NewTestScenarioRepository(db)
 
-	eventConsumer, err := provider.NewKafkaEventConsumer(ctx, cfg)
-	if err != nil {
-		return fmt.Errorf("could not create kafka event consumer: %w", err)
-	}
-	defer func() {
-		err := eventConsumer.Close()
+	go func() {
+		eventConsumer, err := provider.NewKafkaEventConsumer(ctx, cfg, cfg.Kubernetese.MotherServiceKafkaDatabaseTopic)
 		if err != nil {
-			zap.L().Error("could not close kafka event consumer",
+			zap.L().Error("could not create kafka event consumer for mother service events",
 				zap.Error(err),
-				zap.String(logger.FieldOperation, "close_kafka_consumer"),
 			)
+
+			os.Exit(1)
 		}
+		defer func() {
+			err := eventConsumer.Close()
+			if err != nil {
+				zap.L().Error("could not close kafka event consumer",
+					zap.Error(err),
+					zap.String(logger.FieldOperation, "close_kafka_consumer"),
+				)
+			}
+		}()
+
+		consumer := usecase.NewConsumer(factRepo, execRepo, motherServiceRepo, testScenarioRepo, eventConsumer, psql.DBInitializerFn)
+		consumerJob := &consumerJob{consumer}
+
+		consumerFactChannel := make(chan []byte)
+		consumerJob.RunFactorialConsumer(ctx, cfg.Kubernetese.MotherServiceKafkaDatabaseTopic, consumerFactChannel)
 	}()
 
-	consumer := usecase.NewConsumer(factRepo, execRepo, motherServiceRepo, testScenarioRepo, eventConsumer, psql.DBInitializerFn)
-	consumerJob := &consumerJob{consumer}
+	go func() {
+		eventConsumer, err := provider.NewKafkaEventConsumer(ctx, cfg, cfg.Kubernetese.TestServiceKafkaDatabaseTopic)
+		if err != nil {
+			zap.L().Error("could not create kafka event consumer for test service events",
+				zap.Error(err),
+			)
 
-	consumerFactChannel := make(chan []byte)
-	go consumerJob.RunFactorialConsumer(ctx, cfg.Kubernetese.MotherServiceKafkaDatabaseTopic, consumerFactChannel)
+			os.Exit(1)
+		}
+		defer func() {
+			err := eventConsumer.Close()
+			if err != nil {
+				zap.L().Error("could not close kafka event consumer",
+					zap.Error(err),
+					zap.String(logger.FieldOperation, "close_kafka_consumer"),
+				)
+			}
+		}()
 
-	consumerExecChannel := make(chan []byte)
-	go consumerJob.RunExecutorConsumer(ctx, cfg.Kubernetese.TestServiceKafkaDatabaseTopic, consumerExecChannel)
+		consumer := usecase.NewConsumer(factRepo, execRepo, motherServiceRepo, testScenarioRepo, eventConsumer, psql.DBInitializerFn)
+		consumerJob := &consumerJob{consumer}
+
+		consumerExecChannel := make(chan []byte)
+		consumerJob.RunExecutorConsumer(ctx, cfg.Kubernetese.TestServiceKafkaDatabaseTopic, consumerExecChannel)
+	}()
 
 	<-ctx.Done()
 

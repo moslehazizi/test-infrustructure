@@ -188,11 +188,11 @@ func GetConnectionString(cfg *DatabaseConfig) string {
 }
 
 var DBInitializerFn database.DBInitializerFn = func(cfg any) (database.Database, error) {
-	c, ok := cfg.(*DatabaseConfig)
+	c, ok := cfg.(DatabaseConfig)
 	if !ok {
 		return nil, pkg.ErrInvalidDatabaseConfig
 	}
-	db, err := New(c)
+	db, err := New(&c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize dynamic database: %w", err)
 	}

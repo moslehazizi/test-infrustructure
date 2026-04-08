@@ -44,6 +44,7 @@ func NewConsumer(
 		motherServiceRepo: motherServiceRepo,
 		testScenarioRepo:  testScenarioRepo,
 		eventConsumer:     eventConsumer,
+		dbInitializer:     dbInitializer,
 	}
 }
 

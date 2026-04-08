@@ -146,11 +146,11 @@ type kafkaConsumer struct {
 	reader *kafka.Reader
 }
 
-func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsumer, error) {
+func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config, topic string) (EventConsumer, error) {
 	zap.L().Info("initializing Kafka event consumer",
 		zap.String("host", cfg.Kafka.Host),
 		zap.Int("port", cfg.Kafka.Port),
-		zap.String(logger.FieldTopic, cfg.Kafka.ProvisioningTopic),
+		zap.String(logger.FieldTopic, topic),
 	)
 
 	var dialer *kafka.Dialer
@@ -190,7 +190,7 @@ func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsum
 	brokerAddr := fmt.Sprintf("%s:%d", cfg.Kafka.Host, cfg.Kafka.Port)
 	readerCfg := kafka.ReaderConfig{
 		Brokers:  []string{brokerAddr},
-		Topic:    cfg.Kafka.ProvisioningTopic,
+		Topic:    topic,
 		MaxBytes: cfg.Kafka.MaxBytes,
 		GroupID:  cfg.Kafka.ConsumerGroup,
 	}
@@ -199,7 +199,7 @@ func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config) (EventConsum
 	}
 	kafkaReader := kafka.NewReader(readerCfg)
 	zap.L().Info("Kafka event consumer initialized successfully",
-		zap.String(logger.FieldTopic, cfg.Kafka.ProvisioningTopic),
+		zap.String(logger.FieldTopic, topic),
 	)
 
 	return &kafkaConsumer{
