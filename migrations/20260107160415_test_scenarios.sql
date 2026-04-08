@@ -27,6 +27,8 @@ create table if not exists test_scenarios (
     deployment_number INTEGER NOT NULL DEFAULT 0,
     "editable" boolean NOT NULL DEFAULT true,
     num_steps int NOT NULL DEFAULT 1,
+    increase_agent_number int NOT NULL DEFAULT 0,
+    execution_number_multi_agent int NOT NULL DEFAULT 1,
 
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP,

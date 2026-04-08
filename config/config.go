@@ -65,6 +65,9 @@ type Kafka struct {
 	BatchTimeout      time.Duration `envconfig:"KAFKA_BATCH_TIMEOUT" default:"5ms"`
 	BatchSize         int           `envconfig:"KAFKA_BATCH_SIZE" default:"1000"`
 	BatchBytes        int           `envconfig:"KAFKA_BATCH_BYTES" default:"1000000"` // 1MB = 1e6
+	MaxAttempts       int           `envconfig:"KAFKA_MAX_ATTEMPTS" default:"10"`
+	WriteTimeOut      time.Duration `envconfig:"KAFKA_WRITE_TIME_OUT" default:"1ms"`
+	AttemptsSleepTime time.Duration `envconfig:"KAFKA_ATTEMPTS_SLEEP_TIME" default:"100ms"`
 }
 
 type Postgres struct {
@@ -87,32 +90,30 @@ type Logger struct {
 }
 
 type Kubernetese struct {
-	NameSpace                      string        `envconfig:"KUBERNETES_NAMESPACE" default:"default"`
-	ContainerRegistryUrl           string        `envconfig:"CONTAINER_REGISTRY_URL" default:"chalenge.azurecr.io/"`
-	ImagePullPolicy                string        `envconfig:"IMAGE_PULL_POLICY" default:"Always"`
-	IngressClassName               string        `envconfig:"INGRESS_CLASS_NAME" default:"traefik"`
-	IngressHost                    string        `envconfig:"INGRESS_HOST" default:"127.0.0.1"`
-	IngressPort                    int           `envconfig:"INGRESS_PORT" default:"8081"`
-	MotherServiceImage             string        `envconfig:"MOTHER_SERVICE_IMAGE" default:"challenge-mother-service:0.1"`
-	MotherServiceAPPServe          string        `envconfig:"MOTHER_SERVICE_APP_SERVE" default:"mother-service-serve"`
-	MotherServiceAPPServeWaitReady time.Duration `envconfig:"MOTHER_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
-	MotherServiceAPPJobs           string        `envconfig:"MOTHER_SERVICE_APP_JOBS" default:"mother-service-jobs"`
-	MotherServiceAPPJobsWaitReady  time.Duration `envconfig:"MOTHER_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
-	MotherServiceKafkaDbTopic      string        `envconfig:"MOTHER_SERVICE_KAFKA_DATABASE_TOPIC" default:"mother-db"`
-	MotherServiceKafkaDbGroup      string        `envconfig:"MOTHER_SERVICE_KAFKA_CONSUMER_GROUP" default:"mother-db-consumer-group"`
-	MotherServiceLiveFeedTopic     string        `envconfig:"MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"mother-live-feed"`
-	MotherServiceKafkaHost         string        `envconfig:"MOTHER_SERVICE_KAFKA_HOST" default:"kafka"`
-	MotherServicePostgresHost      string        `envconfig:"MOTHER_SERVICE_POSTGRES_HOST" default:"postgres"`
-	TestServiceImage               string        `envconfig:"TEST_SERVICE_IMAGE" default:"challenge-test-service:0.1"`
-	TestServiceAPPServe            string        `envconfig:"TEST_SERVICE_APP_SERVE" default:"test-service-serve"`
-	TestServiceAPPServeWaitReady   time.Duration `envconfig:"TEST_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
-	TestServiceAPPJobs             string        `envconfig:"TEST_SERVICE_APP_JOBS" default:"test-service-jobs"`
-	TestServiceAPPJobsWaitReady    time.Duration `envconfig:"TEST_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
-	TestServicePostgresHost        string        `envconfig:"TEST_SERVICE_POSTGRES_HOST" default:"localhost"`
-	TestServiceKafkaHost           string        `envconfig:"TEST_SERVICE_KAFKA_HOST" default:"localhost"`
-	TestServiceKafkaDatabaseTopic  string        `envconfig:"TEST_SERVICE_KAFKA_DATABASE_TOPIC" default:"test-db"`
-	TestServiceKafkaCounsumerGroup string        `envconfig:"TEST_SERVICE_KAFKA_CONSUMER_GROUP" default:"test-db-consumer-group"`
-	TestServiceLiveFeedTopic       string        `envconfig:"TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"test-live-feed"`
+	NameSpace                       string        `envconfig:"KUBERNETES_NAMESPACE" default:"default"`
+	ContainerRegistryUrl            string        `envconfig:"CONTAINER_REGISTRY_URL" default:"chalenge.azurecr.io/"`
+	ImagePullPolicy                 string        `envconfig:"IMAGE_PULL_POLICY" default:"Always"`
+	IngressClassName                string        `envconfig:"INGRESS_CLASS_NAME" default:"traefik"`
+	IngressHost                     string        `envconfig:"INGRESS_HOST" default:"127.0.0.1"`
+	IngressPort                     int           `envconfig:"INGRESS_PORT" default:"8081"`
+	MotherServiceImage              string        `envconfig:"MOTHER_SERVICE_IMAGE" default:"challenge-mother-service:0.1"`
+	MotherServiceAPPServe           string        `envconfig:"MOTHER_SERVICE_APP_SERVE" default:"mother-service-serve"`
+	MotherServiceAPPServeWaitReady  time.Duration `envconfig:"MOTHER_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
+	MotherServiceAPPJobs            string        `envconfig:"MOTHER_SERVICE_APP_JOBS" default:"mother-service-jobs"`
+	MotherServiceAPPJobsWaitReady   time.Duration `envconfig:"MOTHER_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
+	MotherServiceKafkaDatabaseTopic string        `envconfig:"MOTHER_SERVICE_KAFKA_DATABASE_TOPIC" default:"mother-db"`
+	MotherServiceLiveFeedTopic      string        `envconfig:"MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"mother-live-feed"`
+	MotherServiceKafkaHost          string        `envconfig:"MOTHER_SERVICE_KAFKA_HOST" default:"kafka"`
+	MotherServicePostgresHost       string        `envconfig:"MOTHER_SERVICE_POSTGRES_HOST" default:"postgres"`
+	TestServiceImage                string        `envconfig:"TEST_SERVICE_IMAGE" default:"challenge-test-service:0.1"`
+	TestServiceAPPServe             string        `envconfig:"TEST_SERVICE_APP_SERVE" default:"test-service-serve"`
+	TestServiceAPPServeWaitReady    time.Duration `envconfig:"TEST_SERVICE_APP_SERVE_WAIT_READY" default:"10s"`
+	TestServiceAPPJobs              string        `envconfig:"TEST_SERVICE_APP_JOBS" default:"test-service-jobs"`
+	TestServiceAPPJobsWaitReady     time.Duration `envconfig:"TEST_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
+	TestServicePostgresHost         string        `envconfig:"TEST_SERVICE_POSTGRES_HOST" default:"localhost"`
+	TestServiceKafkaHost            string        `envconfig:"TEST_SERVICE_KAFKA_HOST" default:"localhost"`
+	TestServiceKafkaDatabaseTopic   string        `envconfig:"TEST_SERVICE_KAFKA_DATABASE_TOPIC" default:"test-db"`
+	TestServiceLiveFeedTopic        string        `envconfig:"TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"test-live-feed"`
 }
 
 // var GlobalConfigInstance *Config

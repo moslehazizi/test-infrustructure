@@ -7,7 +7,6 @@ import (
 	"control-panel-service/pkg"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -27,7 +26,6 @@ const (
 	App   = "app"
 	Main  = "./main"
 	Serve = "serve"
-	Jobs  = "jobs"
 	SSLIP = "sslip.io"
 
 	Replication = 1
@@ -60,8 +58,10 @@ const (
 	KafkaBatchSize                  = "KAFKA_BATCH_SIZE"
 	KafkaBatchBytes                 = "KAFKA_BATCH_BYTES"
 	KafkaDatabaseTopic              = "KAFKA_DATABASE_TOPIC"
-	KafkaConsumerGroup              = "KAFKA_CONSUMER_GROUP"
 	KafkaLiveFeedTopic              = "KAFKA_LIVE_FEED_TOPIC"
+	KafkaMaxAttempts                = "KAFKA_MAX_ATTEMPT"
+	KafkaWriteTimeOut               = "KAFKA_WRITE_TIME_OUT"
+	KafkaAttemptsSleepTime          = "KAFKA_ATTEMPTS_SLEEP_TIME"
 	PostgresHost                    = "POSTGRES_HOST"
 	PostgresPort                    = "POSTGRES_PORT"
 	PostgresDatabase                = "POSTGRES_DATABASE"
@@ -98,8 +98,6 @@ const (
 	KafkaPassword    = "KAFKA_PASSWORD"
 	PostgresUser     = "POSTGRES_USER"
 	PostgresPassword = "POSTGRES_PASSWORD" // #nosec G101 -- env key name
-
-	DelayBetweenProvisioning = 1 * time.Second
 )
 
 func NewProvisioningService(cfg *config.Config, kubernetes kubernetese.Kubernetese) ProvisioningService {
@@ -125,7 +123,6 @@ func (ps *provisioningService) DeprovisionTestServiceByName(ctx context.Context,
 	}
 
 	serveName := fmt.Sprintf("%s-%v-%s", ps.cfg.Kubernetese.TestServiceAPPServe, testScenario.ID, uniqueID)
-	jobsName := fmt.Sprintf("%s-%v-%s", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID, uniqueID)
 
 	// remove all: delete deployment (pods cascade), service, configmap, secret
 	configName := serveName + Config
@@ -140,14 +137,6 @@ func (ps *provisioningService) DeprovisionTestServiceByName(ctx context.Context,
 	if err := ps.kubernetes.DeleteIngress(ctx, serveName); err != nil {
 		return err
 	}
-
-	if err := ps.kubernetes.DeleteDeployment(ctx, jobsName); err != nil {
-		return err
-	}
-	if err := ps.kubernetes.DeleteService(ctx, jobsName); err != nil {
-		return err
-	}
-
 	if err := ps.kubernetes.DeleteConfigMap(ctx, configName); err != nil {
 		return err
 	}
@@ -182,8 +171,7 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 		KafkaHost:          ps.cfg.Kubernetese.TestServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
-		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic, testScenario.ID),
-		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaCounsumerGroup, testScenario.ID),
+		KafkaDatabaseTopic: ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic,
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
@@ -201,6 +189,9 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
 		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
 		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
+		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
+		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
+		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
 		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
 		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
 		PostgresMaxOpenConnection:       strconv.Itoa(ps.cfg.Postgres.MaxOpenConnections),
@@ -222,35 +213,6 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 		PostgresPassword: ps.cfg.Postgres.Password,
 	}
 
-	// jobs :
-	// Create deploy spec
-	jobsDepSpec := testJobsDepSpecByName(ps.cfg, uniqueID, testScenario.ID)
-
-	// Call ApplyDeployment from kubernetese interface
-	err := ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
-	if err != nil {
-		zap.L().Error("apply deployment fail",
-			zap.String("apllication", jobsDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	// Wait for deployment to be ready
-	jobsSvcName := fmt.Sprintf("%s-%v-%s", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID, uniqueID)
-	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.TestServiceAPPJobsWaitReady)
-	if err != nil {
-		zap.L().Error("create pod fail",
-			zap.String("apllication", jobsDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	time.Sleep(DelayBetweenProvisioning)
-
 	// Serve :
 	// Create deploy spec
 	serveDepSpec := testServDepSpecByName(ps.cfg, uniqueID, testScenario.ID)
@@ -262,7 +224,7 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 	serveIngrSpec := testServeIngressSpecByName(ps.cfg, uniqueID, testScenario.ID)
 
 	// Call ApplyDeployment from kubernetese interface
-	err = ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
+	err := ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
 		zap.L().Error("apply deployment fail",
 			zap.String("apllication", serveDepSpec.Name),
@@ -349,8 +311,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		KafkaHost:          ps.cfg.Kubernetese.TestServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
-		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic, testScenario.ID),
-		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceKafkaCounsumerGroup, testScenario.ID),
+		KafkaDatabaseTopic: ps.cfg.Kubernetese.TestServiceKafkaDatabaseTopic,
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
@@ -368,6 +329,9 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
 		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
 		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
+		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
+		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
+		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
 		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
 		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
 		PostgresMaxOpenConnection:       strconv.Itoa(ps.cfg.Postgres.MaxOpenConnections),
@@ -389,35 +353,6 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		PostgresPassword: ps.cfg.Postgres.Password,
 	}
 
-	// jobs :
-	// Create deploy spec
-	jobsDepSpec := testJobsDepSpec(ps.cfg, Replication, testScenario.ID)
-
-	// Call ApplyDeployment from kubernetese interface
-	err := ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
-	if err != nil {
-		zap.L().Error("apply deployment fail",
-			zap.String("apllication", jobsDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	// Wait for deployment to be ready
-	jobsSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID)
-	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.TestServiceAPPJobsWaitReady)
-	if err != nil {
-		zap.L().Error("create pod fail",
-			zap.String("apllication", jobsDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	time.Sleep(DelayBetweenProvisioning)
-
 	// Serve :
 	// Create deploy spec
 	serveDepSpec := testServDepSpec(ps.cfg, replica, testScenario.ID)
@@ -429,7 +364,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	serveIngrSpec := testServeIngressSpec(ps.cfg, testScenario.ID)
 
 	// Call ApplyDeployment from kubernetese interface
-	err = ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
+	err := ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
 		zap.L().Error("apply deployment fail",
 			zap.String("apllication", serveDepSpec.Name),
@@ -487,7 +422,6 @@ func (ps *provisioningService) DeprovisionTestService(ctx context.Context, testS
 	}
 
 	serveName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceAPPServe, testScenario.ID)
-	jobsName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.TestServiceAPPJobs, testScenario.ID)
 
 	currentReplicas, err := ps.kubernetes.GetDeploymentReplicas(ctx, serveName)
 	if err != nil {
@@ -516,14 +450,6 @@ func (ps *provisioningService) DeprovisionTestService(ctx context.Context, testS
 	if err := ps.kubernetes.DeleteIngress(ctx, serveName); err != nil {
 		return err
 	}
-
-	if err := ps.kubernetes.DeleteDeployment(ctx, jobsName); err != nil {
-		return err
-	}
-	if err := ps.kubernetes.DeleteService(ctx, jobsName); err != nil {
-		return err
-	}
-
 	if err := ps.kubernetes.DeleteConfigMap(ctx, configName); err != nil {
 		return err
 	}
@@ -556,8 +482,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		KafkaHost:          ps.cfg.Kubernetese.MotherServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.MotherServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.MotherServiceLiveFeedTopic,
-		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceKafkaDbTopic, motherService.ID),
-		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceKafkaDbGroup, motherService.ID),
+		KafkaDatabaseTopic: ps.cfg.Kubernetese.MotherServiceKafkaDatabaseTopic,
 
 		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
 		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
@@ -575,6 +500,9 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
 		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
 		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
+		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
+		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
+		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
 		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
 		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
 		PostgresMaxOpenConnection:       strconv.Itoa(ps.cfg.Postgres.MaxOpenConnections),
@@ -651,35 +579,6 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		return err
 	}
 
-	time.Sleep(DelayBetweenProvisioning)
-
-	// jobs :
-	// Create deploy spec
-	jobsDepSpec := motherJobsDepSpec(ps.cfg, Replication, motherService.ID)
-
-	// Call ApplyDeployment from kubernetese interface
-	err = ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
-	if err != nil {
-		zap.L().Error("apply deployment fail",
-			zap.String("apllication", jobsDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	// Wait for deployment to be ready
-	jobsSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPJobs, motherService.ID)
-	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.MotherServiceAPPJobsWaitReady)
-	if err != nil {
-		zap.L().Error("create pod fail",
-			zap.String("apllication", jobsDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
 	return nil
 }
 
@@ -689,7 +588,6 @@ func (ps *provisioningService) DeprovisionMotherService(ctx context.Context, mot
 	}
 
 	serveName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPServe, motherService.ID)
-	jobsName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPJobs, motherService.ID)
 	configName := serveName + Config
 	secretName := serveName + Secret
 
@@ -702,14 +600,6 @@ func (ps *provisioningService) DeprovisionMotherService(ctx context.Context, mot
 	if err := ps.kubernetes.DeleteIngress(ctx, serveName); err != nil {
 		return err
 	}
-
-	if err := ps.kubernetes.DeleteDeployment(ctx, jobsName); err != nil {
-		return err
-	}
-	if err := ps.kubernetes.DeleteService(ctx, jobsName); err != nil {
-		return err
-	}
-
 	if err := ps.kubernetes.DeleteConfigMap(ctx, configName); err != nil {
 		return err
 	}
@@ -811,43 +701,6 @@ func testServeIngressSpec(cfg *config.Config, appId uint64) inEntity.IngressSpec
 	}
 }
 
-func testJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
-	replicas := replica
-	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.TestServiceAPPJobs, appId)
-	configName := appName + Config
-	secretName := cfg.Kubernetese.TestServiceAPPServe + Secret
-	labels := map[string]string{App: appName}
-
-	return inEntity.DeploymentSpec{
-		Name: appName,
-		Deployment: &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Name: appName},
-			Spec: appsv1.DeploymentSpec{
-				Replicas: &replicas,
-				Selector: &metav1.LabelSelector{MatchLabels: labels},
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{Labels: labels},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:            App,
-								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
-								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
-								Command:         []string{Main, Jobs},
-								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
-								EnvFrom: []corev1.EnvFromSource{
-									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
-									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
 func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
 	replicas := replica
 	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
@@ -939,43 +792,6 @@ func motherServeIngressSpec(cfg *config.Config, appId uint64) inEntity.IngressSp
 	}
 }
 
-func motherJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
-	replicas := replica
-	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPJobs, appId)
-	configName := appName + Config
-	secretName := cfg.Kubernetese.MotherServiceAPPServe + Secret
-	labels := map[string]string{App: appName}
-
-	return inEntity.DeploymentSpec{
-		Name: appName,
-		Deployment: &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Name: appName},
-			Spec: appsv1.DeploymentSpec{
-				Replicas: &replicas,
-				Selector: &metav1.LabelSelector{MatchLabels: labels},
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{Labels: labels},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:            App,
-								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
-								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
-								Command:         []string{Main, Jobs},
-								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
-								EnvFrom: []corev1.EnvFromSource{
-									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
-									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
 func testServDepSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64) inEntity.DeploymentSpec {
 	replicas := int32(Replication)
 	appName := fmt.Sprintf("%s-%v-%s", cfg.Kubernetese.TestServiceAPPServe, appId, uniqueId)
@@ -1024,43 +840,6 @@ func testServeSvcSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64
 				Selector: map[string]string{App: appName},
 				Type:     corev1.ServiceTypeClusterIP,
 				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}}, // #nosec G115 -- port from config
-			},
-		},
-	}
-}
-
-func testJobsDepSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId uint64) inEntity.DeploymentSpec {
-	replicas := int32(Replication)
-	appName := fmt.Sprintf("%s-%v-%s", cfg.Kubernetese.TestServiceAPPJobs, appId, uniqueId)
-	configName := appName + Config
-	secretName := cfg.Kubernetese.TestServiceAPPServe + Secret
-	labels := map[string]string{App: appName}
-
-	return inEntity.DeploymentSpec{
-		Name: appName,
-		Deployment: &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Name: appName},
-			Spec: appsv1.DeploymentSpec{
-				Replicas: &replicas,
-				Selector: &metav1.LabelSelector{MatchLabels: labels},
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{Labels: labels},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:            App,
-								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.TestServiceImage,
-								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
-								Command:         []string{Main, Jobs},
-								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
-								EnvFrom: []corev1.EnvFromSource{
-									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
-									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
-								},
-							},
-						},
-					},
-				},
 			},
 		},
 	}

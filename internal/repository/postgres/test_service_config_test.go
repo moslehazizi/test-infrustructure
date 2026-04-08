@@ -42,18 +42,20 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 		databaseTableName := "test_table"
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID:    uint64(1),
-			CreatedAt:         now,
-			UpdatedAt:         now,
-			MaxRequests:       12,
-			MaxDuration:       10,
-			DatabaseName:      databaseName,
-			DatabaseTableName: databaseTableName,
+			TestScenarioID:         uint64(1),
+			CreatedAt:              now,
+			UpdatedAt:              now,
+			MaxRequests:            12,
+			MaxDuration:            10,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING "id"`)).
+			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at","database_name","database_table_name","increase_fixed_input","execution_number_multi_fixed_input") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING "id"`)).
 			WithArgs(
 				testServiceConfig.TestScenarioID,
 				testServiceConfig.MaxRequests,
@@ -64,6 +66,8 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 				testServiceConfig.UpdatedAt,
 				testServiceConfig.DatabaseName,
 				testServiceConfig.DatabaseTableName,
+				testServiceConfig.IncreaseFixedInput,
+				testServiceConfig.ExecNumMultiFixedInput,
 			).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 		mock.ExpectCommit()
@@ -86,18 +90,20 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 		databaseTableName := "test_table"
 
 		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID:    uint64(1),
-			CreatedAt:         now,
-			UpdatedAt:         now,
-			MaxRequests:       12,
-			MaxDuration:       10,
-			DatabaseName:      databaseName,
-			DatabaseTableName: databaseTableName,
+			TestScenarioID:         uint64(1),
+			CreatedAt:              now,
+			UpdatedAt:              now,
+			MaxRequests:            12,
+			MaxDuration:            10,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
-			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING "id"`)).
+			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at","database_name","database_table_name","increase_fixed_input","execution_number_multi_fixed_input") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING "id"`)).
 			WithArgs(
 				testServiceConfig.TestScenarioID,
 				testServiceConfig.MaxRequests,
@@ -108,6 +114,8 @@ func TestTestServiceConfigRepo_Create(t *testing.T) {
 				testServiceConfig.UpdatedAt,
 				testServiceConfig.DatabaseName,
 				testServiceConfig.DatabaseTableName,
+				testServiceConfig.IncreaseFixedInput,
+				testServiceConfig.ExecNumMultiFixedInput,
 			).
 			WillReturnError(errors.New("db connection failed"))
 
@@ -130,27 +138,29 @@ func TestTestServiceConfigRepo_GetByID(t *testing.T) {
 		sampleNumber := 1
 
 		expectedTestServiceConfig := &entity.TestServiceConfig{
-			ID:                    uint64(1),
-			CreatedAt:             now,
-			UpdatedAt:             now,
-			TestScenarioID:        2,
-			MaxRequests:           100,
-			MaxDuration:           1200,
-			RequestDelayDuration:  nil,
-			RandomRequestDelayMin: nil,
-			RandomRequestDelayMax: nil,
-			FixedTestNumber:       &sampleNumber,
-			RandomTestNumberMin:   nil,
-			RandomTestNumberMax:   nil,
-			BadValueRate:          0,
-			NegativeValueRate:     0,
-			RealValueRate:         0,
-			ZeroValueRate:         0,
-			StringValueRate:       0,
-			LongStringValueRate:   0,
-			NullValueRate:         0,
-			DatabaseName:          "db-name",
-			DatabaseTableName:     "db-tb-name",
+			ID:                     uint64(1),
+			CreatedAt:              now,
+			UpdatedAt:              now,
+			TestScenarioID:         2,
+			MaxRequests:            100,
+			MaxDuration:            1200,
+			RequestDelayDuration:   nil,
+			RandomRequestDelayMin:  nil,
+			RandomRequestDelayMax:  nil,
+			FixedTestNumber:        &sampleNumber,
+			RandomTestNumberMin:    nil,
+			RandomTestNumberMax:    nil,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           "db-name",
+			DatabaseTableName:      "db-tb-name",
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		mock.ExpectQuery(regexp.QuoteMeta(
@@ -159,7 +169,7 @@ func TestTestServiceConfigRepo_GetByID(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "created_at", "updated_at", "test_scenario_id", "max_requests",
 				"max_duration", "request_delay_duration",
-				"random_request_delay_min", "random_request_delay_max", "fixed_test_number", "random_test_number_min", "random_test_number_max", "bad_value_rate", "negative_value_rate", "real_value_rate", "zero_value_rate", "string_value_rate", "long_string_value_rate", "null_value_rate", "database_name", "database_table_name",
+				"random_request_delay_min", "random_request_delay_max", "fixed_test_number", "random_test_number_min", "random_test_number_max", "bad_value_rate", "negative_value_rate", "real_value_rate", "zero_value_rate", "string_value_rate", "long_string_value_rate", "null_value_rate", "database_name", "database_table_name", "increase_fixed_input", "execution_number_multi_fixed_input",
 			}).
 				AddRow(
 					expectedTestServiceConfig.ID,
@@ -183,6 +193,8 @@ func TestTestServiceConfigRepo_GetByID(t *testing.T) {
 					expectedTestServiceConfig.NullValueRate,
 					expectedTestServiceConfig.DatabaseName,
 					expectedTestServiceConfig.DatabaseTableName,
+					expectedTestServiceConfig.IncreaseFixedInput,
+					expectedTestServiceConfig.ExecNumMultiFixedInput,
 				))
 
 		result, err := repo.GetByID(context.Background(), uint64(2))
@@ -248,23 +260,25 @@ func TestTestServiceConfigRepository_UpdateByScenarioID(t *testing.T) {
 		sampleInt := 5
 
 		cfg := &entity.TestServiceConfig{
-			MaxRequests:           100,
-			MaxDuration:           60,
-			RequestDelayDuration:  &sampleInt,
-			RandomRequestDelayMin: nil,
-			RandomRequestDelayMax: nil,
-			FixedTestNumber:       &sampleInt,
-			RandomTestNumberMin:   nil,
-			RandomTestNumberMax:   nil,
-			BadValueRate:          1,
-			NegativeValueRate:     2,
-			RealValueRate:         3,
-			ZeroValueRate:         4,
-			StringValueRate:       5,
-			LongStringValueRate:   6,
-			NullValueRate:         7,
-			DatabaseName:          "db1",
-			DatabaseTableName:     "table1",
+			MaxRequests:            100,
+			MaxDuration:            60,
+			RequestDelayDuration:   &sampleInt,
+			RandomRequestDelayMin:  nil,
+			RandomRequestDelayMax:  nil,
+			FixedTestNumber:        &sampleInt,
+			RandomTestNumberMin:    nil,
+			RandomTestNumberMax:    nil,
+			BadValueRate:           1,
+			NegativeValueRate:      2,
+			RealValueRate:          3,
+			ZeroValueRate:          4,
+			StringValueRate:        5,
+			LongStringValueRate:    6,
+			NullValueRate:          7,
+			DatabaseName:           "db1",
+			DatabaseTableName:      "table1",
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		mock.ExpectBegin()

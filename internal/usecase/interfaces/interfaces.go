@@ -4,15 +4,12 @@ import (
 	"context"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider/dto/request"
+	"control-panel-service/internal/repository"
 
 	"github.com/google/uuid"
 )
 
 type ExecutionManager interface {
-	// Run will run ExecutionManager as a background job.
-	Run()
-	// Add will initialize new TestAgentControllers based on scenario config.
-	AddScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// RunScenario is for run scenario.
 	RunScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// PauseScenario is for pause ran scenario.
@@ -29,10 +26,32 @@ type ScenarioExecutor interface {
 	Run(ctx context.Context) error
 	IsRunning() bool
 	SetRunning(status bool)
-	SetExecutionID(execID uuid.UUID)
 	AllAgentsAreHealthy() bool
 	AddAgent(agent TestAgentController)
 	GetAgents() []TestAgentController
+}
+
+type SingleScenarioExecutor interface {
+	Execute(ctx context.Context) error
+	// AwaitAgentsToBeHealthy()
+	// AwaitAgentsToBeReadyToStartTesting()
+}
+
+type SingleScenarioExecutorBuilder interface {
+	Build(
+		agents []TestAgentController,
+		scenario *entity.TestScenario,
+		executionID uuid.UUID,
+	) SingleScenarioExecutor
+}
+
+type ScenarioExecutorBuilder interface {
+	Build(
+		scenario *entity.TestScenario,
+		scenarioRepo repository.TestScenarioRepository,
+		testAgentControllerToolBox TestAgentControllerToolBox,
+		scenarioExecutorBuilder SingleScenarioExecutorBuilder,
+	) ScenarioExecutor
 }
 
 type TestAgentController interface {

@@ -223,7 +223,7 @@ func (eventConsumer *kafkaConsumer) Consume(ctx context.Context, topic string, c
 		default:
 			m, err := eventConsumer.reader.ReadMessage(ctx)
 			if err != nil {
-				zap.L().Error("error reading message from Kafka topic",
+				zap.L().Debug("error reading message from Kafka topic",
 					zap.String(logger.FieldTopic, topic),
 					zap.Error(err),
 				)

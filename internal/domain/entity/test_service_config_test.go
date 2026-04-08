@@ -16,9 +16,197 @@ func TestTestServiceConfig_TableName(t *testing.T) {
 }
 
 func TestTestServiceConfig_Validate(t *testing.T) {
+	t.Run("success_case_execution_number_multi_fixed_input_and_increase_fixed_number_none_are_zero", func(t *testing.T) {
+		sampleInt := 2
+		databaseName := "db1"
+		databaseTableName := "table1"
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     1,
+			ExecNumMultiFixedInput: 1,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.NoError(t, err)
+	})
+	t.Run("success_case_execution_number_multi_fixed_input_and_increase_fixed_number_both_zero", func(t *testing.T) {
+		sampleInt := 2
+		databaseName := "db1"
+		databaseTableName := "table1"
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 0,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.NoError(t, err)
+	})
+	t.Run("failed_case_execution_number_multi_fixed_input_not_zero_and_increase_fixed_number_zero", func(t *testing.T) {
+		sampleInt := 2
+		databaseName := "db1"
+		databaseTableName := "table1"
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     1,
+			ExecNumMultiFixedInput: 0,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrMultiFixedInputConfigNotTrue)
+	})
+	t.Run("failed_case_execution_number_multi_fixed_input_zero_and_increase_fixed_number_not_zero", func(t *testing.T) {
+		sampleInt := 2
+		databaseName := "db1"
+		databaseTableName := "table1"
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrMultiFixedInputConfigNotTrue)
+	})
+	t.Run("success_case_execution_number_multi_fixed_input_can_be_zero", func(t *testing.T) {
+		sampleInt := 2
+		databaseName := "db1"
+		databaseTableName := "table1"
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 0,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.NoError(t, err)
+	})
+	t.Run("failed_case_execution_number_multi_fixed_input_should_be_more_than_zero", func(t *testing.T) {
+		sampleInt := 2
+		databaseName := "db1"
+		databaseTableName := "table1"
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: -1,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrExecNumMultiFixedInputShouldBePositive)
+	})
+	t.Run("failed_case_increase_fixed_number_not_be_negative", func(t *testing.T) {
+		sampleInt := 2
+		databaseName := "db1"
+		databaseTableName := "table1"
+		testSvcCfg := TestServiceConfig{
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     -1,
+			ExecNumMultiFixedInput: 1,
+		}
+
+		err := testSvcCfg.Validate()
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrIncreaseFixedInputNotBeNegative)
+	})
 	t.Run("failed_case_invalid_max_request", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests: -1,
+			MaxRequests:            -1,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -28,8 +216,10 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	})
 	t.Run("failed_case_invalid_max_duration", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests: 1,
-			MaxDuration: -1,
+			MaxRequests:            1,
+			MaxDuration:            -1,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -40,9 +230,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	t.Run("failed_case_request_delay_duration", func(t *testing.T) {
 		sampleInt := -1
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &sampleInt,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -53,10 +245,12 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	t.Run("failed_case_no_request_delay_duration_or_fixed_request_delay_duration", func(t *testing.T) {
 		sampleInt := 0
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:           1,
-			MaxDuration:           0,
-			RequestDelayDuration:  &sampleInt,
-			RandomRequestDelayMin: &sampleInt,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			RandomRequestDelayMin:  &sampleInt,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -68,10 +262,12 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		min := 20
 		max := 10
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:           1,
-			MaxDuration:           0,
-			RandomRequestDelayMin: &min,
-			RandomRequestDelayMax: &max,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RandomRequestDelayMin:  &min,
+			RandomRequestDelayMax:  &max,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -82,8 +278,10 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 
 	t.Run("failed_case_all_delay_request_config_couldn't_be_null_at_the_same_time", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests: 1,
-			MaxDuration: 0,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -97,14 +295,16 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		databaseName := "db1"
 		databaseTableName := "table1"
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:           1,
-			MaxDuration:           0,
-			RequestDelayDuration:  &d,
-			RandomRequestDelayMax: nil,
-			RandomRequestDelayMin: nil,
-			FixedTestNumber:       &n,
-			DatabaseName:          databaseName,
-			DatabaseTableName:     databaseTableName,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &d,
+			RandomRequestDelayMax:  nil,
+			RandomRequestDelayMin:  nil,
+			FixedTestNumber:        &n,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     1,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -116,10 +316,12 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		sampleInt := -1
 		sampleUInt := 1
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &sampleUInt,
-			FixedTestNumber:      &sampleInt,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleUInt,
+			FixedTestNumber:        &sampleInt,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -131,11 +333,13 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		sampleInt := 2
 		min := 10
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			RandomTestNumberMin:  &min,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			RandomTestNumberMin:    &min,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -147,11 +351,13 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		min := 20
 		max := 10
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &min,
-			RandomTestNumberMin:  &min,
-			RandomTestNumberMax:  &max,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &min,
+			RandomTestNumberMin:    &min,
+			RandomTestNumberMax:    &max,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -163,11 +369,13 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		min := -10
 		max := 10
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &max,
-			RandomTestNumberMin:  &min,
-			RandomTestNumberMax:  &max,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &max,
+			RandomTestNumberMin:    &min,
+			RandomTestNumberMax:    &max,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -179,9 +387,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	t.Run("failed_case_all_fixed_and_random_value_couldn't_be_null_at_the_same_time", func(t *testing.T) {
 		sampleInt := 10
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &sampleInt,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -191,9 +401,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	})
 	t.Run("failed_case_bad_value_rate_less_than_0_or_more_than_100", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:  1,
-			MaxDuration:  0,
-			BadValueRate: -1,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			BadValueRate:           -1,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -203,9 +415,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	})
 	t.Run("failed_case_negative_value_rate_less_than_0_or_more_than_100", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:       1,
-			MaxDuration:       0,
-			NegativeValueRate: 101,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			NegativeValueRate:      101,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -215,9 +429,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	})
 	t.Run("failed_case_real_value_rate_less_than_0_or_more_than_100", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:   1,
-			MaxDuration:   0,
-			RealValueRate: -1,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RealValueRate:          -1,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -227,9 +443,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	})
 	t.Run("failed_case_zero_value_rate_less_than_0_or_more_than_100", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:   1,
-			MaxDuration:   0,
-			ZeroValueRate: 110,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			ZeroValueRate:          110,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -239,9 +457,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	})
 	t.Run("failed_case_string_value_rate_less_than_0_or_more_than_100", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:     1,
-			MaxDuration:     0,
-			StringValueRate: -1,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			StringValueRate:        -1,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -251,9 +471,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	})
 	t.Run("failed_case_long_string_value_rate_less_than_0_or_more_than_100", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:         1,
-			MaxDuration:         0,
-			LongStringValueRate: 101,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			LongStringValueRate:    101,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -263,9 +485,11 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	})
 	t.Run("failed_case_null_value_rate_less_than_0_or_more_than_100", func(t *testing.T) {
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:   1,
-			MaxDuration:   0,
-			NullValueRate: -2,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			NullValueRate:          -2,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -278,19 +502,21 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		databaseName := "db1"
 		databaseTableName := "table1"
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			BadValueRate:         0,
-			NegativeValueRate:    0,
-			RealValueRate:        0,
-			ZeroValueRate:        0,
-			StringValueRate:      0,
-			LongStringValueRate:  0,
-			NullValueRate:        0,
-			DatabaseName:         databaseName,
-			DatabaseTableName:    databaseTableName,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           databaseName,
+			DatabaseTableName:      databaseTableName,
+			IncreaseFixedInput:     1,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -300,17 +526,19 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	t.Run("failed_case_if_bad_value_rate_is_zero_sum_of_all_bad_value_should_be_zero", func(t *testing.T) {
 		sampleInt := 2
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			BadValueRate:         0,
-			NegativeValueRate:    0,
-			RealValueRate:        0,
-			ZeroValueRate:        0,
-			StringValueRate:      1,
-			LongStringValueRate:  0,
-			NullValueRate:        0,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        1,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			IncreaseFixedInput:     1,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -322,17 +550,19 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	t.Run("failed_case_if_bad_value_rate_not_zero_sum_of_all_bad_value_should_be_100", func(t *testing.T) {
 		sampleInt := 2
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			BadValueRate:         10,
-			NegativeValueRate:    0,
-			RealValueRate:        0,
-			ZeroValueRate:        0,
-			StringValueRate:      5,
-			LongStringValueRate:  0,
-			NullValueRate:        0,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           10,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        5,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -344,17 +574,19 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 	t.Run("failed_case_database_name_is_empty", func(t *testing.T) {
 		sampleInt := 2
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			BadValueRate:         0,
-			NegativeValueRate:    0,
-			RealValueRate:        0,
-			ZeroValueRate:        0,
-			StringValueRate:      0,
-			LongStringValueRate:  0,
-			NullValueRate:        0,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()
@@ -367,18 +599,20 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 		sampleInt := 2
 		databaseName := "db1"
 		testSvcCfg := TestServiceConfig{
-			MaxRequests:          1,
-			MaxDuration:          0,
-			RequestDelayDuration: &sampleInt,
-			FixedTestNumber:      &sampleInt,
-			BadValueRate:         0,
-			NegativeValueRate:    0,
-			RealValueRate:        0,
-			ZeroValueRate:        0,
-			StringValueRate:      0,
-			LongStringValueRate:  0,
-			NullValueRate:        0,
-			DatabaseName:         databaseName,
+			MaxRequests:            1,
+			MaxDuration:            0,
+			RequestDelayDuration:   &sampleInt,
+			FixedTestNumber:        &sampleInt,
+			BadValueRate:           0,
+			NegativeValueRate:      0,
+			RealValueRate:          0,
+			ZeroValueRate:          0,
+			StringValueRate:        0,
+			LongStringValueRate:    0,
+			NullValueRate:          0,
+			DatabaseName:           databaseName,
+			IncreaseFixedInput:     0,
+			ExecNumMultiFixedInput: 1,
 		}
 
 		err := testSvcCfg.Validate()

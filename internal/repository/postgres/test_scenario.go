@@ -297,10 +297,13 @@ func (repo *testScenario) Update(ctx context.Context, scenario *entity.TestScena
 		Model(&entity.TestScenario{}).
 		Where("id = ?", scenario.ID).
 		Updates(map[string]any{
-			"name":                   scenario.Name,
-			"mother_service_id":      scenario.MotherServiceID,
-			"max_test_service_count": scenario.MaxTestServiceCount,
-			"updated_at":             time.Now(),
+			"name":                         scenario.Name,
+			"mother_service_id":            scenario.MotherServiceID,
+			"max_test_service_count":       scenario.MaxTestServiceCount,
+			"num_steps":                    scenario.NumSteps,
+			"increase_agent_number":        scenario.IncreaseAgentNumber,
+			"execution_number_multi_agent": scenario.ExecNumMultiAgent,
+			"updated_at":                   time.Now(),
 		}).Error
 
 	if err != nil {

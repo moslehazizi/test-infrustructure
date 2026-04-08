@@ -27,6 +27,17 @@ type TestServiceConfig struct {
 	UpdatedAt             time.Time `gorm:"column:updated_at"`
 	DatabaseName          string    `gorm:"column:database_name"`
 	DatabaseTableName     string    `gorm:"column:database_table_name"`
+	// This field specifies the increment value for the fixed test number.
+	// It is used when we want to re‑run the entire scenario,
+	// and in each re-run we want the fixed test number to increase.
+	// This number represents the increment amount.
+	// For example, if the fixed test number is 1000 and this increment value is 2000,
+	// then in the first run, the fixed number will be 1000, and in the next run of the scenario,
+	// the number will become 3000.
+	IncreaseFixedInput int `gorm:"column:increase_fixed_input"`
+	// This field works together with the previous one and determines
+	// how many times the fixed test number should be incremented.
+	ExecNumMultiFixedInput int `gorm:"column:execution_number_multi_fixed_input"`
 }
 
 func (TestServiceConfig) TableName() string {
@@ -123,6 +134,15 @@ func (t *TestServiceConfig) Validate() error {
 
 	if t.DatabaseTableName == "" {
 		return pkg.ErrInvalidDatabaseTableName
+	}
+	if t.IncreaseFixedInput < 0 {
+		return pkg.ErrIncreaseFixedInputNotBeNegative
+	}
+	if t.ExecNumMultiFixedInput < 0 {
+		return pkg.ErrExecNumMultiFixedInputShouldBePositive
+	}
+	if (t.IncreaseFixedInput == 0 && t.ExecNumMultiFixedInput != 0) || (t.ExecNumMultiFixedInput == 0 && t.IncreaseFixedInput != 0) {
+		return pkg.ErrMultiFixedInputConfigNotTrue
 	}
 
 	return nil

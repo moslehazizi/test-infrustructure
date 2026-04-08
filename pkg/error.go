@@ -240,6 +240,24 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrNumStepsShouldBeOne):
 		status = http.StatusUnprocessableEntity
 		msg = NumStepsShouldBeOne
+	case errors.Is(err, ErrIncreaseAgentNumNotBeNegative):
+		status = http.StatusUnprocessableEntity
+		msg = IncreaseAgentNumNotBeNegative
+	case errors.Is(err, ErrExecNumMultiAgentShouldBePositive):
+		status = http.StatusUnprocessableEntity
+		msg = ExecNumMultiAgentShouldBePositive
+	case errors.Is(err, ErrIncreaseFixedInputNotBeNegative):
+		status = http.StatusUnprocessableEntity
+		msg = IncreaseFixedNumberNotBeNegative
+	case errors.Is(err, ErrExecNumMultiFixedInputShouldBePositive):
+		status = http.StatusUnprocessableEntity
+		msg = ExecNumMultiFixedInputShouldBePositive
+	case errors.Is(err, ErrMultiFixedInputConfigNotTrue):
+		status = http.StatusUnprocessableEntity
+		msg = MultiFixedInputConfigNotTrue
+	case errors.Is(err, ErrMultiAgentConfigNotTrue):
+		status = http.StatusUnprocessableEntity
+		msg = MultiAgentConfigNotTrue
 
 	default:
 		status = http.StatusInternalServerError
@@ -285,6 +303,7 @@ var (
 	ErrFailedToResumeTestService        = errors.New("failed to resume test service")
 	ErrFailedToStopTestService          = errors.New("failed to stop test services")
 	ErrFailedToAbortTestService         = errors.New("failed to abort test services")
+	ErrFailedToExecuteSingleScenario    = errors.New("failed to execute single scenario")
 
 	// Validation errors.
 	ErrFailedToGetTestServiceConfig                       = errors.New("failed to get test service config by id")
@@ -360,4 +379,12 @@ var (
 	ErrFailedToRunAgentControllerDueToProvisioningFailure = errors.New("unable to run test agent controller due to provisioning test service failure")
 	ErrNumStepsNotSet                                     = errors.New("num steps not set")
 	ErrNumStepsShouldBeOne                                = errors.New("num steps should be one")
+	ErrIncreaseAgentNumNotBeNegative                      = errors.New("increase agent number couldn't be negative")
+	ErrExecNumMultiAgentShouldBePositive                  = errors.New("execution number scenario in multi agent should be positive")
+	ErrIncreaseFixedInputNotBeNegative                    = errors.New("increase fixed number couldn't be negative")
+	ErrExecNumMultiFixedInputShouldBePositive             = errors.New("execution number of multi fixed input should be positive")
+	ErrScenarioIsNotRunning                               = errors.New("scenario is not running")
+	ErrMultiFixedInputConfigNotTrue                       = errors.New("both or none of execution number of multi fixed input and increase fixed input should be zero")
+	ErrMultiAgentConfigNotTrue                            = errors.New("both or none of execution number of multi agent and increase agent should be zero")
+	ErrInvalidDatabaseConfig                              = errors.New("invalid config applied to postgres database initializer")
 )

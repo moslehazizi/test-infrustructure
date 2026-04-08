@@ -81,6 +81,8 @@ create table if not exists test_service_configs (
 
     "database_name" varchar(512) NOT NULL DEFAULT 'test_service',
     "database_table_name" varchar(512) NOT NULL DEFAULT 'executor',
+    increase_fixed_input int NOT NULL DEFAULT 0,
+    execution_number_multi_fixed_input int NOT NULL DEFAULT 1,
 
     created_at timestamptz default CURRENT_TIMESTAMP,
     updated_at timestamptz default CURRENT_TIMESTAMP

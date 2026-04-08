@@ -360,6 +360,22 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrNumStepsShouldBeOne,
 			wanted: HTTPError{http.StatusUnprocessableEntity, NumStepsShouldBeOne},
 		},
+		{
+			err:    ErrIncreaseAgentNumNotBeNegative,
+			wanted: HTTPError{http.StatusUnprocessableEntity, IncreaseAgentNumNotBeNegative},
+		},
+		{
+			err:    ErrExecNumMultiAgentShouldBePositive,
+			wanted: HTTPError{http.StatusUnprocessableEntity, ExecNumMultiAgentShouldBePositive},
+		},
+		{
+			err:    ErrIncreaseFixedInputNotBeNegative,
+			wanted: HTTPError{http.StatusUnprocessableEntity, IncreaseFixedNumberNotBeNegative},
+		},
+		{
+			err:    ErrExecNumMultiFixedInputShouldBePositive,
+			wanted: HTTPError{http.StatusUnprocessableEntity, ExecNumMultiFixedInputShouldBePositive},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {

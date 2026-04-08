@@ -919,6 +919,12 @@ const docTemplate = `{
         "request.TestScenario": {
             "type": "object",
             "properties": {
+                "execution_number_multi_agent": {
+                    "type": "integer"
+                },
+                "increase_agent_number": {
+                    "type": "integer"
+                },
                 "max_test_service_count": {
                     "type": "integer"
                 },
@@ -953,7 +959,13 @@ const docTemplate = `{
         "request.TestScenarioUpdateRequest": {
             "type": "object",
             "properties": {
+                "execution_number_multi_agent": {
+                    "type": "integer"
+                },
                 "id": {
+                    "type": "integer"
+                },
+                "increase_agent_number": {
                     "type": "integer"
                 },
                 "max_test_service_count": {
@@ -985,7 +997,13 @@ const docTemplate = `{
                 "database_table_name": {
                     "type": "string"
                 },
+                "execution_number_multi_fixed_input": {
+                    "type": "integer"
+                },
                 "fixed_test_number": {
+                    "type": "integer"
+                },
+                "increase_fixed_input": {
                     "type": "integer"
                 },
                 "long_string_value_rate": {
@@ -1195,7 +1213,13 @@ const docTemplate = `{
                 "editable": {
                     "type": "boolean"
                 },
+                "execution_number_multi_agent": {
+                    "type": "integer"
+                },
                 "id": {
+                    "type": "integer"
+                },
+                "increase_agent_number": {
                     "type": "integer"
                 },
                 "max_test_service_count": {
@@ -1250,10 +1274,16 @@ const docTemplate = `{
                 "database_table_name": {
                     "type": "string"
                 },
+                "execution_number_multi_fixed_input": {
+                    "type": "integer"
+                },
                 "fixed_test_number": {
                     "type": "integer"
                 },
                 "id": {
+                    "type": "integer"
+                },
+                "increase_fixed_input": {
                     "type": "integer"
                 },
                 "long_string_value_rate": {

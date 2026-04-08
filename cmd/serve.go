@@ -6,6 +6,7 @@ package cmd
 import (
 	"context"
 	"control-panel-service/config"
+	"control-panel-service/internal/jobs"
 	"control-panel-service/internal/server"
 	"control-panel-service/pkg/logger"
 	"control-panel-service/pkg/telemetry"
@@ -129,6 +130,15 @@ to quickly create a Cobra application.`,
 			close(serverDone)
 		}()
 
+		jobDone := make(chan struct{})
+		go func() {
+			zap.L().Info("starting job")
+			if err := jobs.Serve(ctx, &cfg); err != nil {
+				zap.L().Error("job error", zap.Error(err))
+			}
+			close(jobDone)
+		}()
+
 		// Wait for shutdown signal or server completion
 		select {
 		case sig := <-sigChan:
@@ -144,11 +154,15 @@ to quickly create a Cobra application.`,
 			select {
 			case <-serverDone:
 				zap.L().Info("server completed gracefully")
+			case <-jobDone:
+				zap.L().Info("job completed gracefully")
 			case <-shutdownCtx.Done():
 				zap.L().Warn("shutdown timeout reached, forcing exit")
 			}
 		case <-serverDone:
 			zap.L().Info("server completed")
+		case <-jobDone:
+			zap.L().Info("job completed")
 		}
 	},
 }

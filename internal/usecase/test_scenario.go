@@ -196,15 +196,15 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 
 	testScenario.TestCategory = testCat
 
-	switch testScenario.TestCategory.Name {
-	case entity.STRESS:
-		err := service.stressTestExecutionManager.AddScenario(dbCtx, testScenario)
-		if err != nil {
-			return fmt.Errorf("%w: %w", pkg.ErrFailedToAddScenarioToExecutionManager, err)
-		}
-	default:
-		return pkg.ErrStartingTestNotImplemented
-	}
+	// switch testScenario.TestCategory.Name {
+	// case entity.STRESS:
+	// 	err := service.stressTestExecutionManager.AddScenario(dbCtx, testScenario)
+	// 	if err != nil {
+	// 		return fmt.Errorf("%w: %w", pkg.ErrFailedToAddScenarioToExecutionManager, err)
+	// 	}
+	// default:
+	// 	return pkg.ErrStartingTestNotImplemented
+	// }
 
 	_ = tx.Commit()
 
@@ -604,6 +604,8 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 	existing.Name = testScenarioUpdateRequest.Name
 	existing.MotherServiceID = testScenarioUpdateRequest.MotherServiceID
 	existing.MotherService = motherService
+	existing.IncreaseAgentNumber = testScenarioUpdateRequest.IncreaseAgentNumber
+	existing.ExecNumMultiAgent = testScenarioUpdateRequest.ExecNumMultiAgent
 
 	if testScenarioUpdateRequest.MaxTestServiceCount != nil {
 		existing.MaxTestServiceCount = testScenarioUpdateRequest.MaxTestServiceCount
@@ -640,6 +642,8 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 	testSvcConfig.NullValueRate = cfg.NullValueRate
 	testSvcConfig.DatabaseName = cfg.DatabaseName
 	testSvcConfig.DatabaseTableName = cfg.DatabaseTableName
+	testSvcConfig.IncreaseFixedInput = cfg.IncreaseFixedInput
+	testSvcConfig.ExecNumMultiFixedInput = cfg.ExecNumMultiFixedInput
 
 	existing.TestServiceConfig = testSvcConfig
 

@@ -66,6 +66,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Server.RateLimitExpirationDuration, expectedRateLimitExpirationDuration)
 		assert.Equal(t, cfg.Server.ShutdownTimeout, expectedShutdownTimeout)
 	})
+
 	t.Run("success_fetch_kafka_config", func(t *testing.T) {
 		expectedKafkaHost := "127.0.0.1"
 		expectedKafkaPort := 9092
@@ -78,6 +79,9 @@ func TestLoadConfig(t *testing.T) {
 		expectedKafkaBatchTimeout := 10 * time.Millisecond
 		expectedKafkaBatchSize := 2000
 		expectedKafkaBatchBytes := 2000000 // 2MB
+		expectedKafkaMaxAttempts := 10
+		expectedKafkaWriteTimeOut := time.Millisecond
+		expectedKafkaAttemptsSleepTime := time.Second
 
 		os.Setenv("KAFKA_HOST", expectedKafkaHost)
 		os.Setenv("KAFKA_PORT", strconv.Itoa(expectedKafkaPort))
@@ -90,6 +94,9 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("KAFKA_BATCH_TIMEOUT", fmt.Sprintf("%v", expectedKafkaBatchTimeout))
 		os.Setenv("KAFKA_BATCH_SIZE", strconv.Itoa(expectedKafkaBatchSize))
 		os.Setenv("KAFKA_BATCH_BYTES", strconv.Itoa(expectedKafkaBatchBytes))
+		os.Setenv("KAFKA_MAX_ATTEMPTS", strconv.Itoa(expectedKafkaMaxAttempts))
+		os.Setenv("KAFKA_WRITE_TIME_OUT", fmt.Sprintf("%v", expectedKafkaWriteTimeOut))
+		os.Setenv("KAFKA_ATTEMPTS_SLEEP_TIME", fmt.Sprintf("%v", expectedKafkaAttemptsSleepTime))
 
 		cfg, err := LoadConfig()
 
@@ -105,7 +112,9 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.BatchTimeout, expectedKafkaBatchTimeout)
 		assert.Equal(t, cfg.Kafka.BatchSize, expectedKafkaBatchSize)
 		assert.Equal(t, cfg.Kafka.BatchBytes, expectedKafkaBatchBytes)
-
+		assert.Equal(t, cfg.Kafka.MaxAttempts, expectedKafkaMaxAttempts)
+		assert.Equal(t, cfg.Kafka.WriteTimeOut, expectedKafkaWriteTimeOut)
+		assert.Equal(t, cfg.Kafka.AttemptsSleepTime, expectedKafkaAttemptsSleepTime)
 	})
 	t.Run("success_fetch_kafka_config_without_username_and_password", func(t *testing.T) {
 		expectedKafkaHost := "127.0.0.1"
@@ -194,7 +203,6 @@ func TestLoadConfig(t *testing.T) {
 		expectedKubernetesMotherSvcAPPJobs := "mother-service-jobs"
 		expectedKubernetesMotherSvcAPPJobsWaitReady := 10 * time.Second
 		expectedKubernetesMotherServiceKafkaDbTopic := "mother-db"
-		expectedKubernetesMotherServiceKafkaConsumerGroup := "mother-db-consumer-group"
 		expectedKubernetesMotherServiceLiveFeedTopic := "mother-live-feed"
 		expectedKubernetesMotherServiceKafkaHost := "kafka"
 		expectedKubernetesMotherServicePostgresHost := "postgres"
@@ -209,7 +217,6 @@ func TestLoadConfig(t *testing.T) {
 		expectedKubernetesTestServicePostgresHost := "localhost"
 		expectedKubernetesTestServiceKafkaHost := "localhost"
 		expectedKubernetesTestServiceKafkaDatabaseTopic := "test-db-1"
-		expectedKubernetesTestServiceKafkaConsumerGroup := "test-consumer-group-1"
 		expectedKubernetesTestServiceKafkaLiveFeedTopic := "test-live-feed"
 
 		os.Setenv("KUBERNETES_NAMESPACE", expectedKubernetesNameSpace)
@@ -224,7 +231,6 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("MOTHER_SERVICE_APP_JOBS", expectedKubernetesMotherSvcAPPJobs)
 		os.Setenv("MOTHER_SERVICE_APP_JOBS_WAIT_READY", expectedKubernetesMotherSvcAPPJobsWaitReady.String())
 		os.Setenv("MOTHER_SERVICE_KAFKA_DATABASE_TOPIC", expectedKubernetesMotherServiceKafkaDbTopic)
-		os.Setenv("MOTHER_SERVICE_KAFKA_CONSUMER_GROUP", expectedKubernetesMotherServiceKafkaConsumerGroup)
 		os.Setenv("MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC", expectedKubernetesMotherServiceLiveFeedTopic)
 		os.Setenv("MOTHER_SERVICE_KAFKA_HOST", expectedKubernetesMotherServiceKafkaHost)
 		os.Setenv("MOTHER_SERVICE_POSTGRES_HOST", expectedKubernetesMotherServicePostgresHost)
@@ -239,7 +245,6 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("TEST_SERVICE_POSTGRES_HOST", expectedKubernetesTestServicePostgresHost)
 		os.Setenv("TEST_SERVICE_KAFKA_HOST", expectedKubernetesTestServiceKafkaHost)
 		os.Setenv("TEST_SERVICE_KAFKA_DATABASE_TOPIC", expectedKubernetesTestServiceKafkaDatabaseTopic)
-		os.Setenv("TEST_SERVICE_KAFKA_CONSUMER_GROUP", expectedKubernetesTestServiceKafkaConsumerGroup)
 		os.Setenv("TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC", expectedKubernetesTestServiceKafkaLiveFeedTopic)
 
 		cfg, err := LoadConfig()
@@ -256,8 +261,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServeWaitReady, expectedKubernetesMotherSvcAPPServeWaitReady)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobs, expectedKubernetesMotherSvcAPPJobs)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobsWaitReady, expectedKubernetesMotherSvcAPPJobsWaitReady)
-		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDbTopic, expectedKubernetesMotherServiceKafkaDbTopic)
-		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDbGroup, expectedKubernetesMotherServiceKafkaConsumerGroup)
+		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDatabaseTopic, expectedKubernetesMotherServiceKafkaDbTopic)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceLiveFeedTopic, expectedKubernetesMotherServiceLiveFeedTopic)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaHost, expectedKubernetesMotherServiceKafkaHost)
 		assert.Equal(t, cfg.Kubernetese.MotherServicePostgresHost, expectedKubernetesMotherServicePostgresHost)
@@ -269,7 +273,6 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.TestServicePostgresHost, expectedKubernetesTestServicePostgresHost)
 		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaHost, expectedKubernetesTestServiceKafkaHost)
 		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaDatabaseTopic, expectedKubernetesTestServiceKafkaDatabaseTopic)
-		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaCounsumerGroup, expectedKubernetesTestServiceKafkaConsumerGroup)
 		assert.Equal(t, cfg.Kubernetese.TestServiceLiveFeedTopic, expectedKubernetesTestServiceKafkaLiveFeedTopic)
 
 	})
@@ -304,7 +307,6 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKubernetesMotherSvcAPPJobs := "mother-service-jobs"
 		expectedDefaultKubernetesMotherSvcAPPJobsWaitReady := 10 * time.Second
 		expectedDefaultKubernetesMotherServiceKafkaDbTopic := "mother-db"
-		expectedDefaultKubernetesMotherServiceKafkaConsumerGroup := "mother-db-consumer-group"
 		expectedDefaultKubernetesMotherServiceLiveFeedTopic := "mother-live-feed"
 		expectedDefaultKubernetesMotherServiceKafkaHost := "kafka"
 		expectedDefaultKubernetesMotherServicePostgresHost := "postgres"
@@ -316,8 +318,10 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKubernetesTestServicePostgresHost := "localhost"
 		expectedDefaultKubernetesTestServiceKafkaHost := "localhost"
 		expectedDefaultKubernetesTestServiceKafkaDatabaseTopic := "test-db"
-		expectedDefaultKubernetesTestServiceKafkaConsumerGroup := "test-db-consumer-group"
 		expectedDefaultKubernetesTestServiceKafkaLiveFeedTopic := "test-live-feed"
+		expectedDefaultKafkaMaxAttempts := 10
+		expectedDefaultKafkaWriteTimeOut := time.Millisecond
+		expectedDefaultKafkaAttemptsSleepTime := 100 * time.Millisecond
 
 		// Unset Kafka environment variables to test defaults
 		os.Unsetenv("KAFKA_DIALER_TIMEOUT")
@@ -325,6 +329,9 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("KAFKA_BATCH_TIMEOUT")
 		os.Unsetenv("KAFKA_BATCH_SIZE")
 		os.Unsetenv("KAFKA_BATCH_BYTES")
+		os.Unsetenv("KAFKA_MAX_ATTEMPTS")
+		os.Unsetenv("KAFKA_WRITE_TIME_OUT")
+		os.Unsetenv("KAFKA_ATTEMPTS_SLEEP_TIME")
 		// Unset shutdown timeout to test default
 		os.Unsetenv("HTTP_SHUTDOWN_TIMEOUT")
 		os.Unsetenv("KAFKA_PROVISIONING_TOPIC")
@@ -344,7 +351,6 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("MOTHER_SERVICE_APP_JOBS")
 		os.Unsetenv("MOTHER_SERVICE_APP_JOBS_WAIT_READY")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_DATABASE_TOPIC")
-		os.Unsetenv("MOTHER_SERVICE_KAFKA_CONSUMER_GROUP")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_HOST")
 		os.Unsetenv("MOTHER_SERVICE_POSTGRES_HOST")
@@ -359,7 +365,6 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("TEST_SERVICE_POSTGRES_HOST")
 		os.Unsetenv("TEST_SERVICE_KAFKA_HOST")
 		os.Unsetenv("TEST_SERVICE_KAFKA_DATABASE_TOPIC")
-		os.Unsetenv("TEST_SERVICE_KAFKA_CONSUMER_GROUP")
 		os.Unsetenv("TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC")
 
 		cfg, err := LoadConfig()
@@ -395,8 +400,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPServeWaitReady, expectedDefaultKubernetesMotherSvcAPPServeWaitReady)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobs, expectedDefaultKubernetesMotherSvcAPPJobs)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobsWaitReady, expectedDefaultKubernetesMotherSvcAPPJobsWaitReady)
-		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDbTopic, expectedDefaultKubernetesMotherServiceKafkaDbTopic)
-		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDbGroup, expectedDefaultKubernetesMotherServiceKafkaConsumerGroup)
+		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDatabaseTopic, expectedDefaultKubernetesMotherServiceKafkaDbTopic)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceLiveFeedTopic, expectedDefaultKubernetesMotherServiceLiveFeedTopic)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaHost, expectedDefaultKubernetesMotherServiceKafkaHost)
 		assert.Equal(t, cfg.Kubernetese.MotherServicePostgresHost, expectedDefaultKubernetesMotherServicePostgresHost)
@@ -408,8 +412,10 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.TestServicePostgresHost, expectedDefaultKubernetesTestServicePostgresHost)
 		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaHost, expectedDefaultKubernetesTestServiceKafkaHost)
 		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaDatabaseTopic, expectedDefaultKubernetesTestServiceKafkaDatabaseTopic)
-		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaCounsumerGroup, expectedDefaultKubernetesTestServiceKafkaConsumerGroup)
 		assert.Equal(t, cfg.Kubernetese.TestServiceLiveFeedTopic, expectedDefaultKubernetesTestServiceKafkaLiveFeedTopic)
+		assert.Equal(t, cfg.Kafka.MaxAttempts, expectedDefaultKafkaMaxAttempts)
+		assert.Equal(t, cfg.Kafka.WriteTimeOut, expectedDefaultKafkaWriteTimeOut)
+		assert.Equal(t, cfg.Kafka.AttemptsSleepTime, expectedDefaultKafkaAttemptsSleepTime)
 	})
 	t.Run("error_invalid_environment_variable_value", func(t *testing.T) {
 		// Set an invalid value for POSTGRES_PORT that can't be parsed as int

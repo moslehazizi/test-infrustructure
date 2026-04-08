@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 
 	"gorm.io/driver/postgres"
@@ -184,4 +185,17 @@ func GetConnectionString(cfg *DatabaseConfig) string {
 	conURL.RawQuery = qs.Encode()
 
 	return conURL.String()
+}
+
+var DBInitializerFn database.DBInitializerFn = func(cfg any) (database.Database, error) {
+	c, ok := cfg.(*DatabaseConfig)
+	if !ok {
+		return nil, pkg.ErrInvalidDatabaseConfig
+	}
+	db, err := New(c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize dynamic database: %w", err)
+	}
+
+	return db, nil
 }
