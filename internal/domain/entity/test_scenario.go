@@ -95,8 +95,11 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 	if ts.IncreaseAgentNumber < 0 {
 		return pkg.ErrIncreaseAgentNumNotBeNegative
 	}
-	if ts.ExecNumMultiAgent < 1 {
+	if ts.ExecNumMultiAgent < 0 {
 		return pkg.ErrExecNumMultiAgentShouldBePositive
+	}
+	if (ts.IncreaseAgentNumber == 0 && ts.ExecNumMultiAgent != 0) || (ts.IncreaseAgentNumber != 0 && ts.ExecNumMultiAgent == 0) {
+		return pkg.ErrMultiAgentConfigNotTrue
 	}
 
 	return nil

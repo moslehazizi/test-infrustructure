@@ -9,7 +9,125 @@ import (
 )
 
 func TestTestScenarioValidation(t *testing.T) {
-	t.Run("failed_case_execution_number_multi_agent_should_be_positive", func(t *testing.T) {
+	t.Run("success_case_execution_number_multi_agent_and_increase_number_both_can_be_zero", func(t *testing.T) {
+		sampleInt := int64(2)
+		testSci := TestScenario{
+			ID:                  uint64(1),
+			CreatedAt:           time.Now(),
+			UpdatedAt:           time.Now(),
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(4),
+			MotherServiceID:     uint64(5),
+			Status:              ScenarioStatusPending,
+			MaxTestServiceCount: &sampleInt,
+			NumSteps:            int64(2),
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   0,
+		}
+
+		TestCategory := &TestCategory{
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasNumSteps:            true,
+		}
+
+		err := testSci.Validate(TestCategory)
+
+		assert.NoError(t, err)
+	})
+	t.Run("failed_case_execution_number_multi_agent_and_increase_number_both_or_neither_sould_be_zero", func(t *testing.T) {
+		sampleInt := int64(2)
+		testSci := TestScenario{
+			ID:                  uint64(1),
+			CreatedAt:           time.Now(),
+			UpdatedAt:           time.Now(),
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(4),
+			MotherServiceID:     uint64(5),
+			Status:              ScenarioStatusPending,
+			MaxTestServiceCount: &sampleInt,
+			NumSteps:            int64(2),
+			IncreaseAgentNumber: 1,
+			ExecNumMultiAgent:   0,
+		}
+
+		TestCategory := &TestCategory{
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasNumSteps:            true,
+		}
+
+		err := testSci.Validate(TestCategory)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrMultiAgentConfigNotTrue)
+	})
+	t.Run("failed_case_execution_number_multi_agent_and_increase_number_both_or_neither_sould_be_zero", func(t *testing.T) {
+		sampleInt := int64(2)
+		testSci := TestScenario{
+			ID:                  uint64(1),
+			CreatedAt:           time.Now(),
+			UpdatedAt:           time.Now(),
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(4),
+			MotherServiceID:     uint64(5),
+			Status:              ScenarioStatusPending,
+			MaxTestServiceCount: &sampleInt,
+			NumSteps:            int64(2),
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
+		}
+
+		TestCategory := &TestCategory{
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasNumSteps:            true,
+		}
+
+		err := testSci.Validate(TestCategory)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrMultiAgentConfigNotTrue)
+	})
+	t.Run("success_case_execution_number_multi_agent_can_be_than_zero", func(t *testing.T) {
+		sampleInt := int64(2)
+		testSci := TestScenario{
+			ID:                  uint64(1),
+			CreatedAt:           time.Now(),
+			UpdatedAt:           time.Now(),
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(4),
+			MotherServiceID:     uint64(5),
+			Status:              ScenarioStatusPending,
+			MaxTestServiceCount: &sampleInt,
+			NumSteps:            int64(2),
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   0,
+		}
+
+		TestCategory := &TestCategory{
+			ID:                     testSci.TestCategoryID,
+			Name:                   "load",
+			Label:                  "my load",
+			HasMaxTestServiceCount: true,
+			HasNumSteps:            true,
+		}
+
+		err := testSci.Validate(TestCategory)
+
+		assert.NoError(t, err)
+	})
+	t.Run("failed_case_execution_number_multi_agent_should_be_more_than_zero", func(t *testing.T) {
 		sampleInt := int64(2)
 		testSci := TestScenario{
 			ID:                  uint64(1),
@@ -82,7 +200,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Status:              ScenarioStatusPending,
 			MaxTestServiceCount: &sampleInt,
 			NumSteps:            int64(2),
-			IncreaseAgentNumber: 0,
+			IncreaseAgentNumber: 1,
 			ExecNumMultiAgent:   1,
 		}
 
@@ -109,7 +227,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:     uint64(5),
 			Status:              ScenarioStatusPending,
 			NumSteps:            int64(1),
-			IncreaseAgentNumber: 0,
+			IncreaseAgentNumber: 1,
 			ExecNumMultiAgent:   1,
 		}
 		TestCategory := &TestCategory{
@@ -137,7 +255,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Status:              ScenarioStatusPending,
 			MaxTestServiceCount: &sampleIntLessThanOne,
 			NumSteps:            int64(2),
-			IncreaseAgentNumber: 0,
+			IncreaseAgentNumber: 1,
 			ExecNumMultiAgent:   1,
 		}
 		TestCategory := &TestCategory{
@@ -164,7 +282,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			MotherServiceID:     uint64(5),
 			Status:              ScenarioStatusPending,
 			NumSteps:            int64(2),
-			IncreaseAgentNumber: 0,
+			IncreaseAgentNumber: 1,
 			ExecNumMultiAgent:   1,
 		}
 
@@ -194,7 +312,7 @@ func TestTestScenarioValidation(t *testing.T) {
 			Status:              ScenarioStatusPending,
 			MaxTestServiceCount: &sampleInt,
 			NumSteps:            int64(2),
-			IncreaseAgentNumber: 0,
+			IncreaseAgentNumber: 1,
 			ExecNumMultiAgent:   1,
 		}
 
@@ -215,7 +333,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		testSci := TestScenario{
 			// ... other fields ...
 			NumSteps:            0,
-			IncreaseAgentNumber: 0,
+			IncreaseAgentNumber: 1,
 			ExecNumMultiAgent:   1,
 		}
 		// ...
@@ -227,7 +345,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		testSci := TestScenario{
 			// ... other fields ...
 			NumSteps:            -2,
-			IncreaseAgentNumber: 0,
+			IncreaseAgentNumber: 1,
 			ExecNumMultiAgent:   1,
 		}
 		// ...
@@ -239,7 +357,7 @@ func TestTestScenarioValidation(t *testing.T) {
 		testSci := TestScenario{
 			// ... other fields ...
 			NumSteps:            2,
-			IncreaseAgentNumber: 0,
+			IncreaseAgentNumber: 1,
 			ExecNumMultiAgent:   1,
 		}
 		// ...

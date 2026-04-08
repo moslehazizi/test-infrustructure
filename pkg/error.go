@@ -252,6 +252,12 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrExecNumMultiFixedInputShouldBePositive):
 		status = http.StatusUnprocessableEntity
 		msg = ExecNumMultiFixedInputShouldBePositive
+	case errors.Is(err, ErrMultiFixedInputConfigNotTrue):
+		status = http.StatusUnprocessableEntity
+		msg = MultiFixedInputConfigNotTrue
+	case errors.Is(err, ErrMultiAgentConfigNotTrue):
+		status = http.StatusUnprocessableEntity
+		msg = MultiAgentConfigNotTrue
 
 	default:
 		status = http.StatusInternalServerError
@@ -374,9 +380,11 @@ var (
 	ErrNumStepsNotSet                                     = errors.New("num steps not set")
 	ErrNumStepsShouldBeOne                                = errors.New("num steps should be one")
 	ErrIncreaseAgentNumNotBeNegative                      = errors.New("increase agent number couldn't be negative")
-	ErrExecNumMultiAgentShouldBePositive                  = errors.New("execution number scenario in multi agent should be 1 or more")
+	ErrExecNumMultiAgentShouldBePositive                  = errors.New("execution number scenario in multi agent should be positive")
 	ErrIncreaseFixedInputNotBeNegative                    = errors.New("increase fixed number couldn't be negative")
-	ErrExecNumMultiFixedInputShouldBePositive             = errors.New("execution number of multi fixed input should be 1 or more")
+	ErrExecNumMultiFixedInputShouldBePositive             = errors.New("execution number of multi fixed input should be positive")
 	ErrScenarioIsNotRunning                               = errors.New("scenario is not running")
+	ErrMultiFixedInputConfigNotTrue                       = errors.New("both or none of execution number of multi fixed input and increase fixed input should be zero")
+	ErrMultiAgentConfigNotTrue                            = errors.New("both or none of execution number of multi agent and increase agent should be zero")
 	ErrInvalidDatabaseConfig                              = errors.New("invalid config applied to postgres database initializer")
 )

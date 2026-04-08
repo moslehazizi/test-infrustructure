@@ -138,8 +138,11 @@ func (t *TestServiceConfig) Validate() error {
 	if t.IncreaseFixedInput < 0 {
 		return pkg.ErrIncreaseFixedInputNotBeNegative
 	}
-	if t.ExecNumMultiFixedInput < 1 {
+	if t.ExecNumMultiFixedInput < 0 {
 		return pkg.ErrExecNumMultiFixedInputShouldBePositive
+	}
+	if (t.IncreaseFixedInput == 0 && t.ExecNumMultiFixedInput != 0) || (t.ExecNumMultiFixedInput == 0 && t.IncreaseFixedInput != 0) {
+		return pkg.ErrMultiFixedInputConfigNotTrue
 	}
 
 	return nil
