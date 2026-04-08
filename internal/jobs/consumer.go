@@ -58,6 +58,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	consumerExecChannel := make(chan []byte)
 	go consumerJob.RunExecutorConsumer(ctx, cfg.Kubernetese.TestServiceKafkaDatabaseTopic, consumerExecChannel)
 
+	<-ctx.Done()
+
 	return nil
 }
 
