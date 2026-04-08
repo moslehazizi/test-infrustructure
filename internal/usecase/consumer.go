@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	sharedentity "control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
@@ -16,10 +15,12 @@ import (
 )
 
 type consumer struct {
-	factorialRepo repository.FactorialRepository
-	executorRepo  repository.TestServiceExecutorResultRepository
-	eventConsumer provider.EventConsumer
-	dbInitializer database.DBInitializerFn
+	factorialRepo     repository.MotherServiceFactorialResultRepository
+	executorRepo      repository.TestServiceExecutorResultRepository
+	motherServiceRepo repository.MotherServiceRepository
+	testScenarioRepo  repository.TestScenarioRepository
+	eventConsumer     provider.EventConsumer
+	dbInitializer     database.DBInitializerFn
 }
 
 type Consumer interface {
@@ -29,26 +30,30 @@ type Consumer interface {
 }
 
 func NewConsumer(
-	factorialRepo repository.FactorialRepository,
+	factorialRepo repository.MotherServiceFactorialResultRepository,
 	executorRepo repository.TestServiceExecutorResultRepository,
+	motherServiceRepo repository.MotherServiceRepository,
+	testScenarioRepo repository.TestScenarioRepository,
 	eventConsumer provider.EventConsumer,
 	dbInitializer database.DBInitializerFn,
 
 ) Consumer {
 	return &consumer{
-		factorialRepo: factorialRepo,
-		executorRepo:  executorRepo,
-		eventConsumer: eventConsumer,
+		factorialRepo:     factorialRepo,
+		executorRepo:      executorRepo,
+		motherServiceRepo: motherServiceRepo,
+		testScenarioRepo:  testScenarioRepo,
+		eventConsumer:     eventConsumer,
 	}
 }
 
-func (mse *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error {
+func (c *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error {
 	logger.WithContext(ctx).Debug("storing executor result",
 		zap.Int("message_size", len(msg)),
 		zap.String(logger.FieldOperation, "store_executor_result"),
 	)
 
-	data := sharedentity.ExecutorEvent{}
+	data := entity.ExecutorEvent{}
 	err := json.Unmarshal(msg, &data)
 	if err != nil {
 		logger.WithContext(ctx).Error("failed to unmarshal executor event message",
@@ -59,8 +64,19 @@ func (mse *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error 
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToUnmarshalEventData, err)
 	}
 
+	// load test scenario by testScenarioID
+	scenario, err := c.testScenarioRepo.GetByID(ctx, uint64(data.ScenarioId))
+	if err != nil {
+		logger.WithContext(ctx).Error("failed to get scenario by id",
+			zap.Error(err),
+			zap.String(logger.FieldOperation, "store_executor_result"),
+		)
+
+		return pkg.ErrFailedToGetTestScenario
+	}
+
 	// load scenario by id from database
-	execute := &sharedentity.Executor{
+	execute := &entity.Executor{
 		Input:           data.Input,
 		Output:          data.Output,
 		MotherServiceId: data.MotherServiceId,
@@ -68,7 +84,7 @@ func (mse *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error 
 		StepNum:         data.StepNum,
 		ExecutionId:     data.ExecutionId,
 		ScenarioId:      data.ScenarioId,
-		Scenario: ??,
+		Scenario:        scenario,
 		StepIncrement:   data.StepIncrement,
 		StartTxTime:     data.StartTxTime,
 		DurationTx:      data.DurationTx,
@@ -76,7 +92,7 @@ func (mse *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error 
 		HttpStatusCode:  data.HttpStatusCode,
 	}
 
-	err = mse.executorRepo.Create(ctx, execute, mse.dbInitializer)
+	err = c.executorRepo.Create(ctx, execute, c.dbInitializer)
 	if err != nil {
 		logger.WithContext(ctx).Error("failed to store execute result",
 			zap.Error(err),
@@ -92,7 +108,7 @@ func (mse *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error 
 	return nil
 }
 
-func (service *consumer) StoreFactorialResult(ctx context.Context, msg []byte) error {
+func (c *consumer) StoreFactorialResult(ctx context.Context, msg []byte) error {
 	logger.WithContext(ctx).Debug("storing factorial result",
 		zap.Int("message_size", len(msg)),
 		zap.String(logger.FieldOperation, "store_factorial_result"),
@@ -109,12 +125,25 @@ func (service *consumer) StoreFactorialResult(ctx context.Context, msg []byte) e
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToUnmarshalEventData, err)
 	}
 
-	factorial := &entity.Factorial{
-		Input:  data.Input.String(),
-		Output: data.Output.String(),
+	// load test mother service by motherServiceID
+	motherService, err := c.motherServiceRepo.GetByID(ctx, uint64(data.MotherServiceId))
+	if err != nil {
+		logger.WithContext(ctx).Error("failed to get mother service by id",
+			zap.Error(err),
+			zap.String(logger.FieldOperation, "store_factorial_result"),
+		)
+
+		return pkg.ErrFailedToGetMotherService
 	}
 
-	err = service.factorialRepo.Create(ctx, factorial)
+	factorial := &entity.Factorial{
+		Input:           data.Input.String(),
+		Output:          data.Output.String(),
+		MotherServiceId: data.MotherServiceId,
+		MotherService:   motherService,
+	}
+
+	err = c.factorialRepo.Create(ctx, factorial, c.dbInitializer)
 	if err != nil {
 		logger.WithContext(ctx).Error("failed to store factorial result",
 			zap.Error(err),
@@ -128,12 +157,12 @@ func (service *consumer) StoreFactorialResult(ctx context.Context, msg []byte) e
 	return nil
 }
 
-func (mse *consumer) Consume(ctx context.Context, topic string, ch chan []byte) error {
+func (c *consumer) Consume(ctx context.Context, topic string, ch chan []byte) error {
 	logger.WithContext(ctx).Info("starting to consume messages",
 		zap.String(logger.FieldTopic, topic),
 		zap.String(logger.FieldOperation, "consume_messages"),
 	)
-	err := mse.eventConsumer.Consume(ctx, topic, ch)
+	err := c.eventConsumer.Consume(ctx, topic, ch)
 	if err != nil {
 		logger.WithContext(ctx).Error("failed to consume messages",
 			zap.Error(err),

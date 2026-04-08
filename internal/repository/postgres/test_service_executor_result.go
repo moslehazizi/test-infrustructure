@@ -35,10 +35,10 @@ func (r *testServiceExecutorResultRepository) Create(
 	dbInitializer database.DBInitializerFn,
 ) error {
 	tracer := otel.Tracer("test-service-repository")
-	ctx, span := tracer.Start(ctx, "ExecutorRepository.Create")
+	spanCtx, span := tracer.Start(ctx, "ExecutorRepository.Create")
 	defer span.End()
 
-	logger.WithContext(ctx).Info("creating executor record with input", zap.Any("executer_input", executor.Input))
+	logger.WithContext(spanCtx).Info("creating executor record with input", zap.Any("executer_input", executor.Input))
 
 	span.SetAttributes(attribute.String("executor.input", fmt.Sprint(executor.Input)))
 
@@ -54,14 +54,15 @@ func (r *testServiceExecutorResultRepository) Create(
 	if err != nil {
 		return fmt.Errorf("could not open postgres connection: %w", err)
 	}
-	err = postgres.QueryBuilder(ctx, db).
-		WithContext(ctx).
+
+	err = postgres.QueryBuilder(spanCtx, db).
+		WithContext(spanCtx).
 		Table(executor.Scenario.TestServiceConfig.DatabaseTableName).
 		Omit(clause.Associations).
 		Create(executor).
 		Error
 	if err != nil {
-		logger.WithContext(ctx).Error("failed to create executor record with input",
+		logger.WithContext(spanCtx).Error("failed to create executor record with input",
 			zap.Any("executer_input", executor.Input),
 			zap.Error(err),
 		)
@@ -71,7 +72,7 @@ func (r *testServiceExecutorResultRepository) Create(
 		return fmt.Errorf("failed to create executor record: %w", err)
 	}
 
-	logger.WithContext(ctx).Info("successfully created executor record with ID",
+	logger.WithContext(spanCtx).Info("successfully created executor record with ID",
 		zap.Any("executer_input", executor.Input),
 		zap.Any("executer_id", executor.ID),
 	)
