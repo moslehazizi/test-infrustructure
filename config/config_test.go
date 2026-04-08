@@ -82,6 +82,8 @@ func TestLoadConfig(t *testing.T) {
 		expectedKafkaMaxAttempts := 10
 		expectedKafkaWriteTimeOut := time.Millisecond
 		expectedKafkaAttemptsSleepTime := time.Second
+		expectedKafkaMotherServicePort := 9092
+		expectedKafkaTestServicePort := 9092
 
 		os.Setenv("KAFKA_HOST", expectedKafkaHost)
 		os.Setenv("KAFKA_PORT", strconv.Itoa(expectedKafkaPort))
@@ -97,6 +99,8 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("KAFKA_MAX_ATTEMPTS", strconv.Itoa(expectedKafkaMaxAttempts))
 		os.Setenv("KAFKA_WRITE_TIME_OUT", fmt.Sprintf("%v", expectedKafkaWriteTimeOut))
 		os.Setenv("KAFKA_ATTEMPTS_SLEEP_TIME", fmt.Sprintf("%v", expectedKafkaAttemptsSleepTime))
+		os.Setenv("MOTHER_SERVICE_KAFKA_PORT", strconv.Itoa(expectedKafkaMotherServicePort))
+		os.Setenv("TEST_SERVICE_KAFKA_PORT", strconv.Itoa(expectedKafkaTestServicePort))
 
 		cfg, err := LoadConfig()
 
@@ -114,6 +118,8 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.BatchBytes, expectedKafkaBatchBytes)
 		assert.Equal(t, cfg.Kafka.MaxAttempts, expectedKafkaMaxAttempts)
 		assert.Equal(t, cfg.Kafka.WriteTimeOut, expectedKafkaWriteTimeOut)
+		assert.Equal(t, cfg.Kafka.AttemptsSleepTime, expectedKafkaAttemptsSleepTime)
+		assert.Equal(t, cfg.Kafka.AttemptsSleepTime, expectedKafkaAttemptsSleepTime)
 		assert.Equal(t, cfg.Kafka.AttemptsSleepTime, expectedKafkaAttemptsSleepTime)
 	})
 	t.Run("success_fetch_kafka_config_without_username_and_password", func(t *testing.T) {
@@ -215,7 +221,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedKubernetesTestServicePostgresDatabase := "test-db"
 		expectedKubernetesTestServicePostgresTable := "test-table"
 		expectedKubernetesTestServicePostgresHost := "localhost"
-		expectedKubernetesTestServiceKafkaHost := "localhost"
+		expectedKubernetesTestServiceKafkaHost := "kafka"
 		expectedKubernetesTestServiceKafkaDatabaseTopic := "test-db-1"
 		expectedKubernetesTestServiceKafkaLiveFeedTopic := "test-live-feed"
 
@@ -316,12 +322,14 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKubernetesTestSvcAPPJobs := "test-service-jobs"
 		expectedDefaultKubernetesTestSvcAPPJobsWaitReady := 10 * time.Second
 		expectedDefaultKubernetesTestServicePostgresHost := "localhost"
-		expectedDefaultKubernetesTestServiceKafkaHost := "localhost"
+		expectedDefaultKubernetesTestServiceKafkaHost := "kafka"
 		expectedDefaultKubernetesTestServiceKafkaDatabaseTopic := "test-db"
 		expectedDefaultKubernetesTestServiceKafkaLiveFeedTopic := "test-live-feed"
 		expectedDefaultKafkaMaxAttempts := 10
 		expectedDefaultKafkaWriteTimeOut := time.Millisecond
 		expectedDefaultKafkaAttemptsSleepTime := 100 * time.Millisecond
+		expectedDefaultKafkaMotherServicePort := 9092
+		expectedDefaultKafkaTestServicePort := 9092
 
 		// Unset Kafka environment variables to test defaults
 		os.Unsetenv("KAFKA_DIALER_TIMEOUT")
@@ -366,6 +374,8 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("TEST_SERVICE_KAFKA_HOST")
 		os.Unsetenv("TEST_SERVICE_KAFKA_DATABASE_TOPIC")
 		os.Unsetenv("TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC")
+		os.Unsetenv("MOTHER_SERVICE_KAFKA_PORT")
+		os.Unsetenv("TEST_SERVICE_KAFKA_PORT")
 
 		cfg, err := LoadConfig()
 		assert.NoError(t, err)
@@ -416,6 +426,8 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kafka.MaxAttempts, expectedDefaultKafkaMaxAttempts)
 		assert.Equal(t, cfg.Kafka.WriteTimeOut, expectedDefaultKafkaWriteTimeOut)
 		assert.Equal(t, cfg.Kafka.AttemptsSleepTime, expectedDefaultKafkaAttemptsSleepTime)
+		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaPort, expectedDefaultKafkaMotherServicePort)
+		assert.Equal(t, cfg.Kubernetese.TestServiceKafkaPort, expectedDefaultKafkaTestServicePort)
 	})
 	t.Run("error_invalid_environment_variable_value", func(t *testing.T) {
 		// Set an invalid value for POSTGRES_PORT that can't be parsed as int

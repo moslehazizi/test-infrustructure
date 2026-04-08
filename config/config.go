@@ -104,6 +104,7 @@ type Kubernetese struct {
 	MotherServiceKafkaDatabaseTopic string        `envconfig:"MOTHER_SERVICE_KAFKA_DATABASE_TOPIC" default:"mother-db"`
 	MotherServiceLiveFeedTopic      string        `envconfig:"MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"mother-live-feed"`
 	MotherServiceKafkaHost          string        `envconfig:"MOTHER_SERVICE_KAFKA_HOST" default:"kafka"`
+	MotherServiceKafkaPort          int           `envconfig:"MOTHER_SERVICE_KAFKA_PORT" default:"9092"`
 	MotherServicePostgresHost       string        `envconfig:"MOTHER_SERVICE_POSTGRES_HOST" default:"postgres"`
 	TestServiceImage                string        `envconfig:"TEST_SERVICE_IMAGE" default:"challenge-test-service:0.1"`
 	TestServiceAPPServe             string        `envconfig:"TEST_SERVICE_APP_SERVE" default:"test-service-serve"`
@@ -111,7 +112,8 @@ type Kubernetese struct {
 	TestServiceAPPJobs              string        `envconfig:"TEST_SERVICE_APP_JOBS" default:"test-service-jobs"`
 	TestServiceAPPJobsWaitReady     time.Duration `envconfig:"TEST_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
 	TestServicePostgresHost         string        `envconfig:"TEST_SERVICE_POSTGRES_HOST" default:"localhost"`
-	TestServiceKafkaHost            string        `envconfig:"TEST_SERVICE_KAFKA_HOST" default:"localhost"`
+	TestServiceKafkaHost            string        `envconfig:"TEST_SERVICE_KAFKA_HOST" default:"kafka"`
+	TestServiceKafkaPort            int           `envconfig:"TEST_SERVICE_KAFKA_PORT" default:"9092"`
 	TestServiceKafkaDatabaseTopic   string        `envconfig:"TEST_SERVICE_KAFKA_DATABASE_TOPIC" default:"test-db"`
 	TestServiceLiveFeedTopic        string        `envconfig:"TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"test-live-feed"`
 }

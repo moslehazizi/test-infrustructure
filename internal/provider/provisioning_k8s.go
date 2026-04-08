@@ -168,6 +168,7 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 		PostgresDatabase:         testScenario.TestServiceConfig.DatabaseName,
 		PostgresTable:            testScenario.TestServiceConfig.DatabaseTableName,
 
+		KafkaPort:          strconv.Itoa(ps.cfg.Kubernetese.TestServiceKafkaPort),
 		KafkaHost:          ps.cfg.Kubernetese.TestServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
@@ -183,7 +184,6 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 		HTTPRateLimitMaxRequest:         strconv.Itoa(ps.cfg.Server.RateLimitMaxRequest),
 		HTTPRateLimitExpirationduration: ps.cfg.Server.RateLimitExpirationDuration.String(),
 		HTTPShutdownTimeout:             ps.cfg.Server.ShutdownTimeout.String(),
-		KafkaPort:                       strconv.Itoa(ps.cfg.Kafka.Port),
 		KafkaDialerTimeout:              ps.cfg.Kafka.DialerTimeout.String(),
 		KafkaMaxBytes:                   strconv.Itoa(ps.cfg.Kafka.MaxBytes),
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
@@ -308,6 +308,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		PostgresDatabase:         testScenario.TestServiceConfig.DatabaseName,
 		PostgresTable:            testScenario.TestServiceConfig.DatabaseTableName,
 
+		KafkaPort:          strconv.Itoa(ps.cfg.Kubernetese.TestServiceKafkaPort),
 		KafkaHost:          ps.cfg.Kubernetese.TestServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.TestServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.TestServiceLiveFeedTopic,
@@ -323,7 +324,6 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		HTTPRateLimitMaxRequest:         strconv.Itoa(ps.cfg.Server.RateLimitMaxRequest),
 		HTTPRateLimitExpirationduration: ps.cfg.Server.RateLimitExpirationDuration.String(),
 		HTTPShutdownTimeout:             ps.cfg.Server.ShutdownTimeout.String(),
-		KafkaPort:                       strconv.Itoa(ps.cfg.Kafka.Port),
 		KafkaDialerTimeout:              ps.cfg.Kafka.DialerTimeout.String(),
 		KafkaMaxBytes:                   strconv.Itoa(ps.cfg.Kafka.MaxBytes),
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
@@ -479,6 +479,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		PostgresDatabase:              motherService.DatabaseName,
 		PostgresTable:                 motherService.DatabaseTableName,
 
+		KafkaPort:          strconv.Itoa(ps.cfg.Kubernetese.MotherServiceKafkaPort),
 		KafkaHost:          ps.cfg.Kubernetese.MotherServiceKafkaHost,
 		PostgresHost:       ps.cfg.Kubernetese.MotherServicePostgresHost,
 		KafkaLiveFeedTopic: ps.cfg.Kubernetese.MotherServiceLiveFeedTopic,
@@ -494,7 +495,6 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		HTTPRateLimitMaxRequest:         strconv.Itoa(ps.cfg.Server.RateLimitMaxRequest),
 		HTTPRateLimitExpirationduration: ps.cfg.Server.RateLimitExpirationDuration.String(),
 		HTTPShutdownTimeout:             ps.cfg.Server.ShutdownTimeout.String(),
-		KafkaPort:                       strconv.Itoa(ps.cfg.Kafka.Port),
 		KafkaDialerTimeout:              ps.cfg.Kafka.DialerTimeout.String(),
 		KafkaMaxBytes:                   strconv.Itoa(ps.cfg.Kafka.MaxBytes),
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
