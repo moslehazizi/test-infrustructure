@@ -687,7 +687,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		HTTPRateLimitMaxRequest:         strconv.Itoa(ps.cfg.Server.RateLimitMaxRequest),
 		HTTPRateLimitExpirationduration: ps.cfg.Server.RateLimitExpirationDuration.String(),
 		HTTPShutdownTimeout:             ps.cfg.Server.ShutdownTimeout.String(),
-		KafkaPort:                       strconv.Itoa(ps.cfg.Kafka.Port),
+		KafkaPort:                       strconv.Itoa(ps.cfg.Kubernetese.MotherServiceKafkaPort),
 		KafkaDialerTimeout:              ps.cfg.Kafka.DialerTimeout.String(),
 		KafkaMaxBytes:                   strconv.Itoa(ps.cfg.Kafka.MaxBytes),
 		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
