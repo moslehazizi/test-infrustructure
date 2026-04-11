@@ -714,6 +714,35 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		PostgresPassword: ps.cfg.Postgres.Password,
 	}
 
+	// jobs :
+	// Create deploy spec
+	jobsDepSpec := motherJobsDepSpec(ps.cfg, Replication, motherService.ID)
+
+	// Call ApplyDeployment from kubernetese interface
+	err := ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
+	if err != nil {
+		zap.L().Error("apply deployment fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Wait for deployment to be ready
+	jobsSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPJobs, motherService.ID)
+	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.MotherServiceAPPJobsWaitReady)
+	if err != nil {
+		zap.L().Error("create pod fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	time.Sleep(DelayBetweenProvisioning)
+
 	// Serve :
 	// Create deploy spec
 	serveDepSpec := motherServDepSpec(ps.cfg, Replication, motherService.ID)
@@ -725,7 +754,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	serveIngrSpec := motherServeIngressSpec(ps.cfg, motherService.ID)
 
 	// Call ApplyDeployment from kubernetese interface
-	err := ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
+	err = ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
 		zap.L().Error("apply deployment fail",
 			zap.String("apllication", serveDepSpec.Name),
@@ -763,35 +792,6 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	if err != nil {
 		zap.L().Error("create pod fail",
 			zap.String("apllication", serveDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	time.Sleep(DelayBetweenProvisioning)
-
-	// jobs :
-	// Create deploy spec
-	jobsDepSpec := motherJobsDepSpec(ps.cfg, Replication, motherService.ID)
-
-	// Call ApplyDeployment from kubernetese interface
-	err = ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
-	if err != nil {
-		zap.L().Error("apply deployment fail",
-			zap.String("apllication", jobsDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	// Wait for deployment to be ready
-	jobsSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPJobs, motherService.ID)
-	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.MotherServiceAPPJobsWaitReady)
-	if err != nil {
-		zap.L().Error("create pod fail",
-			zap.String("apllication", jobsDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
