@@ -7,6 +7,7 @@ import (
 	"control-panel-service/pkg"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -26,6 +27,7 @@ const (
 	App   = "app"
 	Main  = "./main"
 	Serve = "serve"
+	Jobs  = "jobs"
 	SSLIP = "sslip.io"
 
 	Replication = 1
@@ -58,6 +60,7 @@ const (
 	KafkaBatchSize                  = "KAFKA_BATCH_SIZE"
 	KafkaBatchBytes                 = "KAFKA_BATCH_BYTES"
 	KafkaDatabaseTopic              = "KAFKA_DATABASE_TOPIC"
+	KafkaConsumerGroup              = "KAFKA_CONSUMER_GROUP"
 	KafkaLiveFeedTopic              = "KAFKA_LIVE_FEED_TOPIC"
 	KafkaMaxAttempts                = "KAFKA_MAX_ATTEMPT"
 	KafkaWriteTimeOut               = "KAFKA_WRITE_TIME_OUT"
@@ -98,6 +101,8 @@ const (
 	KafkaPassword    = "KAFKA_PASSWORD"
 	PostgresUser     = "POSTGRES_USER"
 	PostgresPassword = "POSTGRES_PASSWORD" // #nosec G101 -- env key name
+
+	DelayBetweenProvisioning = 1 * time.Second
 )
 
 func NewProvisioningService(cfg *config.Config, kubernetes kubernetese.Kubernetese) ProvisioningService {
@@ -111,6 +116,8 @@ type provisioningService struct {
 	cfg        *config.Config
 	kubernetes kubernetese.Kubernetese
 }
+
+//#region TestService
 
 func (ps *provisioningService) DeprovisionTestServiceByName(ctx context.Context, testScenario *entity.TestScenario, uniqueID uuid.UUID) error {
 	if testScenario == nil {
@@ -460,156 +467,6 @@ func (ps *provisioningService) DeprovisionTestService(ctx context.Context, testS
 	return nil
 }
 
-func (ps *provisioningService) ProvisionMotherService(ctx context.Context, motherService *entity.MotherService) error {
-	// Mother service serve deployment logic here
-	// check mother service
-	if motherService == nil {
-		return fmt.Errorf("%w", pkg.ErrMotherServiceIsNil)
-	}
-
-	// Create config map
-	randomResponseDelayMin, randomResponseDelayMax := number.CalcRange(motherService.ResponseDelayDuration, motherService.RandomResponseDelayMin, motherService.RandomResponseDelayMax)
-	configMap := map[string]string{
-		ServiceId:                     strconv.FormatUint(motherService.ID, 10),
-		ServiceName:                   motherService.Name,
-		HTTPErrorInjectionRate:        strconv.Itoa(motherService.ExceptionRate),
-		HTTPDelayInjectionRate:        strconv.Itoa(motherService.ResponseDelayRate),
-		HTTPDelayInjectionDurationMin: strconv.Itoa(randomResponseDelayMin),
-		HTTPDelayInjectionDurationMax: strconv.Itoa(randomResponseDelayMax),
-		PostgresDatabase:              motherService.DatabaseName,
-		PostgresTable:                 motherService.DatabaseTableName,
-
-		KafkaPort:          strconv.Itoa(ps.cfg.Kubernetese.MotherServiceKafkaPort),
-		KafkaHost:          ps.cfg.Kubernetese.MotherServiceKafkaHost,
-		PostgresHost:       ps.cfg.Kubernetese.MotherServicePostgresHost,
-		KafkaLiveFeedTopic: ps.cfg.Kubernetese.MotherServiceLiveFeedTopic,
-		KafkaDatabaseTopic: ps.cfg.Kubernetese.MotherServiceKafkaDatabaseTopic,
-
-		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
-		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
-		SwaggerScheme:                   ps.cfg.Server.SwaggerScheme[0],
-		SwaggerDocJson:                  ps.cfg.Server.SwaggerDocJSON,
-		HTTPPostBodyLimit:               strconv.Itoa(ps.cfg.Server.PostBodyLimit),
-		HTTPReadTimeout:                 ps.cfg.Server.ReadTimeout.String(),
-		HTTPWriteTimeout:                ps.cfg.Server.WriteTimeout.String(),
-		HTTPRateLimitMaxRequest:         strconv.Itoa(ps.cfg.Server.RateLimitMaxRequest),
-		HTTPRateLimitExpirationduration: ps.cfg.Server.RateLimitExpirationDuration.String(),
-		HTTPShutdownTimeout:             ps.cfg.Server.ShutdownTimeout.String(),
-		KafkaDialerTimeout:              ps.cfg.Kafka.DialerTimeout.String(),
-		KafkaMaxBytes:                   strconv.Itoa(ps.cfg.Kafka.MaxBytes),
-		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
-		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
-		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
-		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
-		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
-		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
-		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
-		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
-		PostgresMaxOpenConnection:       strconv.Itoa(ps.cfg.Postgres.MaxOpenConnections),
-		PostgresMaxIdleConnection:       strconv.Itoa(ps.cfg.Postgres.MaxIdleConnections),
-		PostgresConnMaxLifetime:         ps.cfg.Postgres.ConnMaxLifetime.String(),
-		PostgresConnMaxIdleTime:         ps.cfg.Postgres.ConnMaxIdleTime.String(),
-		LogLevel:                        ps.cfg.Logger.Level,
-		LogFormat:                       ps.cfg.Logger.Format,
-		LogOutput:                       ps.cfg.Logger.Output,
-		OTLPGrpcPort:                    strconv.Itoa(ps.cfg.Otlp.GRPCPort),
-		OTLPGrpcHost:                    ps.cfg.Otlp.GRPCHost,
-	}
-
-	// Create secret
-	secretMap := map[string]string{
-		KafkaUsername:    ps.cfg.Kafka.Username,
-		KafkaPassword:    ps.cfg.Kafka.Password,
-		PostgresUser:     ps.cfg.Postgres.User,
-		PostgresPassword: ps.cfg.Postgres.Password,
-	}
-
-	// Serve :
-	// Create deploy spec
-	serveDepSpec := motherServDepSpec(ps.cfg, Replication, motherService.ID)
-
-	// Create service spec
-	serveSvcSpec := motherServeSvcSpec(ps.cfg, motherService.ID)
-
-	// Create ingress spec
-	serveIngrSpec := motherServeIngressSpec(ps.cfg, motherService.ID)
-
-	// Call ApplyDeployment from kubernetese interface
-	err := ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
-	if err != nil {
-		zap.L().Error("apply deployment fail",
-			zap.String("apllication", serveDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	// Call ApplyService from kubernetese interface
-	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec)
-	if err != nil {
-		zap.L().Error("apply service fail",
-			zap.String("apllication", serveSvcSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	// Call ApplyIngress from kubernetes interface
-	err = ps.kubernetes.ApplyIngress(ctx, serveIngrSpec)
-	if err != nil {
-		zap.L().Error("apply ingress fail",
-			zap.String("apllication", serveSvcSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	// Wait for deployment to be ready
-	serveSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPServe, motherService.ID)
-	err = ps.kubernetes.WaitForDeployment(ctx, serveSvcName, ps.cfg.Kubernetese.MotherServiceAPPServeWaitReady)
-	if err != nil {
-		zap.L().Error("create pod fail",
-			zap.String("apllication", serveDepSpec.Name),
-			zap.String("error", err.Error()),
-		)
-
-		return err
-	}
-
-	return nil
-}
-
-func (ps *provisioningService) DeprovisionMotherService(ctx context.Context, motherService *entity.MotherService) error {
-	if motherService == nil {
-		return fmt.Errorf("%w", pkg.ErrMotherServiceIsNil)
-	}
-
-	serveName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPServe, motherService.ID)
-	configName := serveName + Config
-	secretName := serveName + Secret
-
-	if err := ps.kubernetes.DeleteDeployment(ctx, serveName); err != nil {
-		return err
-	}
-	if err := ps.kubernetes.DeleteService(ctx, serveName); err != nil {
-		return err
-	}
-	if err := ps.kubernetes.DeleteIngress(ctx, serveName); err != nil {
-		return err
-	}
-	if err := ps.kubernetes.DeleteConfigMap(ctx, configName); err != nil {
-		return err
-	}
-	if err := ps.kubernetes.DeleteSecret(ctx, secretName); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func testServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
 	replicas := replica
 	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.TestServiceAPPServe, appId)
@@ -665,97 +522,6 @@ func testServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
 
 func testServeIngressSpec(cfg *config.Config, appId uint64) inEntity.IngressSpec {
 	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.TestServiceAPPServe, appId)
-	host := fmt.Sprintf("%s.%s.%s", appName, cfg.Kubernetese.IngressHost, SSLIP)
-	pathType := networkingv1.PathTypePrefix
-	ingressClassName := cfg.Kubernetese.IngressClassName
-
-	return inEntity.IngressSpec{
-		Name: appName,
-		Ingress: &networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{Name: appName},
-			Spec: networkingv1.IngressSpec{
-				IngressClassName: &ingressClassName,
-				Rules: []networkingv1.IngressRule{
-					{
-						Host: host,
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: &pathType,
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: appName,
-												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)}, // #nosec G115 -- port from config
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
-	replicas := replica
-	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
-	configName := appName + Config
-	secretName := cfg.Kubernetese.MotherServiceAPPServe + Secret
-	labels := map[string]string{App: appName}
-
-	return inEntity.DeploymentSpec{
-		Name: appName,
-		Deployment: &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Name: appName},
-			Spec: appsv1.DeploymentSpec{
-				Replicas: &replicas,
-				Selector: &metav1.LabelSelector{MatchLabels: labels},
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{Labels: labels},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:            App,
-								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
-								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
-								Command:         []string{Main, Serve},
-								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
-								EnvFrom: []corev1.EnvFromSource{
-									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
-									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func motherServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
-	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
-
-	return inEntity.ServiceSpec{
-		Name: appName,
-		Service: &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{Name: appName},
-			Spec: corev1.ServiceSpec{
-				Selector: map[string]string{App: appName},
-				Type:     corev1.ServiceTypeClusterIP,
-				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}}, // #nosec G115 -- port from config
-			},
-		},
-	}
-}
-
-func motherServeIngressSpec(cfg *config.Config, appId uint64) inEntity.IngressSpec {
-	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
 	host := fmt.Sprintf("%s.%s.%s", appName, cfg.Kubernetese.IngressHost, SSLIP)
 	pathType := networkingv1.PathTypePrefix
 	ingressClassName := cfg.Kubernetese.IngressClassName
@@ -882,3 +648,322 @@ func testServeIngressSpecByName(cfg *config.Config, uniqueId uuid.UUID, appId ui
 		},
 	}
 }
+
+//#endregion TestService
+
+// #region MotherService
+func (ps *provisioningService) ProvisionMotherService(ctx context.Context, motherService *entity.MotherService) error {
+	// Mother service serve deployment logic here
+	// check mother service
+	if motherService == nil {
+		return fmt.Errorf("%w", pkg.ErrMotherServiceIsNil)
+	}
+
+	// Create config map
+	randomResponseDelayMin, randomResponseDelayMax := number.CalcRange(motherService.ResponseDelayDuration, motherService.RandomResponseDelayMin, motherService.RandomResponseDelayMax)
+	configMap := map[string]string{
+		ServiceId:                     strconv.FormatUint(motherService.ID, 10),
+		ServiceName:                   motherService.Name,
+		HTTPErrorInjectionRate:        strconv.Itoa(motherService.ExceptionRate),
+		HTTPDelayInjectionRate:        strconv.Itoa(motherService.ResponseDelayRate),
+		HTTPDelayInjectionDurationMin: strconv.Itoa(randomResponseDelayMin),
+		HTTPDelayInjectionDurationMax: strconv.Itoa(randomResponseDelayMax),
+		PostgresDatabase:              motherService.DatabaseName,
+		PostgresTable:                 motherService.DatabaseTableName,
+
+		KafkaHost:          ps.cfg.Kubernetese.MotherServiceKafkaHost,
+		PostgresHost:       ps.cfg.Kubernetese.MotherServicePostgresHost,
+		KafkaLiveFeedTopic: ps.cfg.Kubernetese.MotherServiceLiveFeedTopic,
+		KafkaDatabaseTopic: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceKafkaDatabaseTopic, motherService.ID),
+		KafkaConsumerGroup: fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceKafkaDatabaseGroup, motherService.ID),
+
+		HTTPPort:                        strconv.Itoa(ps.cfg.Server.Port),
+		SwaggerHost:                     ps.cfg.Server.SwaggerHost,
+		SwaggerScheme:                   ps.cfg.Server.SwaggerScheme[0],
+		SwaggerDocJson:                  ps.cfg.Server.SwaggerDocJSON,
+		HTTPPostBodyLimit:               strconv.Itoa(ps.cfg.Server.PostBodyLimit),
+		HTTPReadTimeout:                 ps.cfg.Server.ReadTimeout.String(),
+		HTTPWriteTimeout:                ps.cfg.Server.WriteTimeout.String(),
+		HTTPRateLimitMaxRequest:         strconv.Itoa(ps.cfg.Server.RateLimitMaxRequest),
+		HTTPRateLimitExpirationduration: ps.cfg.Server.RateLimitExpirationDuration.String(),
+		HTTPShutdownTimeout:             ps.cfg.Server.ShutdownTimeout.String(),
+		KafkaPort:                       strconv.Itoa(ps.cfg.Kafka.Port),
+		KafkaDialerTimeout:              ps.cfg.Kafka.DialerTimeout.String(),
+		KafkaMaxBytes:                   strconv.Itoa(ps.cfg.Kafka.MaxBytes),
+		KafkaBatchTimeout:               ps.cfg.Kafka.BatchTimeout.String(),
+		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
+		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
+		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
+		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
+		PostgresMaxOpenConnection:       strconv.Itoa(ps.cfg.Postgres.MaxOpenConnections),
+		PostgresMaxIdleConnection:       strconv.Itoa(ps.cfg.Postgres.MaxIdleConnections),
+		PostgresConnMaxLifetime:         ps.cfg.Postgres.ConnMaxLifetime.String(),
+		PostgresConnMaxIdleTime:         ps.cfg.Postgres.ConnMaxIdleTime.String(),
+		LogLevel:                        ps.cfg.Logger.Level,
+		LogFormat:                       ps.cfg.Logger.Format,
+		LogOutput:                       ps.cfg.Logger.Output,
+		OTLPGrpcPort:                    strconv.Itoa(ps.cfg.Otlp.GRPCPort),
+		OTLPGrpcHost:                    ps.cfg.Otlp.GRPCHost,
+	}
+
+	// Create secret
+	secretMap := map[string]string{
+		KafkaUsername:    ps.cfg.Kafka.Username,
+		KafkaPassword:    ps.cfg.Kafka.Password,
+		PostgresUser:     ps.cfg.Postgres.User,
+		PostgresPassword: ps.cfg.Postgres.Password,
+	}
+
+	// Serve :
+	// Create deploy spec
+	serveDepSpec := motherServDepSpec(ps.cfg, Replication, motherService.ID)
+
+	// Create service spec
+	serveSvcSpec := motherServeSvcSpec(ps.cfg, motherService.ID)
+
+	// Create ingress spec
+	serveIngrSpec := motherServeIngressSpec(ps.cfg, motherService.ID)
+
+	// Call ApplyDeployment from kubernetese interface
+	err := ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
+	if err != nil {
+		zap.L().Error("apply deployment fail",
+			zap.String("apllication", serveDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Call ApplyService from kubernetese interface
+	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec)
+	if err != nil {
+		zap.L().Error("apply service fail",
+			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Call ApplyIngress from kubernetes interface
+	err = ps.kubernetes.ApplyIngress(ctx, serveIngrSpec)
+	if err != nil {
+		zap.L().Error("apply ingress fail",
+			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Wait for deployment to be ready
+	serveSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPServe, motherService.ID)
+	err = ps.kubernetes.WaitForDeployment(ctx, serveSvcName, ps.cfg.Kubernetese.MotherServiceAPPServeWaitReady)
+	if err != nil {
+		zap.L().Error("create pod fail",
+			zap.String("apllication", serveDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	time.Sleep(DelayBetweenProvisioning)
+
+	// jobs :
+	// Create deploy spec
+	jobsDepSpec := motherJobsDepSpec(ps.cfg, Replication, motherService.ID)
+
+	// Call ApplyDeployment from kubernetese interface
+	err = ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
+	if err != nil {
+		zap.L().Error("apply deployment fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	// Wait for deployment to be ready
+	jobsSvcName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPJobs, motherService.ID)
+	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.MotherServiceAPPJobsWaitReady)
+	if err != nil {
+		zap.L().Error("create pod fail",
+			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("error", err.Error()),
+		)
+
+		return err
+	}
+
+	return nil
+}
+
+func (ps *provisioningService) DeprovisionMotherService(ctx context.Context, motherService *entity.MotherService) error {
+	if motherService == nil {
+		return fmt.Errorf("%w", pkg.ErrMotherServiceIsNil)
+	}
+
+	serveName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPServe, motherService.ID)
+	jobsName := fmt.Sprintf("%s-%v", ps.cfg.Kubernetese.MotherServiceAPPJobs, motherService.ID)
+	configName := serveName + Config
+	secretName := serveName + Secret
+
+	if err := ps.kubernetes.DeleteDeployment(ctx, serveName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteService(ctx, serveName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteIngress(ctx, serveName); err != nil {
+		return err
+	}
+
+	if err := ps.kubernetes.DeleteDeployment(ctx, jobsName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteService(ctx, jobsName); err != nil {
+		return err
+	}
+
+	if err := ps.kubernetes.DeleteConfigMap(ctx, configName); err != nil {
+		return err
+	}
+	if err := ps.kubernetes.DeleteSecret(ctx, secretName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func motherServDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
+	replicas := replica
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
+	configName := appName + Config
+	secretName := cfg.Kubernetese.MotherServiceAPPServe + Secret
+	labels := map[string]string{App: appName}
+
+	return inEntity.DeploymentSpec{
+		Name: appName,
+		Deployment: &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: appsv1.DeploymentSpec{
+				Replicas: &replicas,
+				Selector: &metav1.LabelSelector{MatchLabels: labels},
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{Labels: labels},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:            App,
+								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
+								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
+								Command:         []string{Main, Serve},
+								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
+								EnvFrom: []corev1.EnvFromSource{
+									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
+									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func motherServeSvcSpec(cfg *config.Config, appId uint64) inEntity.ServiceSpec {
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
+
+	return inEntity.ServiceSpec{
+		Name: appName,
+		Service: &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: corev1.ServiceSpec{
+				Selector: map[string]string{App: appName},
+				Type:     corev1.ServiceTypeClusterIP,
+				Ports:    []corev1.ServicePort{{Port: int32(cfg.Server.Port), TargetPort: intstr.FromInt(cfg.Server.Port)}}, // #nosec G115 -- port from config
+			},
+		},
+	}
+}
+
+func motherServeIngressSpec(cfg *config.Config, appId uint64) inEntity.IngressSpec {
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPServe, appId)
+	host := fmt.Sprintf("%s.%s.%s", appName, cfg.Kubernetese.IngressHost, SSLIP)
+	pathType := networkingv1.PathTypePrefix
+	ingressClassName := cfg.Kubernetese.IngressClassName
+
+	return inEntity.IngressSpec{
+		Name: appName,
+		Ingress: &networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: networkingv1.IngressSpec{
+				IngressClassName: &ingressClassName,
+				Rules: []networkingv1.IngressRule{
+					{
+						Host: host,
+						IngressRuleValue: networkingv1.IngressRuleValue{
+							HTTP: &networkingv1.HTTPIngressRuleValue{
+								Paths: []networkingv1.HTTPIngressPath{
+									{
+										Path:     "/",
+										PathType: &pathType,
+										Backend: networkingv1.IngressBackend{
+											Service: &networkingv1.IngressServiceBackend{
+												Name: appName,
+												Port: networkingv1.ServiceBackendPort{Number: int32(cfg.Server.Port)}, // #nosec G115 -- port from config
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func motherJobsDepSpec(cfg *config.Config, replica int32, appId uint64) inEntity.DeploymentSpec {
+	replicas := replica
+	appName := fmt.Sprintf("%s-%v", cfg.Kubernetese.MotherServiceAPPJobs, appId)
+	configName := appName + Config
+	secretName := cfg.Kubernetese.MotherServiceAPPServe + Secret
+	labels := map[string]string{App: appName}
+
+	return inEntity.DeploymentSpec{
+		Name: appName,
+		Deployment: &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: appName},
+			Spec: appsv1.DeploymentSpec{
+				Replicas: &replicas,
+				Selector: &metav1.LabelSelector{MatchLabels: labels},
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{Labels: labels},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:            App,
+								Image:           cfg.Kubernetese.ContainerRegistryUrl + cfg.Kubernetese.MotherServiceImage,
+								ImagePullPolicy: corev1.PullPolicy(cfg.Kubernetese.ImagePullPolicy),
+								Command:         []string{Main, Jobs},
+								Ports:           []corev1.ContainerPort{{ContainerPort: int32(cfg.Server.Port)}}, // #nosec G115 -- port from config
+								EnvFrom: []corev1.EnvFromSource{
+									{ConfigMapRef: &corev1.ConfigMapEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: configName}}},
+									{SecretRef: &corev1.SecretEnvSource{LocalObjectReference: corev1.LocalObjectReference{Name: secretName}}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+//#endregion MotherService

@@ -101,6 +101,7 @@ type Kubernetese struct {
 	MotherServiceAPPJobs            string        `envconfig:"MOTHER_SERVICE_APP_JOBS" default:"mother-service-jobs"`
 	MotherServiceAPPJobsWaitReady   time.Duration `envconfig:"MOTHER_SERVICE_APP_JOBS_WAIT_READY" default:"10s"`
 	MotherServiceKafkaDatabaseTopic string        `envconfig:"MOTHER_SERVICE_KAFKA_DATABASE_TOPIC" default:"mother-db"`
+	MotherServiceKafkaDatabaseGroup string        `envconfig:"MOTHER_SERVICE_KAFKA_CONSUMER_GROUP" default:"mother-db-consumer-group"`
 	MotherServiceLiveFeedTopic      string        `envconfig:"MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC" default:"mother-live-feed"`
 	MotherServiceKafkaHost          string        `envconfig:"MOTHER_SERVICE_KAFKA_HOST" default:"kafka"`
 	MotherServiceKafkaPort          int           `envconfig:"MOTHER_SERVICE_KAFKA_PORT" default:"9092"`

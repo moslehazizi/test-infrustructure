@@ -30,10 +30,13 @@ func deployMotherServiceConfig() *config.Config {
 		},
 		Kubernetese: config.Kubernetese{
 			MotherServiceAPPServe:          "mother-service-serve",
+			MotherServiceAPPJobs:           "mother-service-jobs",
 			MotherServiceAPPServeWaitReady: 10 * time.Second,
+			MotherServiceAPPJobsWaitReady:  10 * time.Second,
 		},
 	}
 }
+
 func TestDeployMotherService(t *testing.T) {
 	t.Run("mother_service_is_nil", func(t *testing.T) {
 		ctx := context.Background()
@@ -60,10 +63,11 @@ func TestDeployMotherService(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(1)
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
 		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything).Return(nil).Once()
 		mockKubernetes.On("ApplyIngress", mock.Anything, mock.Anything).Return(nil).Once()
 		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs-1", 10*time.Second).Return(nil).Once()
 
 		err := service.ProvisionMotherService(ctx, motherService)
 
@@ -160,6 +164,56 @@ func TestDeployMotherService(t *testing.T) {
 		assert.Error(t, err)
 		mockKubernetes.AssertExpectations(t)
 	})
+
+	t.Run("failed_ApplyDeployment_jobs", func(t *testing.T) {
+		ctx := context.Background()
+		cfg := deployMotherServiceConfig()
+		mockKubernetes := new(kubermock.KuberneteseMock)
+		service := NewProvisioningService(cfg, mockKubernetes)
+
+		motherService := &entity.MotherService{
+			ID:                1,
+			Name:              "mother1",
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
+		}
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once() // serve
+		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("ApplyIngress", mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply jobs deployment failed")).Once() // jobs
+
+		err := service.ProvisionMotherService(ctx, motherService)
+
+		assert.Error(t, err)
+		mockKubernetes.AssertExpectations(t)
+	})
+
+	t.Run("failed_WaitForDeployment_jobs", func(t *testing.T) {
+		ctx := context.Background()
+		cfg := deployMotherServiceConfig()
+		mockKubernetes := new(kubermock.KuberneteseMock)
+		service := NewProvisioningService(cfg, mockKubernetes)
+
+		motherService := &entity.MotherService{
+			ID:                1,
+			Name:              "mother1",
+			DatabaseName:      "db1",
+			DatabaseTableName: "factorial",
+		}
+
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
+		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("ApplyIngress", mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs-1", 10*time.Second).Return(errors.New("timeout waiting for jobs")).Once()
+
+		err := service.ProvisionMotherService(ctx, motherService)
+
+		assert.Error(t, err)
+		mockKubernetes.AssertExpectations(t)
+	})
 }
 
 func TestDeprovisionMotherService(t *testing.T) {
@@ -182,12 +236,15 @@ func TestDeprovisionMotherService(t *testing.T) {
 
 		motherService := &entity.MotherService{ID: 1, Name: "mother1"}
 		serveName := "mother-service-serve-1"
+		jobsName := "mother-service-jobs-1"
 		configName := serveName + "-config"
 		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteIngress", mock.Anything, serveName).Return(nil).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
 		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(nil).Once()
 		mockKubernetes.On("DeleteSecret", mock.Anything, secretName).Return(nil).Once()
 
@@ -259,11 +316,14 @@ func TestDeprovisionMotherService(t *testing.T) {
 
 		motherService := &entity.MotherService{ID: 1, Name: "mother1"}
 		serveName := "mother-service-serve-1"
+		jobsName := "mother-service-jobs-1"
 		configName := serveName + "-config"
 
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteIngress", mock.Anything, serveName).Return(nil).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
 		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(errors.New("delete config failed")).Once()
 
 		err := service.DeprovisionMotherService(ctx, motherService)
@@ -280,12 +340,15 @@ func TestDeprovisionMotherService(t *testing.T) {
 
 		motherService := &entity.MotherService{ID: 1, Name: "mother1"}
 		serveName := "mother-service-serve-1"
+		jobsName := "mother-service-jobs-1"
 		configName := serveName + "-config"
 		secretName := serveName + "-secrets"
 
 		mockKubernetes.On("DeleteDeployment", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteService", mock.Anything, serveName).Return(nil).Once()
 		mockKubernetes.On("DeleteIngress", mock.Anything, serveName).Return(nil).Once()
+		mockKubernetes.On("DeleteDeployment", mock.Anything, jobsName).Return(nil).Once()
+		mockKubernetes.On("DeleteService", mock.Anything, jobsName).Return(nil).Once()
 		mockKubernetes.On("DeleteConfigMap", mock.Anything, configName).Return(nil).Once()
 		mockKubernetes.On("DeleteSecret", mock.Anything, secretName).Return(errors.New("delete secret failed")).Once()
 

@@ -207,6 +207,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedKubernetesMotherSvcAPPJobs := "mother-service-jobs"
 		expectedKubernetesMotherSvcAPPJobsWaitReady := 10 * time.Second
 		expectedKubernetesMotherServiceKafkaDbTopic := "mother-db"
+		expectedKubernetesMotherServiceKafkaConsumerGroup := "mother-db-consumer-group"
 		expectedKubernetesMotherServiceLiveFeedTopic := "mother-live-feed"
 		expectedKubernetesMotherServiceKafkaHost := "kafka"
 		expectedKubernetesMotherServicePostgresHost := "postgres"
@@ -235,6 +236,7 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("MOTHER_SERVICE_APP_JOBS", expectedKubernetesMotherSvcAPPJobs)
 		os.Setenv("MOTHER_SERVICE_APP_JOBS_WAIT_READY", expectedKubernetesMotherSvcAPPJobsWaitReady.String())
 		os.Setenv("MOTHER_SERVICE_KAFKA_DATABASE_TOPIC", expectedKubernetesMotherServiceKafkaDbTopic)
+		os.Setenv("MOTHER_SERVICE_KAFKA_CONSUMER_GROUP", expectedKubernetesMotherServiceKafkaConsumerGroup)
 		os.Setenv("MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC", expectedKubernetesMotherServiceLiveFeedTopic)
 		os.Setenv("MOTHER_SERVICE_KAFKA_HOST", expectedKubernetesMotherServiceKafkaHost)
 		os.Setenv("MOTHER_SERVICE_POSTGRES_HOST", expectedKubernetesMotherServicePostgresHost)
@@ -310,6 +312,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKubernetesMotherSvcAPPJobs := "mother-service-jobs"
 		expectedDefaultKubernetesMotherSvcAPPJobsWaitReady := 10 * time.Second
 		expectedDefaultKubernetesMotherServiceKafkaDbTopic := "mother-db"
+		expectedDefaultKubernetesMotherServiceKafkaConsumerGroup := "mother-db-consumer-group"
 		expectedDefaultKubernetesMotherServiceLiveFeedTopic := "mother-live-feed"
 		expectedDefaultKubernetesMotherServiceKafkaHost := "kafka"
 		expectedDefaultKubernetesMotherServicePostgresHost := "postgres"
@@ -356,6 +359,7 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("MOTHER_SERVICE_APP_JOBS")
 		os.Unsetenv("MOTHER_SERVICE_APP_JOBS_WAIT_READY")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_DATABASE_TOPIC")
+		os.Unsetenv("MOTHER_SERVICE_KAFKA_CONSUMER_GROUP")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_LIVE_FEED_TOPIC")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_HOST")
 		os.Unsetenv("MOTHER_SERVICE_POSTGRES_HOST")
@@ -407,6 +411,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobs, expectedDefaultKubernetesMotherSvcAPPJobs)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceAPPJobsWaitReady, expectedDefaultKubernetesMotherSvcAPPJobsWaitReady)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDatabaseTopic, expectedDefaultKubernetesMotherServiceKafkaDbTopic)
+		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaDatabaseGroup, expectedDefaultKubernetesMotherServiceKafkaConsumerGroup)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceLiveFeedTopic, expectedDefaultKubernetesMotherServiceLiveFeedTopic)
 		assert.Equal(t, cfg.Kubernetese.MotherServiceKafkaHost, expectedDefaultKubernetesMotherServiceKafkaHost)
 		assert.Equal(t, cfg.Kubernetese.MotherServicePostgresHost, expectedDefaultKubernetesMotherServicePostgresHost)
