@@ -15,36 +15,32 @@ import (
 )
 
 type consumer struct {
-	factorialRepo     repository.MotherServiceFactorialResultRepository
-	executorRepo      repository.TestServiceExecutorResultRepository
-	motherServiceRepo repository.MotherServiceRepository
-	testScenarioRepo  repository.TestScenarioRepository
-	eventConsumer     provider.EventConsumer
-	dbInitializer     database.DBInitializerFn
+	factorialRepo    repository.MotherServiceFactorialResultRepository
+	executorRepo     repository.TestServiceExecutorResultRepository
+	testScenarioRepo repository.TestScenarioRepository
+	eventConsumer    provider.EventConsumer
+	dbInitializer    database.DBInitializerFn
 }
 
 type Consumer interface {
 	Consume(ctx context.Context, topic string, ch chan []byte) error
 	StoreExecutorResult(ctx context.Context, msg []byte) error
-	StoreFactorialResult(ctx context.Context, msg []byte) error
 }
 
 func NewConsumer(
 	factorialRepo repository.MotherServiceFactorialResultRepository,
 	executorRepo repository.TestServiceExecutorResultRepository,
-	motherServiceRepo repository.MotherServiceRepository,
 	testScenarioRepo repository.TestScenarioRepository,
 	eventConsumer provider.EventConsumer,
 	dbInitializer database.DBInitializerFn,
 
 ) Consumer {
 	return &consumer{
-		factorialRepo:     factorialRepo,
-		executorRepo:      executorRepo,
-		motherServiceRepo: motherServiceRepo,
-		testScenarioRepo:  testScenarioRepo,
-		eventConsumer:     eventConsumer,
-		dbInitializer:     dbInitializer,
+		factorialRepo:    factorialRepo,
+		executorRepo:     executorRepo,
+		testScenarioRepo: testScenarioRepo,
+		eventConsumer:    eventConsumer,
+		dbInitializer:    dbInitializer,
 	}
 }
 
@@ -104,55 +100,6 @@ func (c *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error {
 		)
 
 		return fmt.Errorf("failed to store executor result: %w", err)
-	}
-
-	return nil
-}
-
-func (c *consumer) StoreFactorialResult(ctx context.Context, msg []byte) error {
-	logger.WithContext(ctx).Debug("storing factorial result",
-		zap.Int("message_size", len(msg)),
-		zap.String(logger.FieldOperation, "store_factorial_result"),
-	)
-
-	data := entity.FactorialEvent{}
-	err := json.Unmarshal(msg, &data)
-	if err != nil {
-		logger.WithContext(ctx).Error("failed to unmarshal factorial event message",
-			zap.Error(err),
-			zap.String(logger.FieldOperation, "store_factorial_result"),
-		)
-
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToUnmarshalEventData, err)
-	}
-
-	// load test mother service by motherServiceID
-	motherService, err := c.motherServiceRepo.GetByID(ctx, uint64(data.MotherServiceId))
-	if err != nil {
-		logger.WithContext(ctx).Error("failed to get mother service by id",
-			zap.Error(err),
-			zap.String(logger.FieldOperation, "store_factorial_result"),
-		)
-
-		return pkg.ErrFailedToGetMotherService
-	}
-
-	factorial := &entity.Factorial{
-		Input:           data.Input.String(),
-		Output:          data.Output.String(),
-		MotherServiceId: data.MotherServiceId,
-		MotherService:   motherService,
-	}
-
-	err = c.factorialRepo.Create(ctx, factorial, c.dbInitializer)
-	if err != nil {
-		logger.WithContext(ctx).Error("failed to store factorial result",
-			zap.Error(err),
-			zap.String("input", factorial.Input),
-			zap.String(logger.FieldOperation, "store_factorial_result"),
-		)
-
-		return fmt.Errorf("failed to store factorial result: %w", err)
 	}
 
 	return nil
