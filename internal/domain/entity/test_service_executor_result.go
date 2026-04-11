@@ -8,6 +8,7 @@ import (
 
 type Executor struct {
 	gorm.Model
+	EventID         string `gorm:"uniqueIndex;not null"`
 	Input           *string
 	Output          string
 	MotherServiceId string
@@ -24,6 +25,7 @@ type Executor struct {
 }
 
 type ExecutorEvent struct {
+	EventID         string        `json:"event_id"`
 	Input           *string       `json:"input"`
 	Output          string        `json:"output"`
 	MotherServiceId string        `json:"mother_service_id"`

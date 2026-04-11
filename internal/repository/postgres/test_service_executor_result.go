@@ -8,9 +8,11 @@ import (
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
 	"control-panel-service/pkg/logger"
+	"errors"
 	"fmt"
 	"strconv"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
@@ -62,6 +64,14 @@ func (r *testServiceExecutorResultRepository) Create(
 		Create(executor).
 		Error
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			logger.WithContext(spanCtx).Info("duplicate event ignored",
+				zap.String("event_id", executor.EventID),
+			)
+			return nil
+		}
+
 		logger.WithContext(spanCtx).Error("failed to create executor record with input",
 			zap.Any("executer_input", executor.Input),
 			zap.Error(err),
