@@ -74,6 +74,7 @@ func (c *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error {
 
 	// load scenario by id from database
 	execute := &entity.Executor{
+		EventID:         data.EventID,
 		Input:           data.Input,
 		Output:          data.Output,
 		MotherServiceId: data.MotherServiceId,
