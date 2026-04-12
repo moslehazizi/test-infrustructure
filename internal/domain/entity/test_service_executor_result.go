@@ -16,7 +16,7 @@ type Executor struct {
 	StartTxTime     int64
 	StepNum         int
 	ExecutionId     string
-	ScenarioId      int
+	ScenarioId      uint64
 	Scenario        *TestScenario
 	StepIncrement   int
 	DurationTx      time.Duration
@@ -32,7 +32,7 @@ type ExecutorEvent struct {
 	TestServiceId   string        `json:"test_service_id"`
 	StepNum         int           `json:"step_num"`
 	ExecutionId     string        `json:"execution_id"`
-	ScenarioId      int           `json:"scenario_id"`
+	ScenarioId      uint64        `json:"scenario_id"`
 	StepIncrement   int           `json:"step_increment"`
 	StartTxTime     int64         `json:"start_tx_time"`
 	DurationTx      time.Duration `json:"duration_tx"`

@@ -41,7 +41,7 @@ func (r *motherServiceFactorialResultRepository) Create(
 
 	logger.WithContext(ctx).Info("creating factorial record with input", zap.Any("executer_input", factorial.Input))
 
-	span.SetAttributes(attribute.String("factorial.input", fmt.Sprint(factorial.Input)))
+	span.SetAttributes(attribute.String("factorial.input", factorial.Input))
 
 	db, err := dbInitializer(postgres.DatabaseConfig{
 		Host:               r.config.Postgres.Host,

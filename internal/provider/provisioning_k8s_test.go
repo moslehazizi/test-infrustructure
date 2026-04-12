@@ -109,8 +109,9 @@ func TestDeployMotherService(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
 		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything).Return(errors.New("apply service failed")).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 		err := service.ProvisionMotherService(ctx, motherService)
 
@@ -131,9 +132,10 @@ func TestDeployMotherService(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
 		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything).Return(nil).Once()
 		mockKubernetes.On("ApplyIngress", mock.Anything, mock.Anything).Return(errors.New("apply ingress failed")).Once()
+		mockKubernetes.On("WaitForDeployment", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 		err := service.ProvisionMotherService(ctx, motherService)
 
@@ -154,7 +156,8 @@ func TestDeployMotherService(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
+		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs-1", 10*time.Second).Return(nil).Once()
 		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything).Return(nil).Once()
 		mockKubernetes.On("ApplyIngress", mock.Anything, mock.Anything).Return(nil).Once()
 		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(errors.New("timeout waiting for deployment")).Once()
@@ -178,10 +181,6 @@ func TestDeployMotherService(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once() // serve
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("ApplyIngress", mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
 		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("apply jobs deployment failed")).Once() // jobs
 
 		err := service.ProvisionMotherService(ctx, motherService)
@@ -203,10 +202,7 @@ func TestDeployMotherService(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(2)
-		mockKubernetes.On("ApplyService", mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("ApplyIngress", mock.Anything, mock.Anything).Return(nil).Once()
-		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-serve-1", 10*time.Second).Return(nil).Once()
+		mockKubernetes.On("ApplyDeployment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(1)
 		mockKubernetes.On("WaitForDeployment", mock.Anything, "mother-service-jobs-1", 10*time.Second).Return(errors.New("timeout waiting for jobs")).Once()
 
 		err := service.ProvisionMotherService(ctx, motherService)

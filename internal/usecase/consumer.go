@@ -62,7 +62,7 @@ func (c *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error {
 	}
 
 	// load test scenario by testScenarioID
-	scenario, err := c.testScenarioRepo.GetByID(ctx, uint64(data.ScenarioId))
+	scenario, err := c.testScenarioRepo.GetByID(ctx, data.ScenarioId)
 	if err != nil {
 		logger.WithContext(ctx).Error("failed to get scenario by id",
 			zap.Error(err),
