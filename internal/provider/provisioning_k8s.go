@@ -63,7 +63,6 @@ const (
 	KafkaConsumerGroup              = "KAFKA_CONSUMER_GROUP"
 	KafkaLiveFeedTopic              = "KAFKA_LIVE_FEED_TOPIC"
 	KafkaMaxAttempts                = "KAFKA_MAX_ATTEMPT"
-	KafkaWriteTimeOut               = "KAFKA_WRITE_TIME_OUT"
 	KafkaAttemptsSleepTime          = "KAFKA_ATTEMPTS_SLEEP_TIME"
 	PostgresHost                    = "POSTGRES_HOST"
 	PostgresPort                    = "POSTGRES_PORT"
@@ -197,7 +196,6 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
 		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
 		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
-		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
 		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
 		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
 		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
@@ -337,7 +335,6 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
 		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
 		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
-		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
 		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
 		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
 		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,
@@ -694,7 +691,6 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 		KafkaBatchSize:                  strconv.Itoa(ps.cfg.Kafka.BatchSize),
 		KafkaBatchBytes:                 strconv.Itoa(ps.cfg.Kafka.BatchBytes),
 		KafkaMaxAttempts:                strconv.Itoa(ps.cfg.Kafka.MaxAttempts),
-		KafkaWriteTimeOut:               ps.cfg.Kafka.WriteTimeOut.String(),
 		KafkaAttemptsSleepTime:          ps.cfg.Kafka.AttemptsSleepTime.String(),
 		PostgresPort:                    strconv.Itoa(ps.cfg.Postgres.Port),
 		PostgresSSLMode:                 ps.cfg.Postgres.SSLMode,

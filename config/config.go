@@ -65,7 +65,6 @@ type Kafka struct {
 	BatchSize         int           `envconfig:"KAFKA_BATCH_SIZE" default:"1000"`
 	BatchBytes        int           `envconfig:"KAFKA_BATCH_BYTES" default:"1000000"` // 1MB = 1e6
 	MaxAttempts       int           `envconfig:"KAFKA_MAX_ATTEMPTS" default:"10"`
-	WriteTimeOut      time.Duration `envconfig:"KAFKA_WRITE_TIME_OUT" default:"1ms"`
 	AttemptsSleepTime time.Duration `envconfig:"KAFKA_ATTEMPTS_SLEEP_TIME" default:"100ms"`
 }
 
