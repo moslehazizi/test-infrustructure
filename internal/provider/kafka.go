@@ -4,11 +4,19 @@ import (
 	"context"
 	"control-panel-service/config"
 	"control-panel-service/pkg/logger"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl/plain"
 	"go.uber.org/zap"
+)
+
+const (
+	readMessageTimeout             = 15 * time.Second
+	resetMessageTimeout            = 5 * time.Second
+	consecutiveTimeoutsToReconnect = 3
 )
 
 type EventProducer interface {
@@ -144,6 +152,7 @@ type EventConsumer interface {
 //nolint:unused // kafkaConsumer is kept for future use
 type kafkaConsumer struct {
 	reader *kafka.Reader
+	cfg    *config.Config
 }
 
 func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config, topic string) (EventConsumer, error) {
@@ -204,40 +213,120 @@ func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config, topic string
 
 	return &kafkaConsumer{
 		reader: kafkaReader,
+		cfg:    cfg,
 	}, nil
+}
+
+func newKafkaReader(ctx context.Context, cfg *config.Config, topic string) (*kafka.Reader, error) {
+	var dialer *kafka.Dialer
+	if cfg.Kafka.Username != "" && cfg.Kafka.Password != "" {
+		mechanism := plain.Mechanism{
+			Username: cfg.Kafka.Username,
+			Password: cfg.Kafka.Password,
+		}
+		//nolint
+		dialer = &kafka.Dialer{
+			Timeout:       cfg.Kafka.DialerTimeout,
+			DualStack:     true,
+			SASLMechanism: mechanism,
+		}
+		brokerAddr := fmt.Sprintf("%s:%d", cfg.Kafka.Host, cfg.Kafka.Port)
+		if _, err := dialer.DialContext(ctx, "tcp", brokerAddr); err != nil {
+			return nil, fmt.Errorf("could not connect to kafka: %w", err)
+		}
+	} else {
+		//nolint
+		dialer = &kafka.Dialer{
+			Timeout:   cfg.Kafka.DialerTimeout,
+			DualStack: true,
+		}
+	}
+	brokerAddr := fmt.Sprintf("%s:%d", cfg.Kafka.Host, cfg.Kafka.Port)
+	readerCfg := kafka.ReaderConfig{
+		Brokers:  []string{brokerAddr},
+		Topic:    topic,
+		MaxBytes: cfg.Kafka.MaxBytes,
+		GroupID:  cfg.Kafka.ConsumerGroup,
+	}
+	//nolint
+	if dialer != nil {
+		readerCfg.Dialer = dialer
+	}
+
+	return kafka.NewReader(readerCfg), nil
 }
 
 //nolint:unused // Consume method is kept for future use
 func (eventConsumer *kafkaConsumer) Consume(ctx context.Context, topic string, ch chan []byte) error {
-	zap.L().Info("starting to consume messages from Kafka topic",
+	logger.WithContext(ctx).Info("starting to consume messages",
 		zap.String(logger.FieldTopic, topic),
+		zap.String(logger.FieldOperation, "consume_messages"),
 	)
+	consecutiveTimeouts := 0
 	for {
-		select {
-		case <-ctx.Done():
-			zap.L().Info("consumption context cancelled",
+		if ctx.Err() != nil {
+			logger.WithContext(ctx).Info("consumption context cancelled",
 				zap.String(logger.FieldTopic, topic),
 			)
-
+			//nolint
 			return nil
-		default:
-			m, err := eventConsumer.reader.ReadMessage(ctx)
-			if err != nil {
-				zap.L().Debug("error reading message from Kafka topic",
-					zap.String(logger.FieldTopic, topic),
-					zap.Error(err),
-				)
-
-				continue
-			}
-			zap.L().Info("received message from Kafka topic",
-				zap.String(logger.FieldTopic, m.Topic),
-				zap.Int(logger.FieldPartition, m.Partition),
-				zap.Int64(logger.FieldOffset, m.Offset),
-				zap.Int("message_size", len(m.Value)),
-			)
-			ch <- m.Value
 		}
+		readCtx, readCancel := context.WithTimeout(ctx, readMessageTimeout)
+		m, err := eventConsumer.reader.ReadMessage(readCtx)
+		readCancel()
+		//nolint
+		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				consecutiveTimeouts++
+				logger.WithContext(ctx).Debug("no message within timeout, retrying read",
+					zap.String(logger.FieldTopic, topic),
+					zap.Int("consecutive_timeouts", consecutiveTimeouts),
+				)
+				if consecutiveTimeouts >= consecutiveTimeoutsToReconnect {
+					logger.WithContext(ctx).Info("recreating Kafka reader after consecutive timeouts (simulating restart)",
+						zap.String(logger.FieldTopic, topic),
+						zap.Int("consecutive_timeouts", consecutiveTimeouts),
+					)
+					_ = eventConsumer.reader.Close()
+					for {
+						newReader, newErr := newKafkaReader(ctx, eventConsumer.cfg, topic)
+						if newErr == nil {
+							eventConsumer.reader = newReader
+							consecutiveTimeouts = 0
+							break
+						}
+						logger.WithContext(ctx).Error("failed to recreate Kafka reader, retrying",
+							zap.Error(newErr),
+							zap.String(logger.FieldTopic, topic),
+						)
+						if ctx.Err() != nil {
+							//nolint
+							return nil
+						}
+						select {
+						case <-ctx.Done():
+							return nil
+						case <-time.After(resetMessageTimeout):
+						}
+					}
+				}
+			} else {
+				consecutiveTimeouts = 0
+				logger.WithContext(ctx).Error("error reading message from kafka",
+					zap.Error(err),
+					zap.String(logger.FieldTopic, topic),
+				)
+			}
+			continue
+		}
+		consecutiveTimeouts = 0
+		logger.WithContext(ctx).Debug("received message from kafka",
+			zap.String(logger.FieldTopic, m.Topic),
+			zap.Int(logger.FieldPartition, m.Partition),
+			zap.Int64(logger.FieldOffset, m.Offset),
+			zap.Int("message_size", len(m.Value)),
+		)
+		ch <- m.Value
 	}
 }
 
