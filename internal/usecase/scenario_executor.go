@@ -7,7 +7,6 @@ import (
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,9 +27,7 @@ type scenarioExecutor struct {
 	executionID                uuid.UUID
 	agents                     []interfaces.TestAgentController
 	allAgentsHealthy           bool
-	allAgentsReadyForTesting   bool
 	running                    bool
-	once                       sync.Once
 	scenarioRepo               repository.TestScenarioRepository
 	testAgentControllerToolBox interfaces.TestAgentControllerToolBox
 	scenarioExecutorBuilder    interfaces.SingleScenarioExecutorBuilder
@@ -149,7 +146,6 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 				}
 
 				number += se.scenario.TestServiceConfig.IncreaseFixedInput
-
 			}
 		} else {
 			se.assignExecutionID()

@@ -30,7 +30,7 @@ func TestRunExecutorConsumer(t *testing.T) {
 		mockConsumerUscase.AssertCalled(t, "Consume", mock.Anything, "factorial", factorialCha)
 	})
 
-	t.Run("failed_case_RunFactorialConsumer_kafka_error", func(t *testing.T) {
+	t.Run("failed_case_kafka_error", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), time.Second*3600)
 		defer cancel()
 
@@ -42,12 +42,12 @@ func TestRunExecutorConsumer(t *testing.T) {
 
 		mockConsumerUscase.On("Consume", mock.Anything, "executor", executorCha).Return(fmt.Errorf("failed to consume data"))
 
-		c.RunFactorialConsumer(ctx, executorTopic, executorCha)
+		c.RunExecutorConsumer(ctx, executorTopic, executorCha)
 
 		mockConsumerUscase.AssertCalled(t, "Consume", mock.Anything, "executor", executorCha)
 	})
 
-	t.Run("failed_case_RunExecutorConsumer_database_error", func(t *testing.T) {
+	t.Run("failed_case_database_error", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), time.Second*1)
 		defer cancel()
 
@@ -71,31 +71,7 @@ func TestRunExecutorConsumer(t *testing.T) {
 		mockConsumerUscase.AssertCalled(t, "Consume", mock.Anything, "executor", chanel)
 	})
 
-	t.Run("failed_case_RunFactorialConsumer_database_error", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(t.Context(), time.Second*1)
-		defer cancel()
-
-		chanel := make(chan []byte)
-		topik := "factorial"
-
-		mockConsumerUscase := new(mocks.MockConsumerUsecase)
-		c := &consumerJob{mockConsumerUscase}
-
-		go func() {
-			time.Sleep(100 * time.Millisecond)
-			chanel <- []byte("sample")
-		}()
-
-		mockConsumerUscase.On("Consume", mock.Anything, "factorial", chanel).Return(nil)
-		mockConsumerUscase.On("StoreFactorialResult", mock.Anything, []byte("sample")).Return(fmt.Errorf("%w: %w", pkg.ErrFailedToUnmarshalEventData, errors.New("failed to unmarshal data")))
-
-		c.RunFactorialConsumer(ctx, topik, chanel)
-
-		mockConsumerUscase.AssertCalled(t, "StoreFactorialResult", mock.Anything, []byte("sample"))
-		mockConsumerUscase.AssertCalled(t, "Consume", mock.Anything, "factorial", chanel)
-	})
-
-	t.Run("success_case_RunExecutorConsumer", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), time.Second*5)
 		defer cancel()
 
@@ -119,27 +95,4 @@ func TestRunExecutorConsumer(t *testing.T) {
 		mockConsumerUscase.AssertCalled(t, "Consume", mock.Anything, "executor", factorialCha)
 	})
 
-	t.Run("success_case_RunFactorialConsumer", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(t.Context(), time.Second*5)
-		defer cancel()
-
-		factorialCha := make(chan []byte)
-		factorialTopic := "factorial"
-
-		mockConsumerUscase := new(mocks.MockConsumerUsecase)
-		c := &consumerJob{mockConsumerUscase}
-
-		go func() {
-			time.Sleep(100 * time.Millisecond)
-			factorialCha <- []byte("sample")
-		}()
-
-		mockConsumerUscase.On("Consume", mock.Anything, "factorial", factorialCha).Return(nil)
-		mockConsumerUscase.On("StoreFactorialResult", mock.Anything, []byte("sample")).Return(nil)
-
-		c.RunFactorialConsumer(ctx, factorialTopic, factorialCha)
-
-		mockConsumerUscase.AssertCalled(t, "StoreFactorialResult", mock.Anything, []byte("sample"))
-		mockConsumerUscase.AssertCalled(t, "Consume", mock.Anything, "factorial", factorialCha)
-	})
 }

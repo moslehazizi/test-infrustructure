@@ -8,6 +8,7 @@ import (
 
 type Executor struct {
 	gorm.Model
+	EventID         string `gorm:"uniqueIndex;not null"`
 	Input           *string
 	Output          string
 	MotherServiceId string
@@ -15,7 +16,7 @@ type Executor struct {
 	StartTxTime     int64
 	StepNum         int
 	ExecutionId     string
-	ScenarioId      int
+	ScenarioId      uint64
 	Scenario        *TestScenario
 	StepIncrement   int
 	DurationTx      time.Duration
@@ -24,13 +25,14 @@ type Executor struct {
 }
 
 type ExecutorEvent struct {
+	EventID         string        `json:"event_id"`
 	Input           *string       `json:"input"`
 	Output          string        `json:"output"`
 	MotherServiceId string        `json:"mother_service_id"`
 	TestServiceId   string        `json:"test_service_id"`
 	StepNum         int           `json:"step_num"`
 	ExecutionId     string        `json:"execution_id"`
-	ScenarioId      int           `json:"scenario_id"`
+	ScenarioId      uint64        `json:"scenario_id"`
 	StepIncrement   int           `json:"step_increment"`
 	StartTxTime     int64         `json:"start_tx_time"`
 	DurationTx      time.Duration `json:"duration_tx"`

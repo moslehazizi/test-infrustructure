@@ -5,7 +5,6 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider/dto/request"
 	"control-panel-service/internal/usecase/interfaces"
-	"fmt"
 	"sync"
 	"time"
 
@@ -28,10 +27,7 @@ func (ss *singleScenarioExecutor) Execute(ctx context.Context) error {
 	ss.awaitAgentsToBeReadyToStartTesting()
 
 	// executing tests
-	err := ss.executeScenarioSteps(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to execute scenario: %w", err)
-	}
+	ss.executeScenarioSteps(ctx)
 
 	return nil
 }
@@ -77,7 +73,7 @@ func (ss *singleScenarioExecutor) awaitAgentsToBeReadyToStartTesting() {
 		time.Sleep(readyForTestingCheckSleep)
 	}
 }
-func (ss *singleScenarioExecutor) executeScenarioSteps(ctx context.Context) error {
+func (ss *singleScenarioExecutor) executeScenarioSteps(_ context.Context) {
 	for i := int64(1); i <= ss.scenario.NumSteps; i++ {
 		req := request.NewRunRequestFromTestServiceConfig(
 			int(i),
@@ -103,6 +99,4 @@ func (ss *singleScenarioExecutor) executeScenarioSteps(ctx context.Context) erro
 			ss.awaitAgentsToBeReadyToStartTesting()
 		}
 	}
-
-	return nil
 }

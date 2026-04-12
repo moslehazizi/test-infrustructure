@@ -301,8 +301,7 @@ func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
 
 		agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
 		agent2.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
-		err := ss.executeScenarioSteps(ctx)
-		assert.NoError(t, err)
+		ss.executeScenarioSteps(ctx)
 
 		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
 		agent2.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
@@ -370,8 +369,7 @@ func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
 		agent1.On("ReadyForTesting").Times(1).Return(true)
 		agent2.On("ReadyForTesting").Times(1).Return(true)
 
-		err := ss.executeScenarioSteps(ctx)
-		assert.NoError(t, err)
+		ss.executeScenarioSteps(ctx)
 
 		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
 		agent2.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
@@ -437,35 +435,7 @@ func Test_scenarioExecutor_executeScenarioSteps(t *testing.T) {
 		time.Sleep(time.Millisecond * 10)
 
 		agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
-		err := ss.executeScenarioSteps(ctx)
-		assert.NoError(t, err)
+		ss.executeScenarioSteps(ctx)
 		agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-
-		// #endregion 1st
-
-		// // #region 1st
-		// // 1 agent + 1 step
-		// agent1 := new(mocks.MockTestAgentController)
-		// repo := new(repoMocks.MockTestScenario)
-		// ex := &scenarioExecutor{
-		// 	scenario:         scenario,
-		// 	executionID:      uuid.New(),
-		// 	agents:           []interfaces.TestAgentController{agent1},
-		// 	allAgentsHealthy: true,
-		// 	scenarioRepo:     repo,
-		// }
-
-		// time.Sleep(time.Millisecond)
-		// time.Sleep(time.Millisecond * 10)
-		// ex.SetRunning(true)
-
-		// agent1.On("StartTesting", mock.Anything, mock.Anything).Return(nil)
-		// repo.On("SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true).Return(nil)
-		// err := ex.executeScenarioSteps(ctx)
-		// assert.NoError(t, err)
-		// agent1.AssertCalled(t, "StartTesting", mock.Anything, mock.Anything)
-		// repo.AssertCalled(t, "SetStatus", mock.Anything, scenario.ID, entity.ScenarioStatusPending, true)
-
-		// // #endregion 1st
 	})
 }
