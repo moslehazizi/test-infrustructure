@@ -291,7 +291,7 @@ func (handler *MotherService) Abort() fiber.Handler {
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
-			Message: pkg.TestScenarioAbort,
+			Message: pkg.MotherServiceAbort,
 		})
 	}
 }
