@@ -2118,8 +2118,12 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 			ID:       sampleID,
 			Status:   entity.ScenarioStatusRunning,
 			NumSteps: 2,
+			TestCategory: &entity.TestCategory{
+				Name: entity.STRESS,
+			},
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockStressTestExecutor.On("StopScenario", mock.Anything, scenario, mock.Anything).Return(nil)
 		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false).Return(errors.New("something went wrong"))
 
 		err := service.Stop(ctx, sampleID)
@@ -2128,6 +2132,8 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false)
+		mockStressTestExecutor.AssertCalled(t, "StopScenario", mock.Anything, scenario, mock.Anything)
+
 		mockRepo.AssertExpectations(t)
 	})
 
@@ -2163,14 +2169,12 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false).Return(nil)
 		mockStressTestExecutor.On("StopScenario", mock.Anything, scenario, mock.Anything).Return(errors.New("something went wrong"))
 
 		err := service.Stop(ctx, sampleID)
 
 		assert.Error(t, err)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false)
 		mockStressTestExecutor.AssertCalled(t, "StopScenario", mock.Anything, scenario, mock.Anything)
 
 		mockRepo.AssertExpectations(t)
@@ -2208,14 +2212,12 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false).Return(nil)
 
 		err := service.Stop(ctx, sampleID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrStoppingTestNotImplemented)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false)
 
 		mockRepo.AssertExpectations(t)
 	})

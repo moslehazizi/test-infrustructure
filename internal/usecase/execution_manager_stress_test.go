@@ -390,6 +390,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		seb := new(mocks.MockScenarioExecutorBuilder)
 
 		agent := new(mocks.MockTestAgentController)
+		agent.On("Healthy").Return(true)
 		agent.On("StopTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
@@ -408,6 +409,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToStopTestService)
 
 		agent.AssertCalled(t, "StopTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy", mock.Anything)
 	})
 
 	t.Run("success_case", func(t *testing.T) {
@@ -432,6 +434,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		}
 
 		builder.On("Get", scenario).Times(3).Return(agent)
+		agent.On("Healthy", mock.Anything).Return(true)
 		agent.On("StopTesting", mock.Anything).Return(nil)
 
 		err := ex.StopScenario(context.Background(), scenario)
@@ -439,6 +442,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		assert.Nil(t, err)
 
 		agent.AssertCalled(t, "StopTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy")
 	})
 }
 

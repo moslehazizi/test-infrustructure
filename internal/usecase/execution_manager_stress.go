@@ -184,6 +184,23 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 	sci.SetRunning(false)
 
 	agents := sci.GetAgents()
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+
 	for _, agent := range agents {
 		err := agent.StopTesting(ctx)
 		if err != nil {
