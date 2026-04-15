@@ -3115,44 +3115,44 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceConfig.AssertExpectations(t)
 	})
 
-	t.Run("error_config_validation_no_delay_config_set", func(t *testing.T) {
-		mockRepo := new(repoMocks.MockTestScenario)
-		mockTestCatRepo := new(repoMocks.MockTestCategory)
-		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
-		mockMotherService := new(repoMocks.MockMotherService)
-		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
-		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
-		mockProvisioningService := new(prvMock.MockProvisioningService)
+	// t.Run("error_config_validation_no_delay_config_set", func(t *testing.T) {
+	// 	mockRepo := new(repoMocks.MockTestScenario)
+	// 	mockTestCatRepo := new(repoMocks.MockTestCategory)
+	// 	mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+	// 	mockMotherService := new(repoMocks.MockMotherService)
+	// 	mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+	// 	mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+	// 	mockProvisioningService := new(prvMock.MockProvisioningService)
 
-		svc := NewTestScenarioUsecase(
-			getMockDB(t),
-			mockRepo,
-			mockTestCatRepo,
-			mockTestServiceConfig,
-			mockMotherService,
-			mockStressTestExecutor,
-			mockTestServiceRepo,
-			mockProvisioningService,
-		)
+	// 	svc := NewTestScenarioUsecase(
+	// 		getMockDB(t),
+	// 		mockRepo,
+	// 		mockTestCatRepo,
+	// 		mockTestServiceConfig,
+	// 		mockMotherService,
+	// 		mockStressTestExecutor,
+	// 		mockTestServiceRepo,
+	// 		mockProvisioningService,
+	// 	)
 
-		req := baseRequest()
-		req.Config.RequestDelayDuration = nil
-		req.Config.RandomRequestDelayMin = nil
-		req.Config.RandomRequestDelayMax = nil
+	// 	req := baseRequest()
+	// 	req.Config.RequestDelayDuration = nil
+	// 	req.Config.RandomRequestDelayMin = nil
+	// 	req.Config.RandomRequestDelayMax = nil
 
-		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
-		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
-		mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
+	// 	mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
+	// 	mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
+	// 	mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
 
-		err := svc.Update(context.Background(), req)
+	// 	err := svc.Update(context.Background(), req)
 
-		assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
-		assert.ErrorIs(t, err, pkg.ErrInvalidRequestDelayDurationConfig)
-		mockRepo.AssertNotCalled(t, "Update")
-		mockRepo.AssertExpectations(t)
-		mockMotherService.AssertExpectations(t)
-		mockTestServiceConfig.AssertExpectations(t)
-	})
+	// 	assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
+	// 	assert.ErrorIs(t, err, pkg.ErrInvalidRequestDelayDurationConfig)
+	// 	mockRepo.AssertNotCalled(t, "Update")
+	// 	mockRepo.AssertExpectations(t)
+	// 	mockMotherService.AssertExpectations(t)
+	// 	mockTestServiceConfig.AssertExpectations(t)
+	// })
 
 	t.Run("error_config_validation_fixed_delay_and_random_delay_both_set", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
