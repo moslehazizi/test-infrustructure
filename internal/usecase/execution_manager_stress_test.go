@@ -279,6 +279,7 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 		seb := new(mocks.MockScenarioExecutorBuilder)
 
 		agent := new(mocks.MockTestAgentController)
+		agent.On("Healthy").Return(true)
 		agent.On("ResumeTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
@@ -300,9 +301,10 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToResumeTestService)
 
 		agent.AssertCalled(t, "ResumeTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy")
 	})
 
-	t.Run("successـcase", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		executionID := uuid.New()
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: new(int64(3)),
@@ -315,6 +317,7 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		agent := new(mocks.MockTestAgentController)
 		builder.On("Get", scenario).Times(3).Return(agent)
+		agent.On("Healthy").Return(true)
 		agent.On("ResumeTesting", mock.Anything).Return(nil)
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
@@ -335,6 +338,7 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 		assert.NoError(t, err)
 
 		agent.AssertCalled(t, "ResumeTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy")
 	})
 }
 

@@ -1603,7 +1603,7 @@ func TestTestScenarioUsecase_Pause(t *testing.T) {
 	})
 }
 
-func TestTestScenarioUsecase_Resune(t *testing.T) {
+func TestTestScenarioUsecase_Resume(t *testing.T) {
 	t.Run("failed_case_scenario_not_found", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
@@ -1704,7 +1704,7 @@ func TestTestScenarioUsecase_Resune(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed_case_repository_error_on_marking_as_puase", func(t *testing.T) {
+	t.Run("failed_case_repository_error_on_marking_as_pause", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1730,8 +1730,12 @@ func TestTestScenarioUsecase_Resune(t *testing.T) {
 			ID:       sampleID,
 			Status:   entity.ScenarioStatusPaused,
 			NumSteps: 2,
+			TestCategory: &entity.TestCategory{
+				Name: entity.STRESS,
+			},
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
+		mockStressTestExecutor.On("ResumeScenario", mock.Anything, scenario, mock.Anything).Return(nil)
 		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(errors.New("something went wrong"))
 
 		err := service.Resume(ctx, sampleID)
@@ -1740,6 +1744,7 @@ func TestTestScenarioUsecase_Resune(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
+		mockStressTestExecutor.AssertCalled(t, "ResumeScenario", mock.Anything, scenario, mock.Anything)
 		mockRepo.AssertExpectations(t)
 	})
 
@@ -1775,14 +1780,12 @@ func TestTestScenarioUsecase_Resune(t *testing.T) {
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(nil)
 		mockStressTestExecutor.On("ResumeScenario", mock.Anything, scenario, mock.Anything).Return(errors.New("something went wrong"))
 
 		err := service.Resume(ctx, sampleID)
 
 		assert.Error(t, err)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
 		mockStressTestExecutor.AssertCalled(t, "ResumeScenario", mock.Anything, scenario, mock.Anything)
 
 		mockRepo.AssertExpectations(t)
@@ -1820,14 +1823,12 @@ func TestTestScenarioUsecase_Resune(t *testing.T) {
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false).Return(nil)
 
 		err := service.Resume(ctx, sampleID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrResumingTestNotImplemented)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusRunning, false)
 
 		mockRepo.AssertExpectations(t)
 	})

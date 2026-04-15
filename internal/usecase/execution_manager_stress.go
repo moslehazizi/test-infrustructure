@@ -74,8 +74,8 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 	}
 
 	agents := testScenario.GetAgents()
-	// TODO: for loop to check healthy
 
+	// We add health check agent so that if user immediately click on pause right after run first wait to all agents be ready.
 	for {
 		allHealthy := true
 		for _, agent := range agents {
@@ -129,6 +129,24 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 	}
 
 	agents := testScenario.GetAgents()
+
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+
 	for _, agent := range agents {
 		err := agent.ResumeTesting(ctx)
 		if err != nil {
