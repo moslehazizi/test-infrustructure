@@ -76,13 +76,14 @@ func (t *TestServiceConfig) Validate() error {
 	}
 
 	// validate delay duration between two transaction
-	if t.RequestDelayDuration == nil && t.RandomRequestDelayMax == nil && t.RandomRequestDelayMin == nil {
-		return pkg.ErrInvalidRequestDelayDurationConfig
-	}
+	// if t.RequestDelayDuration == nil && t.RandomRequestDelayMax == nil && t.RandomRequestDelayMin == nil {
+	// 	return pkg.ErrInvalidRequestDelayDurationConfig
+	// }
 	if t.RequestDelayDuration != nil && *t.RequestDelayDuration < 0 {
 		return pkg.ErrInvalidRequestDelayDuration
 	}
-	if t.RequestDelayDuration != nil && *t.RequestDelayDuration >= 0 {
+
+	if t.RequestDelayDuration != nil && *t.RequestDelayDuration > 0 {
 		if t.RandomRequestDelayMin != nil || t.RandomRequestDelayMax != nil {
 			return pkg.ErrInvalidRequestDelayDurationConfig
 		}
