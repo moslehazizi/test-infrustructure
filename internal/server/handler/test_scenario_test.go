@@ -881,30 +881,178 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		assert.Equal(t, got.Total, count)
 		assert.Len(t, got.Data, 2)
 		assert.Equal(t, expected, got)
+	})
+	t.Run("success_case_with_aborted_mother-service", func(t *testing.T) {
+		mockSvc := new(mocks.MockTestScenario)
+		handler := NewTestScenarioHandler(mockSvc)
 
-		// for i, want := range expected.Data {
-		// 	assert.Equal(t, want.ID, got.Data[i].ID)
-		// 	assert.Equal(t, want.CreatedAt.Format("2006-01-02"), got.Data[i].CreatedAt.Format("2006-01-02"))
-		// 	assert.Equal(t, want.UpdatedAt.Format("2006-01-02"), got.Data[i].UpdatedAt.Format("2006-01-02"))
-		// 	assert.Equal(t, want.Status, got.Data[i].Status)
+		app := fiber.New(fiber.Config{})
+		app.Post("/test-scenarios/search", handler.GetPaginated())
 
-		// 	assert.Equal(t, want.MaxTestServiceCount, got.Data[i].MaxTestServiceCount)
-		// 	assert.Equal(t, want.AutoStepChangeRate, got.Data[i].AutoStepChangeRate)
-		// 	assert.Equal(t, want.ExecutionDuration, got.Data[i].ExecutionDuration)
+		payload := entity.TestScenarioPaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		countTotal := int64(2)
+		countRunning := int64(1)
+		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.UTC)
 
-		// 	if want.TestCategory != nil {
-		// 		assert.Equal(t, want.TestCategory.ID, got.Data[i].TestCategory.ID)
-		// 		assert.Equal(t, want.TestCategory.Name, got.Data[i].TestCategory.Name)
-		// 		assert.Equal(t, want.TestCategory.Label, got.Data[i].TestCategory.Label)
-		// 		assert.Equal(t, want.TestCategory.HasMaxTestServiceCount, got.Data[i].TestCategory.HasMaxTestServiceCount)
-		// 		assert.Equal(t, want.TestCategory.HasExecutionDuration, got.Data[i].TestCategory.HasExecutionDuration)
-		// 		assert.Equal(t, want.TestCategory.HasAutoStepChangeRate, got.Data[i].TestCategory.HasAutoStepChangeRate)
-		// 		assert.Equal(t, want.TestCategory.CreatedAt.Format("2006-01-02"), got.Data[i].TestCategory.CreatedAt.Format("2006-01-02"))
-		// 		assert.Equal(t, want.TestCategory.UpdatedAt.Format("2006-01-02"), got.Data[i].TestCategory.UpdatedAt.Format("2006-01-02"))
-		// 	} else {
-		// 		assert.Nil(t, got.Data[i].TestCategory)
-		// 	}
-		// }
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
+
+		cnt := int64(100)
+		serviceResult := []*entity.TestScenario{
+			{
+				ID:                  1,
+				Name:                "load test 1",
+				CreatedAt:           someTime,
+				UpdatedAt:           someTime,
+				StartedAt:           &someTime,
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: &cnt,
+				TestCategoryID:      100,
+				NumSteps:            2,
+				IncreaseAgentNumber: 0,
+				ExecNumMultiAgent:   1,
+				TestCategory: &entity.TestCategory{
+					ID:                     100,
+					Name:                   "load",
+					Label:                  "Load Test",
+					CreatedAt:              someTime,
+					UpdatedAt:              someTime,
+					HasMaxTestServiceCount: true,
+					HasNumSteps:            true,
+				},
+				MotherServiceID: 200,
+				MotherService: &entity.MotherService{
+					ID:                     1,
+					CreatedAt:              someTime,
+					UpdatedAt:              someTime,
+					Name:                   "mother1",
+					ExceptionRate:          0,
+					ResponseDelayRate:      0,
+					ResponseDelayDuration:  nil,
+					RandomResponseDelayMin: nil,
+					RandomResponseDelayMax: nil,
+					Status:                 entity.MotherServiceStatusRunning,
+					ServiceDeploymentAddress: func() *string {
+						addr := "m200.svc"
+						return &addr
+					}(),
+					DatabaseName:      "m200",
+					DatabaseTableName: "t1",
+				},
+				Editable: false,
+			},
+			{
+				ID:                  2,
+				Name:                "load test 2",
+				CreatedAt:           someTime,
+				UpdatedAt:           someTime,
+				StartedAt:           &someTime,
+				Status:              entity.ScenarioStatusPending,
+				MaxTestServiceCount: &cnt,
+				TestCategoryID:      100,
+				NumSteps:            2,
+				IncreaseAgentNumber: 0,
+				ExecNumMultiAgent:   1,
+				TestCategory: &entity.TestCategory{
+					ID:                     100,
+					Name:                   "load",
+					Label:                  "Load Test",
+					CreatedAt:              someTime,
+					UpdatedAt:              someTime,
+					HasMaxTestServiceCount: true,
+					HasNumSteps:            true,
+				},
+				MotherServiceID: 200,
+				MotherService: &entity.MotherService{
+					ID:                     2,
+					CreatedAt:              someTime,
+					UpdatedAt:              someTime,
+					Name:                   "mother2",
+					ExceptionRate:          0,
+					ResponseDelayRate:      0,
+					ResponseDelayDuration:  nil,
+					RandomResponseDelayMin: nil,
+					RandomResponseDelayMax: nil,
+					Status:                 entity.MotherServiceStatusAborted,
+					ServiceDeploymentAddress: func() *string {
+						addr := "m200.svc"
+						return &addr
+					}(),
+					DatabaseName:      "m200",
+					DatabaseTableName: "t2",
+				},
+				Editable: false,
+			},
+		}
+
+		mockSvc.On("GetPaginated", mock.Anything, payload).Return(serviceResult, countTotal, nil)
+
+		expected := response.PaginatedTestScenario{
+			Page:    1,
+			PerPage: 2,
+			Data: []response.TestScenario{
+				{
+					ID:                  1,
+					Name:                "load test 1",
+					CreatedAt:           someTime,
+					UpdatedAt:           someTime,
+					Status:              entity.ScenarioStatusPending,
+					MaxTestServiceCount: &cnt,
+					StartedAt:           &someTime,
+					NumSteps:            2,
+					IncreaseAgentNumber: 0,
+					ExecNumMultiAgent:   1,
+					TestCategory: &response.TestCategory{
+						ID:                     100,
+						Name:                   "load",
+						Label:                  "Load Test",
+						CreatedAt:              someTime,
+						UpdatedAt:              someTime,
+						HasMaxTestServiceCount: true,
+						HasNumSteps:            true,
+					},
+					MotherService: &response.MotherService{
+						ID:                     1,
+						CreatedAt:              someTime,
+						UpdatedAt:              someTime,
+						Name:                   "mother1",
+						ExceptionRate:          0,
+						ResponseDelayRate:      0,
+						ResponseDelayDuration:  nil,
+						RandomResponseDelayMin: nil,
+						RandomResponseDelayMax: nil,
+						Status:                 entity.MotherServiceStatusRunning,
+						ServiceDeploymentAddress: func() *string {
+							addr := "m200.svc"
+							return &addr
+						}(),
+						DatabaseName:      "m200",
+						DatabaseTableName: "t1",
+					},
+					Editable: false,
+				},
+			},
+			Total: countRunning,
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		var got response.PaginatedTestScenario
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+		json.Unmarshal(bts, &got)
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, expected.Page, got.Page)
+		assert.Equal(t, countRunning, got.Total)
+		assert.Len(t, got.Data, 1)
+		assert.Equal(t, expected, got)
 	})
 	t.Run("error_invalid_request_body", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
