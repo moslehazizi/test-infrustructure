@@ -8,6 +8,7 @@ import (
 	"control-panel-service/pkg"
 	"fmt"
 	"sync"
+	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
@@ -73,6 +74,25 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 	}
 
 	agents := testScenario.GetAgents()
+	// TODO: for loop to check healthy
+
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+
 	for _, agent := range agents {
 		err := agent.PauseTesting(ctx)
 		if err != nil {
