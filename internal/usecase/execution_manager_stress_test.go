@@ -132,6 +132,7 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 		seb := new(mocks.MockScenarioExecutorBuilder)
 
 		agent := new(mocks.MockTestAgentController)
+		agent.On("Healthy").Return(true)
 		agent.On("PauseTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
@@ -153,9 +154,11 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToPauseTestService)
 
 		agent.AssertCalled(t, "PauseTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy")
+
 	})
 
-	t.Run("successـcase", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		executionID := uuid.New()
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: new(int64(3)),
@@ -167,6 +170,7 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 		seb := new(mocks.MockScenarioExecutorBuilder)
 
 		agent := new(mocks.MockTestAgentController)
+		agent.On("Healthy").Return(true)
 		agent.On("PauseTesting", mock.Anything).Return(nil)
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
@@ -186,6 +190,43 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		assert.NoError(t, err)
 
+		agent.AssertCalled(t, "Healthy")
+		agent.AssertCalled(t, "PauseTesting", mock.Anything)
+	})
+
+	t.Run("failed_case", func(t *testing.T) {
+		executionID := uuid.New()
+		scenario := &entity.TestScenario{
+			MaxTestServiceCount: new(int64(3)),
+			NumSteps:            2,
+		}
+
+		builder := new(mocks.MockTestAgentControllerToolBox)
+		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+
+		agent := new(mocks.MockTestAgentController)
+		agent.On("Healthy").Return(true)
+		agent.On("PauseTesting", mock.Anything).Return(nil)
+
+		ex := NewStressTestExecutionManager(builder, repo, seb)
+
+		stem, _ := ex.(*StressTestExecutionManager)
+		stem.scenarios[scenario.ID] = &scenarioExecutor{
+			scenario:    scenario,
+			executionID: executionID,
+			agents:      []interfaces.TestAgentController{agent},
+			running:     true,
+		}
+
+		err := ex.PauseScenario(context.Background(), scenario)
+
+		// will wait to all goroutines be called.
+		time.Sleep(time.Millisecond)
+
+		assert.NoError(t, err)
+
+		agent.AssertCalled(t, "Healthy")
 		agent.AssertCalled(t, "PauseTesting", mock.Anything)
 	})
 }
@@ -238,6 +279,7 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 		seb := new(mocks.MockScenarioExecutorBuilder)
 
 		agent := new(mocks.MockTestAgentController)
+		agent.On("Healthy").Return(true)
 		agent.On("ResumeTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
@@ -259,9 +301,10 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToResumeTestService)
 
 		agent.AssertCalled(t, "ResumeTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy")
 	})
 
-	t.Run("successـcase", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		executionID := uuid.New()
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: new(int64(3)),
@@ -274,6 +317,7 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		agent := new(mocks.MockTestAgentController)
 		builder.On("Get", scenario).Times(3).Return(agent)
+		agent.On("Healthy").Return(true)
 		agent.On("ResumeTesting", mock.Anything).Return(nil)
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
@@ -294,6 +338,7 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 		assert.NoError(t, err)
 
 		agent.AssertCalled(t, "ResumeTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy")
 	})
 }
 
@@ -345,6 +390,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		seb := new(mocks.MockScenarioExecutorBuilder)
 
 		agent := new(mocks.MockTestAgentController)
+		agent.On("Healthy").Return(true)
 		agent.On("StopTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
@@ -363,6 +409,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToStopTestService)
 
 		agent.AssertCalled(t, "StopTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy", mock.Anything)
 	})
 
 	t.Run("success_case", func(t *testing.T) {
@@ -387,6 +434,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		}
 
 		builder.On("Get", scenario).Times(3).Return(agent)
+		agent.On("Healthy", mock.Anything).Return(true)
 		agent.On("StopTesting", mock.Anything).Return(nil)
 
 		err := ex.StopScenario(context.Background(), scenario)
@@ -394,6 +442,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		assert.Nil(t, err)
 
 		agent.AssertCalled(t, "StopTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy")
 	})
 }
 

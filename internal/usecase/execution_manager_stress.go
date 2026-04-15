@@ -8,6 +8,7 @@ import (
 	"control-panel-service/pkg"
 	"fmt"
 	"sync"
+	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
@@ -73,6 +74,25 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 	}
 
 	agents := testScenario.GetAgents()
+
+	// We add health check agent so that if user immediately click on pause right after run first wait to all agents be ready.
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+
 	for _, agent := range agents {
 		err := agent.PauseTesting(ctx)
 		if err != nil {
@@ -109,6 +129,24 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 	}
 
 	agents := testScenario.GetAgents()
+
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+
 	for _, agent := range agents {
 		err := agent.ResumeTesting(ctx)
 		if err != nil {
@@ -146,6 +184,23 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 	sci.SetRunning(false)
 
 	agents := sci.GetAgents()
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+
 	for _, agent := range agents {
 		err := agent.StopTesting(ctx)
 		if err != nil {

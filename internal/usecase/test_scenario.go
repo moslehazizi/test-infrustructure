@@ -365,14 +365,6 @@ func (service *testScenario) Pause(ctx context.Context, id uint64) error {
 		return pkg.ErrOnlyRunningScenariosCanBePaused
 	}
 
-	// mark scenario as puased
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusPaused, false)
-	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
-
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
-	}
-
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
 		err := service.stressTestExecutionManager.PauseScenario(ctx, scenario)
@@ -380,7 +372,15 @@ func (service *testScenario) Pause(ctx context.Context, id uint64) error {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToPauseScenarioToExecutionManager, err)
 		}
 	default:
-		return pkg.ErrPauseingTestNotImplemented
+		return pkg.ErrPausingTestNotImplemented
+	}
+
+	// mark scenario as paused
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusPaused, false)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
 	}
 
 	return nil
@@ -415,14 +415,6 @@ func (service *testScenario) Resume(ctx context.Context, id uint64) error {
 		return pkg.ErrOnlyPausedScenariosCanBeResume
 	}
 
-	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning, false)
-	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
-
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
-	}
-
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
 		err := service.stressTestExecutionManager.ResumeScenario(ctx, scenario)
@@ -430,7 +422,15 @@ func (service *testScenario) Resume(ctx context.Context, id uint64) error {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToResumeScenarioToExecutionManager, err)
 		}
 	default:
-		return pkg.ErrResumeingTestNotImplemented
+		return pkg.ErrResumingTestNotImplemented
+	}
+
+	// mark scenario as running
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning, false)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
 	}
 
 	return nil
@@ -465,14 +465,6 @@ func (service *testScenario) Stop(ctx context.Context, id uint64) error {
 		return pkg.ErrOnlyRunAndPauseScenariosCanBeStop
 	}
 
-	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusPending, false)
-	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
-
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
-	}
-
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
 		err := service.stressTestExecutionManager.StopScenario(ctx, scenario)
@@ -480,7 +472,15 @@ func (service *testScenario) Stop(ctx context.Context, id uint64) error {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToStopScenarioToExecutionManager, err)
 		}
 	default:
-		return pkg.ErrStopingTestNotImplemented
+		return pkg.ErrStoppingTestNotImplemented
+	}
+
+	// mark scenario as running
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusPending, false)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
 	}
 
 	return nil
