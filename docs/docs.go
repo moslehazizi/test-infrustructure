@@ -90,32 +90,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/deprovision-all": {
-            "post": {
-                "description": "Deprovision all pods in k8s",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "mother-services"
-                ],
-                "summary": "Deprovision all pods",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.SuccessResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/mother-services": {
             "post": {
                 "description": "Create a new mother service",
@@ -241,6 +215,56 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.MotherServiceResponseByID"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mother-services/{id}/abort": {
+            "post": {
+                "description": "Abort a specific mother service by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mother-services"
+                ],
+                "summary": "Abort a mother service.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Test scenario ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
                         }
                     },
                     "400": {

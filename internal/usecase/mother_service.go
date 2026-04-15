@@ -21,7 +21,7 @@ type MotherService interface {
 	Create(ctx context.Context, motherService *entity.MotherService) error
 	GetByID(ctx context.Context, id uint64) (*entity.MotherService, error)
 	GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, int64, error)
-	DeprovisionAllPods(ctx context.Context) error
+	Abort(ctx context.Context, id uint64) error
 }
 
 func NewMotherService(
@@ -191,36 +191,29 @@ func (service *motherService) GetPaginated(ctx context.Context, paginationReques
 	return result, count, nil
 }
 
-func (service *motherService) DeprovisionAllPods(ctx context.Context) error {
-	motherservices, count, err := service.motherServiceRepo.GetPaginated(ctx, entity.PaginationRequest{Page: 0, PerPage: 0})
+func (service *motherService) Abort(ctx context.Context, id uint64) error {
+	// get mother service by its id
+	motherService, err := service.motherServiceRepo.GetByID(ctx, id)
 	if err != nil {
-		zap.L().Error("failed to get mother services for deprovisioning", zap.Error(err))
+		zap.L().Error("failed to get mother service", zap.Uint64("id", motherService.ID), zap.String("name", motherService.Name), zap.Error(err))
 
-		return fmt.Errorf("failed to get mother services for deprovisioning: %w", err)
+		return err
 	}
 
-	if count == 0 {
-		zap.L().Info("no mother services found for deprovisioning")
+	// deprovision mother service
+	err = service.provisioningService.DeprovisionMotherService(ctx, motherService)
+	if err != nil {
+		zap.L().Error("failed to deprovision mother service", zap.Uint64("id", motherService.ID), zap.String("name", motherService.Name), zap.Error(err))
 
-		return nil
+		return err
 	}
 
-	for _, ms := range motherservices {
-		err := service.provisioningService.DeprovisionMotherService(ctx, ms)
-		if err != nil {
-			zap.L().Error("failed to deprovision mother service", zap.Uint64("id", ms.ID), zap.String("name", ms.Name), zap.Error(err))
+	// update status
+	err = service.motherServiceRepo.SetStatus(ctx, motherService.ID, entity.MotherServiceStatusAborted)
+	if err != nil {
+		zap.L().Error("failed to update mother service status", zap.Uint64("id", motherService.ID), zap.String("name", motherService.Name), zap.Error(err))
 
-			continue
-		}
-
-		if ms.Status != entity.MotherServiceStatusAborted {
-			err = service.motherServiceRepo.SetStatus(ctx, ms.ID, entity.MotherServiceStatusAborted)
-			if err != nil {
-				zap.L().Error("failed to update mother service status", zap.Uint64("id", ms.ID), zap.String("name", ms.Name), zap.Error(err))
-
-				continue
-			}
-		}
+		return err
 	}
 
 	return nil

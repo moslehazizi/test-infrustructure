@@ -18,14 +18,12 @@ import (
 )
 
 type MotherService struct {
-	motherService       usecase.MotherService
-	testScenarioService usecase.TestScenario
+	motherService usecase.MotherService
 }
 
-func NewMotherServiceHandler(motherService usecase.MotherService, testScenarioService usecase.TestScenario) *MotherService {
+func NewMotherServiceHandler(motherService usecase.MotherService) *MotherService {
 	return &MotherService{
-		motherService:       motherService,
-		testScenarioService: testScenarioService,
+		motherService: motherService,
 	}
 }
 
@@ -250,48 +248,50 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 	}
 }
 
-// DeprovisionAllPods godoc
+// Abort godoc
 //
-//	@Summary		Deprovision all pods
-//	@Description	Deprovision all pods in k8s
+//	@Summary		Abort a mother service.
+//	@Description	Abort a specific mother service by its ID.
 //	@Tags			mother-services
+//	@Accept			json
 //	@Produce		json
+//	@Param			id	path		int	true	"Test scenario ID"
 //	@Success		200	{object}	response.SuccessResponse
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
-//	@Router			/api/v1/deprovision-all [post]
-func (handler *MotherService) DeprovisionAllPods() fiber.Handler {
+//	@Router			/api/v1/mother-services/{id}/abort [post]
+func (handler *MotherService) Abort() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "deprovision-all-pods")
+		traceCtx, span := tracer.Start(ctx.Context(), "abort_mother_service")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
 		span.SetAttributes(attribute.String("request_id", requestID))
 
-		err := handler.motherService.DeprovisionAllPods(traceCtx)
-		if err != nil {
-			span.SetAttributes(
-				attribute.String("error.type", "deprovision-all-mother-service_error"),
-				attribute.String("error.message", err.Error()),
-			)
-
-			return pkg.ToHTTPError(err).AsFiber(ctx)
+		idParam := ctx.Params("id")
+		if idParam == "" {
+			span.SetAttributes(attribute.String("error.type", "missing_id"))
+			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
 		}
 
-		err = handler.testScenarioService.DeprovisionAllPods(traceCtx)
+		id, err := strconv.ParseUint(idParam, 10, 64)
 		if err != nil {
-			span.SetAttributes(
-				attribute.String("error.type", "deprovision-all-test-scenario_error"),
-				attribute.String("error.message", err.Error()),
-			)
-
-			return pkg.ToHTTPError(err).AsFiber(ctx)
+			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
+			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
 		}
 
-		span.SetAttributes(attribute.String("status", "success"))
+		span.SetAttributes(attribute.String("mother_service.id", strconv.FormatUint(id, 10)))
+
+		err = handler.motherService.Abort(traceCtx, id)
+		if err != nil {
+			span.SetAttributes(attribute.String("error.type", "abort_error"), attribute.String("error.message", err.Error()))
+			return pkg.ToHTTPError(err).AsFiber(ctx)
+		}
 
 		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
-			Message: pkg.DeprovisionAllSuccessfully,
+			Message: pkg.TestScenarioAbort,
 		})
 	}
 }

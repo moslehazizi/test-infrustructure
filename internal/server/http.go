@@ -165,7 +165,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewTestServiceRepository(db),
 		provider.NewProvisioningService(cfg, kubernetes),
 	)
-	motherHandler := handler.NewMotherServiceHandler(motherService, testScenarioUsecase)
+	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
@@ -178,7 +178,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Post("/mother-services", motherHandler.Create())
 	apiV1.Get("/mother-services/:id", motherHandler.GetByID())
 	apiV1.Post("/mother-services/search", motherHandler.GetPaginated())
-	apiV1.Post("/deprovision-all", motherHandler.DeprovisionAllPods())
+	apiV1.Post("/mother-services/:id/abort", motherHandler.Abort())
 
 	// test category
 	apiV1.Get("/test-categories", testCategoryHandler.GetAll())

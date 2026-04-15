@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/internal/server/dto/response"
@@ -22,9 +23,8 @@ import (
 
 func TestMotherServiceHandler_New(t *testing.T) {
 	mockSrv := new(mocks.MockMotherService)
-	mockTSrv := new(mocks.MockTestScenario)
 
-	handler := NewMotherServiceHandler(mockSrv, mockTSrv)
+	handler := NewMotherServiceHandler(mockSrv)
 
 	assert.NotNil(t, handler)
 }
@@ -32,9 +32,8 @@ func TestMotherServiceHandler_New(t *testing.T) {
 func TestMotherServiceHandler_Create(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -75,9 +74,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed_case_invalid_request", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -103,9 +101,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed_case_required_fields_in_request_body", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -134,9 +131,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("success_case_with_nullable_values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -187,9 +183,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed_case_duplication", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -230,9 +225,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed_case_internal_error", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -273,9 +267,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed_case_request_validation_error_delay_rate_is_negative", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -315,9 +308,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 	})
 	t.Run("failed_case_request_validation_error_exception_rate_is_negative", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -358,9 +350,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 
 	t.Run("failed_case_request_validation_error_fixed_delay_is_set_but_rate_is_0", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -400,9 +391,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 	})
 	t.Run("failed_case_request_validation_error_min_is_greater_than_max", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services", handler.Create())
@@ -445,9 +435,8 @@ func TestMotherServiceHandler_Create(t *testing.T) {
 func TestMotherServiceHandler_GetByID(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		expectedSvcResp := &entity.MotherService{
 			Name:              "mother1",
@@ -488,9 +477,8 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 
 	t.Run("success_case_with_pointer_values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 		sampleString := "service-address"
 		sampleNum := 1
 
@@ -533,9 +521,8 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 
 	t.Run("failed_case_invalid_id", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New()
 		app.Get("/mother-services/:id", handler.GetByID())
@@ -560,9 +547,8 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 
 	t.Run("failed_case_not_found", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New()
 		app.Get("/mother-services/:id", handler.GetByID())
@@ -591,9 +577,8 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 
 	t.Run("failed_case_internal_server_error", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New()
 		app.Get("/mother-services/:id", handler.GetByID())
@@ -624,9 +609,8 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -692,9 +676,8 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("success_case_with_nil_values", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -750,9 +733,8 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("failed_case_invalid_request", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -777,9 +759,8 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("failed_case_invalid_request_negative_page_or_per_page", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -804,9 +785,8 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("failed_case_internal_server_error", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -843,9 +823,8 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 
 	t.Run("success_case_empty_result", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+		handler := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
 		app.Post("/mother-services/search", handler.GetPaginated())
@@ -883,64 +862,112 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 	})
 }
 
-func TestMotherServiceHandler_DeprovisionAllPods(t *testing.T) {
-	t.Run("success_case", func(t *testing.T) {
-		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
+func TestMotherServiceHandler_Abort(t *testing.T) {
+	_, err := config.LoadConfig()
+	assert.Nil(t, err)
 
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
+	t.Run("error_missing_id_in_param", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+
+		h := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/deprovision-all", handler.DeprovisionAllPods())
+		app.Post("/mother-services/:id/abort", h.Abort())
 
-		mockSvc.On("DeprovisionAllPods", mock.Anything).Return(nil).Once()
-		mockTSrv.On("DeprovisionAllPods", mock.Anything).Return(nil).Once()
-
-		req := httptest.NewRequest(http.MethodPost, "/deprovision-all", nil)
-		req.Header.Set("Content-Type", "application/json")
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
 
-		var result response.SuccessResponse
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+
+		h := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-services/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1sdf/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
 		bts, err := io.ReadAll(resp.Body)
 		assert.Nil(t, err)
 
-		err = json.Unmarshal(bts, &result)
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
+	})
+
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		mockSvc.On("Abort", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-services/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+
+	t.Run("error_item_not_found", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		mockSvc.On("Abort", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-services/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.ErrorResponse
+		err = json.Unmarshal(bts, &response)
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
+	})
+
+	t.Run("success_case", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		mockSvc.On("Abort", mock.Anything, uint64(1)).Return(nil)
+		h := NewMotherServiceHandler(mockSvc)
+
+		app := fiber.New(fiber.Config{})
+		app.Post("/mother-services/:id/abort", h.Abort())
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/abort", nil)
+
+		resp, _ := app.Test(req)
+		defer resp.Body.Close()
+
+		bts, err := io.ReadAll(resp.Body)
+		assert.Nil(t, err)
+
+		var response response.SuccessResponse
+		err = json.Unmarshal(bts, &response)
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, pkg.DeprovisionAllSuccessfully, result.Message)
-		mockSvc.AssertExpectations(t)
-		mockTSrv.AssertExpectations(t)
+		assert.Equal(t, response.Message, pkg.TestScenarioAbort)
 	})
 
-	t.Run("failed_case", func(t *testing.T) {
-		mockSvc := new(mocks.MockMotherService)
-		mockTSrv := new(mocks.MockTestScenario)
-
-		handler := NewMotherServiceHandler(mockSvc, mockTSrv)
-
-		app := fiber.New(fiber.Config{})
-		app.Post("/deprovision-all", handler.DeprovisionAllPods())
-
-		mockSvc.On("DeprovisionAllPods", mock.Anything).Return(errors.New("deprovision failed")).Once()
-
-		req := httptest.NewRequest(http.MethodPost, "/deprovision-all", nil)
-		req.Header.Set("Content-Type", "application/json")
-
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
-
-		var result response.ErrorResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
-
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-		assert.Equal(t, pkg.InternalServerErrorMessage, result.Error)
-		mockSvc.AssertExpectations(t)
-	})
 }

@@ -369,76 +369,88 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 	})
 }
 
-func TestMotherServiceUsecase_DeprovisionAllPods(t *testing.T) {
+func TestMotherServiceUsecase_Abort(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
+		motherServiceId := uint64(1)
+
 		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
-		paginationRequest := entity.PaginationRequest{
-			Page:    0,
-			PerPage: 0,
+		motherService := &entity.MotherService{
+			ID:   motherServiceId,
+			Name: "mother-service-1",
 		}
 
-		motherServices := []*entity.MotherService{
-			{
-				ID:                uint64(1),
-				Name:              "mother1",
-				Status:            entity.MotherServiceStatusRunning,
-				DatabaseName:      "db1",
-				DatabaseTableName: "factorial",
-			},
-			{
-				ID:                uint64(2),
-				Name:              "mother2",
-				Status:            entity.MotherServiceStatusRunning,
-				DatabaseName:      "db2",
-				DatabaseTableName: "factorial",
-			},
-		}
-		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(motherServices, int64(2), nil)
-		mockProvision.On("DeprovisionMotherService", mock.Anything, mock.Anything).Return(nil).Times(len(motherServices))
-		mockRepo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(len(motherServices))
+		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
+		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(nil).Times(1)
+		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusAborted).Return(nil).Times(1)
 
-		err := service.DeprovisionAllPods(ctx)
-
+		err := service.Abort(ctx, uint64(motherServiceId))
 		assert.NoError(t, err)
+
+		mockRepo.AssertExpectations(t)
+		mockProvision.AssertExpectations(t)
 	})
 
-	t.Run("fail_case_GetPaginated_return_err", func(t *testing.T) {
+	t.Run("fail_case_failed_to_get_mother_service", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
+		motherServiceId := uint64(1)
+
 		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
-		paginationRequest := entity.PaginationRequest{
-			Page:    0,
-			PerPage: 0,
-		}
+		motherService := &entity.MotherService{}
 
-		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, int64(2), errors.New("failed to get mother services for deprovisioning"))
+		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, errors.New("something went wrong")).Times(1)
 
-		err := service.DeprovisionAllPods(ctx)
+		err := service.Abort(ctx, uint64(motherServiceId))
+		assert.Error(t, err)
 
-		assert.NotNil(t, err)
+		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("sucsess_case_GetPaginated_return_0_number_of_result", func(t *testing.T) {
+	t.Run("fail_case_failed_to_deprovision_mother_service", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockProvision := new(provisionPrvider.MockProvisioningService)
+		motherServiceId := uint64(1)
+
 		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
 
-		paginationRequest := entity.PaginationRequest{
-			Page:    0,
-			PerPage: 0,
-		}
+		motherService := &entity.MotherService{}
 
-		mockRepo.On("GetPaginated", mock.Anything, paginationRequest).Return(nil, int64(0), nil)
+		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
+		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(errors.New("something went wrong")).Times(1)
 
-		err := service.DeprovisionAllPods(ctx)
+		err := service.Abort(ctx, uint64(motherServiceId))
+		assert.Error(t, err)
 
-		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockProvision.AssertExpectations(t)
 	})
+
+	t.Run("fail_case_failed_to_update_mother_service_status", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		mockProvision := new(provisionPrvider.MockProvisioningService)
+		motherServiceId := uint64(1)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+
+		motherService := &entity.MotherService{}
+
+		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
+		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(nil).Times(1)
+		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusAborted).Return(errors.New("something went wrong")).Times(1)
+
+		err := service.Abort(ctx, uint64(motherServiceId))
+		assert.Error(t, err)
+
+		mockRepo.AssertExpectations(t)
+		mockProvision.AssertExpectations(t)
+	})
+
 }

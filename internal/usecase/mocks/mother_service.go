@@ -17,6 +17,12 @@ func (m *MockMotherService) Create(ctx context.Context, motherService *entity.Mo
 	return args.Error(0)
 }
 
+func (m *MockMotherService) Abort(ctx context.Context, id uint64) error {
+	args := m.Called(ctx, id)
+
+	return args.Error(0)
+}
+
 func (m *MockMotherService) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {
 	args := m.Called(ctx, id)
 
@@ -37,10 +43,4 @@ func (m *MockMotherService) GetPaginated(ctx context.Context, paginationRequest 
 	}
 
 	return result, args.Get(1).(int64), args.Error(2)
-}
-
-func (m *MockMotherService) DeprovisionAllPods(ctx context.Context) error {
-	args := m.Called(ctx)
-
-	return args.Error(0)
 }
