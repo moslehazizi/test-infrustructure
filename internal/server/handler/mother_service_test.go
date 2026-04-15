@@ -967,7 +967,7 @@ func TestMotherServiceHandler_Abort(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, response.Message, pkg.TestScenarioAbort)
+		assert.Equal(t, response.Message, pkg.MotherServiceAbort)
 	})
 
 }
