@@ -14,7 +14,7 @@ const (
 	ScenarioStatusRunning ScenarioStatus = "running"
 	ScenarioStatusPaused  ScenarioStatus = "paused"
 	ScenarioStatusStopped ScenarioStatus = "stopped"
-	ScenarioStatusAborted ScenarioStatus = "aborted"
+	ScenarioStatusDeleted ScenarioStatus = "deleted"
 	ScenarioStatusSucceed ScenarioStatus = "succeed"
 )
 

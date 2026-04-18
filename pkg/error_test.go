@@ -377,8 +377,8 @@ func Test_toHTTPError(t *testing.T) {
 			wanted: HTTPError{http.StatusUnprocessableEntity, ExecNumMultiFixedInputShouldBePositive},
 		},
 		{
-			err:    ErrScenariosCanNotBeAbort,
-			wanted: HTTPError{http.StatusUnprocessableEntity, ScenariosCanNotBeAbort},
+			err:    ErrScenariosCanNotBeDelete,
+			wanted: HTTPError{http.StatusUnprocessableEntity, ScenariosCanNotBeDelete},
 		},
 	}
 	for _, tt := range tests {

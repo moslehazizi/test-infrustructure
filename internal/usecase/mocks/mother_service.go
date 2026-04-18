@@ -17,7 +17,7 @@ func (m *MockMotherService) Create(ctx context.Context, motherService *entity.Mo
 	return args.Error(0)
 }
 
-func (m *MockMotherService) Abort(ctx context.Context, id uint64) error {
+func (m *MockMotherService) Delete(ctx context.Context, id uint64) error {
 	args := m.Called(ctx, id)
 
 	return args.Error(0)

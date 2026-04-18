@@ -862,7 +862,7 @@ func TestMotherServiceHandler_GetPaginated(t *testing.T) {
 	})
 }
 
-func TestMotherServiceHandler_Abort(t *testing.T) {
+func TestMotherServiceHandler_Delete(t *testing.T) {
 	_, err := config.LoadConfig()
 	assert.Nil(t, err)
 
@@ -872,7 +872,7 @@ func TestMotherServiceHandler_Abort(t *testing.T) {
 		h := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/:id/abort", h.Abort())
+		app.Post("/mother-services/:id/delete", h.Delete())
 
 		req := httptest.NewRequest(http.MethodPost, "/mother-services/", nil)
 
@@ -888,9 +888,9 @@ func TestMotherServiceHandler_Abort(t *testing.T) {
 		h := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/:id/abort", h.Abort())
+		app.Post("/mother-services/:id/delete", h.Delete())
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/1sdf/abort", nil)
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1sdf/delete", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -908,13 +908,13 @@ func TestMotherServiceHandler_Abort(t *testing.T) {
 
 	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockSvc.On("Abort", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		mockSvc.On("Delete", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
 		h := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/:id/abort", h.Abort())
+		app.Post("/mother-services/:id/delete", h.Delete())
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/abort", nil)
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/delete", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -924,13 +924,13 @@ func TestMotherServiceHandler_Abort(t *testing.T) {
 
 	t.Run("error_item_not_found", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockSvc.On("Abort", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		mockSvc.On("Delete", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
 		h := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/:id/abort", h.Abort())
+		app.Post("/mother-services/:id/delete", h.Delete())
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/abort", nil)
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/delete", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -948,13 +948,13 @@ func TestMotherServiceHandler_Abort(t *testing.T) {
 
 	t.Run("success_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockMotherService)
-		mockSvc.On("Abort", mock.Anything, uint64(1)).Return(nil)
+		mockSvc.On("Delete", mock.Anything, uint64(1)).Return(nil)
 		h := NewMotherServiceHandler(mockSvc)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/mother-services/:id/abort", h.Abort())
+		app.Post("/mother-services/:id/delete", h.Delete())
 
-		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/abort", nil)
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/delete", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -967,7 +967,7 @@ func TestMotherServiceHandler_Abort(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, response.Message, pkg.MotherServiceAbort)
+		assert.Equal(t, response.Message, pkg.MotherServiceDelete)
 	})
 
 }

@@ -14,8 +14,8 @@ const (
 	TestScenarioPaused                     = "سناریو تست با موفقیت موقتا متوقف شد."
 	TestScenarioResumed                    = "سناریو تست با موفقیت ادامه کار را از سر گرفت."
 	TestScenarioStop                       = "سناریو تست با موفقیت به طور دايم متوقف شد."
-	TestScenarioAbort                      = "سناریو تست با موفقیت حذف شد."
-	MotherServiceAbort                     = "سرویس مادر با موفقیت حذف شد."
+	TestScenarioDelete                     = "سناریو تست با موفقیت حذف شد."
+	MotherServiceDelete                    = "سرویس مادر با موفقیت حذف شد."
 	InvalidResponseDelayRate               = "درصد تاخیر در پاسخ باید عددی بین ۰ تا ۱۰۰ باشد"
 	InvalidExceptionRate                   = "مقدار درصد پاسخ با مقدار قابل پیشبینی باید عددی بین ۰ تا ۱۰۰ باشد"
 	InvalidDelayConfiguration              = "تنظیمات تاخیر صحیح نیست؛ لطفاً یکی از گزینه‌های بدون تاخیر، تاخیر ثابت و یا تاخیر تصادفی را انتخاب کنید"
@@ -70,5 +70,5 @@ const (
 	ExecNumMultiFixedInputShouldBePositive = "تعداد اجرای سناریو برای عدد ثابت باید یک یا بیشتر باشد."
 	MultiFixedInputConfigNotTrue           = "تنظیمات افزایش عدد ثابت درست نمی باشد"
 	MultiAgentConfigNotTrue                = "تنظیمات افزایش تعداد ایجنت درست نمی باشد"
-	ScenariosCanNotBeAbort                 = "سناریو در این حالت نمیتواند حذف شود."
+	ScenariosCanNotBeDelete                = "سناریو در این حالت نمیتواند حذف شود."
 )

@@ -13,7 +13,7 @@ const (
 	TestServiceStatusRunning TestServiceStatus = "running"
 	TestServiceStatusPaused  TestServiceStatus = "paused"
 	TestServiceStatusStopped TestServiceStatus = "stopped"
-	TestServiceStatusAborted TestServiceStatus = "aborted"
+	TestServiceStatusDeleted TestServiceStatus = "deleted"
 	TestServiceStatusSucceed TestServiceStatus = "succeed"
 )
 

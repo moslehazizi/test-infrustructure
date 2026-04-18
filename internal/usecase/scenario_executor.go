@@ -62,7 +62,7 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 
 	defer func() {
 		for _, agent := range se.agents {
-			err := agent.AbortTesting(ctx)
+			err := agent.DeleteTesting(ctx)
 			if err != nil {
 				// returning err is not required.
 				zap.L().Error("failed to deprovision test agent",

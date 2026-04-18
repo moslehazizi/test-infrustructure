@@ -414,7 +414,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 	})
 }
 
-func TestMotherServiceUsecase_Abort(t *testing.T) {
+func TestMotherServiceUsecase_Delete(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
@@ -443,14 +443,14 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
 		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(nil).Times(1)
-		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusAborted).Return(nil).Times(1)
+		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusDeleted).Return(nil).Times(1)
 		mockTestRepo.On("GetByMotherServiceId", mock.Anything, motherService.ID).Return(testScenarios, nil).Times(1)
-		mockSTEM.On("AbortScenario", mock.Anything, testScenarios[0]).Return(nil)
-		mockSTEM.On("AbortScenario", mock.Anything, testScenarios[1]).Return(nil)
-		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[0].ID, entity.ScenarioStatusAborted, false).Return(nil)
-		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[1].ID, entity.ScenarioStatusAborted, false).Return(nil)
+		mockSTEM.On("DeleteScenario", mock.Anything, testScenarios[0]).Return(nil)
+		mockSTEM.On("DeleteScenario", mock.Anything, testScenarios[1]).Return(nil)
+		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[0].ID, entity.ScenarioStatusDeleted, false).Return(nil)
+		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[1].ID, entity.ScenarioStatusDeleted, false).Return(nil)
 
-		err := service.Abort(ctx, uint64(motherServiceId))
+		err := service.Delete(ctx, uint64(motherServiceId))
 		assert.NoError(t, err)
 
 		mockRepo.AssertExpectations(t)
@@ -473,7 +473,7 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, errors.New("something went wrong")).Times(1)
 
-		err := service.Abort(ctx, uint64(motherServiceId))
+		err := service.Delete(ctx, uint64(motherServiceId))
 		assert.Error(t, err)
 
 		mockRepo.AssertExpectations(t)
@@ -494,7 +494,7 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
 		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(errors.New("something went wrong")).Times(1)
 
-		err := service.Abort(ctx, uint64(motherServiceId))
+		err := service.Delete(ctx, uint64(motherServiceId))
 		assert.Error(t, err)
 
 		mockRepo.AssertExpectations(t)
@@ -515,9 +515,9 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
 		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(nil).Times(1)
-		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusAborted).Return(errors.New("something went wrong")).Times(1)
+		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusDeleted).Return(errors.New("something went wrong")).Times(1)
 
-		err := service.Abort(ctx, uint64(motherServiceId))
+		err := service.Delete(ctx, uint64(motherServiceId))
 		assert.Error(t, err)
 
 		mockRepo.AssertExpectations(t)
@@ -539,10 +539,10 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
 		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(nil).Times(1)
-		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusAborted).Return(nil).Times(1)
+		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusDeleted).Return(nil).Times(1)
 		mockTestRepo.On("GetByMotherServiceId", mock.Anything, motherService.ID).Return(testScenarios, errors.New("something went wrong")).Times(1)
 
-		err := service.Abort(ctx, uint64(motherServiceId))
+		err := service.Delete(ctx, uint64(motherServiceId))
 		assert.Error(t, err)
 
 		mockRepo.AssertExpectations(t)
@@ -578,14 +578,14 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
 		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(nil).Times(1)
-		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusAborted).Return(nil).Times(1)
+		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusDeleted).Return(nil).Times(1)
 		mockTestRepo.On("GetByMotherServiceId", mock.Anything, motherService.ID).Return(testScenarios, nil).Times(1)
-		mockSTEM.On("AbortScenario", mock.Anything, testScenarios[0]).Return(errors.New("something went wrong"))
-		mockSTEM.On("AbortScenario", mock.Anything, testScenarios[1]).Return(nil)
-		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[0].ID, entity.ScenarioStatusAborted, false).Return(errors.New("something went wrong"))
-		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[1].ID, entity.ScenarioStatusAborted, false).Return(nil)
+		mockSTEM.On("DeleteScenario", mock.Anything, testScenarios[0]).Return(errors.New("something went wrong"))
+		mockSTEM.On("DeleteScenario", mock.Anything, testScenarios[1]).Return(nil)
+		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[0].ID, entity.ScenarioStatusDeleted, false).Return(errors.New("something went wrong"))
+		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[1].ID, entity.ScenarioStatusDeleted, false).Return(nil)
 
-		err := service.Abort(ctx, uint64(motherServiceId))
+		err := service.Delete(ctx, uint64(motherServiceId))
 		assert.NoError(t, err)
 
 		mockRepo.AssertExpectations(t)

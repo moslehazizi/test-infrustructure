@@ -168,10 +168,10 @@ func (c *testAgentController) StartTesting(ctx context.Context, req request.RunR
 	return nil
 }
 
-func (c *testAgentController) AbortTesting(ctx context.Context) error {
+func (c *testAgentController) DeleteTesting(ctx context.Context) error {
 	err := c.provisioningService.DeprovisionTestServiceByName(ctx, c.scenario, c.uniqueID)
 	if err != nil {
-		zap.L().Error("abort testing error",
+		zap.L().Error("delete testing error",
 			zap.Error(err),
 		)
 

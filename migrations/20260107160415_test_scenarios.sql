@@ -4,7 +4,7 @@ CREATE TYPE scenario_status AS ENUM (
     'running', -- test is running on application level (sending level)
     'paused', -- application level pause on sending request 
     'stopped', -- stop container but can start scenario again.
-    'aborted', -- stop and delete containers. can not start again.
+    'deleted', -- stop and delete containers. can not start again.
     'succeed' -- system automatically detect that test is finished and all data collected. can not start again.
 );
 create table if not exists test_scenarios (

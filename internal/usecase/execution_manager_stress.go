@@ -216,9 +216,9 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 	return nil
 }
 
-func (ex *StressTestExecutionManager) AbortScenario(ctx context.Context, scenario *entity.TestScenario) error {
+func (ex *StressTestExecutionManager) DeleteScenario(ctx context.Context, scenario *entity.TestScenario) error {
 	tracer := otel.Tracer("StressTestExecutionManager")
-	_, span := tracer.Start(ctx, "AbortScenario")
+	_, span := tracer.Start(ctx, "DeleteScenario")
 	defer span.End()
 
 	if scenario.MaxTestServiceCount == nil {
@@ -255,12 +255,12 @@ func (ex *StressTestExecutionManager) AbortScenario(ctx context.Context, scenari
 		time.Sleep(healthyCheckSleep)
 	}
 	for _, agent := range agents {
-		err := agent.AbortTesting(ctx)
+		err := agent.DeleteTesting(ctx)
 		if err != nil {
-			zap.L().Error("test agent controller couldn't abort test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+			zap.L().Error("test agent controller couldn't delete  test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
 			ex.mx.Unlock()
 
-			return fmt.Errorf("%w - %w", pkg.ErrFailedToAbortTestService, err)
+			return fmt.Errorf("%w - %w", pkg.ErrFailedToDeleteTestService, err)
 		}
 	}
 

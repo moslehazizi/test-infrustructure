@@ -258,9 +258,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrMultiAgentConfigNotTrue):
 		status = http.StatusUnprocessableEntity
 		msg = MultiAgentConfigNotTrue
-	case errors.Is(err, ErrScenariosCanNotBeAbort):
+	case errors.Is(err, ErrScenariosCanNotBeDelete):
 		status = http.StatusUnprocessableEntity
-		msg = ScenariosCanNotBeAbort
+		msg = ScenariosCanNotBeDelete
 
 	default:
 		status = http.StatusInternalServerError
@@ -305,7 +305,7 @@ var (
 	ErrFailedToPauseTestService         = errors.New("failed to pause test service")
 	ErrFailedToResumeTestService        = errors.New("failed to resume test service")
 	ErrFailedToStopTestService          = errors.New("failed to stop test services")
-	ErrFailedToAbortTestService         = errors.New("failed to abort test services")
+	ErrFailedToDeleteTestService        = errors.New("failed to delete  test services")
 	ErrFailedToExecuteSingleScenario    = errors.New("failed to execute single scenario")
 
 	// Validation errors.
@@ -357,7 +357,7 @@ var (
 	ErrOnlyRunningScenariosCanBePaused                    = errors.New("only running scenarios can be paused")
 	ErrOnlyPausedScenariosCanBeResume                     = errors.New("only pause scenarios can be resume")
 	ErrOnlyRunAndPauseScenariosCanBeStop                  = errors.New("only run and pause can not be stopped")
-	ErrScenariosCanNotBeAbort                             = errors.New("scenario can not be aborted")
+	ErrScenariosCanNotBeDelete                            = errors.New("scenario can not be deleted")
 	ErrFailedToSetScenarioStatus                          = errors.New("failed to set scenario status")
 	ErrGettingRunningTestServicesByScenario               = errors.New("failed to get running test services by scenario")
 	ErrFailedToDeprovisionTestServices                    = errors.New("failed to deprovision test services")
@@ -367,12 +367,12 @@ var (
 	ErrFailedToPauseScenarioToExecutionManager            = errors.New("failed to pause scenario in execution manager")
 	ErrFailedToResumeScenarioToExecutionManager           = errors.New("failed to resume scenario in execution manager")
 	ErrFailedToStopScenarioToExecutionManager             = errors.New("failed to stop scenario in execution manager")
-	ErrFailedToAbortScenarioToExecutionManager            = errors.New("failed to abort scenario in execution manager")
+	ErrFailedToDeleteScenarioToExecutionManager           = errors.New("failed to delete  scenario in execution manager")
 	ErrStartingTestNotImplemented                         = errors.New("starting test not implemented")
 	ErrPausingTestNotImplemented                          = errors.New("pausing test not implemented")
 	ErrResumingTestNotImplemented                         = errors.New("resuming test not implemented")
 	ErrStoppingTestNotImplemented                         = errors.New("stopping test not implemented")
-	ErrAbortTestNotImplemented                            = errors.New("abort test not implemented")
+	ErrDeleteTestNotImplemented                           = errors.New("delete test not implemented")
 	ErrFailedToGetHealthCheck                             = errors.New("failed to get health check of test service")
 	ErrFailedToGetMetrics                                 = errors.New("failed to get metric of test service")
 	ErrFailedToGetLiveCheck                               = errors.New("failed to get live check")

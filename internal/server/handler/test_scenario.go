@@ -530,10 +530,10 @@ func (handler *TestScenario) Stop() fiber.Handler {
 	}
 }
 
-// Abort godoc
+// Delete godoc
 //
-//	@Summary		Abort a test scenario.
-//	@Description	Abort a specific test scenario by its ID.
+//	@Summary		Delete a test scenario.
+//	@Description	Delete a specific test scenario by its ID.
 //	@Tags			test-scenarios
 //	@Accept			json
 //	@Produce		json
@@ -542,11 +542,11 @@ func (handler *TestScenario) Stop() fiber.Handler {
 //	@Failure		400	{object}	response.ErrorResponse
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
-//	@Router			/api/v1/test-scenarios/{id}/abort [post]
-func (handler *TestScenario) Abort() fiber.Handler {
+//	@Router			/api/v1/test-scenarios/{id}/delete [post]
+func (handler *TestScenario) Delete() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "abort_test_scenario")
+		traceCtx, span := tracer.Start(ctx.Context(), "delete_test_scenario")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -566,14 +566,14 @@ func (handler *TestScenario) Abort() fiber.Handler {
 
 		span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
-		err = handler.testScenario.Abort(traceCtx, id)
+		err = handler.testScenario.Delete(traceCtx, id)
 		if err != nil {
-			span.SetAttributes(attribute.String("error.type", "abort_error"), attribute.String("error.message", err.Error()))
+			span.SetAttributes(attribute.String("error.type", "delete_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
-			Message: pkg.TestScenarioAbort,
+			Message: pkg.TestScenarioDelete,
 		})
 	}
 }

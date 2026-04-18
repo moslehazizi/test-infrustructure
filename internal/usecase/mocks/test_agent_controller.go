@@ -37,7 +37,7 @@ func (m *MockTestAgentController) StartTesting(ctx context.Context, req request.
 	return args.Error(0)
 }
 
-func (m *MockTestAgentController) AbortTesting(ctx context.Context) error {
+func (m *MockTestAgentController) DeleteTesting(ctx context.Context) error {
 	args := m.Called(ctx)
 
 	return args.Error(0)

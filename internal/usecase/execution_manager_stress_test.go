@@ -380,7 +380,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
 	})
 
-	t.Run("failed_case_failed_to_abort", func(t *testing.T) {
+	t.Run("failed_case_failed_to_delete", func(t *testing.T) {
 		executionID := uuid.New()
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: new(int64(1)),
@@ -448,7 +448,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 	})
 }
 
-func TestStressTestExecutionManager_Abort(t *testing.T) {
+func TestStressTestExecutionManager_Delete(t *testing.T) {
 	t.Run("failed_case_scenario_max_service_count_is_null", func(t *testing.T) {
 		scenario := entity.TestScenario{
 			MaxTestServiceCount: nil,
@@ -461,7 +461,7 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
-		err := ex.AbortScenario(context.Background(), &scenario)
+		err := ex.DeleteScenario(context.Background(), &scenario)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMaxTestServiceCountNotSet)
@@ -478,13 +478,13 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 		seb := new(mocks.MockScenarioExecutorBuilder)
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
-		err := ex.AbortScenario(context.Background(), scenario)
+		err := ex.DeleteScenario(context.Background(), scenario)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
 	})
 
-	t.Run("failed_case_failed_to_abort", func(t *testing.T) {
+	t.Run("failed_case_failed_to_delete", func(t *testing.T) {
 		executionID := uuid.New()
 		scenario := &entity.TestScenario{
 			MaxTestServiceCount: new(int64(1)),
@@ -497,7 +497,7 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 
 		agent := new(mocks.MockTestAgentController)
 		agent.On("Healthy").Return(true)
-		agent.On("AbortTesting", mock.Anything).Return(errors.New("something went wrong"))
+		agent.On("DeleteTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
@@ -509,12 +509,12 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 			running:     true,
 		}
 
-		err := ex.AbortScenario(context.Background(), scenario)
+		err := ex.DeleteScenario(context.Background(), scenario)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrFailedToAbortTestService)
+		assert.ErrorIs(t, err, pkg.ErrFailedToDeleteTestService)
 
-		agent.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent.AssertCalled(t, "DeleteTesting", mock.Anything)
 		agent.AssertCalled(t, "Healthy", mock.Anything)
 	})
 
@@ -540,14 +540,14 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 		}
 
 		builder.On("Get", scenario).Times(3).Return(agent)
-		agent.On("AbortTesting", mock.Anything).Return(nil)
+		agent.On("DeleteTesting", mock.Anything).Return(nil)
 		agent.On("Healthy").Return(true)
 
-		err := ex.AbortScenario(context.Background(), scenario)
+		err := ex.DeleteScenario(context.Background(), scenario)
 
 		assert.Nil(t, err)
 
-		agent.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent.AssertCalled(t, "DeleteTesting", mock.Anything)
 		agent.AssertCalled(t, "Healthy", mock.Anything)
 	})
 }

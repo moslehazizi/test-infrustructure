@@ -18,8 +18,8 @@ type ExecutionManager interface {
 	ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error
 	// StopScenario is for stop running scenario.
 	StopScenario(ctx context.Context, scenario *entity.TestScenario) error
-	// AbortScenario is for stop running scenario.
-	AbortScenario(ctx context.Context, scenario *entity.TestScenario) error
+	// DeleteScenario is for stop running scenario.
+	DeleteScenario(ctx context.Context, scenario *entity.TestScenario) error
 }
 
 type ScenarioExecutor interface {
@@ -70,8 +70,8 @@ type TestAgentController interface {
 	ResumeTesting(ctx context.Context) error
 	// StopTesting stop agent.
 	StopTesting(ctx context.Context) error
-	// AbortTesting is responsible for sending abort command.
-	AbortTesting(ctx context.Context) error
+	// DeleteTesting is responsible for sending delete  command.
+	DeleteTesting(ctx context.Context) error
 }
 
 type TestAgentControllerToolBox interface {

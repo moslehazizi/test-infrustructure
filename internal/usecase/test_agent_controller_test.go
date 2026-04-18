@@ -339,7 +339,7 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 	})
 }
 
-func Test_testAgentControler_AbortTesting(t *testing.T) {
+func Test_testAgentControler_DeleteTesting(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		scenario := &entity.TestScenario{ID: 5}
 		id := uuid.New()
@@ -362,7 +362,7 @@ func Test_testAgentControler_AbortTesting(t *testing.T) {
 			On("DeprovisionTestServiceByName", mock.Anything, c.scenario, c.uniqueID).
 			Return(nil)
 
-		err := c.AbortTesting(ctx)
+		err := c.DeleteTesting(ctx)
 		assert.NoError(t, err)
 		provSvc.AssertExpectations(t)
 	})
@@ -389,7 +389,7 @@ func Test_testAgentControler_AbortTesting(t *testing.T) {
 			On("DeprovisionTestServiceByName", mock.Anything, c.scenario, c.uniqueID).
 			Return(errors.New("faield to deprovision"))
 
-		err := c.AbortTesting(ctx)
+		err := c.DeleteTesting(ctx)
 		assert.Error(t, err)
 		provSvc.AssertExpectations(t)
 	})

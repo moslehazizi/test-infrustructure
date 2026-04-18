@@ -4,7 +4,7 @@ CREATE TYPE test_service_status AS ENUM (
     'running',
     'paused',
     'stopped',
-    'aborted',
+    'deleted',
     'succeed'
 );
 

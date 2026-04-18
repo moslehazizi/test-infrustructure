@@ -882,7 +882,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		assert.Len(t, got.Data, 2)
 		assert.Equal(t, expected, got)
 	})
-	t.Run("success_case_with_aborted_mother-service", func(t *testing.T) {
+	t.Run("success_case_with_deleted_mother-service", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
@@ -974,7 +974,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 					ResponseDelayDuration:  nil,
 					RandomResponseDelayMin: nil,
 					RandomResponseDelayMax: nil,
-					Status:                 entity.MotherServiceStatusAborted,
+					Status:                 entity.MotherServiceStatusDeleted,
 					ServiceDeploymentAddress: func() *string {
 						addr := "m200.svc"
 						return &addr
@@ -1062,7 +1062,7 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 						ResponseDelayDuration:  nil,
 						RandomResponseDelayMin: nil,
 						RandomResponseDelayMax: nil,
-						Status:                 entity.MotherServiceStatusAborted,
+						Status:                 entity.MotherServiceStatusDeleted,
 						ServiceDeploymentAddress: func() *string {
 							addr := "m200.svc"
 							return &addr
@@ -1884,7 +1884,7 @@ func TestTestScenario_Stop(t *testing.T) {
 
 }
 
-func TestTestScenario_Abort(t *testing.T) {
+func TestTestScenario_Delete(t *testing.T) {
 	_, err := config.LoadConfig()
 	assert.Nil(t, err)
 
@@ -1893,7 +1893,7 @@ func TestTestScenario_Abort(t *testing.T) {
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/abort", h.Abort())
+		app.Post("/test-scenarios/:id/delete", h.Delete())
 
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
 
@@ -1909,9 +1909,9 @@ func TestTestScenario_Abort(t *testing.T) {
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/abort", h.Abort())
+		app.Post("/test-scenarios/:id/delete", h.Delete())
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1sdf/abort", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1sdf/delete", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -1929,13 +1929,13 @@ func TestTestScenario_Abort(t *testing.T) {
 
 	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
-		srv.On("Abort", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		srv.On("Delete", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/abort", h.Abort())
+		app.Post("/test-scenarios/:id/delete", h.Delete())
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/abort", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/delete", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -1945,13 +1945,13 @@ func TestTestScenario_Abort(t *testing.T) {
 
 	t.Run("error_item_not_found", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
-		srv.On("Abort", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		srv.On("Delete", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/abort", h.Abort())
+		app.Post("/test-scenarios/:id/delete", h.Delete())
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/abort", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/delete", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -1969,13 +1969,13 @@ func TestTestScenario_Abort(t *testing.T) {
 
 	t.Run("success_case", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
-		srv.On("Abort", mock.Anything, uint64(1)).Return(nil)
+		srv.On("Delete", mock.Anything, uint64(1)).Return(nil)
 		h := NewTestScenarioHandler(srv)
 
 		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/:id/abort", h.Abort())
+		app.Post("/test-scenarios/:id/delete", h.Delete())
 
-		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/abort", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/delete", nil)
 
 		resp, _ := app.Test(req)
 		defer resp.Body.Close()
@@ -1988,7 +1988,7 @@ func TestTestScenario_Abort(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, response.Message, pkg.TestScenarioAbort)
+		assert.Equal(t, response.Message, pkg.TestScenarioDelete)
 	})
 
 }

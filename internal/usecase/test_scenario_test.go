@@ -2055,7 +2055,7 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed_case_scenario_status_is_abort", func(t *testing.T) {
+	t.Run("failed_case_scenario_status_is_delete", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -2079,7 +2079,7 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:       sampleID,
-			Status:   entity.ScenarioStatusAborted,
+			Status:   entity.ScenarioStatusDeleted,
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
@@ -2269,7 +2269,7 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 	})
 }
 
-func TestTestScenarioUsecase_Abort(t *testing.T) {
+func TestTestScenarioUsecase_Delete(t *testing.T) {
 	t.Run("failed_case_scenario_not_found", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
@@ -2294,7 +2294,7 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, pkg.ErrTestScenarioNotFound)
 
-		err := service.Abort(ctx, sampleID)
+		err := service.Delete(ctx, sampleID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrTestScenarioNotFound)
@@ -2325,7 +2325,7 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(nil, errors.New("error happened"))
 
-		err := service.Abort(ctx, sampleID)
+		err := service.Delete(ctx, sampleID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenario)
@@ -2357,20 +2357,20 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:       sampleID,
-			Status:   entity.ScenarioStatusAborted,
+			Status:   entity.ScenarioStatusDeleted,
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
 
-		err := service.Abort(ctx, sampleID)
+		err := service.Delete(ctx, sampleID)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrScenariosCanNotBeAbort)
+		assert.ErrorIs(t, err, pkg.ErrScenariosCanNotBeDelete)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed_case_repository_error_on_marking_as_aborted", func(t *testing.T) {
+	t.Run("failed_case_repository_error_on_marking_as_deleteed", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -2398,18 +2398,18 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusAborted, false).Return(errors.New("something went wrong"))
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusDeleted, false).Return(errors.New("something went wrong"))
 
-		err := service.Abort(ctx, sampleID)
+		err := service.Delete(ctx, sampleID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusAborted, false)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusDeleted, false)
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed_case_stress_test_abort_scenario_failed", func(t *testing.T) {
+	t.Run("failed_case_stress_test_delete_scenario_failed", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -2441,15 +2441,15 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusAborted, false).Return(nil)
-		mockStressTestExecutor.On("AbortScenario", mock.Anything, scenario, mock.Anything).Return(errors.New("something went wrong"))
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusDeleted, false).Return(nil)
+		mockStressTestExecutor.On("DeleteScenario", mock.Anything, scenario, mock.Anything).Return(errors.New("something went wrong"))
 
-		err := service.Abort(ctx, sampleID)
+		err := service.Delete(ctx, sampleID)
 
 		assert.Error(t, err)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusAborted, false)
-		mockStressTestExecutor.AssertCalled(t, "AbortScenario", mock.Anything, scenario, mock.Anything)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusDeleted, false)
+		mockStressTestExecutor.AssertCalled(t, "DeleteScenario", mock.Anything, scenario, mock.Anything)
 
 		mockRepo.AssertExpectations(t)
 	})
@@ -2486,14 +2486,14 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusAborted, false).Return(nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusDeleted, false).Return(nil)
 
-		err := service.Abort(ctx, sampleID)
+		err := service.Delete(ctx, sampleID)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrAbortTestNotImplemented)
+		assert.ErrorIs(t, err, pkg.ErrDeleteTestNotImplemented)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusAborted, false)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusDeleted, false)
 
 		mockRepo.AssertExpectations(t)
 	})
@@ -2531,15 +2531,15 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 		}
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusAborted, false).Return(nil)
-		mockStressTestExecutor.On("AbortScenario", mock.Anything, scenario, mock.Anything).Return(nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusDeleted, false).Return(nil)
+		mockStressTestExecutor.On("DeleteScenario", mock.Anything, scenario, mock.Anything).Return(nil)
 
-		err := service.Abort(ctx, sampleID)
+		err := service.Delete(ctx, sampleID)
 
 		assert.NoError(t, err)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusAborted, false)
-		mockStressTestExecutor.AssertCalled(t, "AbortScenario", mock.Anything, scenario, mock.Anything)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusDeleted, false)
+		mockStressTestExecutor.AssertCalled(t, "DeleteScenario", mock.Anything, scenario, mock.Anything)
 
 		mockRepo.AssertExpectations(t)
 	})

@@ -238,9 +238,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/mother-services/{id}/abort": {
+        "/api/v1/mother-services/{id}/delete": {
             "post": {
-                "description": "Abort a specific mother service by its ID.",
+                "description": "Delete a specific mother service by its ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -250,7 +250,7 @@ const docTemplate = `{
                 "tags": [
                     "mother-services"
                 ],
-                "summary": "Abort a mother service.",
+                "summary": "Delete a mother service.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -582,9 +582,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/test-scenarios/{id}/abort": {
+        "/api/v1/test-scenarios/{id}/delete": {
             "post": {
-                "description": "Abort a specific test scenario by its ID.",
+                "description": "Delete a specific test scenario by its ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -594,7 +594,7 @@ const docTemplate = `{
                 "tags": [
                     "test-scenarios"
                 ],
-                "summary": "Abort a test scenario.",
+                "summary": "Delete a test scenario.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -849,10 +849,10 @@ const docTemplate = `{
                 "running",
                 "paused",
                 "stopped",
-                "aborted"
+                "deleted"
             ],
             "x-enum-comments": {
-                "MotherServiceStatusAborted": "stop and delete containers. can not start again.",
+                "MotherServiceStatusDeleted": "stop and delete containers. can not start again.",
                 "MotherServiceStatusPaused": "application level pause on sending request",
                 "MotherServiceStatusPending": "mother service just created",
                 "MotherServiceStatusRunning": "test is running on application level (sending level)",
@@ -870,7 +870,7 @@ const docTemplate = `{
                 "MotherServiceStatusRunning",
                 "MotherServiceStatusPaused",
                 "MotherServiceStatusStopped",
-                "MotherServiceStatusAborted"
+                "MotherServiceStatusDeleted"
             ]
         },
         "entity.ScenarioStatus": {
@@ -880,7 +880,7 @@ const docTemplate = `{
                 "running",
                 "paused",
                 "stopped",
-                "aborted",
+                "deleted",
                 "succeed"
             ],
             "x-enum-varnames": [
@@ -888,7 +888,7 @@ const docTemplate = `{
                 "ScenarioStatusRunning",
                 "ScenarioStatusPaused",
                 "ScenarioStatusStopped",
-                "ScenarioStatusAborted",
+                "ScenarioStatusDeleted",
                 "ScenarioStatusSucceed"
             ]
         },

@@ -28,7 +28,7 @@ type TestScenario interface {
 	Pause(ctx context.Context, id uint64) error
 	Resume(ctx context.Context, id uint64) error
 	Stop(ctx context.Context, id uint64) error
-	Abort(ctx context.Context, id uint64) error
+	Delete(ctx context.Context, id uint64) error
 	// ResetOrphanedScenarios recovers scenarios that were in running state
 	// when the service crashed and ensures they're added to the in-memory executor box.
 	// ResetOrphanedScenarios(ctx context.Context) error
@@ -485,9 +485,9 @@ func (service *testScenario) Stop(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (service *testScenario) Abort(ctx context.Context, id uint64) error {
+func (service *testScenario) Delete(ctx context.Context, id uint64) error {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "abort_test_scenario")
+	_, span := tracer.Start(ctx, "delete_test_scenario")
 	defer span.End()
 
 	requestID := logger.GetRequestID(ctx)
@@ -511,11 +511,11 @@ func (service *testScenario) Abort(ctx context.Context, id uint64) error {
 	if scenario.Status != entity.ScenarioStatusPending {
 		span.SetAttributes(attribute.String("error.type", "invalid_status"))
 
-		return pkg.ErrScenariosCanNotBeAbort
+		return pkg.ErrScenariosCanNotBeDelete
 	}
 
 	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusAborted, false)
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusDeleted, false)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
@@ -524,12 +524,12 @@ func (service *testScenario) Abort(ctx context.Context, id uint64) error {
 
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.AbortScenario(ctx, scenario)
+		err := service.stressTestExecutionManager.DeleteScenario(ctx, scenario)
 		if err != nil {
-			return fmt.Errorf("%w: %w", pkg.ErrFailedToAbortScenarioToExecutionManager, err)
+			return fmt.Errorf("%w: %w", pkg.ErrFailedToDeleteScenarioToExecutionManager, err)
 		}
 	default:
-		return pkg.ErrAbortTestNotImplemented
+		return pkg.ErrDeleteTestNotImplemented
 	}
 
 	return nil

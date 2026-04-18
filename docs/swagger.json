@@ -227,9 +227,9 @@
                 }
             }
         },
-        "/api/v1/mother-services/{id}/abort": {
+        "/api/v1/mother-services/{id}/delete": {
             "post": {
-                "description": "Abort a specific mother service by its ID.",
+                "description": "Delete a specific mother service by its ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -239,7 +239,7 @@
                 "tags": [
                     "mother-services"
                 ],
-                "summary": "Abort a mother service.",
+                "summary": "Delete a mother service.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -571,9 +571,9 @@
                 }
             }
         },
-        "/api/v1/test-scenarios/{id}/abort": {
+        "/api/v1/test-scenarios/{id}/delete": {
             "post": {
-                "description": "Abort a specific test scenario by its ID.",
+                "description": "Delete a specific test scenario by its ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -583,7 +583,7 @@
                 "tags": [
                     "test-scenarios"
                 ],
-                "summary": "Abort a test scenario.",
+                "summary": "Delete a test scenario.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -838,10 +838,10 @@
                 "running",
                 "paused",
                 "stopped",
-                "aborted"
+                "deleted"
             ],
             "x-enum-comments": {
-                "MotherServiceStatusAborted": "stop and delete containers. can not start again.",
+                "MotherServiceStatusDeleted": "stop and delete containers. can not start again.",
                 "MotherServiceStatusPaused": "application level pause on sending request",
                 "MotherServiceStatusPending": "mother service just created",
                 "MotherServiceStatusRunning": "test is running on application level (sending level)",
@@ -859,7 +859,7 @@
                 "MotherServiceStatusRunning",
                 "MotherServiceStatusPaused",
                 "MotherServiceStatusStopped",
-                "MotherServiceStatusAborted"
+                "MotherServiceStatusDeleted"
             ]
         },
         "entity.ScenarioStatus": {
@@ -869,7 +869,7 @@
                 "running",
                 "paused",
                 "stopped",
-                "aborted",
+                "deleted",
                 "succeed"
             ],
             "x-enum-varnames": [
@@ -877,7 +877,7 @@
                 "ScenarioStatusRunning",
                 "ScenarioStatusPaused",
                 "ScenarioStatusStopped",
-                "ScenarioStatusAborted",
+                "ScenarioStatusDeleted",
                 "ScenarioStatusSucceed"
             ]
         },

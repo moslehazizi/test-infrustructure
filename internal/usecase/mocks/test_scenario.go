@@ -64,7 +64,7 @@ func (m *MockTestScenario) Stop(ctx context.Context, id uint64) error {
 	return args.Error(0)
 }
 
-func (m *MockTestScenario) Abort(ctx context.Context, id uint64) error {
+func (m *MockTestScenario) Delete(ctx context.Context, id uint64) error {
 	args := m.Called(ctx, id)
 
 	return args.Error(0)

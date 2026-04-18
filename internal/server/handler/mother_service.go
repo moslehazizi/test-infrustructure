@@ -248,10 +248,10 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 	}
 }
 
-// Abort godoc
+// Delete godoc
 //
-//	@Summary		Abort a mother service.
-//	@Description	Abort a specific mother service by its ID.
+//	@Summary		Delete a mother service.
+//	@Description	Delete a specific mother service by its ID.
 //	@Tags			mother-services
 //	@Accept			json
 //	@Produce		json
@@ -260,11 +260,11 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 //	@Failure		400	{object}	response.ErrorResponse
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
-//	@Router			/api/v1/mother-services/{id}/abort [post]
-func (handler *MotherService) Abort() fiber.Handler {
+//	@Router			/api/v1/mother-services/{id}/delete [post]
+func (handler *MotherService) Delete() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "abort_mother_service")
+		traceCtx, span := tracer.Start(ctx.Context(), "delete_mother_service")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -284,14 +284,14 @@ func (handler *MotherService) Abort() fiber.Handler {
 
 		span.SetAttributes(attribute.String("mother_service.id", strconv.FormatUint(id, 10)))
 
-		err = handler.motherService.Abort(traceCtx, id)
+		err = handler.motherService.Delete(traceCtx, id)
 		if err != nil {
-			span.SetAttributes(attribute.String("error.type", "abort_error"), attribute.String("error.message", err.Error()))
+			span.SetAttributes(attribute.String("error.type", "delete_error"), attribute.String("error.message", err.Error()))
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
-			Message: pkg.MotherServiceAbort,
+			Message: pkg.MotherServiceDelete,
 		})
 	}
 }
