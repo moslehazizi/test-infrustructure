@@ -238,6 +238,22 @@ func (ex *StressTestExecutionManager) AbortScenario(ctx context.Context, scenari
 	sci.SetRunning(false)
 
 	agents := sci.GetAgents()
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
 	for _, agent := range agents {
 		err := agent.AbortTesting(ctx)
 		if err != nil {

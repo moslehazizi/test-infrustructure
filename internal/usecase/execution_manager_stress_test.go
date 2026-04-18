@@ -496,6 +496,7 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 		seb := new(mocks.MockScenarioExecutorBuilder)
 
 		agent := new(mocks.MockTestAgentController)
+		agent.On("Healthy").Return(true)
 		agent.On("AbortTesting", mock.Anything).Return(errors.New("something went wrong"))
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
@@ -514,6 +515,7 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToAbortTestService)
 
 		agent.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy", mock.Anything)
 	})
 
 	t.Run("success_case", func(t *testing.T) {
@@ -539,12 +541,14 @@ func TestStressTestExecutionManager_Abort(t *testing.T) {
 
 		builder.On("Get", scenario).Times(3).Return(agent)
 		agent.On("AbortTesting", mock.Anything).Return(nil)
+		agent.On("Healthy").Return(true)
 
 		err := ex.AbortScenario(context.Background(), scenario)
 
 		assert.Nil(t, err)
 
 		agent.AssertCalled(t, "AbortTesting", mock.Anything)
+		agent.AssertCalled(t, "Healthy", mock.Anything)
 	})
 }
 
