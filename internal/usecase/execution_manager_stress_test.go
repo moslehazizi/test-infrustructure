@@ -515,7 +515,6 @@ func TestStressTestExecutionManager_Delete(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToDeleteTestService)
 
 		agent.AssertCalled(t, "DeleteTesting", mock.Anything)
-		agent.AssertCalled(t, "Healthy", mock.Anything)
 	})
 
 	t.Run("success_case", func(t *testing.T) {
@@ -541,14 +540,12 @@ func TestStressTestExecutionManager_Delete(t *testing.T) {
 
 		builder.On("Get", scenario).Times(3).Return(agent)
 		agent.On("DeleteTesting", mock.Anything).Return(nil)
-		agent.On("Healthy").Return(true)
 
 		err := ex.DeleteScenario(context.Background(), scenario)
 
 		assert.Nil(t, err)
 
 		agent.AssertCalled(t, "DeleteTesting", mock.Anything)
-		agent.AssertCalled(t, "Healthy", mock.Anything)
 	})
 }
 

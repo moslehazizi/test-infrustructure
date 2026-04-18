@@ -238,22 +238,6 @@ func (ex *StressTestExecutionManager) DeleteScenario(ctx context.Context, scenar
 	sci.SetRunning(false)
 
 	agents := sci.GetAgents()
-	for {
-		allHealthy := true
-		for _, agent := range agents {
-			if !agent.Healthy() {
-				allHealthy = false
-
-				break
-			}
-		}
-
-		if allHealthy {
-			break
-		}
-
-		time.Sleep(healthyCheckSleep)
-	}
 	for _, agent := range agents {
 		err := agent.DeleteTesting(ctx)
 		if err != nil {
