@@ -5,7 +5,8 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository/mocks"
 
-	provisionPrvider "control-panel-service/internal/provider/mocks"
+	provisionProvider "control-panel-service/internal/provider/mocks"
+	mockstem "control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	connmock "control-panel-service/pkg/database/postgres/mocks"
@@ -28,9 +29,11 @@ func getMockDB(t *testing.T) database.Database {
 
 func TestNewMotherService(t *testing.T) {
 	mockRepo := new(mocks.MockMotherService)
+	mockTestRepo := new(mocks.MockTestScenario)
+	mockSTEM := new(mockstem.MockExecutionManage)
+	mockProvision := new(provisionProvider.MockProvisioningService)
 
-	mockProvision := new(provisionPrvider.MockProvisioningService)
-	service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+	service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 	assert.NotNil(t, service)
 
@@ -43,8 +46,11 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockSTEM := new(mockstem.MockExecutionManage)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -64,8 +70,11 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("failed_DeployMotherService_returns_ErrFailedToDeployMotherService", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockSTEM := new(mockstem.MockExecutionManage)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -87,8 +96,11 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("failed_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -108,8 +120,11 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("failed_case_duplicate", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -129,8 +144,11 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("failed_case_validation_error_service_name_is_missing", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		sampleMS := &entity.MotherService{
 			DatabaseName:      "db1",
@@ -146,8 +164,11 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("failed_case_validation_error_response_delay_rete_not_be_negative", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -166,8 +187,11 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("failed_case_validation_error_exception_rate_is_negative", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -185,8 +209,11 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 	t.Run("failed_case_validation_error_fixed_delay_is_set_but_rate_is_0", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 		duration := 100
 
 		sampleMS := &entity.MotherService{
@@ -209,8 +236,11 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		inputID := uint64(1)
 		expectedResult := &entity.MotherService{
@@ -237,8 +267,11 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 	t.Run("failed_case_not_found", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		inputID := uint64(1)
 
@@ -255,8 +288,11 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 	t.Run("failed_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		inputID := uint64(1)
 
@@ -275,8 +311,11 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
@@ -327,8 +366,11 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 	t.Run("failed_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
@@ -349,8 +391,11 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 	t.Run("failed_case_negative_page", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    -1,
@@ -373,34 +418,56 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
 		motherServiceId := uint64(1)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		motherService := &entity.MotherService{
 			ID:   motherServiceId,
 			Name: "mother-service-1",
 		}
 
+		testScenarios := []*entity.TestScenario{
+			{
+				ID:              1,
+				MotherServiceID: motherServiceId,
+			},
+			{
+				ID:              2,
+				MotherServiceID: motherServiceId,
+			},
+		}
+
 		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
 		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(nil).Times(1)
 		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusAborted).Return(nil).Times(1)
+		mockTestRepo.On("GetByMotherServiceId", mock.Anything, motherService.ID).Return(testScenarios, nil).Times(1)
+		mockSTEM.On("AbortScenario", mock.Anything, testScenarios[0]).Return(nil)
+		mockSTEM.On("AbortScenario", mock.Anything, testScenarios[1]).Return(nil)
+		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[0].ID, entity.ScenarioStatusAborted, false).Return(nil)
+		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[1].ID, entity.ScenarioStatusAborted, false).Return(nil)
 
 		err := service.Abort(ctx, uint64(motherServiceId))
 		assert.NoError(t, err)
 
 		mockRepo.AssertExpectations(t)
 		mockProvision.AssertExpectations(t)
+		mockTestRepo.AssertExpectations(t)
+		mockSTEM.AssertExpectations(t)
 	})
 
 	t.Run("fail_case_failed_to_get_mother_service", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		mockSTEM := new(mockstem.MockExecutionManage)
 		motherServiceId := uint64(1)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		motherService := &entity.MotherService{}
 
@@ -415,10 +482,12 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 	t.Run("fail_case_failed_to_deprovision_mother_service", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
 		motherServiceId := uint64(1)
+		mockSTEM := new(mockstem.MockExecutionManage)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		motherService := &entity.MotherService{}
 
@@ -435,10 +504,12 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 	t.Run("fail_case_failed_to_update_mother_service_status", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
-		mockProvision := new(provisionPrvider.MockProvisioningService)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
 		motherServiceId := uint64(1)
+		mockSTEM := new(mockstem.MockExecutionManage)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockProvision)
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
 
 		motherService := &entity.MotherService{}
 
@@ -451,6 +522,76 @@ func TestMotherServiceUsecase_Abort(t *testing.T) {
 
 		mockRepo.AssertExpectations(t)
 		mockProvision.AssertExpectations(t)
+	})
+
+	t.Run("fail_case_failed_to_get_test_scenarios_by_mother_id", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		motherServiceId := uint64(1)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
+
+		motherService := &entity.MotherService{}
+		testScenarios := []*entity.TestScenario{}
+
+		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
+		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(nil).Times(1)
+		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusAborted).Return(nil).Times(1)
+		mockTestRepo.On("GetByMotherServiceId", mock.Anything, motherService.ID).Return(testScenarios, errors.New("something went wrong")).Times(1)
+
+		err := service.Abort(ctx, uint64(motherServiceId))
+		assert.Error(t, err)
+
+		mockRepo.AssertExpectations(t)
+		mockProvision.AssertExpectations(t)
+		mockTestRepo.AssertExpectations(t)
+	})
+
+	t.Run("fail_case_failed_to_deprovision_update_status", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := new(mocks.MockMotherService)
+		mockTestRepo := new(mocks.MockTestScenario)
+		mockProvision := new(provisionProvider.MockProvisioningService)
+		motherServiceId := uint64(1)
+		mockSTEM := new(mockstem.MockExecutionManage)
+
+		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM)
+
+		motherService := &entity.MotherService{
+			ID:   motherServiceId,
+			Name: "mother-service-1",
+		}
+
+		testScenarios := []*entity.TestScenario{
+			{
+				ID:              1,
+				MotherServiceID: motherServiceId,
+			},
+			{
+				ID:              2,
+				MotherServiceID: motherServiceId,
+			},
+		}
+
+		mockRepo.On("GetByID", mock.Anything, motherServiceId).Return(motherService, nil).Times(1)
+		mockProvision.On("DeprovisionMotherService", mock.Anything, motherService).Return(nil).Times(1)
+		mockRepo.On("SetStatus", mock.Anything, motherService.ID, entity.MotherServiceStatusAborted).Return(nil).Times(1)
+		mockTestRepo.On("GetByMotherServiceId", mock.Anything, motherService.ID).Return(testScenarios, nil).Times(1)
+		mockSTEM.On("AbortScenario", mock.Anything, testScenarios[0]).Return(errors.New("something went wrong"))
+		mockSTEM.On("AbortScenario", mock.Anything, testScenarios[1]).Return(nil)
+		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[0].ID, entity.ScenarioStatusAborted, false).Return(errors.New("something went wrong"))
+		mockTestRepo.On("SetStatus", mock.Anything, testScenarios[1].ID, entity.ScenarioStatusAborted, false).Return(nil)
+
+		err := service.Abort(ctx, uint64(motherServiceId))
+		assert.NoError(t, err)
+
+		mockRepo.AssertExpectations(t)
+		mockProvision.AssertExpectations(t)
+		mockTestRepo.AssertExpectations(t)
+		mockSTEM.AssertExpectations(t)
 	})
 
 }

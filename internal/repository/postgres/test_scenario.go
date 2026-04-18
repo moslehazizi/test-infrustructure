@@ -317,3 +317,33 @@ func (repo *testScenario) Update(ctx context.Context, scenario *entity.TestScena
 
 	return nil
 }
+
+func (repo *testScenario) GetByMotherServiceId(ctx context.Context, motherServiceId uint64) ([]*entity.TestScenario, error) {
+	tracer := otel.Tracer("test-scenario-repository")
+	_, span := tracer.Start(ctx, "get_by_mother_service_id_test_scenarios")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
+	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("mother_service_id", strconv.FormatUint(motherServiceId, 10)))
+
+	var testScenarios []*entity.TestScenario
+
+	query := postgres.QueryBuilder(ctx, repo.db).
+		Where("mother_service_id = ?", motherServiceId).
+		Preload("TestCategory").
+		Preload("MotherService").
+		Preload("TestServiceConfig").
+		Order("id DESC")
+
+	err := query.Find(&testScenarios).Error
+
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
+
+		return nil, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, err)
+	}
+
+	return testScenarios, nil
+}

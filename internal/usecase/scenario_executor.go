@@ -74,10 +74,21 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 
 		// set running false
 		se.SetRunning(false)
-		// set status
-		err := se.scenarioRepo.SetStatus(ctx, se.scenario.ID, entity.ScenarioStatusPending, true)
+
+		// get test scenario
+		scenario, err := se.scenarioRepo.GetByID(ctx, se.scenario.ID)
 		if err != nil && e == nil {
-			e = fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
+			e = fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenario, err)
+
+			return
+		}
+
+		if scenario.Status == entity.ScenarioStatusRunning {
+			// set status
+			err := se.scenarioRepo.SetStatus(ctx, se.scenario.ID, entity.ScenarioStatusPending, true)
+			if err != nil && e == nil {
+				e = fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
+			}
 		}
 	}()
 

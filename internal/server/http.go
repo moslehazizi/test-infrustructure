@@ -141,19 +141,20 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		return fmt.Errorf("could not connect to kubernetes: %w", err)
 	}
 
-	motherService := usecase.NewMotherService(
-		db,
-		postgres.NewMotherServiceRepository(db),
-		provider.NewProvisioningService(cfg, kubernetes),
-	)
-
 	provisionService := provider.NewProvisioningService(cfg, kubernetes)
 	testServiceSDK := provider.NewSDKTestService(&http.Client{})
 	testScenarioRepository := postgres.NewTestScenarioRepository(db)
 	scenarioExecutorBuilder := usecase.NewScenarioExecutorBuilder()
-
 	agentBuilder := usecase.NewTestAgentControllerToolBox(provisionService, testServiceSDK, cfg.Kubernetese.TestServiceAPPServe, cfg.Kubernetese.IngressHost, cfg.Kubernetese.IngressPort)
 	stressTestExecutionManager := usecase.NewStressTestExecutionManager(agentBuilder, testScenarioRepository, scenarioExecutorBuilder)
+
+	motherService := usecase.NewMotherService(
+		db,
+		postgres.NewMotherServiceRepository(db),
+		testScenarioRepository,
+		provider.NewProvisioningService(cfg, kubernetes),
+		stressTestExecutionManager,
+	)
 
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
 		db,

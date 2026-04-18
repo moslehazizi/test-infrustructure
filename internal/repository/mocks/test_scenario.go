@@ -96,3 +96,14 @@ func (m *MockTestScenario) Update(ctx context.Context, scenario *entity.TestScen
 
 	return args.Error(0)
 }
+
+func (m *MockTestScenario) GetByMotherServiceId(ctx context.Context, motherServiceId uint64) ([]*entity.TestScenario, error) {
+	args := m.Called(ctx, motherServiceId)
+
+	var result []*entity.TestScenario
+	if args.Get(0) != nil {
+		result = args.Get(0).([]*entity.TestScenario)
+	}
+
+	return result, args.Error(1)
+}

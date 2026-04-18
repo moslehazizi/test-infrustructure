@@ -75,12 +75,6 @@ func (m *MockTestScenario) DeployTestScenarioService(ctx context.Context, mother
 	return args.Error(0)
 }
 
-func (m *MockTestScenario) DeprovisionAllPods(ctx context.Context) error {
-	args := m.Called(ctx)
-
-	return args.Error(0)
-}
-
 func (m *MockTestScenario) Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) (e error) {
 	args := m.Called(ctx, testScenarioUpdateRequest)
 

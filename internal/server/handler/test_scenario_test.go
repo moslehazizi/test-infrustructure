@@ -894,7 +894,6 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 			PerPage: 2,
 		}
 		countTotal := int64(2)
-		countRunning := int64(1)
 		someTime := time.Date(2026, 01, 12, 16, 36, 22, 0, time.UTC)
 
 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, payload.Page, payload.PerPage)
@@ -1033,8 +1032,48 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 					},
 					Editable: false,
 				},
+				{
+					ID:                  2,
+					Name:                "load test 2",
+					CreatedAt:           someTime,
+					UpdatedAt:           someTime,
+					Status:              entity.ScenarioStatusPending,
+					MaxTestServiceCount: &cnt,
+					StartedAt:           &someTime,
+					NumSteps:            2,
+					IncreaseAgentNumber: 0,
+					ExecNumMultiAgent:   1,
+					TestCategory: &response.TestCategory{
+						ID:                     100,
+						Name:                   "load",
+						Label:                  "Load Test",
+						CreatedAt:              someTime,
+						UpdatedAt:              someTime,
+						HasMaxTestServiceCount: true,
+						HasNumSteps:            true,
+					},
+					MotherService: &response.MotherService{
+						ID:                     2,
+						CreatedAt:              someTime,
+						UpdatedAt:              someTime,
+						Name:                   "mother2",
+						ExceptionRate:          0,
+						ResponseDelayRate:      0,
+						ResponseDelayDuration:  nil,
+						RandomResponseDelayMin: nil,
+						RandomResponseDelayMax: nil,
+						Status:                 entity.MotherServiceStatusAborted,
+						ServiceDeploymentAddress: func() *string {
+							addr := "m200.svc"
+							return &addr
+						}(),
+						DatabaseName:      "m200",
+						DatabaseTableName: "t2",
+					},
+					Editable: false,
+				},
 			},
-			Total: countRunning,
+			Total: countTotal,
 		}
 
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
@@ -1050,8 +1089,8 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		assert.Equal(t, expected.Page, got.Page)
-		assert.Equal(t, countRunning, got.Total)
-		assert.Len(t, got.Data, 1)
+		assert.Equal(t, countTotal, got.Total)
+		assert.Len(t, got.Data, 2)
 		assert.Equal(t, expected, got)
 	})
 	t.Run("error_invalid_request_body", func(t *testing.T) {

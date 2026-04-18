@@ -5,6 +5,7 @@ import (
 	"control-panel-service/internal/domain/entity"
 	provision "control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
+	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/logger"
@@ -27,19 +28,25 @@ type MotherService interface {
 func NewMotherService(
 	db database.Database,
 	motherServiceRepo repository.MotherServiceRepository,
+	testScenarioRepo repository.TestScenarioRepository,
 	provisioningService provision.ProvisioningService,
+	stressTestExecutionManager interfaces.ExecutionManager,
 ) MotherService {
 	return &motherService{
 		db,
 		motherServiceRepo,
+		testScenarioRepo,
 		provisioningService,
+		stressTestExecutionManager,
 	}
 }
 
 type motherService struct {
-	db                  database.Database
-	motherServiceRepo   repository.MotherServiceRepository
-	provisioningService provision.ProvisioningService
+	db                         database.Database
+	motherServiceRepo          repository.MotherServiceRepository
+	testScenarioRepo           repository.TestScenarioRepository
+	provisioningService        provision.ProvisioningService
+	stressTestExecutionManager interfaces.ExecutionManager
 }
 
 func (service *motherService) Create(ctx context.Context, motherService *entity.MotherService) (e error) {
@@ -214,6 +221,28 @@ func (service *motherService) Abort(ctx context.Context, id uint64) error {
 		zap.L().Error("failed to update mother service status", zap.Uint64("id", motherService.ID), zap.String("name", motherService.Name), zap.Error(err))
 
 		return err
+	}
+
+	// get test scenarios by mother service id
+	testScenarios, err := service.testScenarioRepo.GetByMotherServiceId(ctx, motherService.ID)
+	if err != nil {
+		zap.L().Error("failed to get test scenarios by mother service id", zap.Uint64("id", motherService.ID), zap.String("name", motherService.Name), zap.Error(err))
+
+		return err
+	}
+
+	for _, testScenario := range testScenarios {
+		// abort scenarios
+		err := service.stressTestExecutionManager.AbortScenario(ctx, testScenario)
+		if err != nil {
+			zap.L().Error("failed to deprovision test scenario", zap.Uint64("mother_service_id", motherService.ID), zap.Uint64("test_scenario_id", testScenario.ID), zap.String("name", motherService.Name), zap.Error(err))
+		}
+
+		// update status
+		err = service.testScenarioRepo.SetStatus(ctx, testScenario.ID, entity.ScenarioStatusAborted, false)
+		if err != nil {
+			zap.L().Error("failed to update scenario test status", zap.Uint64("mother_service_id", motherService.ID), zap.Uint64("test_scenario_id", testScenario.ID), zap.String("name", motherService.Name), zap.Error(err))
+		}
 	}
 
 	return nil

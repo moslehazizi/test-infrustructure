@@ -150,12 +150,6 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 
 		var responses []response.TestScenario
 		for _, item := range items {
-			if item.MotherService != nil {
-				if item.MotherService.Status != entity.MotherServiceStatusRunning {
-					count--
-					continue
-				}
-			}
 			responses = append(responses, response.TestScenario{
 				ID:                  item.ID,
 				Name:                item.Name,

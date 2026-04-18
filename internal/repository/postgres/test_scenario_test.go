@@ -2059,3 +2059,268 @@ func TestTestScenarioRepository_Update(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
+
+func TestTestScenarioRepository_GetByMotherServiceId(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewTestScenarioRepository(db)
+		motherId := uint64(1)
+
+		someTime := time.Date(2026, 01, 13, 14, 10, 0, 0, time.Now().Location())
+		num := 10
+
+		expectedTestScenario := []*entity.TestScenario{
+			{
+				ID:                  1,
+				CreatedAt:           someTime,
+				UpdatedAt:           someTime,
+				Name:                "some test",
+				Status:              entity.ScenarioStatusRunning,
+				MaxTestServiceCount: nil,
+				TestCategoryID:      3,
+				MotherServiceID:     motherId,
+				NumSteps:            2,
+				TestCategory: &entity.TestCategory{
+					ID:                     3,
+					CreatedAt:              someTime,
+					UpdatedAt:              someTime,
+					Name:                   "peak",
+					Label:                  "peak test",
+					HasMaxTestServiceCount: true,
+					HasNumSteps:            true,
+				},
+				MotherService: &entity.MotherService{
+					ID:   motherId,
+					Name: "m2",
+				},
+				TestServiceConfig: &entity.TestServiceConfig{
+					ID:                    100,
+					TestScenarioID:        1,
+					CreatedAt:             someTime,
+					UpdatedAt:             someTime,
+					MaxRequests:           100,
+					MaxDuration:           0,
+					RequestDelayDuration:  nil,
+					RandomRequestDelayMin: nil,
+					RandomRequestDelayMax: nil,
+					FixedTestNumber:       &num,
+					RandomTestNumberMin:   nil,
+					RandomTestNumberMax:   nil,
+					BadValueRate:          0,
+					NegativeValueRate:     0,
+					RealValueRate:         0,
+					ZeroValueRate:         0,
+					StringValueRate:       0,
+					LongStringValueRate:   0,
+					NullValueRate:         0,
+				},
+				Editable: false,
+			},
+			{
+				ID:                  4,
+				CreatedAt:           someTime,
+				UpdatedAt:           someTime,
+				Name:                "some test",
+				Status:              entity.ScenarioStatusRunning,
+				MaxTestServiceCount: nil,
+				TestCategoryID:      6,
+				MotherServiceID:     motherId,
+				NumSteps:            2,
+				TestCategory: &entity.TestCategory{
+					ID:                     6,
+					CreatedAt:              someTime,
+					UpdatedAt:              someTime,
+					Name:                   "spike",
+					Label:                  "spike test",
+					HasMaxTestServiceCount: true,
+					HasNumSteps:            true,
+				},
+				MotherService: &entity.MotherService{
+					ID:   motherId,
+					Name: "m2",
+				},
+				TestServiceConfig: &entity.TestServiceConfig{
+					ID:                    54,
+					TestScenarioID:        4,
+					CreatedAt:             someTime,
+					UpdatedAt:             someTime,
+					MaxRequests:           54,
+					MaxDuration:           0,
+					RequestDelayDuration:  nil,
+					RandomRequestDelayMin: nil,
+					RandomRequestDelayMax: nil,
+					FixedTestNumber:       &num,
+					RandomTestNumberMin:   nil,
+					RandomTestNumberMax:   nil,
+					BadValueRate:          0,
+					NegativeValueRate:     0,
+					RealValueRate:         0,
+					ZeroValueRate:         0,
+					StringValueRate:       0,
+					LongStringValueRate:   0,
+					NullValueRate:         0,
+				},
+				Editable: false},
+		}
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_scenarios" WHERE mother_service_id = $1 AND "test_scenarios"."deleted_at" IS NULL ORDER BY id DESC`)).
+			WithArgs(motherId).
+			WillReturnRows(sqlmock.NewRows([]string{
+				"id", "created_at", "updated_at", "deleted_at", "name",
+				"test_category_id", "mother_service_id", "status",
+				"num_steps",
+				"max_test_service_count", "editable",
+			}).
+				AddRow(
+					expectedTestScenario[0].ID,
+					expectedTestScenario[0].CreatedAt,
+					expectedTestScenario[0].UpdatedAt,
+					nil,
+					expectedTestScenario[0].Name,
+					expectedTestScenario[0].TestCategoryID,
+					expectedTestScenario[0].MotherServiceID,
+					expectedTestScenario[0].Status,
+					expectedTestScenario[0].NumSteps,
+					expectedTestScenario[0].MaxTestServiceCount,
+					expectedTestScenario[0].Editable,
+				).
+				AddRow(
+					expectedTestScenario[1].ID,
+					expectedTestScenario[1].CreatedAt,
+					expectedTestScenario[1].UpdatedAt,
+					nil,
+					expectedTestScenario[1].Name,
+					expectedTestScenario[1].TestCategoryID,
+					expectedTestScenario[1].MotherServiceID,
+					expectedTestScenario[1].Status,
+					expectedTestScenario[1].NumSteps,
+					expectedTestScenario[1].MaxTestServiceCount,
+					expectedTestScenario[1].Editable,
+				))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL`)).
+			WithArgs(motherId).
+			WillReturnRows(sqlmock.NewRows([]string{
+				"id",
+				"name",
+			}).AddRow(
+				motherId,
+				"m2",
+			))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_categories" WHERE "test_categories"."id" IN ($1,$2)`)).WithArgs(3, 6).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"created_at",
+			"updated_at",
+			"name",
+			"label",
+			"has_max_test_service_count",
+			"has_num_steps",
+		}).AddRow(
+			3,
+			someTime,
+			someTime,
+			"peak",
+			"peak test",
+			true,
+			true,
+		).AddRow(
+			6,
+			someTime,
+			someTime,
+			"spike",
+			"spike test",
+			true,
+			true,
+		))
+
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "test_service_configs" WHERE "test_service_configs"."test_scenario_id" IN ($1,$2)`)).WithArgs(1, 4).WillReturnRows(sqlmock.NewRows([]string{
+			"id",
+			"created_at",
+			"updated_at",
+			"test_scenario_id",
+			"max_requests",
+			"max_duration",
+			"request_delay_duration",
+			"random_request_delay_min",
+			"random_request_delay_max",
+			"fixed_test_number",
+			"random_test_number_min",
+			"random_test_number_max",
+			"bad_value_rate",
+			"negative_value_rate",
+			"real_value_rate",
+			"zero_value_rate",
+			"string_value_rate",
+			"long_string_value_rate",
+			"null_value_rate",
+		}).AddRow(
+			100,
+			someTime,
+			someTime,
+			1,
+			100,
+			0,
+			nil,
+			nil,
+			nil,
+			10,
+			nil,
+			nil,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+		).AddRow(
+			54,
+			someTime,
+			someTime,
+			4,
+			54,
+			0,
+			nil,
+			nil,
+			nil,
+			10,
+			nil,
+			nil,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+		))
+
+		result, err := repo.GetByMotherServiceId(context.Background(), motherId)
+
+		require.NoError(t, mock.ExpectationsWereMet())
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, expectedTestScenario, result)
+	})
+
+	t.Run("failed_case_database_connection_error", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		repo := NewTestScenarioRepository(db)
+		motherId := uint64(1)
+
+		mock.ExpectQuery(`SELECT \* FROM "test_scenarios" WHERE mother_service_id = .+ AND "test_scenarios"\."deleted_at" IS NULL ORDER BY id DESC`).
+			WillReturnError(errors.New("error happened"))
+
+		result, err := repo.GetByMotherServiceId(context.Background(), motherId)
+
+		require.NoError(t, mock.ExpectationsWereMet())
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenarios)
+	})
+}

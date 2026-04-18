@@ -36,6 +36,7 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 		}
 
 		ex := NewStressTestExecutionManager(toolbox, repo, seb)
+		repo.On("GetByID", mock.Anything, mock.Anything).Return(&entity.TestScenario{ID: 1, Status: entity.ScenarioStatusRunning}, nil)
 		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(sampleSE)
 
@@ -72,6 +73,7 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 		}
 
 		ex := NewStressTestExecutionManager(toolbox, repo, seb)
+		repo.On("GetByID", mock.Anything, mock.Anything).Return(&entity.TestScenario{ID: 1, Status: entity.ScenarioStatusRunning}, nil)
 		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(sampleSE)
 
