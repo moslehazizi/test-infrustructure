@@ -70,4 +70,5 @@ const (
 	ExecNumMultiFixedInputShouldBePositive = "تعداد اجرای سناریو برای عدد ثابت باید یک یا بیشتر باشد."
 	MultiFixedInputConfigNotTrue           = "تنظیمات افزایش عدد ثابت درست نمی باشد"
 	MultiAgentConfigNotTrue                = "تنظیمات افزایش تعداد ایجنت درست نمی باشد"
+	ScenariosCanNotBeAbort                 = "سناریو در این حالت نمیتواند حذف شود."
 )

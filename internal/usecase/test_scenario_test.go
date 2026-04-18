@@ -2333,7 +2333,7 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed_case_scenario_status_is_abort", func(t *testing.T) {
+	t.Run("failed_case_scenario_status_is_not_pending", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -2365,7 +2365,7 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 		err := service.Abort(ctx, sampleID)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrAbortedScenariosCanBeAbort)
+		assert.ErrorIs(t, err, pkg.ErrScenariosCanNotBeAbort)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertExpectations(t)
 	})
@@ -2394,7 +2394,7 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:       sampleID,
-			Status:   entity.ScenarioStatusRunning,
+			Status:   entity.ScenarioStatusPending,
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
@@ -2433,7 +2433,7 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:     sampleID,
-			Status: entity.ScenarioStatusPaused,
+			Status: entity.ScenarioStatusPending,
 			TestCategory: &entity.TestCategory{
 				ID:   1,
 				Name: entity.STRESS,
@@ -2478,7 +2478,7 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:     sampleID,
-			Status: entity.ScenarioStatusPaused,
+			Status: entity.ScenarioStatusPending,
 			TestCategory: &entity.TestCategory{
 				ID:   1,
 				Name: "notsupported",
@@ -2522,7 +2522,7 @@ func TestTestScenarioUsecase_Abort(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:     sampleID,
-			Status: entity.ScenarioStatusPaused,
+			Status: entity.ScenarioStatusPending,
 			TestCategory: &entity.TestCategory{
 				ID:   1,
 				Name: entity.STRESS,

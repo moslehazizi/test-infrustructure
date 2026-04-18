@@ -508,10 +508,10 @@ func (service *testScenario) Abort(ctx context.Context, id uint64) error {
 	}
 
 	// make sure scenario has correct status
-	if scenario.Status == entity.ScenarioStatusAborted {
+	if scenario.Status != entity.ScenarioStatusPending {
 		span.SetAttributes(attribute.String("error.type", "invalid_status"))
 
-		return pkg.ErrAbortedScenariosCanBeAbort
+		return pkg.ErrScenariosCanNotBeAbort
 	}
 
 	// mark scenario as running
