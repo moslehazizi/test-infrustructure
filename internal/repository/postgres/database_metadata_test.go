@@ -186,3 +186,147 @@ t.Run("failure_case_database_error", func(t *testing.T) {
 // 		require.NoError(t, mock.ExpectationsWereMet())
 // 	})
 // }
+
+func TestIsTestScenarioTable(t *testing.T) {
+	t.Run("success_case_exact_required_columns", func(t *testing.T) {
+		columns := []string{
+			"mother_service_id",
+			"test_service_id",
+			"start_tx_time",
+			"step_num",
+			"execution_id",
+			"scenario_id",
+			"duration_tx",
+			"delay_before_tx",
+			"http_status_code",
+		}
+		result := isTestScenarioTable(columns)
+		if !result {
+			t.Errorf("isTestScenarioTable() = false, expected true")
+		}
+	})
+
+	t.Run("success_case_with_extra_columns", func(t *testing.T) {
+		columns := []string{
+			"mother_service_id",
+			"test_service_id",
+			"start_tx_time",
+			"step_num",
+			"execution_id",
+			"scenario_id",
+			"duration_tx",
+			"delay_before_tx",
+			"http_status_code",
+			"extra_field_1",
+			"extra_field_2",
+		}
+		result := isTestScenarioTable(columns)
+		if !result {
+			t.Errorf("isTestScenarioTable() = false, expected true")
+		}
+	})
+
+	t.Run("failed_case_missing_one_required_column", func(t *testing.T) {
+		columns := []string{
+			"mother_service_id",
+			"test_service_id",
+			"start_tx_time",
+			"step_num",
+			"execution_id",
+			"scenario_id",
+			"duration_tx",
+			"delay_before_tx",
+		}
+		result := isTestScenarioTable(columns)
+		if result {
+			t.Errorf("isTestScenarioTable() = true, expected false")
+		}
+	})
+
+	t.Run("failed_case_empty_columns", func(t *testing.T) {
+		columns := []string{}
+		result := isTestScenarioTable(columns)
+		if result {
+			t.Errorf("isTestScenarioTable() = true, expected false")
+		}
+	})
+
+	t.Run("failed_case_only_some_required_columns", func(t *testing.T) {
+		columns := []string{
+			"mother_service_id",
+			"test_service_id",
+		}
+		result := isTestScenarioTable(columns)
+		if result {
+			t.Errorf("isTestScenarioTable() = true, expected false")
+		}
+	})
+}
+
+func TestIsMotherTable(t *testing.T) {
+	t.Run("success_case_exact_required_columns", func(t *testing.T) {
+		columns := []string{
+			"event_id",
+			"input",
+			"output",
+		}
+		result := isMotherTable(columns)
+		if !result {
+			t.Errorf("isMotherTable() = false, expected true")
+		}
+	})
+
+	t.Run("success_case_with_extra_columns", func(t *testing.T) {
+		columns := []string{
+			"event_id",
+			"input",
+			"output",
+			"timestamp",
+			"user_id",
+		}
+		result := isMotherTable(columns)
+		if !result {
+			t.Errorf("isMotherTable() = false, expected true")
+		}
+	})
+
+	t.Run("failed_case_missing_one_required_column", func(t *testing.T) {
+		columns := []string{
+			"event_id",
+			"input",
+		}
+		result := isMotherTable(columns)
+		if result {
+			t.Errorf("isMotherTable() = true, expected false")
+		}
+	})
+
+	t.Run("failed_case_missing_two_required_columns", func(t *testing.T) {
+		columns := []string{
+			"event_id",
+		}
+		result := isMotherTable(columns)
+		if result {
+			t.Errorf("isMotherTable() = true, expected false")
+		}
+	})
+
+	t.Run("failed_case_empty_columns", func(t *testing.T) {
+		columns := []string{}
+		result := isMotherTable(columns)
+		if result {
+			t.Errorf("isMotherTable() = true, expected false")
+		}
+	})
+
+	t.Run("failed_case_completely_different_columns", func(t *testing.T) {
+		columns := []string{
+			"random_field_1",
+			"random_field_2",
+		}
+		result := isMotherTable(columns)
+		if result {
+			t.Errorf("isMotherTable() = true, expected false")
+		}
+	})
+}
