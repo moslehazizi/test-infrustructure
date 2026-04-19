@@ -2006,7 +2006,7 @@ func TestTestScenarioRepository_Update(t *testing.T) {
 		mock.ExpectBegin()
 
 		mock.ExpectExec(regexp.QuoteMeta(
-			`UPDATE "test_scenarios" SET "execution_number_multi_agent"=$1,"increase_agent_number"=$2,"max_test_service_count"=$3,"mother_service_id"=$4,"name"=$5,"num_steps"=$6,"updated_at"=$7 WHERE id = $8 AND "test_scenarios"."deleted_at" IS NULL`,
+			`UPDATE "test_scenarios" SET "execution_number_multi_agent"=$1,"increase_agent_number"=$2,"max_test_service_count"=$3,"mother_service_id"=$4,"name"=$5,"num_steps"=$6,"status"=$7,"updated_at"=$8 WHERE id = $9 AND "test_scenarios"."deleted_at" IS NULL`,
 		)).
 			WithArgs(
 				scenario.ExecNumMultiAgent,
@@ -2015,6 +2015,7 @@ func TestTestScenarioRepository_Update(t *testing.T) {
 				scenario.MotherServiceID,
 				scenario.Name,
 				scenario.NumSteps,
+				scenario.Status,
 				sqlmock.AnyArg(),
 				scenario.ID,
 			).

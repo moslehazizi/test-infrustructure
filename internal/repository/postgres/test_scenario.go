@@ -304,6 +304,7 @@ func (repo *testScenario) Update(ctx context.Context, scenario *entity.TestScena
 			"increase_agent_number":        scenario.IncreaseAgentNumber,
 			"execution_number_multi_agent": scenario.ExecNumMultiAgent,
 			"updated_at":                   time.Now(),
+			"status":                       scenario.Status,
 		}).Error
 
 	if err != nil {
