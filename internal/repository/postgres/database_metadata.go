@@ -130,6 +130,9 @@ func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName stri
 			continue
 		}
 
+		// Since all fields that exist in the mother service table also exist in the test service table,
+		// it is critical to first check whether the table is of test type or not. If it is not of test type,
+		// then check whether it is of mother type or not.
 		if isTestScenarioTable(columns) {
 			result.TestTables = append(result.TestTables, tableName)
 		} else if isMotherTable(columns) {
@@ -141,22 +144,38 @@ func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName stri
 }
 
 func isTestScenarioTable(columns []string) bool {
-	requiredColumns := []string{"mother_service_id", "test_category_id"}
+	requiredColumns := []string{
+		"mother_service_id",
+		"test_service_id",
+		"start_tx_time",
+		"step_num",
+		"execution_id",
+		"scenario_id",
+		"duration_tx",
+		"delay_before_tx",
+		"http_status_code",
+	}
 
 	columnSet := make(map[string]bool)
 	for _, col := range columns {
 		columnSet[col] = true
 	}
 
-	for _, req := range requiredColumns {
-		if !columnSet[req] {
+	for _, required := range requiredColumns {
+		if !columnSet[required] {
 			return false
 		}
 	}
+
 	return true
 }
+
 func isMotherTable(columns []string) bool {
-	requiredColumns := []string{"service_deployment_address", "exception_rate"}
+	requiredColumns := []string{
+		"event_id",
+		"input",
+		"output",
+	}
 
 	columnSet := make(map[string]bool)
 	for _, col := range columns {
@@ -168,5 +187,6 @@ func isMotherTable(columns []string) bool {
 			return false
 		}
 	}
+
 	return true
 }
