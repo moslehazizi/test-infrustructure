@@ -1,6 +1,7 @@
 -- migrate:up
 CREATE TYPE scenario_status AS ENUM (
     'ready', -- scenario just created 
+    'pending', -- scenario wait for change its mother
     'running', -- test is running on application level (sending level)
     'paused', -- application level pause on sending request 
     'stopped', -- stop container but can start scenario again.

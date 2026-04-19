@@ -11,6 +11,7 @@ type ScenarioStatus string
 
 const (
 	ScenarioStatusReady   ScenarioStatus = "ready"
+	ScenarioStatusPending ScenarioStatus = "pending"
 	ScenarioStatusRunning ScenarioStatus = "running"
 	ScenarioStatusPaused  ScenarioStatus = "paused"
 	ScenarioStatusStopped ScenarioStatus = "stopped"
