@@ -1,6 +1,6 @@
 -- migrate:up
 CREATE TYPE test_service_status AS ENUM (
-    'pending',
+    'ready',
     'running',
     'paused',
     'stopped',

@@ -333,7 +333,7 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 				Name:                     "mother5",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				Status:                   entity.MotherServiceStatusPending,
+				Status:                   entity.MotherServiceStatusReady,
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db5",
 				DatabaseTableName:        "test_table5",

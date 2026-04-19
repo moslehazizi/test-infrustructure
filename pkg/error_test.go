@@ -345,8 +345,8 @@ func Test_toHTTPError(t *testing.T) {
 			wanted: HTTPError{http.StatusUnprocessableEntity, TestServiceConfigIsRequired},
 		},
 		{
-			err:    ErrOnlyPendingScenariosCanBeStarted,
-			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyPendingScenariosCanBeStarted},
+			err:    ErrOnlyReadyScenariosCanBeStarted,
+			wanted: HTTPError{http.StatusUnprocessableEntity, OnlyReadyScenariosCanBeStarted},
 		},
 		{
 			err:    ErrOnlyRunningScenariosCanBePaused,

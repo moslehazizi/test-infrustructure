@@ -10,7 +10,7 @@ import (
 type ScenarioStatus string
 
 const (
-	ScenarioStatusPending ScenarioStatus = "pending"
+	ScenarioStatusReady   ScenarioStatus = "ready"
 	ScenarioStatusRunning ScenarioStatus = "running"
 	ScenarioStatusPaused  ScenarioStatus = "paused"
 	ScenarioStatusStopped ScenarioStatus = "stopped"

@@ -85,7 +85,7 @@ func (se *scenarioExecutor) Run(ctx context.Context) (e error) {
 
 		if scenario.Status == entity.ScenarioStatusRunning {
 			// set status
-			err := se.scenarioRepo.SetStatus(ctx, se.scenario.ID, entity.ScenarioStatusPending, true)
+			err := se.scenarioRepo.SetStatus(ctx, se.scenario.ID, entity.ScenarioStatusReady, true)
 			if err != nil && e == nil {
 				e = fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
 			}

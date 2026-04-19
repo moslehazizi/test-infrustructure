@@ -1115,7 +1115,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertExpectations(t)
 	})
-	t.Run("failed_case_scenario_status_is_not_pending", func(t *testing.T) {
+	t.Run("failed_case_scenario_status_is_not_ready", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1147,7 +1147,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 		err := service.Start(ctx, sampleID)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrOnlyPendingScenariosCanBeStarted)
+		assert.ErrorIs(t, err, pkg.ErrOnlyReadyScenariosCanBeStarted)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
 		mockRepo.AssertExpectations(t)
 	})
@@ -1175,7 +1175,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:       sampleID,
-			Status:   entity.ScenarioStatusPending,
+			Status:   entity.ScenarioStatusReady,
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
@@ -1213,7 +1213,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:     sampleID,
-			Status: entity.ScenarioStatusPending,
+			Status: entity.ScenarioStatusReady,
 			TestCategory: &entity.TestCategory{
 				ID:   1,
 				Name: entity.STRESS,
@@ -1258,7 +1258,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:     sampleID,
-			Status: entity.ScenarioStatusPending,
+			Status: entity.ScenarioStatusReady,
 			TestCategory: &entity.TestCategory{
 				ID:   1,
 				Name: entity.STRESS,
@@ -1303,7 +1303,7 @@ func TestTestScenarioUsecase_Start(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:     sampleID,
-			Status: entity.ScenarioStatusPending,
+			Status: entity.ScenarioStatusReady,
 			TestCategory: &entity.TestCategory{
 				ID:   1,
 				Name: "notsupported",
@@ -1414,7 +1414,7 @@ func TestTestScenarioUsecase_Pause(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:       sampleID,
-			Status:   entity.ScenarioStatusPending,
+			Status:   entity.ScenarioStatusReady,
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
@@ -1944,7 +1944,7 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed_case_scenario_status_is_pending", func(t *testing.T) {
+	t.Run("failed_case_scenario_status_is_ready", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -1968,7 +1968,7 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:       sampleID,
-			Status:   entity.ScenarioStatusPending,
+			Status:   entity.ScenarioStatusReady,
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
@@ -2092,7 +2092,7 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed_case_repository_error_on_marking_as_pending", func(t *testing.T) {
+	t.Run("failed_case_repository_error_on_marking_as_ready", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -2124,14 +2124,14 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
 		mockStressTestExecutor.On("StopScenario", mock.Anything, scenario, mock.Anything).Return(nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false).Return(errors.New("something went wrong"))
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusReady, false).Return(errors.New("something went wrong"))
 
 		err := service.Stop(ctx, sampleID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToSetScenarioStatus)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusReady, false)
 		mockStressTestExecutor.AssertCalled(t, "StopScenario", mock.Anything, scenario, mock.Anything)
 
 		mockRepo.AssertExpectations(t)
@@ -2255,14 +2255,14 @@ func TestTestScenarioUsecase_Stop(t *testing.T) {
 		}
 
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
-		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false).Return(nil)
+		mockRepo.On("SetStatus", mock.Anything, sampleID, entity.ScenarioStatusReady, false).Return(nil)
 		mockStressTestExecutor.On("StopScenario", mock.Anything, scenario, mock.Anything).Return(nil)
 
 		err := service.Stop(ctx, sampleID)
 
 		assert.NoError(t, err)
 		mockRepo.AssertCalled(t, "GetByID", mock.Anything, sampleID)
-		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusPending, false)
+		mockRepo.AssertCalled(t, "SetStatus", mock.Anything, sampleID, entity.ScenarioStatusReady, false)
 		mockStressTestExecutor.AssertCalled(t, "StopScenario", mock.Anything, scenario, mock.Anything)
 
 		mockRepo.AssertExpectations(t)
@@ -2333,7 +2333,7 @@ func TestTestScenarioUsecase_Delete(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("failed_case_scenario_status_is_not_pending", func(t *testing.T) {
+	t.Run("failed_case_scenario_status_is_not_ready", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -2394,7 +2394,7 @@ func TestTestScenarioUsecase_Delete(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:       sampleID,
-			Status:   entity.ScenarioStatusPending,
+			Status:   entity.ScenarioStatusReady,
 			NumSteps: 2,
 		}
 		mockRepo.On("GetByID", mock.Anything, sampleID).Return(scenario, nil)
@@ -2433,7 +2433,7 @@ func TestTestScenarioUsecase_Delete(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:     sampleID,
-			Status: entity.ScenarioStatusPending,
+			Status: entity.ScenarioStatusReady,
 			TestCategory: &entity.TestCategory{
 				ID:   1,
 				Name: entity.STRESS,
@@ -2478,7 +2478,7 @@ func TestTestScenarioUsecase_Delete(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:     sampleID,
-			Status: entity.ScenarioStatusPending,
+			Status: entity.ScenarioStatusReady,
 			TestCategory: &entity.TestCategory{
 				ID:   1,
 				Name: "notsupported",
@@ -2522,7 +2522,7 @@ func TestTestScenarioUsecase_Delete(t *testing.T) {
 
 		scenario := &entity.TestScenario{
 			ID:     sampleID,
-			Status: entity.ScenarioStatusPending,
+			Status: entity.ScenarioStatusReady,
 			TestCategory: &entity.TestCategory{
 				ID:   1,
 				Name: entity.STRESS,

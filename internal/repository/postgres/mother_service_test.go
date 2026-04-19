@@ -18,7 +18,7 @@ import (
 )
 
 func TestMotherServiceRepository_Create(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -40,7 +40,7 @@ t.Run("success_case", func(t *testing.T) {
 			ResponseDelayDuration:    &responseDelayDuration,
 			RandomResponseDelayMin:   &randomDelayMin,
 			RandomResponseDelayMax:   &randomDelayMax,
-			Status:                   entity.MotherServiceStatusPending,
+			Status:                   entity.MotherServiceStatusReady,
 			ServiceDeploymentAddress: &serviceAddress,
 			DatabaseName:             "test_db",
 			DatabaseTableName:        "test_table",
@@ -72,7 +72,7 @@ t.Run("success_case", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("error_case", func(t *testing.T) {
+	t.Run("error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -86,7 +86,7 @@ t.Run("error_case", func(t *testing.T) {
 			Name:              "mother1",
 			ExceptionRate:     0.0,
 			ResponseDelayRate: 0.0,
-			Status:            entity.MotherServiceStatusPending,
+			Status:            entity.MotherServiceStatusReady,
 			DatabaseName:      "test_db",
 			DatabaseTableName: "test_table",
 		}
@@ -117,7 +117,7 @@ t.Run("error_case", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("duplicate_name_error_case", func(t *testing.T) {
+	t.Run("duplicate_name_error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -131,7 +131,7 @@ t.Run("duplicate_name_error_case", func(t *testing.T) {
 			Name:              "mother1",
 			ExceptionRate:     0.0,
 			ResponseDelayRate: 0.0,
-			Status:            entity.MotherServiceStatusPending,
+			Status:            entity.MotherServiceStatusReady,
 			DatabaseName:      "test_db",
 			DatabaseTableName: "test_table",
 		}
@@ -177,7 +177,7 @@ t.Run("duplicate_name_error_case", func(t *testing.T) {
 }
 
 func TestMotherServiceRepository_GetByID(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -245,7 +245,7 @@ t.Run("success_case", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("not_found_case", func(t *testing.T) {
+	t.Run("not_found_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -263,7 +263,7 @@ t.Run("not_found_case", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("error_case", func(t *testing.T) {
+	t.Run("error_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -283,7 +283,7 @@ t.Run("error_case", func(t *testing.T) {
 }
 
 func TestMotherServiceRepository_GetPaginated(t *testing.T) {
-t.Run("failed_case_failed_to_get_database_record_count", func(t *testing.T) {
+	t.Run("failed_case_failed_to_get_database_record_count", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -308,7 +308,7 @@ t.Run("failed_case_failed_to_get_database_record_count", func(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-t.Run("success_case_with_pagination_page_1", func(t *testing.T) {
+	t.Run("success_case_with_pagination_page_1", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -326,7 +326,7 @@ t.Run("success_case_with_pagination_page_1", func(t *testing.T) {
 				Name:                     "mother5",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				Status:                   entity.MotherServiceStatusPending,
+				Status:                   entity.MotherServiceStatusReady,
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db5",
 				DatabaseTableName:        "test_table5",
@@ -338,7 +338,7 @@ t.Run("success_case_with_pagination_page_1", func(t *testing.T) {
 				Name:                     "mother4",
 				ExceptionRate:            10,
 				ResponseDelayRate:        20,
-				Status:                   entity.MotherServiceStatusPending,
+				Status:                   entity.MotherServiceStatusReady,
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db4",
 				DatabaseTableName:        "test_table4",
@@ -414,7 +414,7 @@ t.Run("success_case_with_pagination_page_1", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("success_case_with_pagination_page_2", func(t *testing.T) {
+	t.Run("success_case_with_pagination_page_2", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -432,7 +432,7 @@ t.Run("success_case_with_pagination_page_2", func(t *testing.T) {
 				Name:                     "mother3",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				Status:                   entity.MotherServiceStatusPending,
+				Status:                   entity.MotherServiceStatusReady,
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db3",
 				DatabaseTableName:        "test_table3",
@@ -444,7 +444,7 @@ t.Run("success_case_with_pagination_page_2", func(t *testing.T) {
 				Name:                     "mother2",
 				ExceptionRate:            10,
 				ResponseDelayRate:        20,
-				Status:                   entity.MotherServiceStatusPending,
+				Status:                   entity.MotherServiceStatusReady,
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db2",
 				DatabaseTableName:        "test_table2",
@@ -520,7 +520,7 @@ t.Run("success_case_with_pagination_page_2", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("success_case_with_pagination_page_3_with_10_per_page", func(t *testing.T) {
+	t.Run("success_case_with_pagination_page_3_with_10_per_page", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -536,7 +536,7 @@ t.Run("success_case_with_pagination_page_3_with_10_per_page", func(t *testing.T)
 			Name:                     "mother25",
 			ExceptionRate:            0.0,
 			ResponseDelayRate:        0.0,
-			Status:                   entity.MotherServiceStatusPending,
+			Status:                   entity.MotherServiceStatusReady,
 			ServiceDeploymentAddress: &serviceAddress,
 			DatabaseName:             "test_db25",
 			DatabaseTableName:        "test_table25",
@@ -590,7 +590,7 @@ t.Run("success_case_with_pagination_page_3_with_10_per_page", func(t *testing.T)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("success_case_without_pagination_return_all_items_(page=0,_perPage=0)", func(t *testing.T) {
+	t.Run("success_case_without_pagination_return_all_items_(page=0,_perPage=0)", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -609,7 +609,7 @@ t.Run("success_case_without_pagination_return_all_items_(page=0,_perPage=0)", fu
 				Name:                     "mother3",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				Status:                   entity.MotherServiceStatusPending,
+				Status:                   entity.MotherServiceStatusReady,
 				ServiceDeploymentAddress: &serviceAddress3,
 				DatabaseName:             "test_db3",
 				DatabaseTableName:        "test_table3",
@@ -621,7 +621,7 @@ t.Run("success_case_without_pagination_return_all_items_(page=0,_perPage=0)", fu
 				Name:                     "mother2",
 				ExceptionRate:            0.0,
 				ResponseDelayRate:        0.0,
-				Status:                   entity.MotherServiceStatusPending,
+				Status:                   entity.MotherServiceStatusReady,
 				ServiceDeploymentAddress: &serviceAddress2,
 				DatabaseName:             "test_db2",
 				DatabaseTableName:        "test_table2",
@@ -633,7 +633,7 @@ t.Run("success_case_without_pagination_return_all_items_(page=0,_perPage=0)", fu
 				Name:                     "mother1",
 				ExceptionRate:            10,
 				ResponseDelayRate:        20,
-				Status:                   entity.MotherServiceStatusPending,
+				Status:                   entity.MotherServiceStatusReady,
 				ServiceDeploymentAddress: &serviceAddress1,
 				DatabaseName:             "test_db1",
 				DatabaseTableName:        "test_table1",
@@ -721,7 +721,7 @@ t.Run("success_case_without_pagination_return_all_items_(page=0,_perPage=0)", fu
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("success_case_with_empty_result_page_beyond_available_data", func(t *testing.T) {
+	t.Run("success_case_with_empty_result_page_beyond_available_data", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -758,7 +758,7 @@ t.Run("success_case_with_empty_result_page_beyond_available_data", func(t *testi
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("error_case_with_pagination", func(t *testing.T) {
+	t.Run("error_case_with_pagination", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -789,7 +789,7 @@ t.Run("error_case_with_pagination", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("error_case_if_page_is_negative", func(t *testing.T) {
+	t.Run("error_case_if_page_is_negative", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -807,7 +807,7 @@ t.Run("error_case_if_page_is_negative", func(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-t.Run("error_case_if_perPage_is_negative", func(t *testing.T) {
+	t.Run("error_case_if_perPage_is_negative", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -827,7 +827,7 @@ t.Run("error_case_if_perPage_is_negative", func(t *testing.T) {
 }
 
 func TestMotherServiceRepository_SetStatus(t *testing.T) {
-t.Run("success_case", func(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
@@ -852,7 +852,7 @@ t.Run("success_case", func(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-t.Run("failed_case", func(t *testing.T) {
+	t.Run("failed_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)

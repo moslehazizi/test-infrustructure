@@ -155,9 +155,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrNoNeedAutoStepChange):
 		status = http.StatusUnprocessableEntity
 		msg = NoNeedAutoStepChange
-	case errors.Is(err, ErrOnlyPendingScenariosCanBeStarted):
+	case errors.Is(err, ErrOnlyReadyScenariosCanBeStarted):
 		status = http.StatusUnprocessableEntity
-		msg = OnlyPendingScenariosCanBeStarted
+		msg = OnlyReadyScenariosCanBeStarted
 	case errors.Is(err, ErrOnlyRunningScenariosCanBePaused):
 		status = http.StatusUnprocessableEntity
 		msg = OnlyRunningScenariosCanBePaused
@@ -353,7 +353,7 @@ var (
 	ErrInvalidZeroSumOfBadValues                          = errors.New("sum of all bad values rate should be 0 if bad value rate field is zero")
 	ErrInvalid100SumOfBadValues                           = errors.New("sum of all bad values should be 100 if bad value field has value")
 	ErrTestServiceConfigIsRequired                        = errors.New("test service config is required")
-	ErrOnlyPendingScenariosCanBeStarted                   = errors.New("only pending scenarios can be started")
+	ErrOnlyReadyScenariosCanBeStarted                     = errors.New("only ready scenarios can be started")
 	ErrOnlyRunningScenariosCanBePaused                    = errors.New("only running scenarios can be paused")
 	ErrOnlyPausedScenariosCanBeResume                     = errors.New("only pause scenarios can be resume")
 	ErrOnlyRunAndPauseScenariosCanBeStop                  = errors.New("only run and pause can not be stopped")

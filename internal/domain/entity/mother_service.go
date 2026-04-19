@@ -10,7 +10,7 @@ import (
 type MotherServiceStatus string
 
 const (
-	MotherServiceStatusPending MotherServiceStatus = "pending" // mother service just created
+	MotherServiceStatusReady   MotherServiceStatus = "ready"   // mother service just created
 	MotherServiceStatusRunning MotherServiceStatus = "running" // test is running on application level (sending level)
 	MotherServiceStatusPaused  MotherServiceStatus = "paused"  // application level pause on sending request
 	MotherServiceStatusStopped MotherServiceStatus = "stopped" // stop container but can start scenario again.

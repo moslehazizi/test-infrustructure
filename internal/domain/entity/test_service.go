@@ -9,7 +9,7 @@ import (
 type TestServiceStatus string
 
 const (
-	TestServiceStatusPending TestServiceStatus = "pending"
+	TestServiceStatusReady   TestServiceStatus = "ready"
 	TestServiceStatusRunning TestServiceStatus = "running"
 	TestServiceStatusPaused  TestServiceStatus = "paused"
 	TestServiceStatusStopped TestServiceStatus = "stopped"

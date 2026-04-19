@@ -130,7 +130,7 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
 
-	testScenario.Status = entity.ScenarioStatusPending
+	testScenario.Status = entity.ScenarioStatusReady
 
 	if testScenario.TestServiceConfig == nil {
 		span.SetAttributes(attribute.String("error.type", "missing_test_service_config"))
@@ -308,10 +308,10 @@ func (service *testScenario) Start(ctx context.Context, id uint64) error {
 	}
 
 	// make sure scenario has correct status
-	if scenario.Status != entity.ScenarioStatusPending {
+	if scenario.Status != entity.ScenarioStatusReady {
 		span.SetAttributes(attribute.String("error.type", "invalid_status"))
 
-		return pkg.ErrOnlyPendingScenariosCanBeStarted
+		return pkg.ErrOnlyReadyScenariosCanBeStarted
 	}
 
 	// mark scenario as running
@@ -475,7 +475,7 @@ func (service *testScenario) Stop(ctx context.Context, id uint64) error {
 	}
 
 	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusPending, false)
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusReady, false)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
@@ -508,7 +508,7 @@ func (service *testScenario) Delete(ctx context.Context, id uint64) error {
 	}
 
 	// make sure scenario has correct status
-	if scenario.Status != entity.ScenarioStatusPending {
+	if scenario.Status != entity.ScenarioStatusReady {
 		span.SetAttributes(attribute.String("error.type", "invalid_status"))
 
 		return pkg.ErrScenariosCanNotBeDelete

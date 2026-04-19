@@ -6,7 +6,7 @@ definitions:
     type: object
   entity.MotherServiceStatus:
     enum:
-    - pending
+    - ready
     - running
     - paused
     - stopped
@@ -15,7 +15,7 @@ definitions:
     x-enum-comments:
       MotherServiceStatusDeleted: stop and delete containers. can not start again.
       MotherServiceStatusPaused: application level pause on sending request
-      MotherServiceStatusPending: mother service just created
+      MotherServiceStatusReady: mother service just created
       MotherServiceStatusRunning: test is running on application level (sending level)
       MotherServiceStatusStopped: stop container but can start scenario again.
     x-enum-descriptions:
@@ -25,14 +25,14 @@ definitions:
     - stop container but can start scenario again.
     - stop and delete containers. can not start again.
     x-enum-varnames:
-    - MotherServiceStatusPending
+    - MotherServiceStatusReady
     - MotherServiceStatusRunning
     - MotherServiceStatusPaused
     - MotherServiceStatusStopped
     - MotherServiceStatusDeleted
   entity.ScenarioStatus:
     enum:
-    - pending
+    - ready
     - running
     - paused
     - stopped
@@ -40,7 +40,7 @@ definitions:
     - succeed
     type: string
     x-enum-varnames:
-    - ScenarioStatusPending
+    - ScenarioStatusReady
     - ScenarioStatusRunning
     - ScenarioStatusPaused
     - ScenarioStatusStopped

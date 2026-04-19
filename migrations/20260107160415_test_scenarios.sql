@@ -1,6 +1,6 @@
 -- migrate:up
 CREATE TYPE scenario_status AS ENUM (
-    'pending', -- scenario just created 
+    'ready', -- scenario just created 
     'running', -- test is running on application level (sending level)
     'paused', -- application level pause on sending request 
     'stopped', -- stop container but can start scenario again.
@@ -17,7 +17,7 @@ create table if not exists test_scenarios (
     mother_service_id bigint NOT NULL,
     CONSTRAINT fk_mother_service FOREIGN KEY (mother_service_id) REFERENCES mother_services(id) ON DELETE CASCADE ON UPDATE CASCADE,
 
-    "status" scenario_status NOT NULL DEFAULT 'pending',
+    "status" scenario_status NOT NULL DEFAULT 'ready',
 
     -- تعداد سرویس تست قابل تعریف | حداکثر بار
     max_test_service_count int NULL CHECK (

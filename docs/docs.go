@@ -845,7 +845,7 @@ const docTemplate = `{
         "entity.MotherServiceStatus": {
             "type": "string",
             "enum": [
-                "pending",
+                "ready",
                 "running",
                 "paused",
                 "stopped",
@@ -854,7 +854,7 @@ const docTemplate = `{
             "x-enum-comments": {
                 "MotherServiceStatusDeleted": "stop and delete containers. can not start again.",
                 "MotherServiceStatusPaused": "application level pause on sending request",
-                "MotherServiceStatusPending": "mother service just created",
+                "MotherServiceStatusReady": "mother service just created",
                 "MotherServiceStatusRunning": "test is running on application level (sending level)",
                 "MotherServiceStatusStopped": "stop container but can start scenario again."
             },
@@ -866,7 +866,7 @@ const docTemplate = `{
                 "stop and delete containers. can not start again."
             ],
             "x-enum-varnames": [
-                "MotherServiceStatusPending",
+                "MotherServiceStatusReady",
                 "MotherServiceStatusRunning",
                 "MotherServiceStatusPaused",
                 "MotherServiceStatusStopped",
@@ -876,7 +876,7 @@ const docTemplate = `{
         "entity.ScenarioStatus": {
             "type": "string",
             "enum": [
-                "pending",
+                "ready",
                 "running",
                 "paused",
                 "stopped",
@@ -884,7 +884,7 @@ const docTemplate = `{
                 "succeed"
             ],
             "x-enum-varnames": [
-                "ScenarioStatusPending",
+                "ScenarioStatusReady",
                 "ScenarioStatusRunning",
                 "ScenarioStatusPaused",
                 "ScenarioStatusStopped",
