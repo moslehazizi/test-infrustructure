@@ -33,6 +33,7 @@ definitions:
   entity.ScenarioStatus:
     enum:
     - ready
+    - pending
     - running
     - paused
     - stopped
@@ -41,6 +42,7 @@ definitions:
     type: string
     x-enum-varnames:
     - ScenarioStatusReady
+    - ScenarioStatusPending
     - ScenarioStatusRunning
     - ScenarioStatusPaused
     - ScenarioStatusStopped

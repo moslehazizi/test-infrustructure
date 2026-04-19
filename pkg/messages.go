@@ -71,4 +71,5 @@ const (
 	MultiFixedInputConfigNotTrue           = "تنظیمات افزایش عدد ثابت درست نمی باشد"
 	MultiAgentConfigNotTrue                = "تنظیمات افزایش تعداد ایجنت درست نمی باشد"
 	ScenariosCanNotBeDelete                = "سناریو در این حالت نمیتواند حذف شود."
+	ScenariosCanNotBeUpdated               = "سناریو در این حالت نمیتواند ویرایش شود"
 )

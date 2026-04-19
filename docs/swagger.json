@@ -866,6 +866,7 @@
             "type": "string",
             "enum": [
                 "ready",
+                "pending",
                 "running",
                 "paused",
                 "stopped",
@@ -874,6 +875,7 @@
             ],
             "x-enum-varnames": [
                 "ScenarioStatusReady",
+                "ScenarioStatusPending",
                 "ScenarioStatusRunning",
                 "ScenarioStatusPaused",
                 "ScenarioStatusStopped",

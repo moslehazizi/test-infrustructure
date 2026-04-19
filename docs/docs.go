@@ -877,6 +877,7 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "ready",
+                "pending",
                 "running",
                 "paused",
                 "stopped",
@@ -885,6 +886,7 @@ const docTemplate = `{
             ],
             "x-enum-varnames": [
                 "ScenarioStatusReady",
+                "ScenarioStatusPending",
                 "ScenarioStatusRunning",
                 "ScenarioStatusPaused",
                 "ScenarioStatusStopped",

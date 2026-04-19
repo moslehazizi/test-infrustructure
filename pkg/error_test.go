@@ -380,6 +380,10 @@ func Test_toHTTPError(t *testing.T) {
 			err:    ErrScenariosCanNotBeDelete,
 			wanted: HTTPError{http.StatusUnprocessableEntity, ScenariosCanNotBeDelete},
 		},
+		{
+			err:    ErrScenariosCanNotBeUpdated,
+			wanted: HTTPError{http.StatusUnprocessableEntity, ScenariosCanNotBeUpdated},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {

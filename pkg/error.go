@@ -261,6 +261,9 @@ func toHTTPError(err error) *HTTPError {
 	case errors.Is(err, ErrScenariosCanNotBeDelete):
 		status = http.StatusUnprocessableEntity
 		msg = ScenariosCanNotBeDelete
+	case errors.Is(err, ErrScenariosCanNotBeUpdated):
+		status = http.StatusUnprocessableEntity
+		msg = ScenariosCanNotBeUpdated
 
 	default:
 		status = http.StatusInternalServerError
@@ -390,4 +393,5 @@ var (
 	ErrMultiFixedInputConfigNotTrue                       = errors.New("both or none of execution number of multi fixed input and increase fixed input should be zero")
 	ErrMultiAgentConfigNotTrue                            = errors.New("both or none of execution number of multi agent and increase agent should be zero")
 	ErrInvalidDatabaseConfig                              = errors.New("invalid config applied to postgres database initializer")
+	ErrScenariosCanNotBeUpdated                           = errors.New("scenario can not be updated while is status is not pending or ready")
 )

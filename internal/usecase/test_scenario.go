@@ -508,7 +508,7 @@ func (service *testScenario) Delete(ctx context.Context, id uint64) error {
 	}
 
 	// make sure scenario has correct status
-	if scenario.Status != entity.ScenarioStatusReady {
+	if scenario.Status != entity.ScenarioStatusReady && scenario.Status != entity.ScenarioStatusPending {
 		span.SetAttributes(attribute.String("error.type", "invalid_status"))
 
 		return pkg.ErrScenariosCanNotBeDelete
@@ -555,6 +555,12 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 		return fmt.Errorf("%w: %w", pkg.ErrTestScenarioNotFound, err)
 	}
 
+	if existing.Status != entity.ScenarioStatusReady && existing.Status != entity.ScenarioStatusPending {
+		span.SetAttributes(attribute.String("error.type", "invalid_status"))
+
+		return pkg.ErrScenariosCanNotBeUpdated
+	}
+
 	motherService, err := service.motherService.GetByID(ctx, testScenarioUpdateRequest.MotherServiceID)
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetMotherService, err)
@@ -569,6 +575,7 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 	existing.MotherService = motherService
 	existing.IncreaseAgentNumber = testScenarioUpdateRequest.IncreaseAgentNumber
 	existing.ExecNumMultiAgent = testScenarioUpdateRequest.ExecNumMultiAgent
+	existing.Status = entity.ScenarioStatusReady
 
 	if testScenarioUpdateRequest.MaxTestServiceCount != nil {
 		existing.MaxTestServiceCount = testScenarioUpdateRequest.MaxTestServiceCount

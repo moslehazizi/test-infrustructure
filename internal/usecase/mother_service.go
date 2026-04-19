@@ -239,7 +239,7 @@ func (service *motherService) Delete(ctx context.Context, id uint64) error {
 		}
 
 		// update status
-		err = service.testScenarioRepo.SetStatus(ctx, testScenario.ID, entity.ScenarioStatusDeleted, false)
+		err = service.testScenarioRepo.SetStatus(ctx, testScenario.ID, entity.ScenarioStatusPending, true)
 		if err != nil {
 			zap.L().Error("failed to update scenario test status", zap.Uint64("mother_service_id", motherService.ID), zap.Uint64("test_scenario_id", testScenario.ID), zap.String("name", motherService.Name), zap.Error(err))
 		}

@@ -262,7 +262,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockMotherService.AssertExpectations(t)
 
 	})
-
 	t.Run("failed_case_when_create_test_scenario", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockTestScenario)
@@ -2560,6 +2559,7 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 			MotherServiceID: 10,
 			MotherService:   &entity.MotherService{ID: 10, Name: "Old Mother"},
 			TestCategory:    sampleCategory,
+			Status:          entity.ScenarioStatusReady,
 			TestServiceConfig: &entity.TestServiceConfig{
 				ID: 100,
 			},
@@ -2634,6 +2634,51 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		err := svc.Update(context.Background(), baseRequest())
 
 		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockMotherService.AssertExpectations(t)
+		mockTestServiceConfig.AssertExpectations(t)
+	})
+
+	t.Run("failed_case_pending_or_ready_scenarios_can_be_updated", func(t *testing.T) {
+		mockRepo := new(repoMocks.MockTestScenario)
+		mockTestCatRepo := new(repoMocks.MockTestCategory)
+		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
+		mockMotherService := new(repoMocks.MockMotherService)
+		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
+		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
+		mockProvisioningService := new(prvMock.MockProvisioningService)
+
+		svc := NewTestScenarioUsecase(
+			getMockDB(t),
+			mockRepo,
+			mockTestCatRepo,
+			mockTestServiceConfig,
+			mockMotherService,
+			mockStressTestExecutor,
+			mockTestServiceRepo,
+			mockProvisioningService,
+		)
+
+		sampleScenario := &entity.TestScenario{
+			ID:              1,
+			Name:            "Old Name",
+			Status:          entity.ScenarioStatusPaused,
+			MotherServiceID: 10,
+			MotherService:   &entity.MotherService{ID: 10, Name: "Old Mother"},
+			TestCategory:    sampleCategory,
+			TestServiceConfig: &entity.TestServiceConfig{
+				ID: 100,
+			},
+			NumSteps: 2,
+		}
+
+		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(sampleScenario, nil)
+
+		err := svc.Update(context.Background(), baseRequest())
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrScenariosCanNotBeUpdated)
+
 		mockRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
 		mockTestServiceConfig.AssertExpectations(t)
