@@ -140,12 +140,12 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
+		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
 			agents:      []interfaces.TestAgentController{agent},
 			running:     true,
-		}
+		})
 
 		err := ex.PauseScenario(context.Background(), scenario)
 
@@ -178,12 +178,12 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
+		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
 			agents:      []interfaces.TestAgentController{agent},
 			running:     true,
-		}
+		})
 
 		err := ex.PauseScenario(context.Background(), scenario)
 
@@ -214,12 +214,12 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
+		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
 			agents:      []interfaces.TestAgentController{agent},
 			running:     true,
-		}
+		})
 
 		err := ex.PauseScenario(context.Background(), scenario)
 
@@ -287,12 +287,12 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
+		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
 			agents:      []interfaces.TestAgentController{agent},
 			running:     true,
-		}
+		})
 
 		err := ex.ResumeScenario(context.Background(), scenario)
 
@@ -325,12 +325,12 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
+		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
 			agents:      []interfaces.TestAgentController{agent},
 			running:     true,
-		}
+		})
 
 		err := ex.ResumeScenario(context.Background(), scenario)
 
@@ -398,12 +398,12 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
+		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
 			agents:      []interfaces.TestAgentController{agent},
 			running:     true,
-		}
+		})
 
 		err := ex.StopScenario(context.Background(), scenario)
 
@@ -428,12 +428,12 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 
 		executionID := uuid.New()
 		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
+		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
 			agents:      []interfaces.TestAgentController{agent},
 			running:     false,
-		}
+		})
 
 		builder.On("Get", scenario).Times(3).Return(agent)
 		agent.On("Healthy", mock.Anything).Return(true)
@@ -502,12 +502,12 @@ func TestStressTestExecutionManager_Delete(t *testing.T) {
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
+		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
 			agents:      []interfaces.TestAgentController{agent},
 			running:     true,
-		}
+		})
 
 		err := ex.DeleteScenario(context.Background(), scenario)
 
@@ -531,12 +531,12 @@ func TestStressTestExecutionManager_Delete(t *testing.T) {
 
 		executionID := uuid.New()
 		stem, _ := ex.(*StressTestExecutionManager)
-		stem.scenarios[scenario.ID] = &scenarioExecutor{
+		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
 			agents:      []interfaces.TestAgentController{agent},
 			running:     false,
-		}
+		})
 
 		builder.On("Get", scenario).Times(3).Return(agent)
 		agent.On("DeleteTesting", mock.Anything).Return(nil)

@@ -6,6 +6,7 @@ import (
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -18,7 +19,7 @@ import (
 func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAgentControllerToolBox, scenarioRepo repository.TestScenarioRepository, scenarioExecutorBuilder interfaces.ScenarioExecutorBuilder) interfaces.ExecutionManager {
 	return &StressTestExecutionManager{
 		testAgentControllerToolBox: testAgentControllerToolBox,
-		scenarios:                  make(map[uint64]interfaces.ScenarioExecutor),
+		scenarios:                  sync.Map{},
 		scenarioRepo:               scenarioRepo,
 		scenarioExecutorBuilder:    scenarioExecutorBuilder,
 	}
@@ -26,10 +27,10 @@ func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAge
 
 // #region StressTestExecutionManager
 type StressTestExecutionManager struct {
-	scenarios                  map[uint64]interfaces.ScenarioExecutor
+	// scenarios                  map[uint64]interfaces.ScenarioExecutor
+	scenarios                  sync.Map
 	testAgentControllerToolBox interfaces.TestAgentControllerToolBox
 	scenarioRepo               repository.TestScenarioRepository
-	mx                         sync.Mutex
 	scenarioExecutorBuilder    interfaces.ScenarioExecutorBuilder
 }
 
@@ -38,16 +39,26 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 	_, span := tracer.Start(ctx, "AddScenario")
 	defer span.End()
 
-	ex.mx.Lock()
-	defer ex.mx.Unlock()
-	ex.scenarios[scenario.ID] = ex.scenarioExecutorBuilder.Build(scenario, ex.scenarioRepo, ex.testAgentControllerToolBox, &singleScenarioExecutorBuilder{})
-	ex.scenarios[scenario.ID].SetRunning(true)
+	rawScenarioExec, ok := ex.scenarios.LoadOrStore(
+		scenario.ID,
+		ex.scenarioExecutorBuilder.Build(scenario, ex.scenarioRepo, ex.testAgentControllerToolBox, &singleScenarioExecutorBuilder{}),
+	)
+	if !ok {
+		return fmt.Errorf("failed to store interfaces.ScenarioExecutor by id: ", scenario.ID)
+	}
+
+	scenarioExecutor, ok := rawScenarioExec.(interfaces.ScenarioExecutor)
+	if !ok {
+		return errors.New("failed to assert actualVat to interfaces.ScenarioExecutor")
+	}
+
+	scenarioExecutor.SetRunning(true)
 
 	//nolint
 	go func() {
-		_ = ex.scenarios[scenario.ID].Run(context.Background())
+		_ = scenarioExecutor.Run(context.Background())
 		// delete scenario from memory
-		delete(ex.scenarios, scenario.ID)
+		ex.scenarios.Delete(scenario.ID)
 	}()
 
 	return nil
