@@ -566,57 +566,16 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetMotherService, err)
 	}
 
-	if existing.TestServiceConfig.ID == 0 {
+	if existing.TestServiceConfig == nil || existing.TestServiceConfig.ID == 0 {
 		return fmt.Errorf("%w: test service config not loaded for scenario %d", pkg.ErrFailedToGetTestServiceConfig, existing.ID)
 	}
 
-	existing.Name = testScenarioUpdateRequest.Name
-	existing.MotherServiceID = testScenarioUpdateRequest.MotherServiceID
-	existing.MotherService = motherService
-	existing.IncreaseAgentNumber = testScenarioUpdateRequest.IncreaseAgentNumber
-	existing.ExecNumMultiAgent = testScenarioUpdateRequest.ExecNumMultiAgent
-	existing.Status = entity.ScenarioStatusReady
-
-	if testScenarioUpdateRequest.MaxTestServiceCount != nil {
-		existing.MaxTestServiceCount = testScenarioUpdateRequest.MaxTestServiceCount
-	}
-
-	if testScenarioUpdateRequest.NumSteps >= 1 {
-		existing.NumSteps = testScenarioUpdateRequest.NumSteps
-	}
-
+	existing.ApplyUpdateRequest(testScenarioUpdateRequest, motherService)
 	if err = existing.Validate(existing.TestCategory); err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, err)
 	}
 
-	testSvcConfig, err := service.testServiceConfigRepository.GetByID(ctx, existing.TestServiceConfig.ID)
-	if err != nil {
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestServiceConfig, err)
-	}
-
-	cfg := testScenarioUpdateRequest.Config
-	testSvcConfig.MaxRequests = cfg.MaxRequests
-	testSvcConfig.MaxDuration = int64(cfg.MaxDuration)
-	testSvcConfig.RequestDelayDuration = cfg.RequestDelayDuration
-	testSvcConfig.RandomRequestDelayMin = cfg.RandomRequestDelayMin
-	testSvcConfig.RandomRequestDelayMax = cfg.RandomRequestDelayMax
-	testSvcConfig.FixedTestNumber = cfg.FixedTestNumber
-	testSvcConfig.RandomTestNumberMin = cfg.RandomTestNumberMin
-	testSvcConfig.RandomTestNumberMax = cfg.RandomTestNumberMax
-	testSvcConfig.BadValueRate = cfg.BadValueRate
-	testSvcConfig.NegativeValueRate = cfg.NegativeValueRate
-	testSvcConfig.ZeroValueRate = cfg.ZeroValueRate
-	testSvcConfig.StringValueRate = cfg.StringValueRate
-	testSvcConfig.RealValueRate = cfg.RealValueRate
-	testSvcConfig.LongStringValueRate = cfg.LongStringValueRate
-	testSvcConfig.NullValueRate = cfg.NullValueRate
-	testSvcConfig.DatabaseName = cfg.DatabaseName
-	testSvcConfig.DatabaseTableName = cfg.DatabaseTableName
-	testSvcConfig.IncreaseFixedInput = cfg.IncreaseFixedInput
-	testSvcConfig.ExecNumMultiFixedInput = cfg.ExecNumMultiFixedInput
-
-	existing.TestServiceConfig = testSvcConfig
-
+	existing.TestServiceConfig.ApplyUpdateFromRequest(testScenarioUpdateRequest.Config)
 	if err = existing.TestServiceConfig.Validate(); err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
 	}
@@ -628,7 +587,7 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 		if e != nil {
 			_ = tx.Rollback()
 			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
-			zap.L().Error("test scenario creation failed, transaction rolled back",
+			zap.L().Error("test scenario update failed, transaction rolled back",
 				zap.String(logger.FieldRequestID, requestID),
 				zap.String("name", existing.Name),
 				zap.Error(e),
@@ -645,8 +604,6 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 	}
 
 	_ = tx.Commit()
-
 	span.SetAttributes(attribute.String("transaction.status", "committed"))
-
 	return nil
 }

@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/pkg"
 	"testing"
 	"time"
@@ -383,4 +384,57 @@ func TestTableName(t *testing.T) {
 	name := testSci.TableName()
 
 	assert.Equal(t, name, "test_scenarios")
+}
+
+func TestTestScenario_ApplyUpdateRequest(t *testing.T) {
+	t.Run("success_update_all_fields", func(t *testing.T) {
+		maxSvcCount := int64(5)
+		motherSvc := &MotherService{ID: 10}
+
+		ts := &TestScenario{
+			NumSteps: 0,
+		}
+
+		req := &request.TestScenarioUpdateRequest{
+			Name:                "Updated Scenario",
+			MotherServiceID:     10,
+			IncreaseAgentNumber: 2,
+			ExecNumMultiAgent:   3,
+			MaxTestServiceCount: &maxSvcCount,
+			NumSteps:            10,
+		}
+
+		ts.ApplyUpdateRequest(req, motherSvc)
+
+		assert.Equal(t, req.Name, ts.Name)
+		assert.Equal(t, req.MotherServiceID, ts.MotherServiceID)
+		assert.Equal(t, motherSvc, ts.MotherService)
+		assert.Equal(t, req.IncreaseAgentNumber, ts.IncreaseAgentNumber)
+		assert.Equal(t, req.ExecNumMultiAgent, ts.ExecNumMultiAgent)
+		assert.Equal(t, ScenarioStatusReady, ts.Status)
+		assert.Equal(t, req.MaxTestServiceCount, ts.MaxTestServiceCount)
+		assert.Equal(t, req.NumSteps, ts.NumSteps)
+	})
+
+	t.Run("success_update_skip_optional_fields_when_nil_or_less_than_one", func(t *testing.T) {
+		initialMaxCount := int64(2)
+		ts := &TestScenario{
+			MaxTestServiceCount: &initialMaxCount,
+			NumSteps:            5,
+		}
+
+		req := &request.TestScenarioUpdateRequest{
+			Name:                "Updated Scenario",
+			MaxTestServiceCount: nil,
+			NumSteps:            0,
+		}
+
+		motherSvc := &MotherService{}
+		ts.ApplyUpdateRequest(req, motherSvc)
+
+		assert.Equal(t, "Updated Scenario", ts.Name)
+		assert.Equal(t, &initialMaxCount, ts.MaxTestServiceCount)
+		assert.Equal(t, int64(5), ts.NumSteps)
+		assert.Equal(t, ScenarioStatusReady, ts.Status)
+	})
 }

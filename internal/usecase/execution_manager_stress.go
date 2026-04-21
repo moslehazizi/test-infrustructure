@@ -26,8 +26,6 @@ func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAge
 
 // #region StressTestExecutionManager
 type StressTestExecutionManager struct {
-	// scenarios                  map[uint64]interfaces.ScenarioExecutor
-	// mx                         sync.Mutex
 	scenarios                  sync.Map
 	testAgentControllerToolBox interfaces.TestAgentControllerToolBox
 	scenarioRepo               repository.TestScenarioRepository

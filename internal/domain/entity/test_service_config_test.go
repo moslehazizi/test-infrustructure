@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/pkg"
 	"testing"
 
@@ -619,5 +620,59 @@ func TestTestServiceConfig_Validate(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrInvalidDatabaseTableName)
+	})
+}
+
+func TestTestServiceConfig_ApplyUpdateFromRequest(t *testing.T) {
+	t.Run("success_update_all_fields_from_request", func(t *testing.T) {
+		sampleInt1 := 10
+		sampleInt2 := 20
+		sampleInt3 := 30
+
+		tsc := &TestServiceConfig{}
+
+		req := &request.TestServiceConfigRequest{
+			MaxRequests:            100,
+			MaxDuration:            5000,
+			RequestDelayDuration:   &sampleInt1,
+			RandomRequestDelayMin:  &sampleInt1,
+			RandomRequestDelayMax:  &sampleInt2,
+			FixedTestNumber:        &sampleInt3,
+			RandomTestNumberMin:    &sampleInt1,
+			RandomTestNumberMax:    &sampleInt2,
+			BadValueRate:           1,
+			NegativeValueRate:      2,
+			ZeroValueRate:          3,
+			StringValueRate:        4,
+			RealValueRate:          5,
+			LongStringValueRate:    6,
+			NullValueRate:          7,
+			DatabaseName:           "test_db",
+			DatabaseTableName:      "test_table",
+			IncreaseFixedInput:     2,
+			ExecNumMultiFixedInput: 3,
+		}
+
+		tsc.ApplyUpdateFromRequest(req)
+
+		assert.Equal(t, req.MaxRequests, tsc.MaxRequests)
+		assert.Equal(t, int64(req.MaxDuration), tsc.MaxDuration)
+		assert.Equal(t, req.RequestDelayDuration, tsc.RequestDelayDuration)
+		assert.Equal(t, req.RandomRequestDelayMin, tsc.RandomRequestDelayMin)
+		assert.Equal(t, req.RandomRequestDelayMax, tsc.RandomRequestDelayMax)
+		assert.Equal(t, req.FixedTestNumber, tsc.FixedTestNumber)
+		assert.Equal(t, req.RandomTestNumberMin, tsc.RandomTestNumberMin)
+		assert.Equal(t, req.RandomTestNumberMax, tsc.RandomTestNumberMax)
+		assert.Equal(t, req.BadValueRate, tsc.BadValueRate)
+		assert.Equal(t, req.NegativeValueRate, tsc.NegativeValueRate)
+		assert.Equal(t, req.ZeroValueRate, tsc.ZeroValueRate)
+		assert.Equal(t, req.StringValueRate, tsc.StringValueRate)
+		assert.Equal(t, req.RealValueRate, tsc.RealValueRate)
+		assert.Equal(t, req.LongStringValueRate, tsc.LongStringValueRate)
+		assert.Equal(t, req.NullValueRate, tsc.NullValueRate)
+		assert.Equal(t, req.DatabaseName, tsc.DatabaseName)
+		assert.Equal(t, req.DatabaseTableName, tsc.DatabaseTableName)
+		assert.Equal(t, req.IncreaseFixedInput, tsc.IncreaseFixedInput)
+		assert.Equal(t, req.ExecNumMultiFixedInput, tsc.ExecNumMultiFixedInput)
 	})
 }

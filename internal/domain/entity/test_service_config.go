@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/pkg"
 	"time"
 )
@@ -148,3 +149,27 @@ func (t *TestServiceConfig) Validate() error {
 
 	return nil
 }
+
+func (tsc *TestServiceConfig) ApplyUpdateFromRequest(cfg *request.TestServiceConfigRequest) {
+	tsc.MaxRequests = cfg.MaxRequests
+	tsc.MaxDuration = int64(cfg.MaxDuration)
+	tsc.RequestDelayDuration = cfg.RequestDelayDuration
+	tsc.RandomRequestDelayMin = cfg.RandomRequestDelayMin
+	tsc.RandomRequestDelayMax = cfg.RandomRequestDelayMax
+	tsc.FixedTestNumber = cfg.FixedTestNumber
+	tsc.RandomTestNumberMin = cfg.RandomTestNumberMin
+	tsc.RandomTestNumberMax = cfg.RandomTestNumberMax
+	tsc.BadValueRate = cfg.BadValueRate
+	tsc.NegativeValueRate = cfg.NegativeValueRate
+	tsc.ZeroValueRate = cfg.ZeroValueRate
+	tsc.StringValueRate = cfg.StringValueRate
+	tsc.RealValueRate = cfg.RealValueRate
+	tsc.LongStringValueRate = cfg.LongStringValueRate
+	tsc.NullValueRate = cfg.NullValueRate
+	tsc.DatabaseName = cfg.DatabaseName
+	tsc.DatabaseTableName = cfg.DatabaseTableName
+	tsc.IncreaseFixedInput = cfg.IncreaseFixedInput
+	tsc.ExecNumMultiFixedInput = cfg.ExecNumMultiFixedInput
+}
+
+// in: internal/entity/test_service_config.go

@@ -232,7 +232,7 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 	err := ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
 		zap.L().Error("apply deployment fail",
-			zap.String("apllication", serveDepSpec.Name),
+			zap.String("application", serveDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -243,7 +243,7 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec)
 	if err != nil {
 		zap.L().Error("apply service fail",
-			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("application", serveSvcSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -254,7 +254,7 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 	err = ps.kubernetes.ApplyIngress(ctx, serveIngrSpec)
 	if err != nil {
 		zap.L().Error("apply ingress fail",
-			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("application", serveSvcSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -266,7 +266,7 @@ func (ps *provisioningService) ProvisionTestServiceByName(ctx context.Context, t
 	err = ps.kubernetes.WaitForDeployment(ctx, serveSvcName, ps.cfg.Kubernetese.TestServiceAPPServeWaitReady)
 	if err != nil {
 		zap.L().Error("create pod fail",
-			zap.String("apllication", serveDepSpec.Name),
+			zap.String("application", serveDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -371,7 +371,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	err := ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
 		zap.L().Error("apply deployment fail",
-			zap.String("apllication", serveDepSpec.Name),
+			zap.String("application", serveDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -382,7 +382,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec)
 	if err != nil {
 		zap.L().Error("apply service fail",
-			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("application", serveSvcSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -393,7 +393,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	err = ps.kubernetes.ApplyIngress(ctx, serveIngrSpec)
 	if err != nil {
 		zap.L().Error("apply ingress fail",
-			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("application", serveSvcSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -405,7 +405,7 @@ func (ps *provisioningService) ProvisionTestService(ctx context.Context, testSce
 	err = ps.kubernetes.WaitForDeployment(ctx, serveSvcName, ps.cfg.Kubernetese.TestServiceAPPServeWaitReady)
 	if err != nil {
 		zap.L().Error("create pod fail",
-			zap.String("apllication", serveDepSpec.Name),
+			zap.String("application", serveDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -721,7 +721,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	err := ps.kubernetes.ApplyDeployment(ctx, jobsDepSpec, configMap, secretMap)
 	if err != nil {
 		zap.L().Error("apply deployment fail",
-			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("application", jobsDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -733,7 +733,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	err = ps.kubernetes.WaitForDeployment(ctx, jobsSvcName, ps.cfg.Kubernetese.MotherServiceAPPJobsWaitReady)
 	if err != nil {
 		zap.L().Error("create pod fail",
-			zap.String("apllication", jobsDepSpec.Name),
+			zap.String("application", jobsDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -756,7 +756,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	err = ps.kubernetes.ApplyDeployment(ctx, serveDepSpec, configMap, secretMap)
 	if err != nil {
 		zap.L().Error("apply deployment fail",
-			zap.String("apllication", serveDepSpec.Name),
+			zap.String("application", serveDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -767,7 +767,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	err = ps.kubernetes.ApplyService(ctx, serveSvcSpec)
 	if err != nil {
 		zap.L().Error("apply service fail",
-			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("application", serveSvcSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -778,7 +778,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	err = ps.kubernetes.ApplyIngress(ctx, serveIngrSpec)
 	if err != nil {
 		zap.L().Error("apply ingress fail",
-			zap.String("apllication", serveSvcSpec.Name),
+			zap.String("application", serveSvcSpec.Name),
 			zap.String("error", err.Error()),
 		)
 
@@ -790,7 +790,7 @@ func (ps *provisioningService) ProvisionMotherService(ctx context.Context, mothe
 	err = ps.kubernetes.WaitForDeployment(ctx, serveSvcName, ps.cfg.Kubernetese.MotherServiceAPPServeWaitReady)
 	if err != nil {
 		zap.L().Error("create pod fail",
-			zap.String("apllication", serveDepSpec.Name),
+			zap.String("application", serveDepSpec.Name),
 			zap.String("error", err.Error()),
 		)
 

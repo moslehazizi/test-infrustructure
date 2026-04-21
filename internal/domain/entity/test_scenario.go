@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/pkg"
 	"time"
 
@@ -105,3 +106,22 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 
 	return nil
 }
+
+func (ts *TestScenario) ApplyUpdateRequest(req *request.TestScenarioUpdateRequest, motherSvc *MotherService) {
+	ts.Name = req.Name
+	ts.MotherServiceID = req.MotherServiceID
+	ts.MotherService = motherSvc
+	ts.IncreaseAgentNumber = req.IncreaseAgentNumber
+	ts.ExecNumMultiAgent = req.ExecNumMultiAgent
+	ts.Status = ScenarioStatusReady
+
+	if req.MaxTestServiceCount != nil {
+		ts.MaxTestServiceCount = req.MaxTestServiceCount
+	}
+
+	if req.NumSteps >= 1 {
+		ts.NumSteps = req.NumSteps
+	}
+}
+
+// in: internal/entity/test_scenario.go
