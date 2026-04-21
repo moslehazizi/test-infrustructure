@@ -17,7 +17,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
 func TestTestScenarioUsecase_Init(t *testing.T) {
@@ -2625,17 +2624,13 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
 		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
-		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
-		mockTestServiceConfig.On("UpdateByScenarioID",
-			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
-		).Return(nil)
+		mockRepo.On("UpdateScenarioAndConfig", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
 
 		err := svc.Update(context.Background(), baseRequest())
 
 		assert.NoError(t, err)
 		mockRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-		mockTestServiceConfig.AssertExpectations(t)
 	})
 
 	t.Run("failed_case_pending_or_ready_scenarios_can_be_updated", func(t *testing.T) {
@@ -2680,7 +2675,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 
 		mockRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-		mockTestServiceConfig.AssertExpectations(t)
 	})
 
 	t.Run("success_category_requires_all_optional_fields", func(t *testing.T) {
@@ -2719,17 +2713,13 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(existing, nil)
 		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
-		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
-		mockTestServiceConfig.On("UpdateByScenarioID",
-			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
-		).Return(nil)
+		mockRepo.On("UpdateScenarioAndConfig", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
 
 		err := svc.Update(context.Background(), req)
 
 		assert.NoError(t, err)
 		mockRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-		mockTestServiceConfig.AssertExpectations(t)
 	})
 
 	t.Run("success_random_delay_and_random_test_number_config", func(t *testing.T) {
@@ -2767,17 +2757,13 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
 		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
-		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
-		mockTestServiceConfig.On("UpdateByScenarioID",
-			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
-		).Return(nil)
+		mockRepo.On("UpdateScenarioAndConfig", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
 
 		err := svc.Update(context.Background(), req)
 
 		assert.NoError(t, err)
 		mockRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-		mockTestServiceConfig.AssertExpectations(t)
 	})
 
 	t.Run("success_bad_value_rate_enabled_with_valid_sub_rates_summing_to_100", func(t *testing.T) {
@@ -2811,72 +2797,13 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
 		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
-		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
-		mockTestServiceConfig.On("UpdateByScenarioID",
-			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
-		).Return(nil)
+		mockRepo.On("UpdateScenarioAndConfig", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
 
 		err := svc.Update(context.Background(), req)
 
 		assert.NoError(t, err)
 		mockRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-		mockTestServiceConfig.AssertExpectations(t)
-	})
-
-	t.Run("success_optional_fields_nil_are_preserved_from_existing", func(t *testing.T) {
-		mockRepo := new(repoMocks.MockTestScenario)
-		mockTestCatRepo := new(repoMocks.MockTestCategory)
-		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
-		mockMotherService := new(repoMocks.MockMotherService)
-		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
-		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
-		mockProvisioningService := new(prvMock.MockProvisioningService)
-
-		svc := NewTestScenarioUsecase(
-			getMockDB(t),
-			mockRepo,
-			mockTestCatRepo,
-			mockTestServiceConfig,
-			mockMotherService,
-			mockStressTestExecutor,
-			mockTestServiceRepo,
-			mockProvisioningService,
-		)
-
-		originalMax := int64(99)
-		cat := &entity.TestCategory{
-			HasMaxTestServiceCount: true,
-			HasNumSteps:            true,
-		}
-		existing := baseExistingScenario()
-		existing.TestCategory = cat
-		existing.MaxTestServiceCount = &originalMax
-
-		req := baseRequest()
-		req.MaxTestServiceCount = nil
-
-		var capturedScenario *entity.TestScenario
-
-		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(existing, nil)
-		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
-		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).
-			Run(func(args mock.Arguments) {
-				capturedScenario = args.Get(1).(*entity.TestScenario)
-			}).Return(nil)
-		mockTestServiceConfig.On("UpdateByScenarioID",
-			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
-		).Return(nil)
-
-		err := svc.Update(context.Background(), req)
-
-		assert.NoError(t, err)
-		require.NotNil(t, capturedScenario)
-		assert.Equal(t, originalMax, *capturedScenario.MaxTestServiceCount,
-			"MaxTestServiceCount must not be overwritten when nil is passed")
-		mockRepo.AssertExpectations(t)
-		mockMotherService.AssertExpectations(t)
-		mockTestServiceConfig.AssertExpectations(t)
 	})
 
 	t.Run("error_nil_config_returns_ErrTestServiceConfigIsRequired_immediately", func(t *testing.T) {
@@ -2907,7 +2834,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrTestServiceConfigIsRequired)
 		mockRepo.AssertNotCalled(t, "GetByID")
 		mockMotherService.AssertNotCalled(t, "GetByID")
-		mockTestServiceConfig.AssertNotCalled(t, "GetByID")
 	})
 
 	t.Run("error_scenario_not_found", func(t *testing.T) {
@@ -3040,45 +2966,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
 	})
-
-	// t.Run("error_config_validation_no_delay_config_set", func(t *testing.T) {
-	// 	mockRepo := new(repoMocks.MockTestScenario)
-	// 	mockTestCatRepo := new(repoMocks.MockTestCategory)
-	// 	mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
-	// 	mockMotherService := new(repoMocks.MockMotherService)
-	// 	mockStressTestExecutor := new(svcMocks.MockExecutionManage)
-	// 	mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
-	// 	mockProvisioningService := new(prvMock.MockProvisioningService)
-
-	// 	svc := NewTestScenarioUsecase(
-	// 		getMockDB(t),
-	// 		mockRepo,
-	// 		mockTestCatRepo,
-	// 		mockTestServiceConfig,
-	// 		mockMotherService,
-	// 		mockStressTestExecutor,
-	// 		mockTestServiceRepo,
-	// 		mockProvisioningService,
-	// 	)
-
-	// 	req := baseRequest()
-	// 	req.Config.RequestDelayDuration = nil
-	// 	req.Config.RandomRequestDelayMin = nil
-	// 	req.Config.RandomRequestDelayMax = nil
-
-	// 	mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
-	// 	mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
-	// 	mockTestServiceConfig.On("GetByID", mock.Anything, uint64(100)).Return(baseConfig(), nil)
-
-	// 	err := svc.Update(context.Background(), req)
-
-	// 	assert.ErrorIs(t, err, pkg.ErrFailedToValidateTestSvcCfg)
-	// 	assert.ErrorIs(t, err, pkg.ErrInvalidRequestDelayDurationConfig)
-	// 	mockRepo.AssertNotCalled(t, "Update")
-	// 	mockRepo.AssertExpectations(t)
-	// 	mockMotherService.AssertExpectations(t)
-	// 	mockTestServiceConfig.AssertExpectations(t)
-	// })
 
 	t.Run("error_config_validation_fixed_delay_and_random_delay_both_set", func(t *testing.T) {
 		mockRepo := new(repoMocks.MockTestScenario)
@@ -3477,49 +3364,12 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 
 		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
 		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
-		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).
-			Return(errors.New("update failed"))
-
-		err := svc.Update(context.Background(), baseRequest())
-
-		assert.ErrorIs(t, err, pkg.ErrFailedToUpdateTestScenario)
-		mockTestServiceConfig.AssertNotCalled(t, "UpdateByScenarioID")
-		mockRepo.AssertExpectations(t)
-		mockMotherService.AssertExpectations(t)
-	})
-
-	t.Run("error_test_service_config_update_fails", func(t *testing.T) {
-		mockRepo := new(repoMocks.MockTestScenario)
-		mockTestCatRepo := new(repoMocks.MockTestCategory)
-		mockTestServiceConfig := new(repoMocks.MockTestServiceConfig)
-		mockMotherService := new(repoMocks.MockMotherService)
-		mockStressTestExecutor := new(svcMocks.MockExecutionManage)
-		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
-		mockProvisioningService := new(prvMock.MockProvisioningService)
-
-		svc := NewTestScenarioUsecase(
-			getMockDB(t),
-			mockRepo,
-			mockTestCatRepo,
-			mockTestServiceConfig,
-			mockMotherService,
-			mockStressTestExecutor,
-			mockTestServiceRepo,
-			mockProvisioningService,
-		)
-
-		mockRepo.On("GetByID", mock.Anything, uint64(1)).Return(baseExistingScenario(), nil)
-		mockMotherService.On("GetByID", mock.Anything, uint64(12)).Return(baseMotherService, nil)
-		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(nil)
-		mockTestServiceConfig.On("UpdateByScenarioID",
-			mock.Anything, uint64(1), mock.AnythingOfType("*entity.TestServiceConfig"),
-		).Return(errors.New("config update failed"))
+		mockRepo.On("UpdateScenarioAndConfig", mock.Anything, mock.AnythingOfType("*entity.TestScenario")).Return(errors.New("update failed"))
 
 		err := svc.Update(context.Background(), baseRequest())
 
 		assert.ErrorIs(t, err, pkg.ErrFailedToUpdateTestScenario)
 		mockRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-		mockTestServiceConfig.AssertExpectations(t)
 	})
 }

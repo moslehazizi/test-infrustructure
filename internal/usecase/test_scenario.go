@@ -102,6 +102,7 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 
 			return pkg.ErrTestCategoryNotFound
 		}
+		
 
 		span.SetAttributes(attribute.String("error.type", "get_test_category_error"), attribute.String("error.message", err.Error()))
 
@@ -535,7 +536,7 @@ func (service *testScenario) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (service *testScenario) Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) (e error) {
+func (service *testScenario) Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) error {
 	tracer := otel.Tracer("test-scenario-usecase")
 	_, span := tracer.Start(ctx, "update_test_scenario")
 	defer span.End()
@@ -580,30 +581,17 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
 	}
 
-	tx := service.db.Begin()
-	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
+	err = service.testScenarioRepository.UpdateScenarioAndConfig(ctx, existing)
+	if err != nil {
+		span.SetAttributes(attribute.String("update.status", "failed"))
+		zap.L().Error("test scenario and config update failed",
+			zap.String(logger.FieldRequestID, requestID),
+			zap.String("name", existing.Name),
+			zap.Error(err),
+		)
 
-	defer func() {
-		if e != nil {
-			_ = tx.Rollback()
-			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
-			zap.L().Error("test scenario update failed, transaction rolled back",
-				zap.String(logger.FieldRequestID, requestID),
-				zap.String("name", existing.Name),
-				zap.Error(e),
-			)
-		}
-	}()
-
-	if err = service.testScenarioRepository.Update(dbCtx, existing); err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, err)
 	}
 
-	if err = service.testServiceConfigRepository.UpdateByScenarioID(dbCtx, existing.ID, existing.TestServiceConfig); err != nil {
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, err)
-	}
-
-	_ = tx.Commit()
-	span.SetAttributes(attribute.String("transaction.status", "committed"))
 	return nil
 }
