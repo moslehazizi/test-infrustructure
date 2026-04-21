@@ -2325,3 +2325,227 @@ func TestTestScenarioRepository_GetByMotherServiceId(t *testing.T) {
 		assert.ErrorIs(t, err, pkg.ErrFailedToGetTestScenarios)
 	})
 }
+
+func TestUpdateScenarioAndConfig(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		ctx := context.Background()
+
+		repo := NewTestScenarioRepository(db)
+
+		maxCount := int64(10)
+
+		scenario := &entity.TestScenario{
+			ID:                  1,
+			Name:                "updated-name",
+			MotherServiceID:     2,
+			Status:              entity.ScenarioStatusRunning,
+			MaxTestServiceCount: &maxCount,
+			DeploymentNumber:    3,
+			Editable:            false,
+			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
+			TestServiceConfig: &entity.TestServiceConfig{
+				MaxRequests:            100,
+				MaxDuration:            60,
+				RequestDelayDuration:   new(1),
+				RandomRequestDelayMin:  nil,
+				RandomRequestDelayMax:  nil,
+				FixedTestNumber:        new(1),
+				RandomTestNumberMin:    nil,
+				RandomTestNumberMax:    nil,
+				BadValueRate:           1,
+				NegativeValueRate:      2,
+				RealValueRate:          3,
+				ZeroValueRate:          4,
+				StringValueRate:        5,
+				LongStringValueRate:    6,
+				NullValueRate:          7,
+				DatabaseName:           "db1",
+				DatabaseTableName:      "table1",
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
+			},
+		}
+
+		mock.ExpectBegin()
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET "execution_number_multi_agent"=$1,"increase_agent_number"=$2,"max_test_service_count"=$3,"mother_service_id"=$4,"name"=$5,"num_steps"=$6,"status"=$7,"updated_at"=$8 WHERE id = $9 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(
+				scenario.ExecNumMultiAgent,
+				scenario.IncreaseAgentNumber,
+				scenario.MaxTestServiceCount,
+				scenario.MotherServiceID,
+				scenario.Name,
+				scenario.NumSteps,
+				scenario.Status,
+				sqlmock.AnyArg(),
+				scenario.ID,
+			).
+			WillReturnResult(sqlmock.NewResult(0, 1))
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_service_configs" SET`,
+		)).
+			WillReturnResult(sqlmock.NewResult(0, 1))
+
+		mock.ExpectCommit()
+
+		err = repo.UpdateScenarioAndConfig(ctx, scenario)
+
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("failed_case_update_scenario", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		ctx := context.Background()
+
+		repo := NewTestScenarioRepository(db)
+
+		maxCount := int64(10)
+
+		scenario := &entity.TestScenario{
+			ID:                  1,
+			Name:                "updated-name",
+			MotherServiceID:     2,
+			Status:              entity.ScenarioStatusRunning,
+			MaxTestServiceCount: &maxCount,
+			DeploymentNumber:    3,
+			Editable:            false,
+			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
+			TestServiceConfig: &entity.TestServiceConfig{
+				MaxRequests:            100,
+				MaxDuration:            60,
+				RequestDelayDuration:   new(1),
+				RandomRequestDelayMin:  nil,
+				RandomRequestDelayMax:  nil,
+				FixedTestNumber:        new(1),
+				RandomTestNumberMin:    nil,
+				RandomTestNumberMax:    nil,
+				BadValueRate:           1,
+				NegativeValueRate:      2,
+				RealValueRate:          3,
+				ZeroValueRate:          4,
+				StringValueRate:        5,
+				LongStringValueRate:    6,
+				NullValueRate:          7,
+				DatabaseName:           "db1",
+				DatabaseTableName:      "table1",
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
+			},
+		}
+
+		mock.ExpectBegin()
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET "execution_number_multi_agent"=$1,"increase_agent_number"=$2,"max_test_service_count"=$3,"mother_service_id"=$4,"name"=$5,"num_steps"=$6,"status"=$7,"updated_at"=$8 WHERE id = $9 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(
+				scenario.ExecNumMultiAgent,
+				scenario.IncreaseAgentNumber,
+				scenario.MaxTestServiceCount,
+				scenario.MotherServiceID,
+				scenario.Name,
+				scenario.NumSteps,
+				scenario.Status,
+				sqlmock.AnyArg(),
+				scenario.ID,
+			).
+			WillReturnError(errors.New("something went wrong"))
+
+		mock.ExpectRollback()
+
+		err = repo.UpdateScenarioAndConfig(ctx, scenario)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "failed to update test scenario:")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("failed_case_update_config", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+		ctx := context.Background()
+
+		repo := NewTestScenarioRepository(db)
+
+		maxCount := int64(10)
+
+		scenario := &entity.TestScenario{
+			ID:                  1,
+			Name:                "updated-name",
+			MotherServiceID:     2,
+			Status:              entity.ScenarioStatusRunning,
+			MaxTestServiceCount: &maxCount,
+			DeploymentNumber:    3,
+			Editable:            false,
+			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
+			TestServiceConfig: &entity.TestServiceConfig{
+				MaxRequests:            100,
+				MaxDuration:            60,
+				RequestDelayDuration:   new(1),
+				RandomRequestDelayMin:  nil,
+				RandomRequestDelayMax:  nil,
+				FixedTestNumber:        new(1),
+				RandomTestNumberMin:    nil,
+				RandomTestNumberMax:    nil,
+				BadValueRate:           1,
+				NegativeValueRate:      2,
+				RealValueRate:          3,
+				ZeroValueRate:          4,
+				StringValueRate:        5,
+				LongStringValueRate:    6,
+				NullValueRate:          7,
+				DatabaseName:           "db1",
+				DatabaseTableName:      "table1",
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
+			},
+		}
+
+		mock.ExpectBegin()
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_scenarios" SET "execution_number_multi_agent"=$1,"increase_agent_number"=$2,"max_test_service_count"=$3,"mother_service_id"=$4,"name"=$5,"num_steps"=$6,"status"=$7,"updated_at"=$8 WHERE id = $9 AND "test_scenarios"."deleted_at" IS NULL`,
+		)).
+			WithArgs(
+				scenario.ExecNumMultiAgent,
+				scenario.IncreaseAgentNumber,
+				scenario.MaxTestServiceCount,
+				scenario.MotherServiceID,
+				scenario.Name,
+				scenario.NumSteps,
+				scenario.Status,
+				sqlmock.AnyArg(),
+				scenario.ID,
+			).
+			WillReturnResult(sqlmock.NewResult(0, 1))
+
+		mock.ExpectExec(regexp.QuoteMeta(
+			`UPDATE "test_service_configs" SET`,
+		)).
+			WillReturnError(errors.New("something went wrong"))
+
+		mock.ExpectRollback()
+
+		err = repo.UpdateScenarioAndConfig(ctx, scenario)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "failed to update test service config:")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}

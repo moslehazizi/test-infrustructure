@@ -15,6 +15,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.uber.org/zap"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -347,4 +348,100 @@ func (repo *testScenario) GetByMotherServiceId(ctx context.Context, motherServic
 	}
 
 	return testScenarios, nil
+}
+
+func (repo *testScenario) UpdateScenarioAndConfig(ctx context.Context, scenario *entity.TestScenario) (e error) {
+	tracer := otel.Tracer("test-scenario-repository")
+	_, span := tracer.Start(ctx, "update_test_scenario")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+	span.SetAttributes(
+		attribute.String("database.operation", "update"),
+		attribute.String("test_scenario.id", strconv.FormatUint(scenario.ID, 10)),
+	)
+
+	tx := repo.db.Begin()
+	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
+
+	defer func() {
+		if e != nil {
+			_ = tx.Rollback()
+			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
+			zap.L().Error("test scenario update failed, transaction rolled back",
+				zap.String(logger.FieldRequestID, requestID),
+				zap.String("name", scenario.Name),
+				zap.Error(e),
+			)
+		}
+	}()
+
+	err := postgres.QueryBuilder(dbCtx, tx).
+		Omit(
+			"TestCategory",
+			"TestCategoryID",
+			clause.Associations,
+		).
+		Model(&entity.TestScenario{}).
+		Where("id = ?", scenario.ID).
+		Updates(map[string]any{
+			"name":                         scenario.Name,
+			"mother_service_id":            scenario.MotherServiceID,
+			"max_test_service_count":       scenario.MaxTestServiceCount,
+			"num_steps":                    scenario.NumSteps,
+			"increase_agent_number":        scenario.IncreaseAgentNumber,
+			"execution_number_multi_agent": scenario.ExecNumMultiAgent,
+			"updated_at":                   time.Now(),
+			"status":                       scenario.Status,
+		}).Error
+
+	if err != nil {
+		span.SetAttributes(
+			attribute.String("error.type", "database_error"),
+			attribute.String("error.message", err.Error()),
+		)
+
+		return fmt.Errorf("failed to update test scenario: %w", err)
+	}
+
+	err = postgres.QueryBuilder(dbCtx, tx).
+		Model(&entity.TestServiceConfig{}).
+		Where("test_scenario_id = ?", scenario.ID).
+		Updates(map[string]any{
+			"max_requests":                       scenario.TestServiceConfig.MaxRequests,
+			"max_duration":                       scenario.TestServiceConfig.MaxDuration,
+			"request_delay_duration":             scenario.TestServiceConfig.RequestDelayDuration,
+			"random_request_delay_min":           scenario.TestServiceConfig.RandomRequestDelayMin,
+			"random_request_delay_max":           scenario.TestServiceConfig.RandomRequestDelayMax,
+			"fixed_test_number":                  scenario.TestServiceConfig.FixedTestNumber,
+			"random_test_number_min":             scenario.TestServiceConfig.RandomTestNumberMin,
+			"random_test_number_max":             scenario.TestServiceConfig.RandomTestNumberMax,
+			"bad_value_rate":                     scenario.TestServiceConfig.BadValueRate,
+			"negative_value_rate":                scenario.TestServiceConfig.NegativeValueRate,
+			"real_value_rate":                    scenario.TestServiceConfig.RealValueRate,
+			"zero_value_rate":                    scenario.TestServiceConfig.ZeroValueRate,
+			"string_value_rate":                  scenario.TestServiceConfig.StringValueRate,
+			"long_string_value_rate":             scenario.TestServiceConfig.LongStringValueRate,
+			"null_value_rate":                    scenario.TestServiceConfig.NullValueRate,
+			"database_name":                      scenario.TestServiceConfig.DatabaseName,
+			"database_table_name":                scenario.TestServiceConfig.DatabaseTableName,
+			"updated_at":                         time.Now(),
+			"increase_fixed_input":               scenario.TestServiceConfig.IncreaseFixedInput,
+			"execution_number_multi_fixed_input": scenario.TestServiceConfig.ExecNumMultiFixedInput,
+		}).Error
+
+	if err != nil {
+		span.SetAttributes(
+			attribute.String("error.type", "database_error"),
+			attribute.String("error.message", err.Error()),
+		)
+
+		return fmt.Errorf("failed to update test service config: %w", err)
+	}
+
+	_ = tx.Commit()
+	span.SetAttributes(attribute.String("transaction.status", "committed"))
+
+	return nil
 }

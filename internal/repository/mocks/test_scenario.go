@@ -107,3 +107,9 @@ func (m *MockTestScenario) GetByMotherServiceId(ctx context.Context, motherServi
 
 	return result, args.Error(1)
 }
+
+func (m *MockTestScenario) UpdateScenarioAndConfig(ctx context.Context, scenario *entity.TestScenario) error {
+	args := m.Called(ctx, scenario)
+
+	return args.Error(0)
+}
