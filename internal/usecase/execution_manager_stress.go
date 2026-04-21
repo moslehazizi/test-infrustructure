@@ -122,59 +122,59 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 }
 
 func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	tracer := otel.Tracer("StressTestExecutionManager")
+	_, span := tracer.Start(ctx, "ResumeScenario")
+	defer span.End()
+
+	if scenario.MaxTestServiceCount == nil {
+		zap.L().Error("max test service count value is null but required", zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrMaxTestServiceCountNotSet
+	}
+
+	rawTestScenario, ok := ex.scenarios.Load(scenario.ID)
+	if !ok {
+		zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrTestScenarioNotFound
+	}
+
+	testScenario, ok := rawTestScenario.(interfaces.ScenarioExecutor)
+	if !ok {
+		zap.L().Error("failed to type assertion", zap.Error(pkg.ErrTypeAssertionAnyToScenarioExecutor), zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrTypeAssertionAnyToScenarioExecutor
+	}
+
+	agents := testScenario.GetAgents()
+
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+
+	for _, agent := range agents {
+		err := agent.ResumeTesting(ctx)
+		if err != nil {
+			zap.L().Error("test agent controller can not resume test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+
+			return fmt.Errorf("%w - %w", pkg.ErrFailedToResumeTestService, err)
+		}
+	}
+
 	return nil
-
-	// tracer := otel.Tracer("StressTestExecutionManager")
-	// _, span := tracer.Start(ctx, "ResumeScenario")
-	// defer span.End()
-
-	// if scenario.MaxTestServiceCount == nil {
-	// 	zap.L().Error("max test service count value is null but required", zap.Uint64("scenarioID", scenario.ID))
-
-	// 	return pkg.ErrMaxTestServiceCountNotSet
-	// }
-
-	// ex.mx.Lock()
-	// testScenario, ok := ex.scenarios[scenario.ID]
-	// if !ok {
-	// 	zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
-	// 	ex.mx.Unlock()
-
-	// 	return fmt.Errorf("%w", pkg.ErrTestScenarioNotFound)
-	// }
-
-	// agents := testScenario.GetAgents()
-
-	// for {
-	// 	allHealthy := true
-	// 	for _, agent := range agents {
-	// 		if !agent.Healthy() {
-	// 			allHealthy = false
-
-	// 			break
-	// 		}
-	// 	}
-
-	// 	if allHealthy {
-	// 		break
-	// 	}
-
-	// 	time.Sleep(healthyCheckSleep)
-	// }
-
-	// for _, agent := range agents {
-	// 	err := agent.ResumeTesting(ctx)
-	// 	if err != nil {
-	// 		zap.L().Error("test agent controller can not resume test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
-	// 		ex.mx.Unlock()
-
-	// 		return fmt.Errorf("%w - %w", pkg.ErrFailedToResumeTestService, err)
-	// 	}
-	// }
-
-	// ex.mx.Unlock()
-
-	// return nil
 }
 
 func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario *entity.TestScenario) error {
