@@ -445,3 +445,52 @@ func (repo *testScenario) UpdateScenarioAndConfig(ctx context.Context, scenario 
 
 	return nil
 }
+
+func (repo *testScenario) CreateScenarioAndConfig(ctx context.Context, scenario *entity.TestScenario) (e error) {
+	tracer := otel.Tracer("test-scenario-repository")
+	_, span := tracer.Start(ctx, "create_test_scenario")
+	defer span.End()
+
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
+
+	span.SetAttributes(attribute.String("database.operation", "insert"), attribute.String("test_scenario.name", scenario.Name))
+
+	tx := repo.db.Begin()
+	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
+	defer func() {
+		if e != nil {
+			_ = tx.Rollback()
+			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
+			zap.L().Error("test scenario creation failed, transaction rolled back",
+				zap.String(logger.FieldRequestID, requestID),
+				zap.String("name", scenario.Name),
+				zap.Error(e),
+			)
+		}
+	}()
+
+	err := postgres.QueryBuilder(dbCtx, tx).
+		Omit(clause.Associations).
+		Create(scenario).Error
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "database_error_create_scenario"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("failed to create test scenario record: %w", err)
+	}
+
+	scenario.TestServiceConfig.TestScenarioID = scenario.ID
+
+	err = postgres.QueryBuilder(dbCtx, tx).Create(scenario.TestServiceConfig).Error
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "database_error_create_scenario_config"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("failed to create test service config record: %w", err)
+	}
+
+	_ = tx.Commit()
+
+	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(scenario.ID, 10)))
+
+	return nil
+}

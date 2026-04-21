@@ -15,5 +15,6 @@ type TestScenarioRepository interface {
 	UpdateDeploymentNumber(ctx context.Context, id uint64, newDeploymentNumber int32) error
 	Update(ctx context.Context, scenario *entity.TestScenario) error
 	GetByMotherServiceId(ctx context.Context, motherServiceId uint64) ([]*entity.TestScenario, error)
-	UpdateScenarioAndConfig(ctx context.Context, scenario *entity.TestScenario) error
+	UpdateScenarioAndConfig(ctx context.Context, scenario *entity.TestScenario) (e error)
+	CreateScenarioAndConfig(ctx context.Context, scenario *entity.TestScenario) (e error)
 }

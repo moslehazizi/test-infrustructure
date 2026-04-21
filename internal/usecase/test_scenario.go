@@ -196,16 +196,6 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 
 	testScenario.TestCategory = testCat
 
-	// switch testScenario.TestCategory.Name {
-	// case entity.STRESS:
-	// 	err := service.stressTestExecutionManager.AddScenario(dbCtx, testScenario)
-	// 	if err != nil {
-	// 		return fmt.Errorf("%w: %w", pkg.ErrFailedToAddScenarioToExecutionManager, err)
-	// 	}
-	// default:
-	// 	return pkg.ErrStartingTestNotImplemented
-	// }
-
 	_ = tx.Commit()
 
 	span.SetAttributes(attribute.String("transaction.status", "committed"))

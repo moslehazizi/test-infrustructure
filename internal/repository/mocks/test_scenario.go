@@ -113,3 +113,9 @@ func (m *MockTestScenario) UpdateScenarioAndConfig(ctx context.Context, scenario
 
 	return args.Error(0)
 }
+
+func (m *MockTestScenario) CreateScenarioAndConfig(ctx context.Context, scenario *entity.TestScenario) (e error) {
+	args := m.Called(ctx, scenario)
+
+	return args.Error(0)
+}

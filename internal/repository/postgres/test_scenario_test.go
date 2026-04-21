@@ -2549,3 +2549,239 @@ func TestUpdateScenarioAndConfig(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
+
+func TestCreateScenarioAndConfig(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		ctx := context.Background()
+
+		repo := NewTestScenarioRepository(db)
+		now := time.Now()
+		databaseName := "test_db"
+		databaseTableName := "test_table"
+
+		testScenario := &entity.TestScenario{
+			CreatedAt:           now,
+			UpdatedAt:           now,
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			Status:              entity.ScenarioStatus(entity.ScenarioStatusReady),
+			MaxTestServiceCount: nil,
+			StartedAt:           nil,
+			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
+			TestServiceConfig: &entity.TestServiceConfig{
+				TestScenarioID:         uint64(1),
+				CreatedAt:              now,
+				UpdatedAt:              now,
+				MaxRequests:            12,
+				MaxDuration:            10,
+				DatabaseName:           databaseName,
+				DatabaseTableName:      databaseTableName,
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
+			},
+		}
+
+		mock.ExpectBegin()
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","num_steps","max_test_service_count","deployment_number","started_at","editable","increase_agent_number","execution_number_multi_agent") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "id"`)).
+			WithArgs(
+				testScenario.CreatedAt,
+				testScenario.UpdatedAt,
+				testScenario.DeletedAt,
+				testScenario.Name,
+				testScenario.TestCategoryID,
+				testScenario.MotherServiceID,
+				testScenario.Status,
+				testScenario.NumSteps,
+				nil,
+				int32(0),
+				testScenario.StartedAt,
+				true,
+				testScenario.IncreaseAgentNumber,
+				testScenario.ExecNumMultiAgent).
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at","database_name","database_table_name","increase_fixed_input","execution_number_multi_fixed_input") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING "id"`)).
+			WithArgs(
+				testScenario.TestServiceConfig.TestScenarioID,
+				testScenario.TestServiceConfig.MaxRequests,
+				testScenario.TestServiceConfig.MaxDuration,
+				nil, nil, nil, nil, nil, nil,
+				0, 0, 0, 0, 0, 0, 0,
+				testScenario.TestServiceConfig.CreatedAt,
+				testScenario.TestServiceConfig.UpdatedAt,
+				testScenario.TestServiceConfig.DatabaseName,
+				testScenario.TestServiceConfig.DatabaseTableName,
+				testScenario.TestServiceConfig.IncreaseFixedInput,
+				testScenario.TestServiceConfig.ExecNumMultiFixedInput,
+			).
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+
+		mock.ExpectCommit()
+
+		err = repo.CreateScenarioAndConfig(ctx, testScenario)
+
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("failed_case_create_scenario_error", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		ctx := context.Background()
+
+		repo := NewTestScenarioRepository(db)
+		now := time.Now()
+		databaseName := "test_db"
+		databaseTableName := "test_table"
+
+		testScenario := &entity.TestScenario{
+			CreatedAt:           now,
+			UpdatedAt:           now,
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			Status:              entity.ScenarioStatus(entity.ScenarioStatusReady),
+			MaxTestServiceCount: nil,
+			StartedAt:           nil,
+			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
+			TestServiceConfig: &entity.TestServiceConfig{
+				TestScenarioID:         uint64(1),
+				CreatedAt:              now,
+				UpdatedAt:              now,
+				MaxRequests:            12,
+				MaxDuration:            10,
+				DatabaseName:           databaseName,
+				DatabaseTableName:      databaseTableName,
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
+			},
+		}
+
+		mock.ExpectBegin()
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","num_steps","max_test_service_count","deployment_number","started_at","editable","increase_agent_number","execution_number_multi_agent") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "id"`)).
+			WithArgs(
+				testScenario.CreatedAt,
+				testScenario.UpdatedAt,
+				testScenario.DeletedAt,
+				testScenario.Name,
+				testScenario.TestCategoryID,
+				testScenario.MotherServiceID,
+				testScenario.Status,
+				testScenario.NumSteps,
+				nil,
+				int32(0),
+				testScenario.StartedAt,
+				true,
+				testScenario.IncreaseAgentNumber,
+				testScenario.ExecNumMultiAgent).
+			WillReturnError(errors.New("something went wrong"))
+
+		mock.ExpectRollback()
+
+		err = repo.CreateScenarioAndConfig(ctx, testScenario)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "failed to create test scenario record")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("failed_case_create_config_error", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		ctx := context.Background()
+
+		repo := NewTestScenarioRepository(db)
+		now := time.Now()
+		databaseName := "test_db"
+		databaseTableName := "test_table"
+
+		testScenario := &entity.TestScenario{
+			CreatedAt:           now,
+			UpdatedAt:           now,
+			DeletedAt:           nil,
+			Name:                "load1",
+			TestCategoryID:      uint64(2),
+			MotherServiceID:     uint64(1),
+			Status:              entity.ScenarioStatus(entity.ScenarioStatusReady),
+			MaxTestServiceCount: nil,
+			StartedAt:           nil,
+			NumSteps:            2,
+			IncreaseAgentNumber: 0,
+			ExecNumMultiAgent:   1,
+			TestServiceConfig: &entity.TestServiceConfig{
+				TestScenarioID:         uint64(1),
+				CreatedAt:              now,
+				UpdatedAt:              now,
+				MaxRequests:            12,
+				MaxDuration:            10,
+				DatabaseName:           databaseName,
+				DatabaseTableName:      databaseTableName,
+				IncreaseFixedInput:     0,
+				ExecNumMultiFixedInput: 1,
+			},
+		}
+
+		mock.ExpectBegin()
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`INSERT INTO "test_scenarios" ("created_at","updated_at","deleted_at","name","test_category_id","mother_service_id","status","num_steps","max_test_service_count","deployment_number","started_at","editable","increase_agent_number","execution_number_multi_agent") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "id"`)).
+			WithArgs(
+				testScenario.CreatedAt,
+				testScenario.UpdatedAt,
+				testScenario.DeletedAt,
+				testScenario.Name,
+				testScenario.TestCategoryID,
+				testScenario.MotherServiceID,
+				testScenario.Status,
+				testScenario.NumSteps,
+				nil,
+				int32(0),
+				testScenario.StartedAt,
+				true,
+				testScenario.IncreaseAgentNumber,
+				testScenario.ExecNumMultiAgent).
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`INSERT INTO "test_service_configs" ("test_scenario_id","max_requests","max_duration","request_delay_duration","random_request_delay_min","random_request_delay_max","fixed_test_number","random_test_number_min","random_test_number_max","bad_value_rate","negative_value_rate","real_value_rate","zero_value_rate","string_value_rate","long_string_value_rate","null_value_rate","created_at","updated_at","database_name","database_table_name","increase_fixed_input","execution_number_multi_fixed_input") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING "id"`)).
+			WithArgs(
+				testScenario.TestServiceConfig.TestScenarioID,
+				testScenario.TestServiceConfig.MaxRequests,
+				testScenario.TestServiceConfig.MaxDuration,
+				nil, nil, nil, nil, nil, nil,
+				0, 0, 0, 0, 0, 0, 0,
+				testScenario.TestServiceConfig.CreatedAt,
+				testScenario.TestServiceConfig.UpdatedAt,
+				testScenario.TestServiceConfig.DatabaseName,
+				testScenario.TestServiceConfig.DatabaseTableName,
+				testScenario.TestServiceConfig.IncreaseFixedInput,
+				testScenario.TestServiceConfig.ExecNumMultiFixedInput,
+			).
+			WillReturnError(errors.New("something went wrong"))
+
+		mock.ExpectRollback()
+
+		err = repo.CreateScenarioAndConfig(ctx, testScenario)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "failed to create test service config record")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
