@@ -85,6 +85,43 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 
 		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
+
+	t.Run("failed_case_scenario_also_is_running", func(t *testing.T) {
+		scenario := &entity.TestScenario{
+			ID: 1,
+		}
+		toolbox := new(mocks.MockTestAgentControllerToolBox)
+		sseb := new(mocks.MockSingleScenarioExecutorBuilder)
+		repo := new(repoMocks.MockTestScenario)
+		seb := new(mocks.MockScenarioExecutorBuilder)
+
+		sampleSE := &scenarioExecutor{
+			scenario:                   scenario,
+			scenarioRepo:               repo,
+			testAgentControllerToolBox: toolbox,
+			scenarioExecutorBuilder:    sseb,
+		}
+
+		ex := NewStressTestExecutionManager(toolbox, repo, seb)
+		repo.On("GetByID", mock.Anything, mock.Anything).Return(&entity.TestScenario{ID: 1, Status: entity.ScenarioStatusRunning}, nil)
+		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(sampleSE)
+
+		err := ex.RunScenario(context.Background(), scenario)
+		assert.NoError(t, err)
+
+		_, ok := ex.(*StressTestExecutionManager)
+		assert.True(t, ok)
+
+		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+
+		err = ex.RunScenario(context.Background(), scenario)
+		assert.Error(t, err)
+
+		// _, ok = ex.(*StressTestExecutionManager)
+		// assert.True(t, ok)
+
+	})
 }
 
 func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
