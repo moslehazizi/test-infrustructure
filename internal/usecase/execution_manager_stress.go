@@ -178,98 +178,100 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 }
 
 func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	tracer := otel.Tracer("StressTestExecutionManager")
+	_, span := tracer.Start(ctx, "StopScenario")
+	defer span.End()
+
+	if scenario.MaxTestServiceCount == nil {
+		zap.L().Error("max test service count value is null but required", zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrMaxTestServiceCountNotSet
+	}
+
+	rawTestScenario, ok := ex.scenarios.Load(scenario.ID)
+	if !ok {
+		zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrTestScenarioNotFound
+	}
+
+	sci, ok := rawTestScenario.(interfaces.ScenarioExecutor)
+	if !ok {
+		zap.L().Error("failed to type assertion", zap.Error(pkg.ErrTypeAssertionAnyToScenarioExecutor), zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrTypeAssertionAnyToScenarioExecutor
+	}
+
+	sci.SetRunning(false)
+
+	agents := sci.GetAgents()
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+
+	for _, agent := range agents {
+		err := agent.StopTesting(ctx)
+		if err != nil {
+			zap.L().Error("test agent controller couldn't stop test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+
+			return fmt.Errorf("%w - %w", pkg.ErrFailedToStopTestService, err)
+		}
+	}
+
 	return nil
-
-	// tracer := otel.Tracer("StressTestExecutionManager")
-	// _, span := tracer.Start(ctx, "StopScenario")
-	// defer span.End()
-
-	// if scenario.MaxTestServiceCount == nil {
-	// 	zap.L().Error("max test service count value is null but required", zap.Uint64("scenarioID", scenario.ID))
-
-	// 	return pkg.ErrMaxTestServiceCountNotSet
-	// }
-
-	// ex.mx.Lock()
-	// sci, ok := ex.scenarios[scenario.ID]
-	// if !ok {
-	// 	zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
-	// 	ex.mx.Unlock()
-
-	// 	return pkg.ErrTestScenarioNotFound
-	// }
-	// sci.SetRunning(false)
-
-	// agents := sci.GetAgents()
-	// for {
-	// 	allHealthy := true
-	// 	for _, agent := range agents {
-	// 		if !agent.Healthy() {
-	// 			allHealthy = false
-
-	// 			break
-	// 		}
-	// 	}
-
-	// 	if allHealthy {
-	// 		break
-	// 	}
-
-	// 	time.Sleep(healthyCheckSleep)
-	// }
-
-	// for _, agent := range agents {
-	// 	err := agent.StopTesting(ctx)
-	// 	if err != nil {
-	// 		zap.L().Error("test agent controller couldn't stop test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
-	// 		ex.mx.Unlock()
-
-	// 		return fmt.Errorf("%w - %w", pkg.ErrFailedToStopTestService, err)
-	// 	}
-	// }
-
-	// ex.mx.Unlock()
-
-	// return nil
 }
 
 func (ex *StressTestExecutionManager) DeleteScenario(ctx context.Context, scenario *entity.TestScenario) error {
+	tracer := otel.Tracer("StressTestExecutionManager")
+	_, span := tracer.Start(ctx, "DeleteScenario")
+	defer span.End()
+
+	if scenario.MaxTestServiceCount == nil {
+		zap.L().Error("max test service count value is null but required", zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrMaxTestServiceCountNotSet
+	}
+
+	rawTestScenario, ok := ex.scenarios.Load(scenario.ID)
+	if !ok {
+		zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrTestScenarioNotFound
+	}
+
+	sci, ok := rawTestScenario.(interfaces.ScenarioExecutor)
+	if !ok {
+		zap.L().Error("failed to type assertion", zap.Error(pkg.ErrTypeAssertionAnyToScenarioExecutor), zap.Uint64("scenarioID", scenario.ID))
+
+		return pkg.ErrTypeAssertionAnyToScenarioExecutor
+	}
+
+	sci.SetRunning(false)
+
+	agents := sci.GetAgents()
+	for _, agent := range agents {
+		err := agent.DeleteTesting(ctx)
+		if err != nil {
+			zap.L().Error("test agent controller couldn't delete  test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
+
+			return fmt.Errorf("%w - %w", pkg.ErrFailedToDeleteTestService, err)
+		}
+	}
+
 	return nil
-
-	// tracer := otel.Tracer("StressTestExecutionManager")
-	// _, span := tracer.Start(ctx, "DeleteScenario")
-	// defer span.End()
-
-	// if scenario.MaxTestServiceCount == nil {
-	// 	zap.L().Error("max test service count value is null but required", zap.Uint64("scenarioID", scenario.ID))
-
-	// 	return pkg.ErrMaxTestServiceCountNotSet
-	// }
-
-	// ex.mx.Lock()
-	// sci, ok := ex.scenarios[scenario.ID]
-	// if !ok {
-	// 	zap.L().Error("scenario not executed", zap.Uint64("scenarioID", scenario.ID))
-	// 	ex.mx.Unlock()
-
-	// 	return pkg.ErrTestScenarioNotFound
-	// }
-	// sci.SetRunning(false)
-
-	// agents := sci.GetAgents()
-	// for _, agent := range agents {
-	// 	err := agent.DeleteTesting(ctx)
-	// 	if err != nil {
-	// 		zap.L().Error("test agent controller couldn't delete  test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
-	// 		ex.mx.Unlock()
-
-	// 		return fmt.Errorf("%w - %w", pkg.ErrFailedToDeleteTestService, err)
-	// 	}
-	// }
-
-	// ex.mx.Unlock()
-
-	// return nil
 }
 
 //#endregion StressTestExecutionManager
