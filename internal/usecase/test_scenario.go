@@ -102,7 +102,6 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 
 			return pkg.ErrTestCategoryNotFound
 		}
-		
 
 		span.SetAttributes(attribute.String("error.type", "get_test_category_error"), attribute.String("error.message", err.Error()))
 
@@ -154,56 +153,10 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
 	}
 
-	tx := service.db.Begin()
-	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
-	defer func() {
-		if e != nil {
-			_ = tx.Rollback()
-			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
-			zap.L().Error("test scenario creation failed, transaction rolled back",
-				zap.String(logger.FieldRequestID, requestID),
-				zap.String("name", testScenario.Name),
-				zap.Error(e),
-			)
-		}
-	}()
-
-	testSciID, err := service.testScenarioRepository.Create(dbCtx, testScenario)
+	err = service.testScenarioRepository.CreateScenarioAndConfig(ctx, testScenario)
 	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "create_error"), attribute.String("error.message", err.Error()))
-		zap.L().Error("failed to create test scenario in database",
-			zap.String(logger.FieldRequestID, requestID),
-			zap.String("name", testScenario.Name),
-			zap.Error(err),
-		)
-
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
-
-	testScenario.TestServiceConfig.TestScenarioID = testSciID
-
-	err = service.testServiceConfigRepository.Create(dbCtx, testScenario.TestServiceConfig)
-	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "create_test_service_config_error"), attribute.String("error.message", err.Error()))
-		zap.L().Error("failed to create test service config",
-			zap.String(logger.FieldRequestID, requestID),
-			zap.Uint64("test_scenario_id", testSciID),
-			zap.Error(err),
-		)
-
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToCreateTestScenario, err)
-	}
-
-	testScenario.TestCategory = testCat
-
-	_ = tx.Commit()
-
-	span.SetAttributes(attribute.String("transaction.status", "committed"))
-	zap.L().Info("test scenario created successfully",
-		zap.String(logger.FieldRequestID, requestID),
-		zap.Uint64("id", testSciID),
-		zap.String("name", testScenario.Name),
-	)
 
 	return nil
 }

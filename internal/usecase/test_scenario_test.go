@@ -49,85 +49,6 @@ func TestTestScenarioUsecase_Init(t *testing.T) {
 }
 
 func TestTestScenarioUsecase_Create(t *testing.T) {
-	t.Run("failed_case_when_create_test_service_config", func(t *testing.T) {
-		mockRepo := new(mocks.MockTestScenario)
-		mockTestCatRepo := new(mocks.MockTestCategory)
-		mockTestServiceConfig := new(mocks.MockTestServiceConfig)
-		mockMotherService := new(mocks.MockMotherService)
-		mockStressTestExecutor := new(svcMock.MockExecutionManage)
-		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
-		provisioningService := new(prvMock.MockProvisioningService)
-
-		service := NewTestScenarioUsecase(
-			getMockDB(t),
-			mockRepo,
-			mockTestCatRepo,
-			mockTestServiceConfig,
-			mockMotherService,
-			mockStressTestExecutor,
-			mockTestServiceRepo,
-			provisioningService,
-		)
-
-		sampleInt := 1
-		sampleInt64 := int64(1)
-		expectedID := uint64(1)
-		databaseName := "db1"
-		databaseTableName := "factorial"
-
-		testServiceConfig := &entity.TestServiceConfig{
-			TestScenarioID:         expectedID,
-			MaxRequests:            1,
-			MaxDuration:            1,
-			RequestDelayDuration:   &sampleInt,
-			FixedTestNumber:        &sampleInt,
-			DatabaseName:           databaseName,
-			DatabaseTableName:      databaseTableName,
-			IncreaseFixedInput:     1,
-			ExecNumMultiFixedInput: 1,
-		}
-
-		testSci := &entity.TestScenario{
-			Name:                "load1",
-			TestCategoryID:      uint64(2),
-			MotherServiceID:     uint64(1),
-			MaxTestServiceCount: &sampleInt64,
-			TestServiceConfig:   testServiceConfig,
-			NumSteps:            2,
-			IncreaseAgentNumber: 1,
-			ExecNumMultiAgent:   1,
-		}
-		testCat := &entity.TestCategory{
-			ID:                     testSci.TestCategoryID,
-			Name:                   "load",
-			Label:                  "my load",
-			HasMaxTestServiceCount: true,
-			HasNumSteps:            true,
-		}
-		motherService := &entity.MotherService{
-			ID:                testSci.MotherServiceID,
-			Name:              "mother1",
-			DatabaseName:      "db1",
-			DatabaseTableName: "factorial",
-		}
-
-		mockMotherService.On("GetByID", mock.Anything, testSci.MotherServiceID).Return(motherService, nil)
-		mockTestCatRepo.On("GetByID", mock.Anything, testSci.TestCategoryID).Return(testCat, nil)
-		mockRepo.On("Create", mock.Anything, testSci).Return(expectedID, nil)
-
-		mockTestServiceConfig.On("Create", mock.Anything, testServiceConfig).Return(errors.New("error happened"))
-
-		err := service.Create(context.Background(), testSci)
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, pkg.ErrFailedToCreateTestScenario)
-		mockRepo.AssertCalled(t, "Create", mock.Anything, testSci)
-		mockTestCatRepo.AssertCalled(t, "GetByID", mock.Anything, testSci.TestCategoryID)
-		mockMotherService.AssertCalled(t, "GetByID", mock.Anything, testSci.MotherServiceID)
-		mockRepo.AssertExpectations(t)
-		mockTestCatRepo.AssertExpectations(t)
-		mockMotherService.AssertExpectations(t)
-	})
 	t.Run("failed_case_test_service_config_could_not_be_null", func(t *testing.T) {
 		mockRepo := new(mocks.MockTestScenario)
 		mockTestCatRepo := new(mocks.MockTestCategory)
@@ -250,8 +171,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		mockMotherService.On("GetByID", mock.Anything, testSci.MotherServiceID).Return(motherService, nil)
 		mockTestCatRepo.On("GetByID", mock.Anything, testSci.TestCategoryID).Return(testCat, nil)
-		mockRepo.On("Create", mock.Anything, testSci).Return(expectedID, nil)
-		mockTestServiceConfig.On("Create", mock.Anything, testServiceConfig).Return(nil)
+		mockRepo.On("CreateScenarioAndConfig", mock.Anything, testSci).Return(nil)
 
 		err := service.Create(ctx, testSci)
 
@@ -259,7 +179,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 		mockTestCatRepo.AssertExpectations(t)
 		mockMotherService.AssertExpectations(t)
-
 	})
 	t.Run("failed_case_when_create_test_scenario", func(t *testing.T) {
 		ctx := context.Background()
@@ -320,14 +239,14 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		}
 
 		mockMotherService.On("GetByID", mock.Anything, testSci.MotherServiceID).Return(motherService, nil)
-		mockRepo.On("Create", mock.Anything, testSci).Return(uint64(0), errors.New("error happened"))
 		mockTestCatRepo.On("GetByID", mock.Anything, testSci.TestCategoryID).Return(testCat, nil)
+		mockRepo.On("CreateScenarioAndConfig", mock.Anything, testSci).Return(errors.New("something went wrong"))
 
 		err := service.Create(ctx, testSci)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToCreateTestScenario)
-		mockRepo.AssertCalled(t, "Create", mock.Anything, testSci)
+		mockRepo.AssertCalled(t, "CreateScenarioAndConfig", mock.Anything, testSci)
 		mockTestCatRepo.AssertCalled(t, "GetByID", mock.Anything, testSci.TestCategoryID)
 		mockRepo.AssertExpectations(t)
 		mockTestCatRepo.AssertExpectations(t)
@@ -725,8 +644,7 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 
 		mockMotherService.On("GetByID", mock.Anything, testSci.MotherServiceID).Return(motherService, nil)
 		mockTestCatRepo.On("GetByID", mock.Anything, testSci.TestCategoryID).Return(testCat, nil)
-		mockRepo.On("Create", mock.Anything, testSci).Return(expectedID, nil)
-		mockTestServiceConfig.On("Create", mock.Anything, testServiceConfig).Return(nil)
+		mockRepo.On("CreateScenarioAndConfig", mock.Anything, testSci).Return(nil)
 
 		err := service.Create(ctx, testSci)
 
