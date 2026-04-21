@@ -5,7 +5,7 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
-	"errors"
+	"control-panel-service/pkg"
 	"sync"
 
 	"go.opentelemetry.io/otel"
@@ -39,17 +39,14 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 	// scenario also running
 	rawScenarioExec, ok := ex.scenarios.Load(scenario.ID)
 	if ok {
-		scenarioExec, ok := rawScenarioExec.(interfaces.ScenarioExecutor)
-		if !ok {
-			return errors.New("failed to type assert any to interfaces.ScenarioExecutor")
-		}
-
+		scenarioExec, _ := rawScenarioExec.(interfaces.ScenarioExecutor)
 		if scenarioExec.IsRunning() {
-			return errors.New("scenario also is running")
+			return pkg.ErrScenarioIsRunning
 		}
 	}
 
 	scenarioExecutor := ex.scenarioExecutorBuilder.Build(scenario, ex.scenarioRepo, ex.testAgentControllerToolBox, &singleScenarioExecutorBuilder{})
+	scenarioExecutor.SetRunning(true)
 	ex.scenarios.Store(scenario.ID, scenarioExecutor)
 
 	//nolint

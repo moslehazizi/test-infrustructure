@@ -8,6 +8,7 @@ import (
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -15,6 +16,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+func KeyExists(m *sync.Map, key any) bool {
+	_, ok := m.Load(key)
+	return ok
+}
 
 // #region StressTestExecutionManager
 func TestStressTestExecutionManager_RunScenario(t *testing.T) {
@@ -42,16 +48,16 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 
 		mng, ok := ex.(*StressTestExecutionManager)
 		assert.True(t, ok)
-		assert.NotContains(t, mng.scenarios, scenario.ID)
+		assert.False(t, KeyExists(&mng.scenarios, scenario.ID))
 
 		err := ex.RunScenario(context.Background(), scenario)
 		assert.NoError(t, err)
 
-		assert.Contains(t, mng.scenarios, scenario.ID)
+		assert.True(t, KeyExists(&mng.scenarios, scenario.ID))
 
 		time.Sleep(1100 * time.Millisecond)
 
-		assert.NotContains(t, mng.scenarios, scenario.ID)
+		assert.False(t, KeyExists(&mng.scenarios, scenario.ID))
 
 		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
@@ -87,40 +93,36 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 	})
 
 	t.Run("failed_case_scenario_also_is_running", func(t *testing.T) {
-		scenario := &entity.TestScenario{
-			ID: 1,
-		}
+		scenario := &entity.TestScenario{ID: 1}
 		toolbox := new(mocks.MockTestAgentControllerToolBox)
-		sseb := new(mocks.MockSingleScenarioExecutorBuilder)
 		repo := new(repoMocks.MockTestScenario)
 		seb := new(mocks.MockScenarioExecutorBuilder)
+		me := new(mocks.MockScenarioExecutor)
 
-		sampleSE := &scenarioExecutor{
-			scenario:                   scenario,
-			scenarioRepo:               repo,
-			testAgentControllerToolBox: toolbox,
-			scenarioExecutorBuilder:    sseb,
-		}
+		blockRunChan := make(chan struct{})
+		defer close(blockRunChan)
+
+		me.On("SetRunning", true).Return()
+		me.On("IsRunning").Return(true)
+
+		me.On("Run", mock.Anything).Run(func(args mock.Arguments) {
+			<-blockRunChan
+		}).Return(nil)
+
+		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(me)
 
 		ex := NewStressTestExecutionManager(toolbox, repo, seb)
-		repo.On("GetByID", mock.Anything, mock.Anything).Return(&entity.TestScenario{ID: 1, Status: entity.ScenarioStatusRunning}, nil)
-		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(sampleSE)
 
-		err := ex.RunScenario(context.Background(), scenario)
-		assert.NoError(t, err)
+		err1 := ex.RunScenario(context.Background(), scenario)
+		assert.NoError(t, err1)
 
-		_, ok := ex.(*StressTestExecutionManager)
-		assert.True(t, ok)
+		err2 := ex.RunScenario(context.Background(), scenario)
+		assert.Error(t, err2)
+		assert.ErrorIs(t, pkg.ErrScenarioIsRunning, err2)
 
-		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-
-		err = ex.RunScenario(context.Background(), scenario)
-		assert.Error(t, err)
-
-		// _, ok = ex.(*StressTestExecutionManager)
-		// assert.True(t, ok)
-
+		seb.AssertNumberOfCalls(t, "Build", 1)
+		me.AssertCalled(t, "SetRunning", true)
+		me.AssertCalled(t, "IsRunning")
 	})
 }
 

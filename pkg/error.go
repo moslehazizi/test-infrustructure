@@ -394,4 +394,6 @@ var (
 	ErrMultiAgentConfigNotTrue                            = errors.New("both or none of execution number of multi agent and increase agent should be zero")
 	ErrInvalidDatabaseConfig                              = errors.New("invalid config applied to postgres database initializer")
 	ErrScenariosCanNotBeUpdated                           = errors.New("scenario can not be updated while is status is not pending or ready")
+	ErrScenarioIsRunning                                  = errors.New("scenario also is running")
+	ErrTypeAssertionAnyToScenarioExecutor                 = errors.New("failed to type assert any to interfaces.ScenarioExecutor")
 )
