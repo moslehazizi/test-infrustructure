@@ -514,11 +514,13 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 		return fmt.Errorf("%w: test service config not loaded for scenario %d", pkg.ErrFailedToGetTestServiceConfig, existing.ID)
 	}
 
+	// TODO: convert request to entity instead
 	existing.ApplyUpdateRequest(testScenarioUpdateRequest, motherService)
 	if err = existing.Validate(existing.TestCategory); err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToUpdateTestScenario, err)
 	}
 
+	// TODO: convert request to entity instead
 	existing.TestServiceConfig.ApplyUpdateFromRequest(testScenarioUpdateRequest.Config)
 	if err = existing.TestServiceConfig.Validate(); err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
