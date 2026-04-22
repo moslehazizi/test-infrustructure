@@ -11,7 +11,7 @@ func TestToMotherServiceEntity(t *testing.T) {
 	minDelay := 10
 	maxDelay := 500
 
-	t.Run("Nil request", func(t *testing.T) {
+	t.Run("Nil_request", func(t *testing.T) {
 		var req *MotherService
 		got := req.ToMotherServiceEntity()
 		if got != nil {
@@ -19,7 +19,7 @@ func TestToMotherServiceEntity(t *testing.T) {
 		}
 	})
 
-	t.Run("All fields populated", func(t *testing.T) {
+	t.Run("All_fields_populated", func(t *testing.T) {
 		req := &MotherService{
 			Name:                   "Service A",
 			ExceptionRate:          1,
@@ -48,7 +48,7 @@ func TestToMotherServiceEntity(t *testing.T) {
 		}
 	})
 
-	t.Run("With nil pointers", func(t *testing.T) {
+	t.Run("With_nil_pointers", func(t *testing.T) {
 		req := &MotherService{
 			Name:                   "Service B",
 			ResponseDelayDuration:  nil,
