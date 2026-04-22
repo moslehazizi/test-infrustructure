@@ -89,3 +89,40 @@ func (tscr *TestServiceConfigRequest) ToTestServiceConfigEntity(entityCFG *entit
 	entityCFG.IncreaseFixedInput = tscr.IncreaseFixedInput
 	entityCFG.ExecNumMultiFixedInput = tscr.ExecNumMultiFixedInput
 }
+
+func (ts *TestScenario) ToTestScenarioEntity(entityTS *entity.TestScenario) {
+	entityTS.Name = ts.Name
+	entityTS.TestCategoryID = ts.TestCategoryID
+	entityTS.MotherServiceID = ts.MotherServiceID
+	entityTS.MaxTestServiceCount = ts.MaxTestServiceCount
+	entityTS.NumSteps = ts.NumSteps
+	entityTS.IncreaseAgentNumber = ts.IncreaseAgentNumber
+	entityTS.ExecNumMultiAgent = ts.ExecNumMultiAgent
+	entityTS.TestServiceConfig = func() *entity.TestServiceConfig {
+		if ts.Config == nil {
+			return nil
+		}
+
+		return &entity.TestServiceConfig{
+			MaxRequests:            ts.Config.MaxRequests,
+			MaxDuration:            int64(ts.Config.MaxDuration),
+			RequestDelayDuration:   ts.Config.RequestDelayDuration,
+			RandomRequestDelayMin:  ts.Config.RandomRequestDelayMin,
+			RandomRequestDelayMax:  ts.Config.RandomRequestDelayMax,
+			FixedTestNumber:        ts.Config.FixedTestNumber,
+			RandomTestNumberMin:    ts.Config.RandomTestNumberMin,
+			RandomTestNumberMax:    ts.Config.RandomTestNumberMax,
+			BadValueRate:           ts.Config.BadValueRate,
+			NegativeValueRate:      ts.Config.NegativeValueRate,
+			ZeroValueRate:          ts.Config.ZeroValueRate,
+			StringValueRate:        ts.Config.StringValueRate,
+			RealValueRate:          ts.Config.RealValueRate,
+			LongStringValueRate:    ts.Config.LongStringValueRate,
+			NullValueRate:          ts.Config.NullValueRate,
+			DatabaseName:           ts.Config.DatabaseName,
+			DatabaseTableName:      ts.Config.DatabaseTableName,
+			IncreaseFixedInput:     ts.Config.IncreaseFixedInput,
+			ExecNumMultiFixedInput: ts.Config.ExecNumMultiFixedInput,
+		}
+	}()
+}

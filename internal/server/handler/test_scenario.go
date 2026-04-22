@@ -60,43 +60,8 @@ func (handler *TestScenario) Create() fiber.Handler {
 			attribute.String("mother_service.id", strconv.FormatUint(req.MotherServiceID, 10)),
 		)
 
-		// TODO: use ToTestScenarioEntity to convert request to entity.
-		testScenario := &entity.TestScenario{
-			Name:                req.Name,
-			TestCategoryID:      req.TestCategoryID,
-			MotherServiceID:     req.MotherServiceID,
-			MaxTestServiceCount: req.MaxTestServiceCount,
-			NumSteps:            req.NumSteps,
-			IncreaseAgentNumber: req.IncreaseAgentNumber,
-			ExecNumMultiAgent:   req.ExecNumMultiAgent,
-			TestServiceConfig: func() *entity.TestServiceConfig {
-				if req.Config == nil {
-					return nil
-				}
-
-				return &entity.TestServiceConfig{
-					MaxRequests:            req.Config.MaxRequests,
-					MaxDuration:            int64(req.Config.MaxDuration),
-					RequestDelayDuration:   req.Config.RequestDelayDuration,
-					RandomRequestDelayMin:  req.Config.RandomRequestDelayMin,
-					RandomRequestDelayMax:  req.Config.RandomRequestDelayMax,
-					FixedTestNumber:        req.Config.FixedTestNumber,
-					RandomTestNumberMin:    req.Config.RandomTestNumberMin,
-					RandomTestNumberMax:    req.Config.RandomTestNumberMax,
-					BadValueRate:           req.Config.BadValueRate,
-					NegativeValueRate:      req.Config.NegativeValueRate,
-					ZeroValueRate:          req.Config.ZeroValueRate,
-					StringValueRate:        req.Config.StringValueRate,
-					RealValueRate:          req.Config.RealValueRate,
-					LongStringValueRate:    req.Config.LongStringValueRate,
-					NullValueRate:          req.Config.NullValueRate,
-					DatabaseName:           req.Config.DatabaseName,
-					DatabaseTableName:      req.Config.DatabaseTableName,
-					IncreaseFixedInput:     req.Config.IncreaseFixedInput,
-					ExecNumMultiFixedInput: req.Config.ExecNumMultiFixedInput,
-				}
-			}(),
-		}
+		testScenario := &entity.TestScenario{}
+		req.ToTestScenarioEntity(testScenario)
 
 		err := handler.testScenario.Create(traceCtx, testScenario)
 		if err != nil {
@@ -151,56 +116,9 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 
 		var responses []response.TestScenario
 		for _, item := range items {
-			// TODO: use FromTestScenarioEntity to convert  entity to response.
-			responses = append(responses, response.TestScenario{
-				ID:                  item.ID,
-				Name:                item.Name,
-				CreatedAt:           item.CreatedAt,
-				UpdatedAt:           item.UpdatedAt,
-				StartedAt:           item.StartedAt,
-				Status:              item.Status,
-				MaxTestServiceCount: item.MaxTestServiceCount,
-				NumSteps:            item.NumSteps,
-				IncreaseAgentNumber: item.IncreaseAgentNumber,
-				ExecNumMultiAgent:   item.ExecNumMultiAgent,
-				TestCategory: func() *response.TestCategory {
-					if item.TestCategory == nil {
-						return nil
-					}
-
-					return &response.TestCategory{
-						ID:                     item.TestCategory.ID,
-						Name:                   item.TestCategory.Name,
-						Label:                  item.TestCategory.Label,
-						HasMaxTestServiceCount: item.TestCategory.HasMaxTestServiceCount,
-						HasNumSteps:            item.TestCategory.HasNumSteps,
-						CreatedAt:              item.TestCategory.CreatedAt,
-						UpdatedAt:              item.TestCategory.UpdatedAt,
-					}
-				}(),
-				MotherService: func() *response.MotherService {
-					if item.MotherService == nil {
-						return nil
-					}
-
-					return &response.MotherService{
-						ID:                       item.MotherService.ID,
-						CreatedAt:                item.MotherService.CreatedAt,
-						UpdatedAt:                item.MotherService.UpdatedAt,
-						Name:                     item.MotherService.Name,
-						ExceptionRate:            item.MotherService.ExceptionRate,
-						ResponseDelayRate:        item.MotherService.ResponseDelayRate,
-						ResponseDelayDuration:    item.MotherService.ResponseDelayDuration,
-						RandomResponseDelayMin:   item.MotherService.RandomResponseDelayMin,
-						RandomResponseDelayMax:   item.MotherService.RandomResponseDelayMax,
-						Status:                   item.MotherService.Status,
-						ServiceDeploymentAddress: item.MotherService.ServiceDeploymentAddress,
-						DatabaseName:             item.MotherService.DatabaseName,
-						DatabaseTableName:        item.MotherService.DatabaseTableName,
-					}
-				}(),
-				Editable: item.Editable,
-			})
+			response := response.TestScenario{}
+			response.FromTestScenarioEntity(item)
+			responses = append(responses, response)
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&response.PaginatedTestScenario{
@@ -254,86 +172,8 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
-		// TODO: use FromTestScenarioEntity to convert  entity to response.
-		result := response.TestScenario{
-			ID:                  svcResult.ID,
-			CreatedAt:           svcResult.CreatedAt,
-			UpdatedAt:           svcResult.UpdatedAt,
-			StartedAt:           svcResult.StartedAt,
-			Name:                svcResult.Name,
-			Status:              svcResult.Status,
-			MaxTestServiceCount: svcResult.MaxTestServiceCount,
-			IncreaseAgentNumber: svcResult.IncreaseAgentNumber,
-			ExecNumMultiAgent:   svcResult.ExecNumMultiAgent,
-			TestCategory: func() *response.TestCategory {
-				if svcResult.TestCategory == nil {
-					return nil
-				}
-
-				return &response.TestCategory{
-					ID:                     svcResult.TestCategory.ID,
-					Name:                   svcResult.TestCategory.Name,
-					Label:                  svcResult.TestCategory.Label,
-					HasMaxTestServiceCount: svcResult.TestCategory.HasMaxTestServiceCount,
-					HasNumSteps:            svcResult.TestCategory.HasNumSteps,
-					CreatedAt:              svcResult.TestCategory.CreatedAt,
-					UpdatedAt:              svcResult.TestCategory.UpdatedAt,
-				}
-			}(),
-			MotherService: func() *response.MotherService {
-				if svcResult.MotherService == nil {
-					return nil
-				}
-
-				return &response.MotherService{
-					ID:                       svcResult.MotherService.ID,
-					CreatedAt:                svcResult.MotherService.CreatedAt,
-					UpdatedAt:                svcResult.MotherService.UpdatedAt,
-					Name:                     svcResult.MotherService.Name,
-					ExceptionRate:            svcResult.MotherService.ExceptionRate,
-					ResponseDelayRate:        svcResult.MotherService.ResponseDelayRate,
-					ResponseDelayDuration:    svcResult.MotherService.ResponseDelayDuration,
-					RandomResponseDelayMin:   svcResult.MotherService.RandomResponseDelayMin,
-					RandomResponseDelayMax:   svcResult.MotherService.RandomResponseDelayMax,
-					Status:                   svcResult.MotherService.Status,
-					ServiceDeploymentAddress: svcResult.MotherService.ServiceDeploymentAddress,
-					DatabaseName:             svcResult.MotherService.DatabaseName,
-					DatabaseTableName:        svcResult.MotherService.DatabaseTableName,
-				}
-			}(),
-			TestServiceConfig: func() *response.TestServiceConfig {
-				if svcResult.TestServiceConfig == nil {
-					return nil
-				}
-
-				return &response.TestServiceConfig{
-					ID:                     svcResult.TestServiceConfig.ID,
-					CreatedAt:              svcResult.TestServiceConfig.CreatedAt,
-					UpdatedAt:              svcResult.TestServiceConfig.UpdatedAt,
-					MaxRequests:            svcResult.TestServiceConfig.MaxRequests,
-					MaxDuration:            svcResult.TestServiceConfig.MaxDuration,
-					RequestDelayDuration:   svcResult.TestServiceConfig.RequestDelayDuration,
-					RandomRequestDelayMin:  svcResult.TestServiceConfig.RandomRequestDelayMin,
-					RandomRequestDelayMax:  svcResult.TestServiceConfig.RandomRequestDelayMax,
-					FixedTestNumber:        svcResult.TestServiceConfig.FixedTestNumber,
-					RandomTestNumberMin:    svcResult.TestServiceConfig.RandomTestNumberMin,
-					RandomTestNumberMax:    svcResult.TestServiceConfig.RandomTestNumberMax,
-					BadValueRate:           svcResult.TestServiceConfig.BadValueRate,
-					NegativeValueRate:      svcResult.TestServiceConfig.NegativeValueRate,
-					RealValueRate:          svcResult.TestServiceConfig.RealValueRate,
-					ZeroValueRate:          svcResult.TestServiceConfig.ZeroValueRate,
-					StringValueRate:        svcResult.TestServiceConfig.StringValueRate,
-					LongStringValueRate:    svcResult.TestServiceConfig.LongStringValueRate,
-					NullValueRate:          svcResult.TestServiceConfig.NullValueRate,
-					DatabaseName:           svcResult.TestServiceConfig.DatabaseName,
-					DatabaseTableName:      svcResult.TestServiceConfig.DatabaseTableName,
-					IncreaseFixedInput:     svcResult.TestServiceConfig.IncreaseFixedInput,
-					ExecNumMultiFixedInput: svcResult.TestServiceConfig.ExecNumMultiFixedInput,
-				}
-			}(),
-			Editable: svcResult.Editable,
-			NumSteps: svcResult.NumSteps,
-		}
+		result := response.TestScenario{}
+		result.FromTestScenarioEntity(svcResult)
 
 		return ctx.Status(http.StatusOK).JSON(&response.TestScenarioResponseByID{
 			Data: result,

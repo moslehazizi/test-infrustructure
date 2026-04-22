@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -73,6 +74,7 @@ func TestStoreExecuteResult(t *testing.T) {
 			StartTxTime:     time.Now().Unix(),
 			HttpStatusCode:  200,
 			ScenarioId:      5,
+			EventID:         uuid.New().String(),
 		}
 
 		scenario := &sharedentity.TestScenario{
@@ -89,6 +91,7 @@ func TestStoreExecuteResult(t *testing.T) {
 			HttpStatusCode:  eventData.HttpStatusCode,
 			ScenarioId:      eventData.ScenarioId,
 			Scenario:        scenario,
+			EventID:         eventData.EventID,
 		}
 
 		testScenarioRepo.On("GetByID", mock.Anything, uint64(eventData.ScenarioId)).Return(scenario, nil)

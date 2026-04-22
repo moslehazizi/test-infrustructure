@@ -57,3 +57,83 @@ type PaginatedTestScenario struct {
 type TestScenarioResponseByID struct {
 	Data TestScenario `json:"data"`
 }
+
+func (resp *TestScenario) FromTestScenarioEntity(entityTS *entity.TestScenario) {
+	resp.ID = entityTS.ID
+	resp.Name = entityTS.Name
+	resp.CreatedAt = entityTS.CreatedAt
+	resp.UpdatedAt = entityTS.UpdatedAt
+	resp.StartedAt = entityTS.StartedAt
+	resp.Status = entityTS.Status
+	resp.MaxTestServiceCount = entityTS.MaxTestServiceCount
+	resp.NumSteps = entityTS.NumSteps
+	resp.IncreaseAgentNumber = entityTS.IncreaseAgentNumber
+	resp.ExecNumMultiAgent = entityTS.ExecNumMultiAgent
+	resp.Editable = entityTS.Editable
+	resp.TestCategory = func() *TestCategory {
+		if entityTS.TestCategory == nil {
+			return nil
+		}
+
+		return &TestCategory{
+			ID:                     entityTS.TestCategory.ID,
+			Name:                   entityTS.TestCategory.Name,
+			Label:                  entityTS.TestCategory.Label,
+			HasMaxTestServiceCount: entityTS.TestCategory.HasMaxTestServiceCount,
+			HasNumSteps:            entityTS.TestCategory.HasNumSteps,
+			CreatedAt:              entityTS.TestCategory.CreatedAt,
+			UpdatedAt:              entityTS.TestCategory.UpdatedAt,
+		}
+	}()
+	resp.MotherService = func() *MotherService {
+		if entityTS.MotherService == nil {
+			return nil
+		}
+
+		return &MotherService{
+			ID:                       entityTS.MotherService.ID,
+			CreatedAt:                entityTS.MotherService.CreatedAt,
+			UpdatedAt:                entityTS.MotherService.UpdatedAt,
+			Name:                     entityTS.MotherService.Name,
+			ExceptionRate:            entityTS.MotherService.ExceptionRate,
+			ResponseDelayRate:        entityTS.MotherService.ResponseDelayRate,
+			ResponseDelayDuration:    entityTS.MotherService.ResponseDelayDuration,
+			RandomResponseDelayMin:   entityTS.MotherService.RandomResponseDelayMin,
+			RandomResponseDelayMax:   entityTS.MotherService.RandomResponseDelayMax,
+			Status:                   entityTS.MotherService.Status,
+			ServiceDeploymentAddress: entityTS.MotherService.ServiceDeploymentAddress,
+			DatabaseName:             entityTS.MotherService.DatabaseName,
+			DatabaseTableName:        entityTS.MotherService.DatabaseTableName,
+		}
+	}()
+	resp.TestServiceConfig = func() *TestServiceConfig {
+		if entityTS.TestServiceConfig == nil {
+			return nil
+		}
+
+		return &TestServiceConfig{
+			ID:                     entityTS.TestServiceConfig.ID,
+			CreatedAt:              entityTS.TestServiceConfig.CreatedAt,
+			UpdatedAt:              entityTS.TestServiceConfig.UpdatedAt,
+			MaxRequests:            entityTS.TestServiceConfig.MaxRequests,
+			MaxDuration:            entityTS.TestServiceConfig.MaxDuration,
+			RequestDelayDuration:   entityTS.TestServiceConfig.RequestDelayDuration,
+			RandomRequestDelayMin:  entityTS.TestServiceConfig.RandomRequestDelayMin,
+			RandomRequestDelayMax:  entityTS.TestServiceConfig.RandomRequestDelayMax,
+			FixedTestNumber:        entityTS.TestServiceConfig.FixedTestNumber,
+			RandomTestNumberMin:    entityTS.TestServiceConfig.RandomTestNumberMin,
+			RandomTestNumberMax:    entityTS.TestServiceConfig.RandomTestNumberMax,
+			BadValueRate:           entityTS.TestServiceConfig.BadValueRate,
+			NegativeValueRate:      entityTS.TestServiceConfig.NegativeValueRate,
+			RealValueRate:          entityTS.TestServiceConfig.RealValueRate,
+			ZeroValueRate:          entityTS.TestServiceConfig.ZeroValueRate,
+			StringValueRate:        entityTS.TestServiceConfig.StringValueRate,
+			LongStringValueRate:    entityTS.TestServiceConfig.LongStringValueRate,
+			NullValueRate:          entityTS.TestServiceConfig.NullValueRate,
+			DatabaseName:           entityTS.TestServiceConfig.DatabaseName,
+			DatabaseTableName:      entityTS.TestServiceConfig.DatabaseTableName,
+			IncreaseFixedInput:     entityTS.TestServiceConfig.IncreaseFixedInput,
+			ExecNumMultiFixedInput: entityTS.TestServiceConfig.ExecNumMultiFixedInput,
+		}
+	}()
+}

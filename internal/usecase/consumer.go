@@ -73,23 +73,8 @@ func (c *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error {
 	}
 
 	// load scenario by id from database
-	// TODO: use helper functions to load event model into entity model.
-	execute := &entity.Executor{
-		EventID:         data.EventID,
-		Input:           data.Input,
-		Output:          data.Output,
-		MotherServiceId: data.MotherServiceId,
-		TestServiceId:   data.TestServiceId,
-		StepNum:         data.StepNum,
-		ExecutionId:     data.ExecutionId,
-		ScenarioId:      data.ScenarioId,
-		Scenario:        scenario,
-		StepIncrement:   data.StepIncrement,
-		StartTxTime:     data.StartTxTime,
-		DurationTx:      data.DurationTx,
-		DelayBeforeTx:   data.DelayBeforeTx,
-		HttpStatusCode:  data.HttpStatusCode,
-	}
+	execute := &entity.Executor{}
+	execute.FromExecutorEvent(&data, scenario)
 
 	err = c.executorRepo.Create(ctx, execute, c.dbInitializer)
 	if err != nil {
