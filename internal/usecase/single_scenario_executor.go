@@ -34,6 +34,8 @@ func (ss *singleScenarioExecutor) Execute(ctx context.Context) error {
 
 func (ss *singleScenarioExecutor) awaitAgentsToBeHealthy() {
 	awaitAllHealthy(ss.agents)
+
+	ss.allAgentsHealthy = true
 }
 
 func (ss *singleScenarioExecutor) awaitAgentsToBeReadyToStartTesting() {

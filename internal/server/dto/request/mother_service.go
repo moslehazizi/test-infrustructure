@@ -1,5 +1,7 @@
 package request
 
+import "control-panel-service/internal/domain/entity"
+
 type MotherService struct {
 	Name                   string `json:"name"`
 	ExceptionRate          int    `json:"exception_rate"`
@@ -14,4 +16,21 @@ type MotherService struct {
 type PaginationRequest struct {
 	Page    int `json:"page"`
 	PerPage int `json:"per_page"`
+}
+
+func (mr *MotherService) ToMotherServiceEntity() *entity.MotherService {
+	if mr == nil {
+		return nil
+	}
+
+	return &entity.MotherService{
+		Name:                   mr.Name,
+		ExceptionRate:          mr.ExceptionRate,
+		ResponseDelayRate:      mr.ResponseDelayRate,
+		ResponseDelayDuration:  mr.ResponseDelayDuration,
+		RandomResponseDelayMin: mr.RandomResponseDelayMin,
+		RandomResponseDelayMax: mr.RandomResponseDelayMax,
+		DatabaseName:           mr.DatabaseName,
+		DatabaseTableName:      mr.DatabaseTableName,
+	}
 }

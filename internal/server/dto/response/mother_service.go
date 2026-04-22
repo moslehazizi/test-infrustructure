@@ -31,3 +31,19 @@ type PaginatedMotherServices struct {
 type MotherServiceResponseByID struct {
 	Data MotherService `json:"data"`
 }
+
+func (result *MotherService) FromMotherServiceEntity(entityMother *entity.MotherService) {
+	result.ID = entityMother.ID
+	result.CreatedAt = entityMother.CreatedAt
+	result.UpdatedAt = entityMother.UpdatedAt
+	result.Name = entityMother.Name
+	result.ExceptionRate = entityMother.ExceptionRate
+	result.ResponseDelayRate = entityMother.ResponseDelayRate
+	result.ResponseDelayDuration = entityMother.ResponseDelayDuration
+	result.RandomResponseDelayMin = entityMother.RandomResponseDelayMin
+	result.RandomResponseDelayMax = entityMother.RandomResponseDelayMax
+	result.Status = entityMother.Status
+	result.ServiceDeploymentAddress = entityMother.ServiceDeploymentAddress
+	result.DatabaseName = entityMother.DatabaseName
+	result.DatabaseTableName = entityMother.DatabaseTableName
+}
