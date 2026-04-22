@@ -33,25 +33,7 @@ func (ss *singleScenarioExecutor) Execute(ctx context.Context) error {
 }
 
 func (ss *singleScenarioExecutor) awaitAgentsToBeHealthy() {
-	// TODO: use awaitAllHealthy here.
-	for {
-		allHealthy := true
-		for _, agent := range ss.agents {
-			if !agent.Healthy() {
-				allHealthy = false
-
-				break
-			}
-		}
-
-		ss.allAgentsHealthy = allHealthy
-
-		if allHealthy {
-			break
-		}
-
-		time.Sleep(healthyCheckSleep)
-	}
+	awaitAllHealthy(ss.agents)
 }
 
 func (ss *singleScenarioExecutor) awaitAgentsToBeReadyToStartTesting() {
