@@ -33,6 +33,10 @@ type MotherServiceResponseByID struct {
 }
 
 func (result *MotherService) FromMotherServiceEntity(entityMother *entity.MotherService) {
+	if entityMother == nil {
+		return
+	}
+
 	result.ID = entityMother.ID
 	result.CreatedAt = entityMother.CreatedAt
 	result.UpdatedAt = entityMother.UpdatedAt

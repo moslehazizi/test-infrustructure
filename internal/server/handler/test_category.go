@@ -53,17 +53,10 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 
 		var responses []response.TestCategory
 		for _, svcResult := range svcResults {
-			// TODO: use FromTestCategoryEntity to generate response model.
-			responses = append(responses, response.TestCategory{
-				ID:                     svcResult.ID,
-				CreatedAt:              svcResult.CreatedAt,
-				UpdatedAt:              svcResult.UpdatedAt,
-				Name:                   svcResult.Name,
-				Label:                  svcResult.Label,
-				HasMaxTestServiceCount: svcResult.HasMaxTestServiceCount,
-				HasNumSteps:            svcResult.HasNumSteps,
-				Active:                 svcResult.Active,
-			})
+			var result response.TestCategory
+			result.FromTestCategoryEntity(&svcResult)
+
+			responses = append(responses, result)
 		}
 
 		return ctx.Status(http.StatusOK).JSON(responses)
@@ -112,18 +105,9 @@ func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
-		// TODO: use FromTestCategoryEntity to generate response model.
-		responses := response.TestCategory{
-			ID:                     svcResult.ID,
-			CreatedAt:              svcResult.CreatedAt,
-			UpdatedAt:              svcResult.UpdatedAt,
-			Name:                   svcResult.Name,
-			Label:                  svcResult.Label,
-			HasMaxTestServiceCount: svcResult.HasMaxTestServiceCount,
-			HasNumSteps:            svcResult.HasNumSteps,
-			Active:                 svcResult.Active,
-		}
+		var response response.TestCategory
+		response.FromTestCategoryEntity(svcResult)
 
-		return ctx.Status(http.StatusOK).JSON(responses)
+		return ctx.Status(http.StatusOK).JSON(response)
 	}
 }

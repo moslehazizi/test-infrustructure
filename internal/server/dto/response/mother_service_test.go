@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFromMotherServiceEntity(t *testing.T) {
@@ -12,6 +14,15 @@ func TestFromMotherServiceEntity(t *testing.T) {
 	duration := 100
 	minDelay := 10
 	maxDelay := 500
+
+	t.Run("nil_input", func(t *testing.T) {
+		var entityMother *entity.MotherService
+
+		var result *MotherService
+		result.FromMotherServiceEntity(entityMother)
+
+		assert.Nil(t, result)
+	})
 
 	t.Run("All_fields_populated", func(t *testing.T) {
 		entityMother := &entity.MotherService{
