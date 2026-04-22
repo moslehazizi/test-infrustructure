@@ -89,23 +89,8 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 
 	agents := testScenario.GetAgents()
 
-	// We add health check agent so that if user immediately click on pause right after run first wait to all agents be ready.
-	for {
-		allHealthy := true
-		for _, agent := range agents {
-			if !agent.Healthy() {
-				allHealthy = false
-
-				break
-			}
-		}
-
-		if allHealthy {
-			break
-		}
-
-		time.Sleep(healthyCheckSleep)
-	}
+	//We add health check agent so that if user immediately click on pause right after run first wait to all agents be ready.
+	awaitAllHealthy(agents)
 
 	for _, agent := range agents {
 		err := agent.PauseTesting(ctx)
@@ -146,22 +131,7 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 
 	agents := testScenario.GetAgents()
 
-	for {
-		allHealthy := true
-		for _, agent := range agents {
-			if !agent.Healthy() {
-				allHealthy = false
-
-				break
-			}
-		}
-
-		if allHealthy {
-			break
-		}
-
-		time.Sleep(healthyCheckSleep)
-	}
+	awaitAllHealthy(agents)
 
 	for _, agent := range agents {
 		err := agent.ResumeTesting(ctx)
@@ -203,22 +173,7 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 	sci.SetRunning(false)
 
 	agents := sci.GetAgents()
-	for {
-		allHealthy := true
-		for _, agent := range agents {
-			if !agent.Healthy() {
-				allHealthy = false
-
-				break
-			}
-		}
-
-		if allHealthy {
-			break
-		}
-
-		time.Sleep(healthyCheckSleep)
-	}
+	awaitAllHealthy(agents)
 
 	for _, agent := range agents {
 		err := agent.StopTesting(ctx)
@@ -273,3 +228,24 @@ func (ex *StressTestExecutionManager) DeleteScenario(ctx context.Context, scenar
 }
 
 //#endregion StressTestExecutionManager
+
+// #region HelperFunctions
+func awaitAllHealthy(agents []interfaces.TestAgentController) {
+	for {
+		allHealthy := true
+		for _, agent := range agents {
+			if !agent.Healthy() {
+				allHealthy = false
+
+				break
+			}
+		}
+
+		if allHealthy {
+			break
+		}
+
+		time.Sleep(healthyCheckSleep)
+	}
+}
+//#endregion HelperFunctions
