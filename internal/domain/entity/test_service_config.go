@@ -150,6 +150,7 @@ func (t *TestServiceConfig) Validate() error {
 	return nil
 }
 
+// TODO: convert request to entity instead.
 func (tsc *TestServiceConfig) ApplyUpdateFromRequest(cfg *request.TestServiceConfigRequest) {
 	tsc.MaxRequests = cfg.MaxRequests
 	tsc.MaxDuration = int64(cfg.MaxDuration)

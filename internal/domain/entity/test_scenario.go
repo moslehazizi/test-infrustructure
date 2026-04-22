@@ -107,6 +107,7 @@ func (ts *TestScenario) Validate(testCat *TestCategory) error {
 	return nil
 }
 
+// TODO: convert request to entity instead.
 func (ts *TestScenario) ApplyUpdateRequest(req *request.TestScenarioUpdateRequest, motherSvc *MotherService) {
 	ts.Name = req.Name
 	ts.MotherServiceID = req.MotherServiceID
