@@ -73,6 +73,7 @@ func (c *consumer) StoreExecutorResult(ctx context.Context, msg []byte) error {
 	}
 
 	// load scenario by id from database
+	// TODO: use helper functions to load event model into entity model.
 	execute := &entity.Executor{
 		EventID:         data.EventID,
 		Input:           data.Input,
