@@ -1,5 +1,7 @@
 package request
 
+import "control-panel-service/internal/domain/entity"
+
 type TestScenario struct {
 	Name                string                    `json:"name"`
 	TestCategoryID      uint64                    `json:"test_category_id"`
@@ -47,4 +49,43 @@ type TestScenarioUpdateRequest struct {
 type TestScenarioPaginationRequest struct {
 	Page    int `json:"page"`
 	PerPage int `json:"per_page"`
+}
+
+func (tsr *TestScenarioUpdateRequest) ToTestScenarioEntity(entitySCI *entity.TestScenario, entityMother *entity.MotherService) {
+	entitySCI.Name = tsr.Name
+	entitySCI.MotherServiceID = tsr.MotherServiceID
+	entitySCI.MotherService = entityMother
+	entitySCI.IncreaseAgentNumber = tsr.IncreaseAgentNumber
+	entitySCI.ExecNumMultiAgent = tsr.ExecNumMultiAgent
+	entitySCI.Status = entity.ScenarioStatusReady
+
+	if tsr.MaxTestServiceCount != nil {
+		entitySCI.MaxTestServiceCount = tsr.MaxTestServiceCount
+	}
+
+	if tsr.NumSteps >= 1 {
+		entitySCI.NumSteps = tsr.NumSteps
+	}
+}
+
+func (tscr *TestServiceConfigRequest) ToTestServiceConfigEntity(entityCFG *entity.TestServiceConfig) {
+	entityCFG.MaxRequests = tscr.MaxRequests
+	entityCFG.MaxDuration = int64(tscr.MaxDuration)
+	entityCFG.RequestDelayDuration = tscr.RequestDelayDuration
+	entityCFG.RandomRequestDelayMin = tscr.RandomRequestDelayMin
+	entityCFG.RandomRequestDelayMax = tscr.RandomRequestDelayMax
+	entityCFG.FixedTestNumber = tscr.FixedTestNumber
+	entityCFG.RandomTestNumberMin = tscr.RandomTestNumberMin
+	entityCFG.RandomTestNumberMax = tscr.RandomTestNumberMax
+	entityCFG.BadValueRate = tscr.BadValueRate
+	entityCFG.NegativeValueRate = tscr.NegativeValueRate
+	entityCFG.ZeroValueRate = tscr.ZeroValueRate
+	entityCFG.StringValueRate = tscr.StringValueRate
+	entityCFG.RealValueRate = tscr.RealValueRate
+	entityCFG.LongStringValueRate = tscr.LongStringValueRate
+	entityCFG.NullValueRate = tscr.NullValueRate
+	entityCFG.DatabaseName = tscr.DatabaseName
+	entityCFG.DatabaseTableName = tscr.DatabaseTableName
+	entityCFG.IncreaseFixedInput = tscr.IncreaseFixedInput
+	entityCFG.ExecNumMultiFixedInput = tscr.ExecNumMultiFixedInput
 }
