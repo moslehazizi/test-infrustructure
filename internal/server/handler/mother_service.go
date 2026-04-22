@@ -62,6 +62,7 @@ func (handler *MotherService) Create() fiber.Handler {
 			attribute.Float64("service.response_delay_rate", float64(req.ResponseDelayRate)),
 		)
 
+		// TODO: use ToMotherServiceEntity function.
 		reqService := &entity.MotherService{
 			Name:              req.Name,
 			ExceptionRate:     req.ExceptionRate,
@@ -149,6 +150,7 @@ func (handler *MotherService) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
+		// TODO: use FromMotherMotherServiceEntity to generate response model.
 		result := response.MotherService{
 			ID:                       svcResult.ID,
 			CreatedAt:                svcResult.CreatedAt,
@@ -222,6 +224,7 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 
 		var responses []response.MotherService
 		for _, svcResult := range svcResults {
+			// TODO: use FromMotherMotherServiceEntity to generate response model.
 			responses = append(responses, response.MotherService{
 				ID:                       svcResult.ID,
 				CreatedAt:                svcResult.CreatedAt,

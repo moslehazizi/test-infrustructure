@@ -53,6 +53,7 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 
 		var responses []response.TestCategory
 		for _, svcResult := range svcResults {
+			// TODO: use FromTestCategoryEntity to generate response model.
 			responses = append(responses, response.TestCategory{
 				ID:                     svcResult.ID,
 				CreatedAt:              svcResult.CreatedAt,
@@ -111,6 +112,7 @@ func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
+		// TODO: use FromTestCategoryEntity to generate response model.
 		responses := response.TestCategory{
 			ID:                     svcResult.ID,
 			CreatedAt:              svcResult.CreatedAt,

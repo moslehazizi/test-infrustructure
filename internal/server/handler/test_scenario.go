@@ -60,6 +60,7 @@ func (handler *TestScenario) Create() fiber.Handler {
 			attribute.String("mother_service.id", strconv.FormatUint(req.MotherServiceID, 10)),
 		)
 
+		// TODO: use ToTestScenarioEntity to convert request to entity.
 		testScenario := &entity.TestScenario{
 			Name:                req.Name,
 			TestCategoryID:      req.TestCategoryID,
@@ -150,6 +151,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 
 		var responses []response.TestScenario
 		for _, item := range items {
+			// TODO: use FromTestScenarioEntity to convert  entity to response.
 			responses = append(responses, response.TestScenario{
 				ID:                  item.ID,
 				Name:                item.Name,
@@ -252,6 +254,7 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
 
+		// TODO: use FromTestScenarioEntity to convert  entity to response.
 		result := response.TestScenario{
 			ID:                  svcResult.ID,
 			CreatedAt:           svcResult.CreatedAt,
