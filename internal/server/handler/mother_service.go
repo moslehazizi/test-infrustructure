@@ -62,35 +62,7 @@ func (handler *MotherService) Create() fiber.Handler {
 			attribute.Float64("service.response_delay_rate", float64(req.ResponseDelayRate)),
 		)
 
-		// TODO: use ToMotherServiceEntity function.
-		reqService := &entity.MotherService{
-			Name:              req.Name,
-			ExceptionRate:     req.ExceptionRate,
-			ResponseDelayRate: req.ResponseDelayRate,
-			ResponseDelayDuration: func() *int {
-				if req.ResponseDelayDuration != nil {
-					return req.ResponseDelayDuration
-				}
-
-				return nil
-			}(),
-			RandomResponseDelayMin: func() *int {
-				if req.RandomResponseDelayMin != nil {
-					return req.RandomResponseDelayMin
-				}
-
-				return nil
-			}(),
-			RandomResponseDelayMax: func() *int {
-				if req.RandomResponseDelayMax != nil {
-					return req.RandomResponseDelayMax
-				}
-
-				return nil
-			}(),
-			DatabaseName:      req.DatabaseName,
-			DatabaseTableName: req.DatabaseTableName,
-		}
+		reqService := req.ToMotherServiceEntity()
 
 		err := handler.motherService.Create(traceCtx, reqService)
 		if err != nil {
@@ -149,23 +121,8 @@ func (handler *MotherService) GetByID() fiber.Handler {
 
 			return pkg.ToHTTPError(err).AsFiber(ctx)
 		}
-
-		// TODO: use FromMotherMotherServiceEntity to generate response model.
-		result := response.MotherService{
-			ID:                       svcResult.ID,
-			CreatedAt:                svcResult.CreatedAt,
-			UpdatedAt:                svcResult.UpdatedAt,
-			Name:                     svcResult.Name,
-			ExceptionRate:            svcResult.ExceptionRate,
-			ResponseDelayRate:        svcResult.ResponseDelayRate,
-			ResponseDelayDuration:    svcResult.ResponseDelayDuration,
-			RandomResponseDelayMin:   svcResult.RandomResponseDelayMin,
-			RandomResponseDelayMax:   svcResult.RandomResponseDelayMax,
-			Status:                   svcResult.Status,
-			ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
-			DatabaseName:             svcResult.DatabaseName,
-			DatabaseTableName:        svcResult.DatabaseTableName,
-		}
+		var result response.MotherService
+		result.FromMotherServiceEntity(svcResult)
 
 		return ctx.Status(http.StatusOK).JSON(&response.MotherServiceResponseByID{
 			Data: result,
@@ -224,22 +181,10 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 
 		var responses []response.MotherService
 		for _, svcResult := range svcResults {
-			// TODO: use FromMotherMotherServiceEntity to generate response model.
-			responses = append(responses, response.MotherService{
-				ID:                       svcResult.ID,
-				CreatedAt:                svcResult.CreatedAt,
-				UpdatedAt:                svcResult.UpdatedAt,
-				Name:                     svcResult.Name,
-				ExceptionRate:            svcResult.ExceptionRate,
-				ResponseDelayRate:        svcResult.ResponseDelayRate,
-				ResponseDelayDuration:    svcResult.ResponseDelayDuration,
-				RandomResponseDelayMin:   svcResult.RandomResponseDelayMin,
-				RandomResponseDelayMax:   svcResult.RandomResponseDelayMax,
-				Status:                   svcResult.Status,
-				ServiceDeploymentAddress: svcResult.ServiceDeploymentAddress,
-				DatabaseName:             svcResult.DatabaseName,
-				DatabaseTableName:        svcResult.DatabaseTableName,
-			})
+			var result response.MotherService
+			result.FromMotherServiceEntity(svcResult)
+
+			responses = append(responses, result)
 		}
 
 		return ctx.Status(http.StatusOK).JSON(&response.PaginatedMotherServices{
