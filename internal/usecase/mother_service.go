@@ -75,6 +75,8 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 	motherService.Status = entity.MotherServiceStatusRunning
 	span.SetAttributes(attribute.String("service.name", motherService.Name))
 
+
+	// TODO: We should delete db transaction creation here and delegate create mother service and provision it to a function in another layer. This is not usecase's concern.
 	tx := service.db.Begin()
 	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
 	defer func() {
