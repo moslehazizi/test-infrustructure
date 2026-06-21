@@ -18,20 +18,13 @@ import (
 	"go.uber.org/zap"
 )
 
-type MotherService interface {
-	Create(ctx context.Context, motherService *entity.MotherService) error
-	GetByID(ctx context.Context, id uint64) (*entity.MotherService, error)
-	GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, int64, error)
-	Delete(ctx context.Context, id uint64) error
-}
-
 func NewMotherService(
 	db database.Database,
 	motherServiceRepo repository.MotherServiceRepository,
 	testScenarioRepo repository.TestScenarioRepository,
 	provisioningService provision.ProvisioningService,
 	stressTestExecutionManager interfaces.ExecutionManager,
-) MotherService {
+) *motherService {
 	return &motherService{
 		db,
 		motherServiceRepo,

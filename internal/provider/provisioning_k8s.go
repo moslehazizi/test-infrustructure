@@ -104,7 +104,7 @@ const (
 	DelayBetweenProvisioning = 1 * time.Second
 )
 
-func NewProvisioningService(cfg *config.Config, kubernetes kubernetese.Kubernetese) ProvisioningService {
+func NewProvisioningService(cfg *config.Config, kubernetes kubernetese.Kubernetese) *provisioningService {
 	return &provisioningService{
 		cfg:        cfg,
 		kubernetes: kubernetes,

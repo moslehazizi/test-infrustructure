@@ -24,9 +24,7 @@ func TestTestServiceConfigRepo_Init(t *testing.T) {
 	repo := NewTestServiceConfigRepository(db)
 	assert.NotNil(t, repo)
 
-	ts, ok := repo.(*testServiceConfig)
-	assert.True(t, ok)
-	assert.NotNil(t, ts.db)
+	assert.NotNil(t, repo.db)
 }
 
 func TestTestServiceConfigRepo_Create(t *testing.T) {

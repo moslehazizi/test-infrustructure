@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
@@ -21,7 +20,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func NewTestScenarioRepository(db database.Database) repository.TestScenarioRepository {
+func NewTestScenarioRepository(db database.Database) *testScenario {
 	return &testScenario{
 		db: db,
 	}

@@ -4,7 +4,6 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/internal/server/dto/response"
-	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
 	"net/http"
@@ -15,12 +14,12 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-type TestScenario struct {
-	testScenario usecase.TestScenario
+type TestScenarioHandler struct {
+	testScenario TestScenario
 }
 
-func NewTestScenarioHandler(testScenario usecase.TestScenario) *TestScenario {
-	return &TestScenario{
+func NewTestScenarioHandler(testScenario TestScenario) *TestScenarioHandler {
+	return &TestScenarioHandler{
 		testScenario: testScenario,
 	}
 }
@@ -38,7 +37,7 @@ func NewTestScenarioHandler(testScenario usecase.TestScenario) *TestScenario {
 //	@Failure		422		{object}	response.ErrorResponse
 //	@Failure		500		{object}	response.ErrorResponse
 //	@Router			/api/v1/test-scenarios [post]
-func (handler *TestScenario) Create() fiber.Handler {
+func (handler *TestScenarioHandler) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		requestID := logger.GetRequestID(ctx.Context())
 		tracer := otel.Tracer("test-scenario-handler")
@@ -88,7 +87,7 @@ func (handler *TestScenario) Create() fiber.Handler {
 //	@Failure		422		{object}	response.ErrorResponse
 //	@Failure		500		{object}	response.ErrorResponse
 //	@Router			/api/v1/test-scenarios/search [post]
-func (handler *TestScenario) GetPaginated() fiber.Handler {
+func (handler *TestScenarioHandler) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "get_paginated_test_scenarios")
@@ -143,7 +142,7 @@ func (handler *TestScenario) GetPaginated() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/test-scenarios/{id} [get]
-func (handler *TestScenario) GetByID() fiber.Handler {
+func (handler *TestScenarioHandler) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "get_test_scenario_by_id")
@@ -194,7 +193,7 @@ func (handler *TestScenario) GetByID() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/test-scenarios/{id}/start [post]
-func (handler *TestScenario) Start() fiber.Handler {
+func (handler *TestScenarioHandler) Start() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "start_test_scenario")
@@ -242,7 +241,7 @@ func (handler *TestScenario) Start() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/test-scenarios/{id}/pause [post]
-func (handler *TestScenario) Pause() fiber.Handler {
+func (handler *TestScenarioHandler) Pause() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "pause_test_scenario")
@@ -290,7 +289,7 @@ func (handler *TestScenario) Pause() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/test-scenarios/{id}/resume [post]
-func (handler *TestScenario) Resume() fiber.Handler {
+func (handler *TestScenarioHandler) Resume() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "resume_test_scenario")
@@ -338,7 +337,7 @@ func (handler *TestScenario) Resume() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/test-scenarios/{id}/stop [post]
-func (handler *TestScenario) Stop() fiber.Handler {
+func (handler *TestScenarioHandler) Stop() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "stop_test_scenario")
@@ -386,7 +385,7 @@ func (handler *TestScenario) Stop() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/test-scenarios/{id}/delete [post]
-func (handler *TestScenario) Delete() fiber.Handler {
+func (handler *TestScenarioHandler) Delete() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "delete_test_scenario")
@@ -435,7 +434,7 @@ func (handler *TestScenario) Delete() fiber.Handler {
 //	@Failure		422		{object}	response.ErrorResponse
 //	@Failure		500		{object}	response.ErrorResponse
 //	@Router			/api/v1/test-scenarios/update [post]
-func (handler *TestScenario) Update() fiber.Handler {
+func (handler *TestScenarioHandler) Update() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		requestID := logger.GetRequestID(ctx.Context())
 		tracer := otel.Tracer("test-scenario-handler")

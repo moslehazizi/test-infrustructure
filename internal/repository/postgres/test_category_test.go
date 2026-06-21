@@ -25,9 +25,7 @@ func TestNewTestCategoryRepository(t *testing.T) {
 	repo := NewTestCategoryRepository(db)
 	assert.NotNil(t, repo)
 
-	tr, ok := repo.(*testCategory)
-	assert.True(t, ok)
-	assert.NotNil(t, tr.db)
+	assert.NotNil(t, repo.db)
 }
 
 func TestGetAll(t *testing.T) {

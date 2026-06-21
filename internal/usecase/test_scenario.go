@@ -20,21 +20,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type TestScenario interface {
-	Create(ctx context.Context, testScenario *entity.TestScenario) error
-	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
-	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error)
-	Start(ctx context.Context, id uint64) error
-	Pause(ctx context.Context, id uint64) error
-	Resume(ctx context.Context, id uint64) error
-	Stop(ctx context.Context, id uint64) error
-	Delete(ctx context.Context, id uint64) error
-	// ResetOrphanedScenarios recovers scenarios that were in running state
-	// when the service crashed and ensures they're added to the in-memory executor box.
-	// ResetOrphanedScenarios(ctx context.Context) error
-	Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) (e error)
-}
-
 func NewTestScenarioUsecase(
 	db database.Database,
 	testScenarioRepository repository.TestScenarioRepository,
@@ -44,7 +29,7 @@ func NewTestScenarioUsecase(
 	stressTestExecutionManager interfaces.ExecutionManager,
 	testServiceRepo repository.TestServiceRepository,
 	provisioningService provider.ProvisioningService,
-) TestScenario {
+) *testScenario {
 	return &testScenario{
 		db:                          db,
 		testScenarioRepository:      testScenarioRepository,

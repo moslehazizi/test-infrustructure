@@ -24,9 +24,7 @@ func TestTestScenarioRepository_New(t *testing.T) {
 	repo := NewTestScenarioRepository(db)
 	assert.NotNil(t, repo)
 
-	ts, ok := repo.(*testScenario)
-	assert.True(t, ok)
-	assert.NotNil(t, ts.db)
+	assert.NotNil(t, repo.db)
 }
 
 func TestTestScenarioRepository_Create(t *testing.T) {

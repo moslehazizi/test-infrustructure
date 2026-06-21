@@ -6,7 +6,7 @@ import (
 	"control-panel-service/internal/usecase/interfaces"
 )
 
-func NewTestAgentControllerToolBox(provisioningService provider.ProvisioningService, testServiceSDK provider.SDKTestService, serviceHost, ingressHost string, ingressPort int) interfaces.TestAgentControllerToolBox {
+func NewTestAgentControllerToolBox(provisioningService provider.ProvisioningService, testServiceSDK provider.SDKTestService, serviceHost, ingressHost string, ingressPort int) *testAgentControllerToolBox {
 	return &testAgentControllerToolBox{
 		provisioningService: provisioningService,
 		testServiceSDK:      testServiceSDK,

@@ -22,19 +22,13 @@ type consumer struct {
 	dbInitializer    database.DBInitializerFn
 }
 
-type Consumer interface {
-	Consume(ctx context.Context, topic string, ch chan []byte) error
-	StoreExecutorResult(ctx context.Context, msg []byte) error
-}
-
 func NewConsumer(
 	factorialRepo repository.MotherServiceFactorialResultRepository,
 	executorRepo repository.TestServiceExecutorResultRepository,
 	testScenarioRepo repository.TestScenarioRepository,
 	eventConsumer provider.EventConsumer,
 	dbInitializer database.DBInitializerFn,
-
-) Consumer {
+) *consumer {
 	return &consumer{
 		factorialRepo:    factorialRepo,
 		executorRepo:     executorRepo,

@@ -15,7 +15,7 @@ import (
 )
 
 // See: https://github.com/farbodan/challenge-control-panel-service/blob/main/internal/usecase/test_scenario_runner.md.
-func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAgentControllerToolBox, scenarioRepo repository.TestScenarioRepository, scenarioExecutorBuilder interfaces.ScenarioExecutorBuilder) interfaces.ExecutionManager {
+func NewStressTestExecutionManager(testAgentControllerToolBox interfaces.TestAgentControllerToolBox, scenarioRepo repository.TestScenarioRepository, scenarioExecutorBuilder interfaces.ScenarioExecutorBuilder) *StressTestExecutionManager {
 	return &StressTestExecutionManager{
 		testAgentControllerToolBox: testAgentControllerToolBox,
 		scenarios:                  sync.Map{},

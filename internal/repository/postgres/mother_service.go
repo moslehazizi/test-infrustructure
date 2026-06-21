@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
@@ -24,7 +23,7 @@ type motherServiceRepository struct {
 	db database.Database
 }
 
-func NewMotherServiceRepository(db database.Database) repository.MotherServiceRepository {
+func NewMotherServiceRepository(db database.Database) *motherServiceRepository {
 	return &motherServiceRepository{
 		db: db,
 	}

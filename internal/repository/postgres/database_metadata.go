@@ -4,7 +4,6 @@ import (
 	"context"
 	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/repository"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
 	"control-panel-service/pkg/logger"
@@ -14,7 +13,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-func NewDatabaseMetadataRepository(db database.Database, cfg *config.Config) repository.DatabaseMetadata {
+func NewDatabaseMetadataRepository(db database.Database, cfg *config.Config) *databaseMetadata {
 	return &databaseMetadata{
 		db,
 		cfg,

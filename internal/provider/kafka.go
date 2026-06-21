@@ -28,7 +28,7 @@ type kafkaEventProducer struct {
 	writer *kafka.Writer
 }
 
-func NewKafkaEventProducer(ctx context.Context, cfg *config.Config) (EventProducer, error) {
+func NewKafkaEventProducer(ctx context.Context, cfg *config.Config) (*kafkaEventProducer, error) {
 	zap.L().Info("initializing Kafka event producer",
 		zap.String("host", cfg.Kafka.Host),
 		zap.Int("port", cfg.Kafka.Port),
@@ -155,7 +155,7 @@ type kafkaConsumer struct {
 	cfg    *config.Config
 }
 
-func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config, topic string) (EventConsumer, error) {
+func NewKafkaEventConsumer(ctx context.Context, cfg *config.Config, topic string) (*kafkaConsumer, error) {
 	zap.L().Info("initializing Kafka event consumer",
 		zap.String("host", cfg.Kafka.Host),
 		zap.Int("port", cfg.Kafka.Port),

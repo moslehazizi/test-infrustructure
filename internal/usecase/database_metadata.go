@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewDatabaseMetadata(repo repository.DatabaseMetadata) DatabaseMetadata {
+func NewDatabaseMetadata(repo repository.DatabaseMetadata) *databaseMetadata {
 	return &databaseMetadata{
 		repo: repo,
 	}
@@ -23,10 +23,6 @@ type databaseMetadata struct {
 	repo repository.DatabaseMetadata
 }
 
-type DatabaseMetadata interface {
-	GetAll(ctx context.Context) ([]string, error)
-	GetTablesByDBName(ctx context.Context, dbName string) (*entity.TablesByType, error)
-}
 
 func (u *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
 	tracer := otel.Tracer("storage-usecase")

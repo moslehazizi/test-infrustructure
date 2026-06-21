@@ -18,9 +18,7 @@ func TestNewTestCategoryService(t *testing.T) {
 	testCategoryRepo := new(mocks.MockTestCategory)
 	srv := NewTestCategoryService(testCategoryRepo)
 
-	s, ok := srv.(*testCategoryService)
-	assert.True(t, ok)
-	assert.NotNil(t, s.testCategoryRepo)
+	assert.NotNil(t, srv.testCategoryRepo)
 }
 
 func TestGetAll(t *testing.T) {

@@ -4,7 +4,6 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/internal/server/dto/response"
-	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
 	"errors"
@@ -17,12 +16,12 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-type MotherService struct {
-	motherService usecase.MotherService
+type MotherServiceHandler struct {
+	motherService MotherService
 }
 
-func NewMotherServiceHandler(motherService usecase.MotherService) *MotherService {
-	return &MotherService{
+func NewMotherServiceHandler(motherService MotherService) *MotherServiceHandler {
+	return &MotherServiceHandler{
 		motherService: motherService,
 	}
 }
@@ -40,7 +39,7 @@ func NewMotherServiceHandler(motherService usecase.MotherService) *MotherService
 //	@Failure		422		{object}	response.ErrorResponse
 //	@Failure		500		{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services [post]
-func (handler *MotherService) Create() fiber.Handler {
+func (handler *MotherServiceHandler) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "create_mother_service")
@@ -94,7 +93,7 @@ func (handler *MotherService) Create() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services/{id} [get]
-func (handler *MotherService) GetByID() fiber.Handler {
+func (handler *MotherServiceHandler) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "get_mother_service-by-id")
@@ -142,7 +141,7 @@ func (handler *MotherService) GetByID() fiber.Handler {
 //	@Failure		400		{object}	response.ErrorResponse
 //	@Failure		500		{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services/search [post]
-func (handler *MotherService) GetPaginated() fiber.Handler {
+func (handler *MotherServiceHandler) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "get_paginated_mother_services")
@@ -209,7 +208,7 @@ func (handler *MotherService) GetPaginated() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services/{id}/delete [post]
-func (handler *MotherService) Delete() fiber.Handler {
+func (handler *MotherServiceHandler) Delete() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
 		traceCtx, span := tracer.Start(ctx.Context(), "delete_mother_service")

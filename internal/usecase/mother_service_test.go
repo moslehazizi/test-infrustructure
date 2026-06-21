@@ -37,9 +37,7 @@ func TestNewMotherService(t *testing.T) {
 
 	assert.NotNil(t, service)
 
-	s, ok := service.(*motherService)
-	assert.True(t, ok)
-	assert.NotNil(t, s.motherServiceRepo)
+	assert.NotNil(t, service.motherServiceRepo)
 }
 
 func TestMotherServiceUsecase_Create(t *testing.T) {

@@ -38,7 +38,7 @@ type sdkTestService struct {
 	client HTTPClient
 }
 
-func NewSDKTestService(client HTTPClient) SDKTestService {
+func NewSDKTestService(client HTTPClient) *sdkTestService {
 	return &sdkTestService{
 		client: client,
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/repository"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
 	"control-panel-service/pkg/logger"
@@ -22,7 +21,7 @@ type motherServiceFactorialResultRepository struct {
 	config *config.Config
 }
 
-func NewMotherServiceFactorialResultRepository(config *config.Config) repository.MotherServiceFactorialResultRepository {
+func NewMotherServiceFactorialResultRepository(config *config.Config) *motherServiceFactorialResultRepository {
 	zap.L().Info("initializing factorial repository", zap.String(logger.FieldOperation, "initialize_repository"))
 
 	return &motherServiceFactorialResultRepository{

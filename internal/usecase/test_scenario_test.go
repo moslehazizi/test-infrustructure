@@ -40,12 +40,9 @@ func TestTestScenarioUsecase_Init(t *testing.T) {
 	)
 	assert.NotNil(t, service)
 
-	st, ok := service.(*testScenario)
-	assert.True(t, ok)
-	assert.NotNil(t, st.testScenarioRepository)
-	assert.NotNil(t, st.stressTestExecutionManager)
-	assert.NotNil(t, st.testScenarioRepository)
-	assert.NotNil(t, st.provisioningService)
+	assert.NotNil(t, service.testScenarioRepository)
+	assert.NotNil(t, service.stressTestExecutionManager)
+	assert.NotNil(t, service.provisioningService)
 }
 
 func TestTestScenarioUsecase_Create(t *testing.T) {

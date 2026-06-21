@@ -15,9 +15,7 @@ func TestDatabaseMetadataUsecase_initialization(t *testing.T) {
 	databaseMetadataRepo := new(mocks.MockDatabaseMetadata)
 	srv := NewDatabaseMetadata(databaseMetadataRepo)
 
-	s, ok := srv.(*databaseMetadata)
-	assert.True(t, ok)
-	assert.NotNil(t, s.repo)
+	assert.NotNil(t, srv.repo)
 }
 
 func TestDatabaseMetadataUsecase_GetAll(t *testing.T) {

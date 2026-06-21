@@ -3,7 +3,6 @@ package handler
 import (
 	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/internal/server/dto/response"
-	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
 	"net/http"
@@ -14,14 +13,14 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-func NewDatabaseMetadataHandler(databaseMetaDataService usecase.DatabaseMetadata) *DatabaseMetadataHandler {
+func NewDatabaseMetadataHandler(databaseMetaDataService DatabaseMetadata) *DatabaseMetadataHandler {
 	return &DatabaseMetadataHandler{
 		databaseMetaDataService: databaseMetaDataService,
 	}
 }
 
 type DatabaseMetadataHandler struct {
-	databaseMetaDataService usecase.DatabaseMetadata
+	databaseMetaDataService DatabaseMetadata
 }
 
 // GetAll godoc
