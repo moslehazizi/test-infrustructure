@@ -59,7 +59,7 @@ func (handler *TestScenarioHandler) Create() fiber.Handler {
 			attribute.String("mother_service.id", strconv.FormatUint(req.MotherServiceID, 10)),
 		)
 
-		testScenario := &entity.TestScenario{}
+		testScenario := new(entity.TestScenario)
 		req.ToTestScenarioEntity(testScenario)
 
 		err := handler.testScenario.Create(traceCtx, testScenario)
