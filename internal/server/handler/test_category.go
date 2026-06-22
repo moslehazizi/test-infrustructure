@@ -3,7 +3,6 @@ package handler
 import (
 	"control-panel-service/config"
 	"control-panel-service/internal/server/dto/response"
-	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
 	"net/http"
@@ -14,7 +13,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-func NewTestCategoryHandler(cfg *config.Config, testCategoryService usecase.TestCategoryService) *TestCategoryHandler {
+func NewTestCategoryHandler(cfg *config.Config, testCategoryService TestCategoryService) *TestCategoryHandler {
 	return &TestCategoryHandler{
 		cfg,
 		testCategoryService,
@@ -23,7 +22,7 @@ func NewTestCategoryHandler(cfg *config.Config, testCategoryService usecase.Test
 
 type TestCategoryHandler struct {
 	cfg                 *config.Config
-	testCategoryService usecase.TestCategoryService
+	testCategoryService TestCategoryService
 }
 
 // GetAll godoc

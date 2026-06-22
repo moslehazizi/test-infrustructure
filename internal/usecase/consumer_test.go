@@ -31,15 +31,11 @@ func TestNewNewConsumer(t *testing.T) {
 		kafkaConsumer,
 		func(cfg any) (database.Database, error) { return nil, nil },
 	)
-	s, ok := service.(*consumer)
-
 	assert.NotNil(t, service)
-	assert.NotNil(t, s.factorialRepo)
-	assert.NotNil(t, s.executorRepo)
-	assert.NotNil(t, s.testScenarioRepo)
-
-	assert.NotNil(t, s.eventConsumer)
-	assert.True(t, ok)
+	assert.NotNil(t, service.factorialRepo)
+	assert.NotNil(t, service.executorRepo)
+	assert.NotNil(t, service.testScenarioRepo)
+	assert.NotNil(t, service.eventConsumer)
 }
 
 func mockDBInitializer() database.DBInitializerFn {

@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
@@ -18,7 +17,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewTestCategoryRepository(db database.Database) repository.TestCategory {
+func NewTestCategoryRepository(db database.Database) *testCategory {
 	return &testCategory{
 		db,
 	}

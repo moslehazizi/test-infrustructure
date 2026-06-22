@@ -15,12 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type TestCategoryService interface {
-	GetAll(ctx context.Context) ([]entity.TestCategory, error)
-	GetByID(ctx context.Context, id uint64) (*entity.TestCategory, error)
-}
-
-func NewTestCategoryService(testCategoryRepo repository.TestCategory) TestCategoryService {
+func NewTestCategoryService(testCategoryRepo repository.TestCategory) *testCategoryService {
 	return &testCategoryService{testCategoryRepo}
 }
 

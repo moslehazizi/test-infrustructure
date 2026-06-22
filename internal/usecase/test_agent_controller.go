@@ -5,7 +5,6 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/provider/dto/request"
-	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"fmt"
 	"time"
@@ -30,7 +29,7 @@ func NewTestAgentController(
 	serviceHost string,
 	ingressHost string,
 	ingressPort int,
-) interfaces.TestAgentController {
+) *testAgentController {
 	return &testAgentController{
 		provisioningService:      provisioningService,
 		testServiceSDK:           testServiceSDK,

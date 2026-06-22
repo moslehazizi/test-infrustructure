@@ -20,21 +20,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type TestScenario interface {
-	Create(ctx context.Context, testScenario *entity.TestScenario) error
-	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
-	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error)
-	Start(ctx context.Context, id uint64) error
-	Pause(ctx context.Context, id uint64) error
-	Resume(ctx context.Context, id uint64) error
-	Stop(ctx context.Context, id uint64) error
-	Delete(ctx context.Context, id uint64) error
-	// ResetOrphanedScenarios recovers scenarios that were in running state
-	// when the service crashed and ensures they're added to the in-memory executor box.
-	// ResetOrphanedScenarios(ctx context.Context) error
-	Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) (e error)
-}
-
 func NewTestScenarioUsecase(
 	db database.Database,
 	testScenarioRepository repository.TestScenarioRepository,
@@ -44,13 +29,13 @@ func NewTestScenarioUsecase(
 	stressTestExecutionManager interfaces.ExecutionManager,
 	testServiceRepo repository.TestServiceRepository,
 	provisioningService provider.ProvisioningService,
-) TestScenario {
+) *testScenario {
 	return &testScenario{
 		db:                          db,
 		testScenarioRepository:      testScenarioRepository,
 		testCategoryRepository:      testCategoryRepository,
 		testServiceConfigRepository: testServiceConfigRepository,
-		motherService:               motherService,
+		motherServiceRepository:     motherService,
 		stressTestExecutionManager:  stressTestExecutionManager,
 		testServiceRepo:             testServiceRepo,
 		provisioningService:         provisioningService,
@@ -62,7 +47,7 @@ type testScenario struct {
 	testScenarioRepository      repository.TestScenarioRepository
 	testCategoryRepository      repository.TestCategory
 	testServiceConfigRepository repository.TestServiceConfigRepository
-	motherService               repository.MotherServiceRepository
+	motherServiceRepository     repository.MotherServiceRepository
 	stressTestExecutionManager  interfaces.ExecutionManager
 	testServiceRepo             repository.TestServiceRepository
 	provisioningService         provider.ProvisioningService
@@ -76,9 +61,13 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(attribute.String("request_id", requestID))
 
-	span.SetAttributes(attribute.String("test_scenario.name", testScenario.Name), attribute.String("test_category.id", strconv.FormatUint(testScenario.TestCategoryID, 10)), attribute.String("mother_service.id", strconv.FormatUint(testScenario.MotherServiceID, 10)))
+	span.SetAttributes(
+		attribute.String("test_scenario.name", testScenario.Name),
+		attribute.String("test_category.id", strconv.FormatUint(testScenario.TestCategoryID, 10)),
+		attribute.String("mother_service.id", strconv.FormatUint(testScenario.MotherServiceID, 10)),
+	)
 
-	_, err := service.motherService.GetByID(ctx, testScenario.MotherServiceID)
+	_, err := service.motherServiceRepository.GetByID(ctx, testScenario.MotherServiceID)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "mother_service_not_found"), attribute.String("error.message", err.Error()))
 
@@ -505,7 +494,7 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 		return pkg.ErrScenariosCanNotBeUpdated
 	}
 
-	motherService, err := service.motherService.GetByID(ctx, testScenarioUpdateRequest.MotherServiceID)
+	motherService, err := service.motherServiceRepository.GetByID(ctx, testScenarioUpdateRequest.MotherServiceID)
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetMotherService, err)
 	}

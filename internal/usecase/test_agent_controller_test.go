@@ -25,8 +25,8 @@ func TestNewTestAgentController(t *testing.T) {
 
 	assert.NotNil(t, ctrl)
 
-	a, ok := ctrl.(*testAgentController)
-	assert.True(t, ok)
+	a := ctrl
+
 
 	assert.NotNil(t, a.provisioningService)
 }
@@ -44,7 +44,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, new(mocks.MockTestServiceSDK), scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		err := c.provisionTestService(context.Background(), scenario, id)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToProvisionTestService)
@@ -67,7 +67,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, new(mocks.MockTestServiceSDK), scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 3
 		c.provisioningRetriesSleep = time.Millisecond * 50
 
@@ -104,7 +104,7 @@ func Test_testAgentController_provisionTestService(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, new(mocks.MockTestServiceSDK), scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 3
 		c.provisioningRetriesSleep = time.Millisecond * 50
 
@@ -136,7 +136,7 @@ func Test_testAgentController_Run(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, new(mocks.MockTestServiceSDK), scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 
@@ -187,7 +187,7 @@ func Test_testAgentControler_StartTesting(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -240,7 +240,7 @@ func Test_testAgentControler_StartTesting(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -269,7 +269,7 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -296,7 +296,7 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -323,7 +323,7 @@ func Test_testAgentControler_Healthy(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -353,7 +353,7 @@ func Test_testAgentControler_DeleteTesting(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -380,7 +380,7 @@ func Test_testAgentControler_DeleteTesting(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -411,7 +411,7 @@ func Test_testAgentControler_ReadyForTesting(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -438,7 +438,7 @@ func Test_testAgentControler_ReadyForTesting(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -465,7 +465,7 @@ func Test_testAgentControler_ReadyForTesting(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -495,7 +495,7 @@ func Test_testAgentControler_Pause(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -525,7 +525,7 @@ func Test_testAgentControler_Pause(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -555,7 +555,7 @@ func Test_testAgentControler_Resume(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -585,7 +585,7 @@ func Test_testAgentControler_Resume(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -615,7 +615,7 @@ func Test_testAgentControler_Stop(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id
@@ -645,7 +645,7 @@ func Test_testAgentControler_Stop(t *testing.T) {
 
 		ctrl := NewTestAgentController(provSvc, provTest, scenario, serviceHost, ingressHost, ingressPort)
 
-		c := ctrl.(*testAgentController)
+		c := ctrl
 		c.provisioningRetries = 1
 		c.provisioningRetriesSleep = time.Millisecond * 50
 		c.uniqueID = id

@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/repository"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
 	"control-panel-service/pkg/logger"
@@ -13,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-func NewTestServiceRepository(db database.Database) repository.TestServiceRepository {
+func NewTestServiceRepository(db database.Database) *testService {
 	return &testService{
 		db: db,
 	}

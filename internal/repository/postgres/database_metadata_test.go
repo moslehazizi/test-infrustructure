@@ -23,9 +23,7 @@ func TestDatabaseMetadataRepositoryInitialization(t *testing.T) {
 	repo := NewDatabaseMetadataRepository(db, cfg)
 	assert.NotNil(t, repo)
 
-	tr, ok := repo.(*databaseMetadata)
-	assert.True(t, ok)
-	assert.NotNil(t, tr.db)
+	assert.NotNil(t, repo.db)
 }
 
 func TestDatabaseMetadataRepository_GetAll(t *testing.T) {

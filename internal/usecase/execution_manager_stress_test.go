@@ -46,8 +46,8 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 		repo.On("SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		seb.On("Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(sampleSE)
 
-		mng, ok := ex.(*StressTestExecutionManager)
-		assert.True(t, ok)
+		mng := ex
+
 		assert.False(t, KeyExists(&mng.scenarios, scenario.ID))
 
 		err := ex.RunScenario(context.Background(), scenario)
@@ -86,8 +86,8 @@ func TestStressTestExecutionManager_RunScenario(t *testing.T) {
 		err := ex.RunScenario(context.Background(), scenario)
 		assert.NoError(t, err)
 
-		_, ok := ex.(*StressTestExecutionManager)
-		assert.True(t, ok)
+		_ = ex // already *StressTestExecutionManager
+
 
 		seb.AssertCalled(t, "Build", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
@@ -178,7 +178,7 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
-		stem, _ := ex.(*StressTestExecutionManager)
+		stem := ex
 		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
@@ -216,7 +216,7 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
-		stem, _ := ex.(*StressTestExecutionManager)
+		stem := ex
 		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
@@ -252,7 +252,7 @@ func TestStressTestExecutionManager_PauseScenario(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
-		stem, _ := ex.(*StressTestExecutionManager)
+		stem := ex
 		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
@@ -325,7 +325,7 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
-		stem, _ := ex.(*StressTestExecutionManager)
+		stem := ex
 		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
@@ -363,7 +363,7 @@ func TestStressTestExecutionManager_ResumeScenario(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
-		stem, _ := ex.(*StressTestExecutionManager)
+		stem := ex
 		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
@@ -436,7 +436,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
-		stem, _ := ex.(*StressTestExecutionManager)
+		stem := ex
 		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
@@ -466,7 +466,7 @@ func TestStressTestExecutionManager_Stop(t *testing.T) {
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		executionID := uuid.New()
-		stem, _ := ex.(*StressTestExecutionManager)
+		stem := ex
 		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
@@ -540,7 +540,7 @@ func TestStressTestExecutionManager_Delete(t *testing.T) {
 
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
-		stem, _ := ex.(*StressTestExecutionManager)
+		stem := ex
 		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,
@@ -569,7 +569,7 @@ func TestStressTestExecutionManager_Delete(t *testing.T) {
 		ex := NewStressTestExecutionManager(builder, repo, seb)
 
 		executionID := uuid.New()
-		stem, _ := ex.(*StressTestExecutionManager)
+		stem := ex
 		stem.scenarios.Store(scenario.ID, &scenarioExecutor{
 			scenario:    scenario,
 			executionID: executionID,

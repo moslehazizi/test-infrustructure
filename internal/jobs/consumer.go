@@ -14,8 +14,13 @@ import (
 	"go.uber.org/zap"
 )
 
+type Consumer interface {
+	Consume(ctx context.Context, topic string, ch chan []byte) error
+	StoreExecutorResult(ctx context.Context, msg []byte) error
+}
+
 type consumerJob struct {
-	consumerUseCase usecase.Consumer
+	consumerUseCase Consumer
 }
 
 func Serve(ctx context.Context, cfg *config.Config) error {
