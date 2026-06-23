@@ -165,10 +165,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewTestServiceRepository(db),
 	)
 	testScenarioOperationUsecase := usecase.NewTestScenarioOperationUsecase(
-		db,
 		testScenarioRepository,
 		stressTestExecutionManager,
-		provider.NewProvisioningService(cfg, kubernetes),
 	)
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))

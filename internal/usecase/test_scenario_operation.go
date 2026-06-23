@@ -3,11 +3,9 @@ package usecase
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
-	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
-	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
@@ -18,24 +16,18 @@ import (
 )
 
 func NewTestScenarioOperationUsecase(
-	db database.Database,
 	testScenarioRepository repository.TestScenarioRepository,
 	stressTestExecutionManager interfaces.ExecutionManager,
-	provisioningService provider.ProvisioningService,
 ) *testScenarioOperation {
 	return &testScenarioOperation{
-		db:                         db,
 		testScenarioRepository:     testScenarioRepository,
 		stressTestExecutionManager: stressTestExecutionManager,
-		provisioningService:        provisioningService,
 	}
 }
 
 type testScenarioOperation struct {
-	db                         database.Database
 	testScenarioRepository     repository.TestScenarioRepository
 	stressTestExecutionManager interfaces.ExecutionManager
-	provisioningService        provider.ProvisioningService
 }
 
 func (service *testScenarioOperation) Start(ctx context.Context, id uint64) error {
@@ -67,14 +59,6 @@ func (service *testScenarioOperation) Start(ctx context.Context, id uint64) erro
 		return pkg.ErrOnlyReadyScenariosCanBeStarted
 	}
 
-	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning, false)
-	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
-
-		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
-	}
-
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
 		err := service.stressTestExecutionManager.RunScenario(ctx, scenario)
@@ -83,6 +67,13 @@ func (service *testScenarioOperation) Start(ctx context.Context, id uint64) erro
 		}
 	default:
 		return pkg.ErrStartingTestNotImplemented
+	}
+
+	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning, false)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
+
+		return fmt.Errorf("%w: %w", pkg.ErrFailedToSetScenarioStatus, err)
 	}
 
 	return nil
