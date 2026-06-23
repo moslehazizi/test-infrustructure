@@ -162,14 +162,19 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		postgres.NewTestCategoryRepository(db),
 		postgres.NewTestServiceConfigRepository(db),
 		postgres.NewMotherServiceRepository(db),
-		stressTestExecutionManager,
 		postgres.NewTestServiceRepository(db),
+	)
+	testScenarioOperationUsecase := usecase.NewTestScenarioOperationUsecase(
+		db,
+		testScenarioRepository,
+		stressTestExecutionManager,
 		provider.NewProvisioningService(cfg, kubernetes),
 	)
 	motherHandler := handler.NewMotherServiceHandler(motherService)
 	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 
 	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
+	testScenarioOperationHandler := handler.NewTestScenarioOperationHandler(testScenarioOperationUsecase)
 	databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db, cfg))
 	databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
 
@@ -189,12 +194,14 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	apiV1.Post("/test-scenarios", testScenarioHandler.Create())
 	apiV1.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
 	apiV1.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
-	apiV1.Post("/test-scenarios/:id/start", testScenarioHandler.Start())
-	apiV1.Post("/test-scenarios/:id/pause", testScenarioHandler.Pause())
-	apiV1.Post("/test-scenarios/:id/resume", testScenarioHandler.Resume())
-	apiV1.Post("/test-scenarios/:id/stop", testScenarioHandler.Stop())
-	apiV1.Post("/test-scenarios/:id/delete", testScenarioHandler.Delete())
 	apiV1.Post("/test-scenarios/update", testScenarioHandler.Update())
+
+	// test scenario operationn-up
+	apiV1.Post("/test-scenarios/:id/start", testScenarioOperationHandler.Start())
+	apiV1.Post("/test-scenarios/:id/pause", testScenarioOperationHandler.Pause())
+	apiV1.Post("/test-scenarios/:id/resume", testScenarioOperationHandler.Resume())
+	apiV1.Post("/test-scenarios/:id/stop", testScenarioOperationHandler.Stop())
+	apiV1.Post("/test-scenarios/:id/delete", testScenarioOperationHandler.Delete())
 
 	// database-metadata
 	apiV1.Get("/databases", databaseMetadataHandler.GetAll())

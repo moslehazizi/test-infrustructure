@@ -17,12 +17,15 @@ type TestScenario interface {
 	Create(ctx context.Context, testScenario *entity.TestScenario) error
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
 	GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error)
+	Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) error
+}
+
+type TestScenarioOperation interface {
 	Start(ctx context.Context, id uint64) error
 	Pause(ctx context.Context, id uint64) error
 	Resume(ctx context.Context, id uint64) error
 	Stop(ctx context.Context, id uint64) error
 	Delete(ctx context.Context, id uint64) error
-	Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) error
 }
 
 type TestCategoryService interface {
