@@ -36,7 +36,7 @@ type DatabaseMetadataHandler struct {
 func (handler *DatabaseMetadataHandler) GetAll() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("database-metadata-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get-databases")
+		traceCtx, span := tracer.Start(ctx.Context(), "get-databases-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -68,8 +68,8 @@ func (handler *DatabaseMetadataHandler) GetAll() fiber.Handler {
 //	@Router			/api/v1/databases/tables [post]
 func (handler *DatabaseMetadataHandler) GetTablesByDBNamePost() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		tracer := otel.Tracer("storage-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get_tables_by_db_post")
+		tracer := otel.Tracer("database-metadata-handler")
+		traceCtx, span := tracer.Start(ctx.Context(), "get-tables-by-database-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())

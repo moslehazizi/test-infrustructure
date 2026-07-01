@@ -5,7 +5,6 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/repository"
 	"control-panel-service/pkg"
-	"control-panel-service/pkg/logger"
 	"fmt"
 
 	"go.opentelemetry.io/otel"
@@ -23,19 +22,14 @@ type databaseMetadata struct {
 	repo repository.DatabaseMetadata
 }
 
-
 func (u *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
-	tracer := otel.Tracer("storage-usecase")
-	_, span := tracer.Start(ctx, "get_all_databases")
+	tracer := otel.Tracer("database-metadata-usecase")
+	useCaseCTX, span := tracer.Start(ctx, "get-all-databases-usecase")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
-
-	result, err := u.repo.GetAll(ctx)
+	result, err := u.repo.GetAll(useCaseCTX)
 	if err != nil {
 		zap.L().Error("failed to get databases",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.Error(err),
 		)
 
@@ -46,13 +40,11 @@ func (u *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
 }
 
 func (u *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName string) (*entity.TablesByType, error) {
-	tracer := otel.Tracer("storage-usecase")
-	_, span := tracer.Start(ctx, "get_tables_by_db_name")
+	tracer := otel.Tracer("database-metadata-usecase")
+	useCaseCTX, span := tracer.Start(ctx, "get-tables-by-db-name-usecase")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(
-		attribute.String("request_id", requestID),
 		attribute.String("database.name", dbName),
 	)
 
@@ -60,10 +52,9 @@ func (u *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName string)
 		return nil, pkg.ErrBadRequest
 	}
 
-	result, err := u.repo.GetTablesByDBName(ctx, dbName)
+	result, err := u.repo.GetTablesByDBName(useCaseCTX, dbName)
 	if err != nil {
 		zap.L().Error("failed to get tables",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.String("database", dbName),
 			zap.Error(err),
 		)

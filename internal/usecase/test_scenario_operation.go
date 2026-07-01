@@ -6,7 +6,6 @@ import (
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
-	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
 	"strconv"
@@ -32,15 +31,12 @@ type testScenarioOperation struct {
 
 func (service *testScenarioOperation) Start(ctx context.Context, id uint64) error {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "start_test_scenario")
+	useCaseCTX, span := tracer.Start(ctx, "start-test-scenario-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
-	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
+	scenario, err := service.testScenarioRepository.GetByID(useCaseCTX, id)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
@@ -61,7 +57,7 @@ func (service *testScenarioOperation) Start(ctx context.Context, id uint64) erro
 
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.RunScenario(ctx, scenario)
+		err := service.stressTestExecutionManager.RunScenario(useCaseCTX, scenario)
 		if err != nil {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToRunScenarioInExecutionManager, err)
 		}
@@ -69,7 +65,7 @@ func (service *testScenarioOperation) Start(ctx context.Context, id uint64) erro
 		return pkg.ErrStartingTestNotImplemented
 	}
 
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning, false)
+	err = service.testScenarioRepository.SetStatus(useCaseCTX, id, entity.ScenarioStatusRunning, false)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
@@ -81,15 +77,12 @@ func (service *testScenarioOperation) Start(ctx context.Context, id uint64) erro
 
 func (service *testScenarioOperation) Pause(ctx context.Context, id uint64) error {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "pause_test_scenario")
+	useCaseCTX, span := tracer.Start(ctx, "pause-test-scenario-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
-	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
+	scenario, err := service.testScenarioRepository.GetByID(useCaseCTX, id)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
@@ -110,7 +103,7 @@ func (service *testScenarioOperation) Pause(ctx context.Context, id uint64) erro
 
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.PauseScenario(ctx, scenario)
+		err := service.stressTestExecutionManager.PauseScenario(useCaseCTX, scenario)
 		if err != nil {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToPauseScenarioToExecutionManager, err)
 		}
@@ -119,7 +112,7 @@ func (service *testScenarioOperation) Pause(ctx context.Context, id uint64) erro
 	}
 
 	// mark scenario as paused
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusPaused, false)
+	err = service.testScenarioRepository.SetStatus(useCaseCTX, id, entity.ScenarioStatusPaused, false)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
@@ -131,15 +124,12 @@ func (service *testScenarioOperation) Pause(ctx context.Context, id uint64) erro
 
 func (service *testScenarioOperation) Resume(ctx context.Context, id uint64) error {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "resume_test_scenario")
+	useCaseCTX, span := tracer.Start(ctx, "resume-test-scenario-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
-	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
+	scenario, err := service.testScenarioRepository.GetByID(useCaseCTX, id)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
@@ -160,7 +150,7 @@ func (service *testScenarioOperation) Resume(ctx context.Context, id uint64) err
 
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.ResumeScenario(ctx, scenario)
+		err := service.stressTestExecutionManager.ResumeScenario(useCaseCTX, scenario)
 		if err != nil {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToResumeScenarioToExecutionManager, err)
 		}
@@ -169,7 +159,7 @@ func (service *testScenarioOperation) Resume(ctx context.Context, id uint64) err
 	}
 
 	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusRunning, false)
+	err = service.testScenarioRepository.SetStatus(useCaseCTX, id, entity.ScenarioStatusRunning, false)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
@@ -181,15 +171,12 @@ func (service *testScenarioOperation) Resume(ctx context.Context, id uint64) err
 
 func (service *testScenarioOperation) Stop(ctx context.Context, id uint64) error {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "stop_test_scenario")
+	useCaseCTX, span := tracer.Start(ctx, "stop-test-scenario-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
-	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
+	scenario, err := service.testScenarioRepository.GetByID(useCaseCTX, id)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
@@ -210,7 +197,7 @@ func (service *testScenarioOperation) Stop(ctx context.Context, id uint64) error
 
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.StopScenario(ctx, scenario)
+		err := service.stressTestExecutionManager.StopScenario(useCaseCTX, scenario)
 		if err != nil {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToStopScenarioToExecutionManager, err)
 		}
@@ -219,7 +206,7 @@ func (service *testScenarioOperation) Stop(ctx context.Context, id uint64) error
 	}
 
 	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusReady, false)
+	err = service.testScenarioRepository.SetStatus(useCaseCTX, id, entity.ScenarioStatusReady, false)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
@@ -231,15 +218,12 @@ func (service *testScenarioOperation) Stop(ctx context.Context, id uint64) error
 
 func (service *testScenarioOperation) Delete(ctx context.Context, id uint64) error {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "delete_test_scenario")
+	useCaseCTX, span := tracer.Start(ctx, "delete-test-scenario-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
-	scenario, err := service.testScenarioRepository.GetByID(ctx, id)
+	scenario, err := service.testScenarioRepository.GetByID(useCaseCTX, id)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
@@ -259,7 +243,7 @@ func (service *testScenarioOperation) Delete(ctx context.Context, id uint64) err
 	}
 
 	// mark scenario as running
-	err = service.testScenarioRepository.SetStatus(ctx, id, entity.ScenarioStatusDeleted, false)
+	err = service.testScenarioRepository.SetStatus(useCaseCTX, id, entity.ScenarioStatusDeleted, false)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "set_status_error"), attribute.String("error.message", err.Error()))
 
@@ -268,7 +252,7 @@ func (service *testScenarioOperation) Delete(ctx context.Context, id uint64) err
 
 	switch scenario.TestCategory.Name {
 	case entity.STRESS:
-		err := service.stressTestExecutionManager.DeleteScenario(ctx, scenario)
+		err := service.stressTestExecutionManager.DeleteScenario(useCaseCTX, scenario)
 		if err != nil {
 			return fmt.Errorf("%w: %w", pkg.ErrFailedToDeleteScenarioToExecutionManager, err)
 		}

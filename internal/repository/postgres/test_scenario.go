@@ -6,7 +6,6 @@ import (
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
-	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
 	"strconv"
@@ -32,15 +31,12 @@ type testScenario struct {
 
 func (repo *testScenario) Create(ctx context.Context, testSci *entity.TestScenario) (uint64, error) {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "create_test_scenario")
+	repoCTX, span := tracer.Start(ctx, "create-test-scenario-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "insert"), attribute.String("test_scenario.name", testSci.Name))
 
-	err := postgres.QueryBuilder(ctx, repo.db).
+	err := postgres.QueryBuilder(repoCTX, repo.db).
 		Omit(clause.Associations).
 		Create(testSci).Error
 	if err != nil {
@@ -58,16 +54,13 @@ func (repo *testScenario) Create(ctx context.Context, testSci *entity.TestScenar
 
 func (repo *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error) {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "get_test_scenario_by_id")
+	repoCTX, span := tracer.Start(ctx, "get-test-scenario-by-id-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
 	var testScenario entity.TestScenario
-	err := postgres.QueryBuilder(ctx, repo.db).
+	err := postgres.QueryBuilder(repoCTX, repo.db).
 		Preload("TestCategory").
 		Preload("MotherService").
 		Preload("TestServiceConfig").
@@ -92,11 +85,8 @@ func (repo *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestS
 
 func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error) {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "get_paginated_test_scenarios")
+	repoCTX, span := tracer.Start(ctx, "get-paginated-test-scenarios-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("pagination.page", strconv.Itoa(pagRequest.Page)), attribute.String("pagination.per_page", strconv.Itoa(pagRequest.PerPage)))
 
@@ -107,14 +97,14 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 		return nil, 0, fmt.Errorf("%w: %w", pkg.ErrFailedToGetTestScenarios, pkg.ErrNegativePageOrPerPageNotAllowed)
 	}
 
-	query := postgres.QueryBuilder(ctx, repo.db).
+	query := postgres.QueryBuilder(repoCTX, repo.db).
 		Preload("TestCategory").
 		Preload("MotherService").
 		Order("id DESC")
 
 	var count int64
 
-	if err := postgres.QueryBuilder(ctx, repo.db).Model(&entity.TestScenario{}).Count(&count).Error; err != nil {
+	if err := postgres.QueryBuilder(repoCTX, repo.db).Model(&entity.TestScenario{}).Count(&count).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to get test scenario records total count: %w", err)
 	}
 
@@ -139,15 +129,12 @@ func (repo *testScenario) GetPaginated(ctx context.Context, pagRequest entity.Te
 
 func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entity.ScenarioStatus, editable bool) error {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "set_test_scenario_status")
+	repoCTX, span := tracer.Start(ctx, "set-test-scenario-status-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "update"), attribute.String("test_scenario.id", strconv.FormatUint(id, 10)), attribute.String("test_scenario.status", string(status)))
 
-	err := postgres.QueryBuilder(ctx, repo.db).
+	err := postgres.QueryBuilder(repoCTX, repo.db).
 		Omit(clause.Associations).
 		Model(&entity.TestScenario{}).
 		Where("id", id).
@@ -167,17 +154,14 @@ func (repo *testScenario) SetStatus(ctx context.Context, id uint64, status entit
 
 func (repo *testScenario) GetByStatus(ctx context.Context, status entity.ScenarioStatus) ([]*entity.TestScenario, error) {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "get_by_status_test_scenarios")
+	repoCTX, span := tracer.Start(ctx, "get-by-status-test-scenarios-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("status", string(status)))
 
 	var testScenarios []*entity.TestScenario
 
-	query := postgres.QueryBuilder(ctx, repo.db).
+	query := postgres.QueryBuilder(repoCTX, repo.db).
 		Where("status = ?", status).
 		Preload("TestCategory").
 		Preload("MotherService").
@@ -200,11 +184,9 @@ func (repo *testScenario) GetDeploymentNumberByScenarioID(
 	id uint64,
 ) (int32, error) {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "get_deployment_number_by_scenario_id")
+	repoCTX, span := tracer.Start(ctx, "get-deployment-number-by-scenario-id-repository")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 	span.SetAttributes(
 		attribute.String("database.operation", "select"),
 		attribute.String("test_scenario.id", strconv.FormatUint(id, 10)),
@@ -212,7 +194,7 @@ func (repo *testScenario) GetDeploymentNumberByScenarioID(
 
 	var deploymentNumber int32
 
-	err := postgres.QueryBuilder(ctx, repo.db).
+	err := postgres.QueryBuilder(repoCTX, repo.db).
 		Model(&entity.TestScenario{}).
 		Select("deployment_number").
 		Where("id = ?", id).
@@ -242,17 +224,15 @@ func (repo *testScenario) UpdateDeploymentNumber(
 	newDeploymentNumber int32,
 ) error {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "update_deployment_number")
+	repoCTX, span := tracer.Start(ctx, "update-deployment-number-repository")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 	span.SetAttributes(
 		attribute.String("database.operation", "update"),
 		attribute.String("test_scenario.id", strconv.FormatUint(id, 10)),
 	)
 
-	result := postgres.QueryBuilder(ctx, repo.db).
+	result := postgres.QueryBuilder(repoCTX, repo.db).
 		Model(&entity.TestScenario{}).
 		Where("id = ?", id).
 		Where(`"test_scenarios"."deleted_at" IS NULL`).
@@ -278,17 +258,15 @@ func (repo *testScenario) UpdateDeploymentNumber(
 
 func (repo *testScenario) Update(ctx context.Context, scenario *entity.TestScenario) error {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "update_test_scenario")
+	repoCTX, span := tracer.Start(ctx, "update-test-scenario-repository")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 	span.SetAttributes(
 		attribute.String("database.operation", "update"),
 		attribute.String("test_scenario.id", strconv.FormatUint(scenario.ID, 10)),
 	)
 
-	err := postgres.QueryBuilder(ctx, repo.db).
+	err := postgres.QueryBuilder(repoCTX, repo.db).
 		Omit(
 			"TestCategory",
 			"TestCategoryID",
@@ -321,17 +299,14 @@ func (repo *testScenario) Update(ctx context.Context, scenario *entity.TestScena
 
 func (repo *testScenario) GetByMotherServiceId(ctx context.Context, motherServiceId uint64) ([]*entity.TestScenario, error) {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "get_by_mother_service_id_test_scenarios")
+	repoCTX, span := tracer.Start(ctx, "get-by-mother-service-id-test-scenarios-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("mother_service_id", strconv.FormatUint(motherServiceId, 10)))
 
 	var testScenarios []*entity.TestScenario
 
-	query := postgres.QueryBuilder(ctx, repo.db).
+	query := postgres.QueryBuilder(repoCTX, repo.db).
 		Where("mother_service_id = ?", motherServiceId).
 		Preload("TestCategory").
 		Preload("MotherService").
@@ -351,25 +326,22 @@ func (repo *testScenario) GetByMotherServiceId(ctx context.Context, motherServic
 
 func (repo *testScenario) UpdateScenarioAndConfig(ctx context.Context, scenario *entity.TestScenario) (e error) {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "update_test_scenario")
+	repoCTX, span := tracer.Start(ctx, "update-test-scenario-repository")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 	span.SetAttributes(
 		attribute.String("database.operation", "update"),
 		attribute.String("test_scenario.id", strconv.FormatUint(scenario.ID, 10)),
 	)
 
 	tx := repo.db.Begin()
-	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
+	dbCtx := context.WithValue(repoCTX, database.ContextKeyDBTx, tx)
 
 	defer func() {
 		if e != nil {
 			_ = tx.Rollback()
 			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
 			zap.L().Error("test scenario update failed, transaction rolled back",
-				zap.String(logger.FieldRequestID, requestID),
 				zap.String("name", scenario.Name),
 				zap.Error(e),
 			)
@@ -447,22 +419,18 @@ func (repo *testScenario) UpdateScenarioAndConfig(ctx context.Context, scenario 
 
 func (repo *testScenario) CreateScenarioAndConfig(ctx context.Context, scenario *entity.TestScenario) (e error) {
 	tracer := otel.Tracer("test-scenario-repository")
-	_, span := tracer.Start(ctx, "create_test_scenario")
+	repoCTX, span := tracer.Start(ctx, "create-test-scenario-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "insert"), attribute.String("test_scenario.name", scenario.Name))
 
 	tx := repo.db.Begin()
-	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
+	dbCtx := context.WithValue(repoCTX, database.ContextKeyDBTx, tx)
 	defer func() {
 		if e != nil {
 			_ = tx.Rollback()
 			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
 			zap.L().Error("test scenario creation failed, transaction rolled back",
-				zap.String(logger.FieldRequestID, requestID),
 				zap.String("name", scenario.Name),
 				zap.Error(e),
 			)

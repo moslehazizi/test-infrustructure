@@ -8,7 +8,6 @@ import (
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
-	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
 	"strconv"
@@ -44,18 +43,14 @@ type motherService struct {
 
 func (service *motherService) Create(ctx context.Context, motherService *entity.MotherService) (e error) {
 	tracer := otel.Tracer("mother-service-usecase")
-	_, span := tracer.Start(ctx, "create_mother_service")
+	useCaseCTX, span := tracer.Start(ctx, "create-mother-service-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	err := motherService.Validate()
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "validation_error"))
 
 		zap.L().Warn("failed to validate mother service",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.String("name", motherService.Name),
 			zap.Error(err),
 		)
@@ -68,16 +63,14 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 	motherService.Status = entity.MotherServiceStatusRunning
 	span.SetAttributes(attribute.String("service.name", motherService.Name))
 
-
 	// TODO: We should delete db transaction creation here and delegate create mother service and provision it to a function in another layer. This is not usecase's concern.
 	tx := service.db.Begin()
-	dbCtx := context.WithValue(ctx, database.ContextKeyDBTx, tx)
+	dbCtx := context.WithValue(useCaseCTX, database.ContextKeyDBTx, tx)
 	defer func() {
 		if e != nil {
 			_ = tx.Rollback()
 			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
 			zap.L().Error("mother service creation failed, transaction rolled back",
-				zap.String(logger.FieldRequestID, requestID),
 				zap.String("name", motherService.Name),
 				zap.Error(e),
 			)
@@ -89,7 +82,6 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 		if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
 			span.SetAttributes(attribute.String("error.type", "already_exists"))
 			zap.L().Warn("mother service already exists",
-				zap.String(logger.FieldRequestID, requestID),
 				zap.String("name", motherService.Name),
 			)
 
@@ -98,7 +90,6 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 
 		span.SetAttributes(attribute.String("error.type", "create_error"), attribute.String("error.message", err.Error()))
 		zap.L().Error("failed to create mother service in database",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.String("name", motherService.Name),
 			zap.Error(err),
 		)
@@ -116,7 +107,6 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 
 	span.SetAttributes(attribute.String("transaction.status", "committed"))
 	zap.L().Info("mother service created successfully",
-		zap.String(logger.FieldRequestID, requestID),
 		zap.Uint64("id", motherService.ID),
 		zap.String("name", motherService.Name),
 	)
@@ -126,20 +116,16 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 
 func (service *motherService) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {
 	tracer := otel.Tracer("mother-service-usecase")
-	_, span := tracer.Start(ctx, "get_mother_service_by_id")
+	useCaseCTX, span := tracer.Start(ctx, "get-mother-service-by-id-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("service.id", strconv.FormatUint(id, 10)))
 
-	result, err := service.motherServiceRepo.GetByID(ctx, id)
+	result, err := service.motherServiceRepo.GetByID(useCaseCTX, id)
 	if err != nil {
 		if errors.Is(err, pkg.ErrMotherServiceNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
 			zap.L().Warn("mother service not found",
-				zap.String(logger.FieldRequestID, requestID),
 				zap.Uint64("id", id),
 			)
 
@@ -149,7 +135,6 @@ func (service *motherService) GetByID(ctx context.Context, id uint64) (*entity.M
 		span.SetAttributes(attribute.String("error.type", "get_error"), attribute.String("error.message", err.Error()))
 
 		zap.L().Error("failed to get mother service by ID",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.Uint64("id", id),
 			zap.Error(err),
 		)
@@ -162,20 +147,16 @@ func (service *motherService) GetByID(ctx context.Context, id uint64) (*entity.M
 
 func (service *motherService) GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, int64, error) {
 	tracer := otel.Tracer("mother-service-usecase")
-	_, span := tracer.Start(ctx, "get_paginated_mother_services")
+	useCaseCTX, span := tracer.Start(ctx, "get-paginated-mother-services-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("pagination.page", strconv.Itoa(paginationRequest.Page)), attribute.String("pagination.per_page", strconv.Itoa(paginationRequest.PerPage)))
 
-	result, count, err := service.motherServiceRepo.GetPaginated(ctx, paginationRequest)
+	result, count, err := service.motherServiceRepo.GetPaginated(useCaseCTX, paginationRequest)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
 
 		zap.L().Error("failed to get paginated mother services",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.Int("page", paginationRequest.Page),
 			zap.Int("per_page", paginationRequest.PerPage),
 			zap.Error(err),
@@ -185,7 +166,6 @@ func (service *motherService) GetPaginated(ctx context.Context, paginationReques
 	}
 
 	zap.L().Debug("retrieved paginated mother services",
-		zap.String(logger.FieldRequestID, requestID),
 		zap.Int64("count", count),
 		zap.Int("page", paginationRequest.Page),
 	)

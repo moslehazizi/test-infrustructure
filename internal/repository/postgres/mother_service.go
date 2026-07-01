@@ -6,7 +6,6 @@ import (
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
-	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
 	"strconv"
@@ -31,15 +30,12 @@ func NewMotherServiceRepository(db database.Database) *motherServiceRepository {
 
 func (m *motherServiceRepository) Create(ctx context.Context, motherService *entity.MotherService) (uint64, error) {
 	tracer := otel.Tracer("mother-service-repository")
-	_, span := tracer.Start(ctx, "create_mother_service")
+	repoCTX, span := tracer.Start(ctx, "create-mother-service-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "insert"), attribute.String("service.name", motherService.Name))
 
-	err := postgres.QueryBuilder(ctx, m.db).Create(motherService).Error
+	err := postgres.QueryBuilder(repoCTX, m.db).Create(motherService).Error
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
@@ -62,16 +58,13 @@ func (m *motherServiceRepository) Create(ctx context.Context, motherService *ent
 
 func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*entity.MotherService, error) {
 	tracer := otel.Tracer("mother-service-repository")
-	_, span := tracer.Start(ctx, "get_mother_service_by_id")
+	repoCTX, span := tracer.Start(ctx, "get-mother-service-by-id-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", strconv.FormatUint(id, 10)))
 
 	var motherService entity.MotherService
-	err := postgres.QueryBuilder(ctx, m.db).First(&motherService, id).Error
+	err := postgres.QueryBuilder(repoCTX, m.db).First(&motherService, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
@@ -91,11 +84,8 @@ func (m *motherServiceRepository) GetByID(ctx context.Context, id uint64) (*enti
 
 func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRequest entity.PaginationRequest) ([]*entity.MotherService, int64, error) {
 	tracer := otel.Tracer("mother-service-repository")
-	_, span := tracer.Start(ctx, "get_paginated_mother_services")
+	repoCTX, span := tracer.Start(ctx, "get-paginated-mother-services-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("pagination.page", strconv.Itoa(paginationRequest.Page)), attribute.String("pagination.per_page", strconv.Itoa(paginationRequest.PerPage)))
 
@@ -108,11 +98,11 @@ func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRe
 
 	var count int64
 
-	if err := postgres.QueryBuilder(ctx, m.db).Model(&entity.MotherService{}).Count(&count).Error; err != nil {
+	if err := postgres.QueryBuilder(repoCTX, m.db).Model(&entity.MotherService{}).Count(&count).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to get mother service records count: %w", err)
 	}
 
-	query := postgres.QueryBuilder(ctx, m.db).Order("id DESC")
+	query := postgres.QueryBuilder(repoCTX, m.db).Order("id DESC")
 
 	if paginationRequest.Page > 0 && paginationRequest.PerPage > 0 {
 		offset := (paginationRequest.Page - 1) * paginationRequest.PerPage
@@ -134,15 +124,12 @@ func (m *motherServiceRepository) GetPaginated(ctx context.Context, paginationRe
 
 func (m *motherServiceRepository) SetStatus(ctx context.Context, id uint64, status entity.MotherServiceStatus) error {
 	tracer := otel.Tracer("mother-service-repository")
-	_, span := tracer.Start(ctx, "set_mother_service_status")
+	repoCTX, span := tracer.Start(ctx, "set-mother-service-status-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "update"), attribute.String("mother_service.id", strconv.FormatUint(id, 10)), attribute.String("mother_service.status", string(status)))
 
-	err := postgres.QueryBuilder(ctx, m.db).
+	err := postgres.QueryBuilder(repoCTX, m.db).
 		Omit(clause.Associations).
 		Model(&entity.MotherService{}).
 		Where("id", id).

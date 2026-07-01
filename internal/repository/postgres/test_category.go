@@ -6,7 +6,6 @@ import (
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
-	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
 	"strconv"
@@ -29,16 +28,13 @@ type testCategory struct {
 
 func (repo *testCategory) GetAll(ctx context.Context) ([]entity.TestCategory, error) {
 	tracer := otel.Tracer("test-category-repository")
-	_, span := tracer.Start(ctx, "get_test_categories")
+	repoCTX, span := tracer.Start(ctx, "get-test-categories-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"))
 
 	var items []entity.TestCategory
-	err := postgres.QueryBuilder(ctx, repo.db).Order("id ASC").Find(&items).Error
+	err := postgres.QueryBuilder(repoCTX, repo.db).Order("id ASC").Find(&items).Error
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
 
@@ -50,16 +46,13 @@ func (repo *testCategory) GetAll(ctx context.Context) ([]entity.TestCategory, er
 
 func (repo *testCategory) GetByID(ctx context.Context, id uint64) (*entity.TestCategory, error) {
 	tracer := otel.Tracer("test-category-repository")
-	_, span := tracer.Start(ctx, "get_test_category_by_id")
+	repoCTX, span := tracer.Start(ctx, "get-test-category-by-id-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", strconv.FormatUint(id, 10)))
 
 	var testCategory entity.TestCategory
-	err := postgres.QueryBuilder(ctx, repo.db).First(&testCategory, id).Error
+	err := postgres.QueryBuilder(repoCTX, repo.db).First(&testCategory, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))

@@ -5,7 +5,6 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
-	"control-panel-service/pkg/logger"
 	"fmt"
 
 	"go.opentelemetry.io/otel"
@@ -24,13 +23,10 @@ type testService struct {
 
 func (repo *testService) GetRunningByScenario(ctx context.Context, scenarioID uint64, limit int64) ([]entity.TestService, error) {
 	tracer := otel.Tracer("test-service-repository")
-	_, span := tracer.Start(ctx, "GetRunningByScenario")
+	repoCTX, span := tracer.Start(ctx, "GetRunningByScenario")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
-
-	qry := postgres.QueryBuilder(ctx, repo.db)
+	qry := postgres.QueryBuilder(repoCTX, repo.db)
 	if limit >= 0 {
 		qry = qry.Limit(int(limit))
 	}
@@ -49,14 +45,11 @@ func (repo *testService) GetRunningByScenario(ctx context.Context, scenarioID ui
 
 func (repo *testService) GetCountAllRunningByScenario(ctx context.Context, scenarioID uint64) (int64, error) {
 	tracer := otel.Tracer("test-service-repository")
-	_, span := tracer.Start(ctx, "GetCountAllRunningByScenario")
+	repoCTX, span := tracer.Start(ctx, "get-count-all-running-by-scenario-repository")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
-
 	var cnt int64
-	err := postgres.QueryBuilder(ctx, repo.db).
+	err := postgres.QueryBuilder(repoCTX, repo.db).
 		Model(&entity.TestService{}).
 		Where("status", entity.ScenarioStatusRunning).
 		Count(&cnt).Error

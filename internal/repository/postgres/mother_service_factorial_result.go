@@ -35,7 +35,7 @@ func (r *motherServiceFactorialResultRepository) Create(
 	dbInitializer database.DBInitializerFn,
 ) error {
 	tracer := otel.Tracer("mother-service-repository")
-	spanCtx, span := tracer.Start(ctx, "FactorialRepository.Create")
+	repoCTX, span := tracer.Start(ctx, "create-mother-service-factorial-repository")
 	defer span.End()
 
 	logger.WithContext(ctx).Info("creating factorial record with input", zap.Any("executer_input", factorial.Input))
@@ -55,15 +55,15 @@ func (r *motherServiceFactorialResultRepository) Create(
 		return fmt.Errorf("could not open postgres connection: %w", err)
 	}
 
-	err = postgres.QueryBuilder(spanCtx, db).
-		WithContext(spanCtx).
+	err = postgres.QueryBuilder(repoCTX, db).
+		WithContext(repoCTX).
 		Table(factorial.MotherService.DatabaseTableName).
 		Omit(clause.Associations).
 		Create(factorial).
 		Error
 	if err != nil {
 		span.RecordError(err)
-		logger.WithContext(spanCtx).Error("failed to create factorial record",
+		logger.WithContext(repoCTX).Error("failed to create factorial record",
 			zap.Error(err),
 			zap.String("input", factorial.Input),
 			zap.String(logger.FieldOperation, "create_factorial"),
@@ -76,7 +76,7 @@ func (r *motherServiceFactorialResultRepository) Create(
 	strID := strconv.FormatUint(uint64(factorial.ID), 10)
 
 	span.SetAttributes(attribute.String("factorial_id", strID))
-	logger.WithContext(spanCtx).Info("successfully created factorial record",
+	logger.WithContext(repoCTX).Info("successfully created factorial record",
 		zap.Uint("factorial_id", factorial.ID),
 		zap.String("input", factorial.Input),
 		zap.String(logger.FieldOperation, "create_factorial"),

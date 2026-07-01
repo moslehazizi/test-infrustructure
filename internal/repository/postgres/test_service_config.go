@@ -6,7 +6,6 @@ import (
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
-	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
 	"strconv"
@@ -29,13 +28,10 @@ type testServiceConfig struct {
 
 func (repo *testServiceConfig) Create(ctx context.Context, testSvcCfg *entity.TestServiceConfig) error {
 	tracer := otel.Tracer("test-service-config-repository")
-	_, span := tracer.Start(ctx, "create_test_service_config")
+	repoCTX, span := tracer.Start(ctx, "create-test-service-config-repository")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
-
-	err := postgres.QueryBuilder(ctx, repo.db).Create(testSvcCfg).Error
+	err := postgres.QueryBuilder(repoCTX, repo.db).Create(testSvcCfg).Error
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "database_error"), attribute.String("error.message", err.Error()))
 
@@ -51,16 +47,13 @@ func (repo *testServiceConfig) Create(ctx context.Context, testSvcCfg *entity.Te
 
 func (repo *testServiceConfig) GetByID(ctx context.Context, id uint64) (*entity.TestServiceConfig, error) {
 	tracer := otel.Tracer("test-service-config-repository")
-	_, span := tracer.Start(ctx, "get_test_service_config_by_id")
+	repoCTX, span := tracer.Start(ctx, "get-test-service-config-by-id-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"), attribute.String("service.id", strconv.FormatUint(id, 10)))
 
 	var testSvcConfig entity.TestServiceConfig
-	err := postgres.QueryBuilder(ctx, repo.db).First(&testSvcConfig, id).Error
+	err := postgres.QueryBuilder(repoCTX, repo.db).First(&testSvcConfig, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
@@ -84,14 +77,12 @@ func (repo *testServiceConfig) UpdateByScenarioID(
 	cfg *entity.TestServiceConfig,
 ) error {
 	tracer := otel.Tracer("test-service-config-repository")
-	_, span := tracer.Start(ctx, "update_test_service_config")
+	repoCTX, span := tracer.Start(ctx, "update-test-service-config-repository")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(scenarioID, 10)))
 
-	err := postgres.QueryBuilder(ctx, repo.db).
+	err := postgres.QueryBuilder(repoCTX, repo.db).
 		Model(&entity.TestServiceConfig{}).
 		Where("test_scenario_id = ?", scenarioID).
 		Updates(map[string]any{

@@ -7,7 +7,6 @@ import (
 	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database"
-	"control-panel-service/pkg/logger"
 	"errors"
 	"fmt"
 	"strconv"
@@ -47,11 +46,8 @@ type testScenario struct {
 
 func (service *testScenario) Create(ctx context.Context, testScenario *entity.TestScenario) (e error) {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "create_test_scenario")
+	useCaseCTX, span := tracer.Start(ctx, "create-test-scenario-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(
 		attribute.String("test_scenario.name", testScenario.Name),
@@ -59,12 +55,11 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 		attribute.String("mother_service.id", strconv.FormatUint(testScenario.MotherServiceID, 10)),
 	)
 
-	_, err := service.motherServiceRepository.GetByID(ctx, testScenario.MotherServiceID)
+	_, err := service.motherServiceRepository.GetByID(useCaseCTX, testScenario.MotherServiceID)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "mother_service_not_found"), attribute.String("error.message", err.Error()))
 
 		zap.L().Error("failed to get mother service for test scenario",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.Uint64("mother_service_id", testScenario.MotherServiceID),
 			zap.Error(err),
 		)
@@ -72,12 +67,11 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetMotherService, err)
 	}
 
-	testCat, err := service.testCategoryRepository.GetByID(ctx, testScenario.TestCategoryID)
+	testCat, err := service.testCategoryRepository.GetByID(useCaseCTX, testScenario.TestCategoryID)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestCategoryNotFound) {
 			span.SetAttributes(attribute.String("error.type", "test_category_not_found"))
 			zap.L().Warn("test category not found",
-				zap.String(logger.FieldRequestID, requestID),
 				zap.Uint64("test_category_id", testScenario.TestCategoryID),
 			)
 
@@ -87,7 +81,6 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 		span.SetAttributes(attribute.String("error.type", "get_test_category_error"), attribute.String("error.message", err.Error()))
 
 		zap.L().Error("failed to get test category",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.Uint64("test_category_id", testScenario.TestCategoryID),
 			zap.Error(err),
 		)
@@ -103,7 +96,6 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "validation_error"), attribute.String("error.message", err.Error()))
 		zap.L().Warn("failed to validate test scenario",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.String("name", testScenario.Name),
 			zap.Error(err),
 		)
@@ -116,7 +108,6 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 	if testScenario.TestServiceConfig == nil {
 		span.SetAttributes(attribute.String("error.type", "missing_test_service_config"))
 		zap.L().Warn("test service config is required",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.String("name", testScenario.Name),
 		)
 
@@ -126,7 +117,6 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "test_service_config_validation_error"), attribute.String("error.message", err.Error()))
 		zap.L().Warn("failed to validate test service config",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.String("name", testScenario.Name),
 			zap.Error(err),
 		)
@@ -134,7 +124,7 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
 	}
 
-	err = service.testScenarioRepository.CreateScenarioAndConfig(ctx, testScenario)
+	err = service.testScenarioRepository.CreateScenarioAndConfig(useCaseCTX, testScenario)
 	if err != nil {
 		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateTestScenario, err)
 	}
@@ -144,20 +134,16 @@ func (service *testScenario) Create(ctx context.Context, testScenario *entity.Te
 
 func (service *testScenario) GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error) {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "get_test_scenario_by_id")
+	useCaseCTX, span := tracer.Start(ctx, "get-test-scenario-by-id-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("test_scenario.id", strconv.FormatUint(id, 10)))
 
-	result, err := service.testScenarioRepository.GetByID(ctx, id)
+	result, err := service.testScenarioRepository.GetByID(useCaseCTX, id)
 	if err != nil {
 		if errors.Is(err, pkg.ErrTestScenarioNotFound) {
 			span.SetAttributes(attribute.String("error.type", "not_found"))
 			zap.L().Warn("test scenario not found",
-				zap.String(logger.FieldRequestID, requestID),
 				zap.Uint64("id", id),
 			)
 
@@ -166,7 +152,6 @@ func (service *testScenario) GetByID(ctx context.Context, id uint64) (*entity.Te
 
 		span.SetAttributes(attribute.String("error.type", "get_error"), attribute.String("error.message", err.Error()))
 		zap.L().Error("failed to get test scenario by ID",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.Uint64("id", id),
 			zap.Error(err),
 		)
@@ -179,20 +164,16 @@ func (service *testScenario) GetByID(ctx context.Context, id uint64) (*entity.Te
 
 func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.TestScenarioPaginationRequest) ([]*entity.TestScenario, int64, error) {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "get_paginated_test_scenarios")
+	usecaseCTX, span := tracer.Start(ctx, "get-paginated-test-scenarios-usecase")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("pagination.page", strconv.Itoa(pagReq.Page)), attribute.String("pagination.per_page", strconv.Itoa(pagReq.PerPage)))
 
-	result, count, err := service.testScenarioRepository.GetPaginated(ctx, pagReq)
+	result, count, err := service.testScenarioRepository.GetPaginated(usecaseCTX, pagReq)
 	if err != nil {
 		span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
 
 		zap.L().Error("failed to get paginated test scenarios",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.Int("page", pagReq.Page),
 			zap.Int("per_page", pagReq.PerPage),
 			zap.Error(err),
@@ -202,7 +183,6 @@ func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.Tes
 	}
 
 	zap.L().Debug("retrieved paginated test scenarios",
-		zap.String(logger.FieldRequestID, requestID),
 		zap.Int("count", len(result)),
 		zap.Int("page", pagReq.Page),
 	)
@@ -212,12 +192,10 @@ func (service *testScenario) GetPaginated(ctx context.Context, pagReq entity.Tes
 
 func (service *testScenario) Update(ctx context.Context, testScenarioUpdateRequest *request.TestScenarioUpdateRequest) error {
 	tracer := otel.Tracer("test-scenario-usecase")
-	_, span := tracer.Start(ctx, "update_test_scenario")
+	useCaseCTX, span := tracer.Start(ctx, "update-test-scenario-usecase")
 	defer span.End()
 
-	requestID := logger.GetRequestID(ctx)
 	span.SetAttributes(
-		attribute.String("request_id", requestID),
 		attribute.String("test_scenario.id", strconv.FormatUint(testScenarioUpdateRequest.ID, 10)),
 	)
 
@@ -225,7 +203,7 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 		return pkg.ErrTestServiceConfigIsRequired
 	}
 
-	existing, err := service.testScenarioRepository.GetByID(ctx, testScenarioUpdateRequest.ID)
+	existing, err := service.testScenarioRepository.GetByID(useCaseCTX, testScenarioUpdateRequest.ID)
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrTestScenarioNotFound, err)
 	}
@@ -236,7 +214,7 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 		return pkg.ErrScenariosCanNotBeUpdated
 	}
 
-	motherService, err := service.motherServiceRepository.GetByID(ctx, testScenarioUpdateRequest.MotherServiceID)
+	motherService, err := service.motherServiceRepository.GetByID(useCaseCTX, testScenarioUpdateRequest.MotherServiceID)
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToGetMotherService, err)
 	}
@@ -255,11 +233,10 @@ func (service *testScenario) Update(ctx context.Context, testScenarioUpdateReque
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToValidateTestSvcCfg, err)
 	}
 
-	err = service.testScenarioRepository.UpdateScenarioAndConfig(ctx, existing)
+	err = service.testScenarioRepository.UpdateScenarioAndConfig(useCaseCTX, existing)
 	if err != nil {
 		span.SetAttributes(attribute.String("update.status", "failed"))
 		zap.L().Error("test scenario and config update failed",
-			zap.String(logger.FieldRequestID, requestID),
 			zap.String("name", existing.Name),
 			zap.Error(err),
 		)

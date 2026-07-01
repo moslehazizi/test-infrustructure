@@ -6,7 +6,6 @@ import (
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/pkg/database"
 	"control-panel-service/pkg/database/postgres"
-	"control-panel-service/pkg/logger"
 	"fmt"
 
 	"go.opentelemetry.io/otel"
@@ -27,17 +26,14 @@ type databaseMetadata struct {
 
 func (repo *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
 	tracer := otel.Tracer("database-metadata-repository")
-	_, span := tracer.Start(ctx, "get_all_databases")
+	repoCTX, span := tracer.Start(ctx, "get-all-databases-repository")
 	defer span.End()
-
-	requestID := logger.GetRequestID(ctx)
-	span.SetAttributes(attribute.String("request_id", requestID))
 
 	span.SetAttributes(attribute.String("database.operation", "select"))
 
 	var databases []string
 
-	err := postgres.QueryBuilder(ctx, repo.db).
+	err := postgres.QueryBuilder(repoCTX, repo.db).
 		Raw(`
 			SELECT datname
 			FROM pg_database
@@ -64,11 +60,10 @@ func (repo *databaseMetadata) GetAll(ctx context.Context) ([]string, error) {
 
 func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName string) (*entity.TablesByType, error) {
 	tracer := otel.Tracer("database-metadata-repository")
-	ctx, span := tracer.Start(ctx, "get_tables_by_db_name")
+	repoCTX, span := tracer.Start(ctx, "get-tables-by-db-name-repository")
 	defer span.End()
-	requestID := logger.GetRequestID(ctx)
+
 	span.SetAttributes(
-		attribute.String("request_id", requestID),
 		attribute.String("database.name", dbName),
 		attribute.String("database.operation", "select_tables"),
 	)
@@ -98,7 +93,7 @@ func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName stri
 		ORDER BY tablename;
 	`
 
-	err = postgres.QueryBuilder(ctx, db).
+	err = postgres.QueryBuilder(repoCTX, db).
 		Raw(tableQuery).
 		Scan(&tables).Error
 	if err != nil {
@@ -122,7 +117,7 @@ func (repo *databaseMetadata) GetTablesByDBName(ctx context.Context, dbName stri
 		`
 
 		var columns []string
-		err = postgres.QueryBuilder(ctx, db).
+		err = postgres.QueryBuilder(repoCTX, db).
 			Raw(columnQuery, tableName).
 			Scan(&columns).Error
 		if err != nil {

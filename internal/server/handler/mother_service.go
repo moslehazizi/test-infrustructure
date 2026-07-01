@@ -42,7 +42,7 @@ func NewMotherServiceHandler(motherService MotherService) *MotherServiceHandler 
 func (handler *MotherServiceHandler) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "create_mother_service")
+		traceCtx, span := tracer.Start(ctx.Context(), "create-mother-service-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -96,7 +96,7 @@ func (handler *MotherServiceHandler) Create() fiber.Handler {
 func (handler *MotherServiceHandler) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get_mother_service-by-id")
+		traceCtx, span := tracer.Start(ctx.Context(), "get-mother-service-by-id-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -144,7 +144,7 @@ func (handler *MotherServiceHandler) GetByID() fiber.Handler {
 func (handler *MotherServiceHandler) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get_paginated_mother_services")
+		traceCtx, span := tracer.Start(ctx.Context(), "get-paginated-mother-services-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -211,7 +211,7 @@ func (handler *MotherServiceHandler) GetPaginated() fiber.Handler {
 func (handler *MotherServiceHandler) Delete() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "delete_mother_service")
+		traceCtx, span := tracer.Start(ctx.Context(), "delete-mother-service-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())

@@ -41,7 +41,7 @@ func (handler *TestScenarioHandler) Create() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		requestID := logger.GetRequestID(ctx.Context())
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "create_test_scenario")
+		traceCtx, span := tracer.Start(ctx.Context(), "create-test-scenario-handler")
 		defer span.End()
 
 		span.SetAttributes(attribute.String("request_id", requestID))
@@ -90,7 +90,7 @@ func (handler *TestScenarioHandler) Create() fiber.Handler {
 func (handler *TestScenarioHandler) GetPaginated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get_paginated_test_scenarios")
+		traceCtx, span := tracer.Start(ctx.Context(), "get-paginated-test-scenarios-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -145,7 +145,7 @@ func (handler *TestScenarioHandler) GetPaginated() fiber.Handler {
 func (handler *TestScenarioHandler) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get_test_scenario_by_id")
+		traceCtx, span := tracer.Start(ctx.Context(), "get-test-scenario-by-id-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -198,7 +198,7 @@ func (handler *TestScenarioHandler) Update() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		requestID := logger.GetRequestID(ctx.Context())
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "update_test_scenario")
+		traceCtx, span := tracer.Start(ctx.Context(), "update-test-scenario-handler")
 		defer span.End()
 
 		span.SetAttributes(attribute.String("request_id", requestID))

@@ -38,7 +38,7 @@ func NewTestScenarioOperationHandler(testScenarioOperation TestScenarioOperation
 func (handler *TestScenarioOperationHandler) Start() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "start_test_scenario")
+		traceCtx, span := tracer.Start(ctx.Context(), "start-test-scenario-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -86,7 +86,7 @@ func (handler *TestScenarioOperationHandler) Start() fiber.Handler {
 func (handler *TestScenarioOperationHandler) Pause() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "pause_test_scenario")
+		traceCtx, span := tracer.Start(ctx.Context(), "pause-test-scenario-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -134,7 +134,7 @@ func (handler *TestScenarioOperationHandler) Pause() fiber.Handler {
 func (handler *TestScenarioOperationHandler) Resume() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "resume_test_scenario")
+		traceCtx, span := tracer.Start(ctx.Context(), "resume-test-scenario-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -182,7 +182,7 @@ func (handler *TestScenarioOperationHandler) Resume() fiber.Handler {
 func (handler *TestScenarioOperationHandler) Stop() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "stop_test_scenario")
+		traceCtx, span := tracer.Start(ctx.Context(), "stop-test-scenario-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -230,7 +230,7 @@ func (handler *TestScenarioOperationHandler) Stop() fiber.Handler {
 func (handler *TestScenarioOperationHandler) Delete() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-scenario-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "delete_test_scenario")
+		traceCtx, span := tracer.Start(ctx.Context(), "delete-test-scenario-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())

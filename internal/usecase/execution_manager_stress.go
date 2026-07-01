@@ -33,8 +33,8 @@ type StressTestExecutionManager struct {
 }
 
 func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario *entity.TestScenario) error {
-	tracer := otel.Tracer("StressTestExecutionManager")
-	_, span := tracer.Start(ctx, "AddScenario")
+	tracer := otel.Tracer("stress-test-execution-manager")
+	execManagerCTX, span := tracer.Start(ctx, "start-scenario-execution-manager")
 	defer span.End()
 
 	// scenario also running
@@ -54,7 +54,7 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 
 	//nolint
 	go func() {
-		_ = scenarioExecutor.Run(context.Background())
+		_ = scenarioExecutor.Run(execManagerCTX)
 		// delete scenario from memory
 		ex.scenarios.Delete(scenario.ID)
 	}()
@@ -63,8 +63,8 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 }
 
 func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenario *entity.TestScenario) error {
-	tracer := otel.Tracer("StressTestExecutionManager")
-	_, span := tracer.Start(ctx, "PauseScenario")
+	tracer := otel.Tracer("stress-test-execution-manager")
+	execManagerCTX, span := tracer.Start(ctx, "pause-scenario-execution-manager")
 	defer span.End()
 
 	if scenario.MaxTestServiceCount == nil {
@@ -93,7 +93,7 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 	awaitAllHealthy(agents)
 
 	for _, agent := range agents {
-		err := agent.PauseTesting(ctx)
+		err := agent.PauseTesting(execManagerCTX)
 		if err != nil {
 			zap.L().Error("test agent controller can not pause test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
 
@@ -105,8 +105,8 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 }
 
 func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenario *entity.TestScenario) error {
-	tracer := otel.Tracer("StressTestExecutionManager")
-	_, span := tracer.Start(ctx, "ResumeScenario")
+	tracer := otel.Tracer("stress-test-execution-manager")
+	execManagerCTX, span := tracer.Start(ctx, "resume-scenario-execution-manager")
 	defer span.End()
 
 	if scenario.MaxTestServiceCount == nil {
@@ -134,7 +134,7 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 	awaitAllHealthy(agents)
 
 	for _, agent := range agents {
-		err := agent.ResumeTesting(ctx)
+		err := agent.ResumeTesting(execManagerCTX)
 		if err != nil {
 			zap.L().Error("test agent controller can not resume test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
 
@@ -146,8 +146,8 @@ func (ex *StressTestExecutionManager) ResumeScenario(ctx context.Context, scenar
 }
 
 func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario *entity.TestScenario) error {
-	tracer := otel.Tracer("StressTestExecutionManager")
-	_, span := tracer.Start(ctx, "StopScenario")
+	tracer := otel.Tracer("stress-test-execution-manager")
+	execManagerCTX, span := tracer.Start(ctx, "stop-scenario-execution-manager")
 	defer span.End()
 
 	if scenario.MaxTestServiceCount == nil {
@@ -176,7 +176,7 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 	awaitAllHealthy(agents)
 
 	for _, agent := range agents {
-		err := agent.StopTesting(ctx)
+		err := agent.StopTesting(execManagerCTX)
 		if err != nil {
 			zap.L().Error("test agent controller couldn't stop test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
 
@@ -188,8 +188,8 @@ func (ex *StressTestExecutionManager) StopScenario(ctx context.Context, scenario
 }
 
 func (ex *StressTestExecutionManager) DeleteScenario(ctx context.Context, scenario *entity.TestScenario) error {
-	tracer := otel.Tracer("StressTestExecutionManager")
-	_, span := tracer.Start(ctx, "DeleteScenario")
+	tracer := otel.Tracer("stress-test-execution-manager")
+	execManagerCTX, span := tracer.Start(ctx, "delete-scenario-execution-manager")
 	defer span.End()
 
 	if scenario.MaxTestServiceCount == nil {
@@ -216,7 +216,7 @@ func (ex *StressTestExecutionManager) DeleteScenario(ctx context.Context, scenar
 
 	agents := sci.GetAgents()
 	for _, agent := range agents {
-		err := agent.DeleteTesting(ctx)
+		err := agent.DeleteTesting(execManagerCTX)
 		if err != nil {
 			zap.L().Error("test agent controller couldn't delete  test service", zap.Error(err), zap.Uint64("scenarioID", scenario.ID))
 

@@ -38,7 +38,7 @@ type TestCategoryHandler struct {
 func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-category-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get_test_categories")
+		traceCtx, span := tracer.Start(ctx.Context(), "get-test-categories-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())
@@ -78,7 +78,7 @@ func (handler *TestCategoryHandler) GetAll() fiber.Handler {
 func (handler *TestCategoryHandler) GetByID() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tracer := otel.Tracer("test-category-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get_test_category_by_id")
+		traceCtx, span := tracer.Start(ctx.Context(), "get-test-category-by-id-handler")
 		defer span.End()
 
 		requestID := logger.GetRequestID(ctx.Context())

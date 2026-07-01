@@ -58,13 +58,13 @@ func (c *testAgentController) Run() error {
 	ctx := context.Background()
 
 	// provision related test service.
-	tracer := otel.Tracer("testAgentController")
-	_, span := tracer.Start(ctx, "Run")
+	tracer := otel.Tracer("test-agent-controller")
+	testAgentControllerCTX, span := tracer.Start(ctx, "run-agent-controller")
 	defer span.End()
 
 	c.uniqueID = uuid.New()
 
-	err := c.provisionTestService(ctx, c.scenario, c.uniqueID)
+	err := c.provisionTestService(testAgentControllerCTX, c.scenario, c.uniqueID)
 	if err != nil {
 		return fmt.Errorf("%w: %w", pkg.ErrFailedToRunAgentControllerDueToProvisioningFailure, err)
 	}
@@ -73,13 +73,13 @@ func (c *testAgentController) Run() error {
 }
 
 func (c *testAgentController) provisionTestService(ctx context.Context, scenario *entity.TestScenario, uniqueID uuid.UUID) error {
-	tracer := otel.Tracer("testAgentController")
-	_, span := tracer.Start(ctx, "provisionTestService")
+	tracer := otel.Tracer("test-agent-controller")
+	testAgentControllerCTX, span := tracer.Start(ctx, "provision-test-service-agent-controller")
 	defer span.End()
 
 	var provisioningErr error
 	for i := 1; i <= c.provisioningRetries; i++ {
-		err := c.provisioningService.ProvisionTestServiceByName(ctx, scenario, uniqueID)
+		err := c.provisioningService.ProvisionTestServiceByName(testAgentControllerCTX, scenario, uniqueID)
 		if err == nil {
 			provisioningErr = nil
 
