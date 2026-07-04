@@ -8,33 +8,22 @@ import (
 	provisionProvider "control-panel-service/internal/provider/mocks"
 	mockstem "control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
-	"control-panel-service/pkg/database"
-	connmock "control-panel-service/pkg/database/postgres/mocks"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
-
-func getMockDB(t *testing.T) database.Database {
-	mockConn := new(connmock.Connection)
-	db, _, err := mockConn.OpenConnection()
-	require.NoError(t, err)
-
-	return db
-}
 
 func TestNewMotherService(t *testing.T) {
 	mockRepo := new(mocks.MockMotherService)
 	mockTestRepo := new(mocks.MockTestScenario)
 	mockSTEM := new(mockstem.MockExecutionManage)
-	mockOutbox := new(mocks.MockOutbox)
 	mockProvision := new(provisionProvider.MockProvisioningService)
 
-	service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+	service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 	assert.NotNil(t, service)
 
@@ -47,10 +36,9 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockRepo := new(mocks.MockMotherService)
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -58,11 +46,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(1), nil)
-		mockOutbox.On("Create", mock.Anything, mock.MatchedBy(func(item *entity.Outbox) bool {
-			return item.AggregateType == entity.OutboxAggregateTypeMotherService &&
-				item.AggregateID == uint64(1) &&
-				item.OperationType == entity.OutboxOperationProvisionMotherService &&
+		mockRepo.On("CreateWithOutboxItem", mock.Anything, sampleMS, mock.MatchedBy(func(item *entity.Outbox) bool {
+			return item.OperationType == entity.OutboxOperationProvisionMotherService &&
 				item.Status == entity.OutboxStatusPending &&
 				item.MaxAttempts == 5
 		})).Return(uint64(1), nil)
@@ -71,19 +56,19 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, entity.MotherServiceStatusReady, sampleMS.Status)
-		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
-		mockOutbox.AssertExpectations(t)
+		assert.Equal(t, uint64(1), sampleMS.ID)
+		mockRepo.AssertExpectations(t)
 		mockProvision.AssertNotCalled(t, "ProvisionMotherService", mock.Anything, mock.Anything)
 	})
+
 	t.Run("failed_outbox_create_returns_ErrFailedToCreateOutboxItem", func(t *testing.T) {
 		ctx := context.Background()
 		mockRepo := new(mocks.MockMotherService)
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -91,15 +76,14 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(1), nil)
-		mockOutbox.On("Create", mock.Anything, mock.Anything).Return(uint64(0), errors.New("insert failed"))
+		mockRepo.On("CreateWithOutboxItem", mock.Anything, sampleMS, mock.Anything).
+			Return(uint64(0), fmt.Errorf("%w: %w", pkg.ErrFailedToCreateOutboxItem, errors.New("insert failed")))
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToCreateOutboxItem)
-		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
-		mockOutbox.AssertExpectations(t)
+		mockRepo.AssertExpectations(t)
 		mockProvision.AssertNotCalled(t, "ProvisionMotherService", mock.Anything, mock.Anything)
 	})
 
@@ -109,9 +93,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -119,13 +102,13 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(0), pkg.ErrFailedToCreateMotherService)
+		mockRepo.On("CreateWithOutboxItem", mock.Anything, sampleMS, mock.Anything).Return(uint64(0), pkg.ErrFailedToCreateMotherService)
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrFailedToCreateMotherService)
-		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
+		mockRepo.AssertExpectations(t)
 	})
 
 	t.Run("failed_case_duplicate", func(t *testing.T) {
@@ -134,9 +117,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother1",
@@ -144,13 +126,13 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 			DatabaseTableName: "factorial",
 		}
 
-		mockRepo.On("Create", mock.Anything, sampleMS).Return(uint64(0), pkg.ErrMotherServiceAlreadyExist)
+		mockRepo.On("CreateWithOutboxItem", mock.Anything, sampleMS, mock.Anything).Return(uint64(0), pkg.ErrMotherServiceAlreadyExist)
 
 		err := service.Create(ctx, sampleMS)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMotherServiceAlreadyExist)
-		mockRepo.AssertCalled(t, "Create", mock.Anything, sampleMS)
+		mockRepo.AssertExpectations(t)
 	})
 
 	t.Run("failed_case_validation_error_service_name_is_missing", func(t *testing.T) {
@@ -159,9 +141,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		sampleMS := &entity.MotherService{
 			DatabaseName:      "db1",
@@ -180,9 +161,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -204,9 +184,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		sampleMS := &entity.MotherService{
 			Name:              "mother",
@@ -227,9 +206,8 @@ func TestMotherServiceUsecase_Create(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 		duration := 100
 
 		sampleMS := &entity.MotherService{
@@ -255,9 +233,8 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		inputID := uint64(1)
 		expectedResult := &entity.MotherService{
@@ -287,9 +264,8 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		inputID := uint64(1)
 
@@ -309,9 +285,8 @@ func TestMotherServiceUsecase_GetByID(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		inputID := uint64(1)
 
@@ -333,9 +308,8 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
@@ -389,9 +363,8 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
@@ -415,9 +388,8 @@ func TestMotherServiceUsecase_GetPaginated(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    -1,
@@ -443,10 +415,9 @@ func TestMotherServiceUsecase_Delete(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 		motherServiceId := uint64(1)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		motherService := &entity.MotherService{
 			ID:   motherServiceId,
@@ -488,10 +459,9 @@ func TestMotherServiceUsecase_Delete(t *testing.T) {
 		mockTestRepo := new(mocks.MockTestScenario)
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 		motherServiceId := uint64(1)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		motherService := &entity.MotherService{}
 
@@ -510,9 +480,8 @@ func TestMotherServiceUsecase_Delete(t *testing.T) {
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		motherServiceId := uint64(1)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		motherService := &entity.MotherService{}
 
@@ -533,9 +502,8 @@ func TestMotherServiceUsecase_Delete(t *testing.T) {
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		motherServiceId := uint64(1)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		motherService := &entity.MotherService{}
 
@@ -557,9 +525,8 @@ func TestMotherServiceUsecase_Delete(t *testing.T) {
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		motherServiceId := uint64(1)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		motherService := &entity.MotherService{}
 		testScenarios := []*entity.TestScenario{}
@@ -584,9 +551,8 @@ func TestMotherServiceUsecase_Delete(t *testing.T) {
 		mockProvision := new(provisionProvider.MockProvisioningService)
 		motherServiceId := uint64(1)
 		mockSTEM := new(mockstem.MockExecutionManage)
-		mockOutbox := new(mocks.MockOutbox)
 
-		service := NewMotherService(getMockDB(t), mockRepo, mockTestRepo, mockProvision, mockSTEM, mockOutbox, 5)
+		service := NewMotherService(mockRepo, mockTestRepo, mockProvision, mockSTEM, 5)
 
 		motherService := &entity.MotherService{
 			ID:   motherServiceId,

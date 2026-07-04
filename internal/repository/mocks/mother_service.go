@@ -11,8 +11,8 @@ type MockMotherService struct {
 	mock.Mock
 }
 
-func (m *MockMotherService) Create(ctx context.Context, motherService *entity.MotherService) (uint64, error) {
-	args := m.Called(ctx, motherService)
+func (m *MockMotherService) CreateWithOutboxItem(ctx context.Context, motherService *entity.MotherService, outboxItem *entity.Outbox) (uint64, error) {
+	args := m.Called(ctx, motherService, outboxItem)
 
 	return args.Get(0).(uint64), args.Error(1)
 }

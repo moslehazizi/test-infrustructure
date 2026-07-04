@@ -6,7 +6,6 @@ import (
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/pkg"
-	"control-panel-service/pkg/database"
 	"errors"
 	"fmt"
 	"strconv"
@@ -18,7 +17,6 @@ import (
 )
 
 func NewTestScenarioUsecase(
-	db database.Database,
 	testScenarioRepository repository.TestScenarioRepository,
 	testCategoryRepository repository.TestCategory,
 	testServiceConfigRepository repository.TestServiceConfigRepository,
@@ -26,7 +24,6 @@ func NewTestScenarioUsecase(
 	testServiceRepo repository.TestServiceRepository,
 ) *testScenario {
 	return &testScenario{
-		db:                          db,
 		testScenarioRepository:      testScenarioRepository,
 		testCategoryRepository:      testCategoryRepository,
 		testServiceConfigRepository: testServiceConfigRepository,
@@ -36,7 +33,6 @@ func NewTestScenarioUsecase(
 }
 
 type testScenario struct {
-	db                          database.Database
 	testScenarioRepository      repository.TestScenarioRepository
 	testCategoryRepository      repository.TestCategory
 	testServiceConfigRepository repository.TestServiceConfigRepository

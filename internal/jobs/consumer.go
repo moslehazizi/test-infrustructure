@@ -46,9 +46,10 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		return fmt.Errorf("could not connect to kubernetes: %w", err)
 	}
 
+	outboxRepo := postgres.NewOutboxRepository(db)
 	outboxProcessor := usecase.NewOutboxProcessor(
-		postgres.NewOutboxRepository(db),
-		postgres.NewMotherServiceRepository(db),
+		outboxRepo,
+		postgres.NewMotherServiceRepository(db, outboxRepo),
 		provider.NewProvisioningService(cfg, kubernetes),
 		cfg.Outbox.BatchSize,
 		cfg.Outbox.RetryBackoff,

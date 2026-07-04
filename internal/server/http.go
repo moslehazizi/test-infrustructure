@@ -147,23 +147,22 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	scenarioExecutorBuilder := usecase.NewScenarioExecutorBuilder()
 	agentBuilder := usecase.NewTestAgentControllerToolBox(provisionService, testServiceSDK, cfg.Kubernetese.TestServiceAPPServe, cfg.Kubernetese.IngressHost, cfg.Kubernetese.IngressPort)
 	stressTestExecutionManager := usecase.NewStressTestExecutionManager(agentBuilder, testScenarioRepository, scenarioExecutorBuilder)
+	outboxRepository := postgres.NewOutboxRepository(db)
+	motherServiceRepository := postgres.NewMotherServiceRepository(db, outboxRepository)
 
 	motherService := usecase.NewMotherService(
-		db,
-		postgres.NewMotherServiceRepository(db),
+		motherServiceRepository,
 		testScenarioRepository,
 		provider.NewProvisioningService(cfg, kubernetes),
 		stressTestExecutionManager,
-		postgres.NewOutboxRepository(db),
 		cfg.Outbox.MaxAttempts,
 	)
 
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(
-		db,
 		testScenarioRepository,
 		postgres.NewTestCategoryRepository(db),
 		postgres.NewTestServiceConfigRepository(db),
-		postgres.NewMotherServiceRepository(db),
+		motherServiceRepository,
 		postgres.NewTestServiceRepository(db),
 	)
 	testScenarioOperationUsecase := usecase.NewTestScenarioOperationUsecase(

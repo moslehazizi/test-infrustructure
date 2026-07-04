@@ -24,7 +24,6 @@ func TestTestScenarioUsecase_Init(t *testing.T) {
 	mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 	service := NewTestScenarioUsecase(
-		getMockDB(t),
 		mockRepo,
 		mockTestCatRepo,
 		mockTestServiceConfig,
@@ -45,7 +44,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -100,7 +98,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -171,7 +168,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		databaseTableName := "factorial"
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -237,7 +233,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -289,7 +284,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -333,7 +327,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -376,7 +369,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -425,7 +417,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -486,7 +477,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -541,7 +531,6 @@ func TestTestScenarioUsecase_Create(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -614,7 +603,6 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -692,7 +680,6 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -721,7 +708,6 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -750,7 +736,6 @@ func TestTestScenarioUsecase_GetByID(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -781,7 +766,6 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -867,7 +851,6 @@ func TestTestScenarioUsecase_GetPaginated(t *testing.T) {
 		mockTestServiceRepo := new(mocks.MockTestServiceRepository)
 
 		service := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -959,7 +942,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -986,7 +968,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1026,7 +1007,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1067,7 +1047,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1107,7 +1086,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1143,7 +1121,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1169,7 +1146,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1194,7 +1170,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1220,7 +1195,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1255,7 +1229,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1284,7 +1257,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1320,7 +1292,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1356,7 +1327,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1389,7 +1359,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1421,7 +1390,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1457,7 +1425,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1493,7 +1460,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1525,7 +1491,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1557,7 +1522,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1588,7 +1552,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,
@@ -1619,7 +1582,6 @@ func TestTestScenarioUsecase_Update(t *testing.T) {
 		mockTestServiceRepo := new(repoMocks.MockTestServiceRepository)
 
 		svc := NewTestScenarioUsecase(
-			getMockDB(t),
 			mockRepo,
 			mockTestCatRepo,
 			mockTestServiceConfig,

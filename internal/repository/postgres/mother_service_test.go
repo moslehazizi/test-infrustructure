@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"control-panel-service/internal/domain/entity"
+	repoMocks "control-panel-service/internal/repository/mocks"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/database/postgres/mocks"
 	"errors"
@@ -13,17 +14,19 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
+	tmock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
 
-func TestMotherServiceRepository_Create(t *testing.T) {
+func TestMotherServiceRepository_CreateWithOutboxItem(t *testing.T) {
 	t.Run("success_case", func(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
 
-		repo := NewMotherServiceRepository(db)
+		mockOutbox := new(repoMocks.MockOutbox)
+		repo := NewMotherServiceRepository(db, mockOutbox)
 		now := time.Now()
 
 		responseDelayDuration := 100
@@ -45,6 +48,12 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			DatabaseName:             "test_db",
 			DatabaseTableName:        "test_table",
 		}
+		outboxItem := &entity.Outbox{
+			OperationType: entity.OutboxOperationProvisionMotherService,
+			Status:        entity.OutboxStatusPending,
+			MaxAttempts:   5,
+			AvailableAt:   now,
+		}
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(regexp.QuoteMeta(
@@ -63,13 +72,17 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 				motherService.DatabaseTableName,
 			).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+		mockOutbox.On("Create", tmock.Anything, tmock.MatchedBy(func(item *entity.Outbox) bool {
+			return item.AggregateType == entity.OutboxAggregateTypeMotherService && item.AggregateID == uint64(1)
+		})).Return(uint64(1), nil)
 		mock.ExpectCommit()
 
-		id, err := repo.Create(context.Background(), motherService)
+		id, err := repo.CreateWithOutboxItem(context.Background(), motherService, outboxItem)
 		assert.NoError(t, err)
 		assert.Equal(t, id, uint64(1))
 		assert.Equal(t, uint64(1), motherService.ID)
 		assert.NoError(t, mock.ExpectationsWereMet())
+		mockOutbox.AssertExpectations(t)
 	})
 
 	t.Run("error_case", func(t *testing.T) {
@@ -77,7 +90,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
 
-		repo := NewMotherServiceRepository(db)
+		mockOutbox := new(repoMocks.MockOutbox)
+		repo := NewMotherServiceRepository(db, mockOutbox)
 		now := time.Now()
 
 		motherService := &entity.MotherService{
@@ -89,6 +103,12 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			Status:            entity.MotherServiceStatusReady,
 			DatabaseName:      "test_db",
 			DatabaseTableName: "test_table",
+		}
+		outboxItem := &entity.Outbox{
+			OperationType: entity.OutboxOperationProvisionMotherService,
+			Status:        entity.OutboxStatusPending,
+			MaxAttempts:   5,
+			AvailableAt:   now,
 		}
 
 		mock.ExpectBegin()
@@ -110,11 +130,12 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			WillReturnError(errors.New("insert failed"))
 		mock.ExpectRollback()
 
-		id, err := repo.Create(context.Background(), motherService)
+		id, err := repo.CreateWithOutboxItem(context.Background(), motherService, outboxItem)
 		assert.Equal(t, id, uint64(0))
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to create mother service record")
 		assert.NoError(t, mock.ExpectationsWereMet())
+		mockOutbox.AssertNotCalled(t, "Create", tmock.Anything, tmock.Anything)
 	})
 
 	t.Run("duplicate_name_error_case", func(t *testing.T) {
@@ -122,7 +143,8 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
 
-		repo := NewMotherServiceRepository(db)
+		mockOutbox := new(repoMocks.MockOutbox)
+		repo := NewMotherServiceRepository(db, mockOutbox)
 		now := time.Now()
 
 		motherService := &entity.MotherService{
@@ -134,6 +156,12 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			Status:            entity.MotherServiceStatusReady,
 			DatabaseName:      "test_db",
 			DatabaseTableName: "test_table",
+		}
+		outboxItem := &entity.Outbox{
+			OperationType: entity.OutboxOperationProvisionMotherService,
+			Status:        entity.OutboxStatusPending,
+			MaxAttempts:   5,
+			AvailableAt:   now,
 		}
 
 		duplicateError := &pgconn.PgError{
@@ -162,7 +190,7 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			WillReturnError(duplicateError)
 		mock.ExpectRollback()
 
-		id, err := repo.Create(context.Background(), motherService)
+		id, err := repo.CreateWithOutboxItem(context.Background(), motherService, outboxItem)
 		assert.Equal(t, id, uint64(0))
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, pkg.ErrMotherServiceAlreadyExist)
@@ -173,6 +201,61 @@ func TestMotherServiceRepository_Create(t *testing.T) {
 			assert.Contains(t, pgErr.Detail, "mother1")
 		}
 		assert.NoError(t, mock.ExpectationsWereMet())
+		mockOutbox.AssertNotCalled(t, "Create", tmock.Anything, tmock.Anything)
+	})
+
+	t.Run("outbox_create_error_case", func(t *testing.T) {
+		conn := new(mocks.Connection)
+		db, mock, err := conn.OpenConnection()
+		require.NoError(t, err)
+
+		mockOutbox := new(repoMocks.MockOutbox)
+		repo := NewMotherServiceRepository(db, mockOutbox)
+		now := time.Now()
+
+		motherService := &entity.MotherService{
+			CreatedAt:         now,
+			UpdatedAt:         now,
+			Name:              "mother1",
+			ExceptionRate:     0.0,
+			ResponseDelayRate: 0.0,
+			Status:            entity.MotherServiceStatusReady,
+			DatabaseName:      "test_db",
+			DatabaseTableName: "test_table",
+		}
+		outboxItem := &entity.Outbox{
+			OperationType: entity.OutboxOperationProvisionMotherService,
+			Status:        entity.OutboxStatusPending,
+			MaxAttempts:   5,
+			AvailableAt:   now,
+		}
+
+		mock.ExpectBegin()
+		mock.ExpectQuery(regexp.QuoteMeta(
+			`INSERT INTO "mother_services" ("created_at","updated_at","deleted_at","name","exception_rate","response_delay_rate","response_delay_duration","random_response_delay_min","random_response_delay_max","status","service_deployment_address","database_name","database_table_name") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "id"`)).
+			WithArgs(
+				now, now, nil,
+				motherService.Name,
+				motherService.ExceptionRate,
+				motherService.ResponseDelayRate,
+				motherService.ResponseDelayDuration,
+				motherService.RandomResponseDelayMin,
+				motherService.RandomResponseDelayMax,
+				motherService.Status,
+				motherService.ServiceDeploymentAddress,
+				motherService.DatabaseName,
+				motherService.DatabaseTableName,
+			).
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+		mockOutbox.On("Create", tmock.Anything, tmock.Anything).Return(uint64(0), errors.New("insert failed"))
+		mock.ExpectRollback()
+
+		id, err := repo.CreateWithOutboxItem(context.Background(), motherService, outboxItem)
+		assert.Equal(t, id, uint64(0))
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, pkg.ErrFailedToCreateOutboxItem)
+		assert.NoError(t, mock.ExpectationsWereMet())
+		mockOutbox.AssertExpectations(t)
 	})
 }
 
@@ -181,7 +264,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		now := time.Now()
 		responseDelayDuration := 100
@@ -249,7 +332,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL ORDER BY "mother_services"."id" LIMIT $2`)).
@@ -267,7 +350,7 @@ func TestMotherServiceRepository_GetByID(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT * FROM "mother_services" WHERE "mother_services"."id" = $1 AND "mother_services"."deleted_at" IS NULL ORDER BY "mother_services"."id" LIMIT $2`)).
@@ -287,7 +370,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    1,
@@ -312,7 +395,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		now := time.Now()
 		serviceAddress1 := "http://service1.example.com"
@@ -418,7 +501,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		now := time.Now()
 		serviceAddress1 := "http://service1.example.com"
@@ -524,7 +607,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		now := time.Now()
 		serviceAddress := "http://service.example.com"
@@ -594,7 +677,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		now := time.Now()
 		serviceAddress1 := "http://service1.example.com"
@@ -725,7 +808,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    100,
@@ -762,7 +845,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    2,
@@ -793,7 +876,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    -2,
@@ -811,7 +894,7 @@ func TestMotherServiceRepository_GetPaginated(t *testing.T) {
 		conn := new(mocks.Connection)
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		paginationRequest := entity.PaginationRequest{
 			Page:    2,
@@ -832,7 +915,7 @@ func TestMotherServiceRepository_SetStatus(t *testing.T) {
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
 
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta(
@@ -857,7 +940,7 @@ func TestMotherServiceRepository_SetStatus(t *testing.T) {
 		db, mock, err := conn.OpenConnection()
 		require.NoError(t, err)
 
-		repo := NewMotherServiceRepository(db)
+		repo := NewMotherServiceRepository(db, nil)
 
 		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta(

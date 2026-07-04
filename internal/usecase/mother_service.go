@@ -7,7 +7,6 @@ import (
 	"control-panel-service/internal/repository"
 	"control-panel-service/internal/usecase/interfaces"
 	"control-panel-service/pkg"
-	"control-panel-service/pkg/database"
 	"errors"
 	"fmt"
 	"strconv"
@@ -19,32 +18,26 @@ import (
 )
 
 func NewMotherService(
-	db database.Database,
 	motherServiceRepo repository.MotherServiceRepository,
 	testScenarioRepo repository.TestScenarioRepository,
 	provisioningService provision.ProvisioningService,
 	stressTestExecutionManager interfaces.ExecutionManager,
-	outboxRepo repository.OutboxRepository,
 	outboxMaxAttempts int,
 ) *motherService {
 	return &motherService{
-		db,
 		motherServiceRepo,
 		testScenarioRepo,
 		provisioningService,
 		stressTestExecutionManager,
-		outboxRepo,
 		outboxMaxAttempts,
 	}
 }
 
 type motherService struct {
-	db                         database.Database
 	motherServiceRepo          repository.MotherServiceRepository
 	testScenarioRepo           repository.TestScenarioRepository
 	provisioningService        provision.ProvisioningService
 	stressTestExecutionManager interfaces.ExecutionManager
-	outboxRepo                 repository.OutboxRepository
 	outboxMaxAttempts          int
 }
 
@@ -67,28 +60,22 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 
 	// Mother service is created in "ready" status. Provisioning it in
 	// Kubernetes is slow, network-bound, and not itself transactional, so it
-	// is not performed here: instead we record an outbox item in the same
-	// local transaction as the insert, and a background worker (see
-	// usecase.outboxProcessor) claims it afterwards and calls
+	// is not performed here: instead the repository records an outbox item
+	// in the same local transaction as the insert, and a background worker
+	// (see usecase.outboxProcessor) claims it afterwards and calls
 	// ProvisioningService.ProvisionMotherService outside of any DB
 	// transaction, retrying on failure and updating status when it settles.
 	motherService.Status = entity.MotherServiceStatusReady
 	span.SetAttributes(attribute.String("service.name", motherService.Name))
 
-	tx := service.db.Begin()
-	dbCtx := context.WithValue(useCaseCTX, database.ContextKeyDBTx, tx)
-	defer func() {
-		if e != nil {
-			_ = tx.Rollback()
-			span.SetAttributes(attribute.String("transaction.status", "rolled_back"))
-			zap.L().Error("mother service creation failed, transaction rolled back",
-				zap.String("name", motherService.Name),
-				zap.Error(e),
-			)
-		}
-	}()
+	outboxItem := &entity.Outbox{
+		OperationType: entity.OutboxOperationProvisionMotherService,
+		Status:        entity.OutboxStatusPending,
+		MaxAttempts:   service.outboxMaxAttempts,
+		AvailableAt:   time.Now(),
+	}
 
-	id, err := service.motherServiceRepo.Create(dbCtx, motherService)
+	id, err := service.motherServiceRepo.CreateWithOutboxItem(useCaseCTX, motherService, outboxItem)
 	if err != nil {
 		if errors.Is(err, pkg.ErrMotherServiceAlreadyExist) {
 			span.SetAttributes(attribute.String("error.type", "already_exists"))
@@ -97,6 +84,16 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 			)
 
 			return pkg.ErrMotherServiceAlreadyExist
+		}
+
+		if errors.Is(err, pkg.ErrFailedToCreateOutboxItem) {
+			span.SetAttributes(attribute.String("error.type", "outbox_create_error"), attribute.String("error.message", err.Error()))
+			zap.L().Error("failed to record mother service provisioning outbox item",
+				zap.String("name", motherService.Name),
+				zap.Error(err),
+			)
+
+			return err
 		}
 
 		span.SetAttributes(attribute.String("error.type", "create_error"), attribute.String("error.message", err.Error()))
@@ -110,27 +107,6 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 
 	motherService.ID = id
 
-	_, err = service.outboxRepo.Create(dbCtx, &entity.Outbox{
-		AggregateType: entity.OutboxAggregateTypeMotherService,
-		AggregateID:   motherService.ID,
-		OperationType: entity.OutboxOperationProvisionMotherService,
-		Status:        entity.OutboxStatusPending,
-		MaxAttempts:   service.outboxMaxAttempts,
-		AvailableAt:   time.Now(),
-	})
-	if err != nil {
-		span.SetAttributes(attribute.String("error.type", "outbox_create_error"), attribute.String("error.message", err.Error()))
-		zap.L().Error("failed to record mother service provisioning outbox item",
-			zap.String("name", motherService.Name),
-			zap.Error(err),
-		)
-
-		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateOutboxItem, err)
-	}
-
-	_ = tx.Commit()
-
-	span.SetAttributes(attribute.String("transaction.status", "committed"))
 	zap.L().Info("mother service created successfully, provisioning queued",
 		zap.Uint64("id", motherService.ID),
 		zap.String("name", motherService.Name),
