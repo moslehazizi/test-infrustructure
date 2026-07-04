@@ -33,6 +33,7 @@ type Config struct {
 	Kubernetese Kubernetese
 	Otlp        Otlp
 	Logger      Logger
+	Outbox      Outbox
 }
 
 type Otlp struct {
@@ -85,6 +86,13 @@ type Logger struct {
 	Level  string `envconfig:"LOG_LEVEL" default:"info"`
 	Format string `envconfig:"LOG_FORMAT" default:"json"` // json or console
 	Output string `envconfig:"LOG_OUTPUT" default:"stdout"`
+}
+
+type Outbox struct {
+	PollInterval time.Duration `envconfig:"OUTBOX_POLL_INTERVAL" default:"2s"`
+	BatchSize    int           `envconfig:"OUTBOX_BATCH_SIZE" default:"10"`
+	MaxAttempts  int           `envconfig:"OUTBOX_MAX_ATTEMPTS" default:"5"`
+	RetryBackoff time.Duration `envconfig:"OUTBOX_RETRY_BACKOFF" default:"10s"`
 }
 
 type Kubernetese struct {

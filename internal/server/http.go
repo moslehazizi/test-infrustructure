@@ -154,6 +154,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		testScenarioRepository,
 		provider.NewProvisioningService(cfg, kubernetes),
 		stressTestExecutionManager,
+		postgres.NewOutboxRepository(db),
+		cfg.Outbox.MaxAttempts,
 	)
 
 	testScenarioUsecase := usecase.NewTestScenarioUsecase(

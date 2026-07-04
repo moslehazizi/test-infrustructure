@@ -15,6 +15,7 @@ const (
 	MotherServiceStatusPaused  MotherServiceStatus = "paused"  // application level pause on sending request
 	MotherServiceStatusStopped MotherServiceStatus = "stopped" // stop container but can start scenario again.
 	MotherServiceStatusDeleted MotherServiceStatus = "deleted" // stop and delete containers. can not start again.
+	MotherServiceStatusFailed  MotherServiceStatus = "failed"  // provisioning permanently failed after retries
 )
 
 type MotherService struct {

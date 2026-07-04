@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -23,6 +24,8 @@ func NewMotherService(
 	testScenarioRepo repository.TestScenarioRepository,
 	provisioningService provision.ProvisioningService,
 	stressTestExecutionManager interfaces.ExecutionManager,
+	outboxRepo repository.OutboxRepository,
+	outboxMaxAttempts int,
 ) *motherService {
 	return &motherService{
 		db,
@@ -30,6 +33,8 @@ func NewMotherService(
 		testScenarioRepo,
 		provisioningService,
 		stressTestExecutionManager,
+		outboxRepo,
+		outboxMaxAttempts,
 	}
 }
 
@@ -39,6 +44,8 @@ type motherService struct {
 	testScenarioRepo           repository.TestScenarioRepository
 	provisioningService        provision.ProvisioningService
 	stressTestExecutionManager interfaces.ExecutionManager
+	outboxRepo                 repository.OutboxRepository
+	outboxMaxAttempts          int
 }
 
 func (service *motherService) Create(ctx context.Context, motherService *entity.MotherService) (e error) {
@@ -58,12 +65,16 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 		return fmt.Errorf("failed to validate request: %w", err)
 	}
 
-	// for now when we create a mother service in database in the same time we send it to provision.
-	// this operation done in a transaction so if mother service created and provisioned it is in running status.
-	motherService.Status = entity.MotherServiceStatusRunning
+	// Mother service is created in "ready" status. Provisioning it in
+	// Kubernetes is slow, network-bound, and not itself transactional, so it
+	// is not performed here: instead we record an outbox item in the same
+	// local transaction as the insert, and a background worker (see
+	// usecase.outboxProcessor) claims it afterwards and calls
+	// ProvisioningService.ProvisionMotherService outside of any DB
+	// transaction, retrying on failure and updating status when it settles.
+	motherService.Status = entity.MotherServiceStatusReady
 	span.SetAttributes(attribute.String("service.name", motherService.Name))
 
-	// TODO: We should delete db transaction creation here and delegate create mother service and provision it to a function in another layer. This is not usecase's concern.
 	tx := service.db.Begin()
 	dbCtx := context.WithValue(useCaseCTX, database.ContextKeyDBTx, tx)
 	defer func() {
@@ -98,15 +109,29 @@ func (service *motherService) Create(ctx context.Context, motherService *entity.
 	}
 
 	motherService.ID = id
-	err = service.provisioningService.ProvisionMotherService(dbCtx, motherService)
+
+	_, err = service.outboxRepo.Create(dbCtx, &entity.Outbox{
+		AggregateType: entity.OutboxAggregateTypeMotherService,
+		AggregateID:   motherService.ID,
+		OperationType: entity.OutboxOperationProvisionMotherService,
+		Status:        entity.OutboxStatusPending,
+		MaxAttempts:   service.outboxMaxAttempts,
+		AvailableAt:   time.Now(),
+	})
 	if err != nil {
-		return fmt.Errorf("%w, %w", pkg.ErrFailedToDeployMotherService, err)
+		span.SetAttributes(attribute.String("error.type", "outbox_create_error"), attribute.String("error.message", err.Error()))
+		zap.L().Error("failed to record mother service provisioning outbox item",
+			zap.String("name", motherService.Name),
+			zap.Error(err),
+		)
+
+		return fmt.Errorf("%w, %w", pkg.ErrFailedToCreateOutboxItem, err)
 	}
 
 	_ = tx.Commit()
 
 	span.SetAttributes(attribute.String("transaction.status", "committed"))
-	zap.L().Info("mother service created successfully",
+	zap.L().Info("mother service created successfully, provisioning queued",
 		zap.Uint64("id", motherService.ID),
 		zap.String("name", motherService.Name),
 	)

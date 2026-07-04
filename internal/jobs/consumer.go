@@ -7,6 +7,7 @@ import (
 	"control-panel-service/internal/repository/postgres"
 	"control-panel-service/internal/usecase"
 	psql "control-panel-service/pkg/database/postgres"
+	kuber "control-panel-service/pkg/kubernetes"
 	"control-panel-service/pkg/logger"
 	"fmt"
 	"os"
@@ -39,6 +40,21 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	factRepo := postgres.NewMotherServiceFactorialResultRepository(cfg)
 	execRepo := postgres.NewTestServiceExecutorResultRepository(cfg)
 	testScenarioRepo := postgres.NewTestScenarioRepository(db)
+
+	kubernetes, err := kuber.New(ctx, &kuber.KubernConfig{NameSpace: cfg.Kubernetese.NameSpace})
+	if err != nil {
+		return fmt.Errorf("could not connect to kubernetes: %w", err)
+	}
+
+	outboxProcessor := usecase.NewOutboxProcessor(
+		postgres.NewOutboxRepository(db),
+		postgres.NewMotherServiceRepository(db),
+		provider.NewProvisioningService(cfg, kubernetes),
+		cfg.Outbox.BatchSize,
+		cfg.Outbox.RetryBackoff,
+	)
+	outboxJob := &outboxJob{outboxProcessor}
+	go outboxJob.Run(ctx, cfg.Outbox.PollInterval)
 
 	go func() {
 		eventConsumer, err := provider.NewKafkaEventConsumer(ctx, cfg, cfg.Kubernetese.TestServiceKafkaDatabaseTopic)

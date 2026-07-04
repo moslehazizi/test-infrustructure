@@ -310,6 +310,8 @@ var (
 	ErrFailedToStopTestService          = errors.New("failed to stop test services")
 	ErrFailedToDeleteTestService        = errors.New("failed to delete  test services")
 	ErrFailedToExecuteSingleScenario    = errors.New("failed to execute single scenario")
+	ErrFailedToCreateOutboxItem         = errors.New("failed to create outbox item")
+	ErrFailedToClaimOutboxItems         = errors.New("failed to claim pending outbox items")
 
 	// Validation errors.
 	ErrFailedToGetTestServiceConfig                       = errors.New("failed to get test service config by id")
