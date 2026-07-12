@@ -9,13 +9,13 @@ import (
 )
 
 type HTTPError struct {
-	status int
-	msg    string
+	Status int
+	Msg    string
 }
 
 func (e *HTTPError) AsFiber(ctx *fiber.Ctx) error {
-	if err := ctx.Status(e.status).JSON(&fiber.Map{
-		"error": e.msg,
+	if err := ctx.Status(e.Status).JSON(&fiber.Map{
+		"error": e.Msg,
 	}); err != nil {
 		return fmt.Errorf("failed to write JSON response: %w", err)
 	}
@@ -42,7 +42,7 @@ func ToHTTPError(err error) *HTTPError {
 
 				continue
 			}
-			if finalErr.status > herr.status {
+			if finalErr.Status > herr.Status {
 				finalErr = herr
 			}
 		}

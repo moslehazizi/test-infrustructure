@@ -7,7 +7,6 @@ import (
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository/postgres"
 	"control-panel-service/internal/server/handler"
-	"control-panel-service/internal/server/middleware"
 	"control-panel-service/internal/usecase"
 	"control-panel-service/pkg/telemetry"
 	"fmt"
@@ -18,13 +17,15 @@ import (
 	pslq "control-panel-service/pkg/database/postgres"
 	kuber "control-panel-service/pkg/kubernetes"
 
-	fiberSwagger "github.com/arsmn/fiber-swagger/v2"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
+
+	// "github.com/gofiber/fiber/v2/middleware/cors"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func MetricsMiddleware() fiber.Handler {
@@ -69,44 +70,58 @@ func MetricsMiddleware() fiber.Handler {
 }
 
 func Serve(ctx context.Context, cfg *config.Config) error {
-	app := fiber.New(fiber.Config{
-		BodyLimit:    cfg.Server.PostBodyLimit,
+	// app := fiber.New(fiber.Config{
+	// 	BodyLimit:    cfg.Server.PostBodyLimit,
+	// 	ReadTimeout:  cfg.Server.ReadTimeout,
+	// 	WriteTimeout: cfg.Server.WriteTimeout,
+	// })
+
+	app := chi.NewRouter()
+
+	// TODO
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
+		Handler:      app,
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
-	})
+	}
 
 	// Global middlewares
-	app.Use(cors.New())
+	// app.Use(cors.New())
+	app.Use(cors.Handler(cors.Options{}))
 
 	// nolint
-	app.Use(MetricsMiddleware())
+	// app.Use(MetricsMiddleware())
+	// TODO
 
 	// �🔒 Rate Limiter (GLOBAL)
-	app.Use(limiter.New(limiter.Config{
-		Max:        cfg.Server.RateLimitMaxRequest,         // max requests
-		Expiration: cfg.Server.RateLimitExpirationDuration, // per minute
-		KeyGenerator: func(c *fiber.Ctx) string {
-			return c.IP() // rate limit per IP
-		},
-		LimitReached: func(c *fiber.Ctx) error {
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "Too many requests, please try again later",
-			})
-		},
-	}))
+	// app.Use(limiter.New(limiter.Config{
+	// 	Max:        cfg.Server.RateLimitMaxRequest,         // max requests
+	// 	Expiration: cfg.Server.RateLimitExpirationDuration, // per minute
+	// 	KeyGenerator: func(c *fiber.Ctx) string {
+	// 		return c.IP() // rate limit per IP
+	// 	},
+	// 	LimitReached: func(c *fiber.Ctx) error {
+	// 		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+	// 			"error": "Too many requests, please try again later",
+	// 		})
+	// 	},
+	// }))
+	// TODO
 
 	docs.SwaggerInfo.Host = cfg.Server.SwaggerHost
 	docs.SwaggerInfo.Schemes = cfg.Server.SwaggerScheme
 
-	swaggerHandler := fiberSwagger.New(fiberSwagger.Config{
-		Title:                "Control Panel API",
-		DeepLinking:          true,
-		PersistAuthorization: true,
-		DocExpansion:         "list",
-		URL:                  cfg.Server.SwaggerDocJSON,
-	})
+	// swaggerHandler := fiberSwagger.New(fiberSwagger.Config{
+	// 	Title:                "Control Panel API",
+	// 	DeepLinking:          true,
+	// 	PersistAuthorization: true,
+	// 	DocExpansion:         "list",
+	// 	URL:                  cfg.Server.SwaggerDocJSON,
+	// })
 	// Logging middleware should be early to capture all requests
-	app.Use(middleware.LoggingMiddleware())
+	// app.Use(middleware.LoggingMiddleware())
+	// TODO
 
 	eventProducer, err := provider.NewKafkaEventProducer(ctx, cfg)
 	if err != nil {
@@ -158,56 +173,65 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		cfg.Outbox.MaxAttempts,
 	)
 
-	testScenarioUsecase := usecase.NewTestScenarioUsecase(
-		testScenarioRepository,
-		postgres.NewTestCategoryRepository(db),
-		postgres.NewTestServiceConfigRepository(db),
-		motherServiceRepository,
-		postgres.NewTestServiceRepository(db),
-	)
-	testScenarioOperationUsecase := usecase.NewTestScenarioOperationUsecase(
-		testScenarioRepository,
-		stressTestExecutionManager,
-	)
+	// testScenarioUsecase := usecase.NewTestScenarioUsecase(
+	// 	testScenarioRepository,
+	// 	postgres.NewTestCategoryRepository(db),
+	// 	postgres.NewTestServiceConfigRepository(db),
+	// 	motherServiceRepository,
+	// 	postgres.NewTestServiceRepository(db),
+	// )
+	// testScenarioOperationUsecase := usecase.NewTestScenarioOperationUsecase(
+	// 	testScenarioRepository,
+	// 	stressTestExecutionManager,
+	// )
 	motherHandler := handler.NewMotherServiceHandler(motherService)
-	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
+	// testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 
-	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
-	testScenarioOperationHandler := handler.NewTestScenarioOperationHandler(testScenarioOperationUsecase)
-	databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db, cfg))
-	databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
+	// testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
+	// testScenarioOperationHandler := handler.NewTestScenarioOperationHandler(testScenarioOperationUsecase)
+	// databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db, cfg))
+	// databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
 
-	apiV1 := app.Group("/api/v1")
+	// apiV1 := app.Group("/api/v1")
 
-	// Mother service
-	apiV1.Post("/mother-services", motherHandler.Create())
-	apiV1.Get("/mother-services/:id", motherHandler.GetByID())
-	apiV1.Post("/mother-services/search", motherHandler.GetPaginated())
-	apiV1.Post("/mother-services/:id/delete", motherHandler.Delete())
+	// TODO: Route or Group (Decision Needed)
+	app.Route("/api/v1", func(app chi.Router) {
 
-	// test category
-	apiV1.Get("/test-categories", testCategoryHandler.GetAll())
-	apiV1.Get("/test-categories/:id", testCategoryHandler.GetByID())
+		app.Get("/hadis", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Hello World!"))
+		})
 
-	// test scenario
-	apiV1.Post("/test-scenarios", testScenarioHandler.Create())
-	apiV1.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
-	apiV1.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
-	apiV1.Post("/test-scenarios/update", testScenarioHandler.Update())
+		// Mother service
+		// app.Post("/mother-services", motherHandler.Create())
+		app.Get("/mother-services/:id", motherHandler.GetByID)
+		// app.Post("/mother-services/search", motherHandler.GetPaginated())
+		// app.Post("/mother-services/:id/delete", motherHandler.Delete())
 
-	// test scenario operationn-up
-	apiV1.Post("/test-scenarios/:id/start", testScenarioOperationHandler.Start())
-	apiV1.Post("/test-scenarios/:id/pause", testScenarioOperationHandler.Pause())
-	apiV1.Post("/test-scenarios/:id/resume", testScenarioOperationHandler.Resume())
-	apiV1.Post("/test-scenarios/:id/stop", testScenarioOperationHandler.Stop())
-	apiV1.Post("/test-scenarios/:id/delete", testScenarioOperationHandler.Delete())
+		// test category
+		// app.Get("/test-categories", testCategoryHandler.GetAll())
+		// app.Get("/test-categories/:id", testCategoryHandler.GetByID())
 
-	// database-metadata
-	apiV1.Get("/databases", databaseMetadataHandler.GetAll())
-	apiV1.Post("/databases/tables", databaseMetadataHandler.GetTablesByDBNamePost())
+		// test scenario
+		// app.Post("/test-scenarios", testScenarioHandler.Create())
+		// app.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
+		// app.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
+		// app.Post("/test-scenarios/update", testScenarioHandler.Update())
 
-	// swagger endpoint
-	apiV1.Get("/docs/*", swaggerHandler)
+		// test scenario operationn-up
+		// app.Post("/test-scenarios/:id/start", testScenarioOperationHandler.Start())
+		// app.Post("/test-scenarios/:id/pause", testScenarioOperationHandler.Pause())
+		// app.Post("/test-scenarios/:id/resume", testScenarioOperationHandler.Resume())
+		// app.Post("/test-scenarios/:id/stop", testScenarioOperationHandler.Stop())
+		// app.Post("/test-scenarios/:id/delete", testScenarioOperationHandler.Delete())
+
+		// database-metadata
+		// app.Get("/databases", databaseMetadataHandler.GetAll())
+		// app.Post("/databases/tables", databaseMetadataHandler.GetTablesByDBNamePost())
+
+		// swagger endpoint
+		// app.Get("/docs/*", swaggerHandler)
+
+	})
 
 	zap.L().Info("fiber server starting",
 		zap.Int("port", cfg.Server.Port),
@@ -218,7 +242,11 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	// Start server in a goroutine
 	errChan := make(chan error, 1)
 	go func() {
-		if err := app.Listen(addr); err != nil {
+		// if err := http.ListenAndServe(addr, app); err != nil {
+		// 	errChan <- fmt.Errorf("fiber listen on %s failed: %w", addr, err)
+		// }
+
+		if err := srv.ListenAndServe(); err != nil {
 			errChan <- fmt.Errorf("fiber listen on %s failed: %w", addr, err)
 		}
 	}()
@@ -228,7 +256,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	case <-ctx.Done():
 		zap.L().Info("shutting down server gracefully")
 		// Gracefully shutdown the server
-		if err := app.Shutdown(); err != nil {
+		if err := srv.Shutdown(ctx); err != nil {
 			zap.L().Error("fiber shutdown failed", zap.Error(err))
 
 			return fmt.Errorf("fiber shutdown failed: %w", err)

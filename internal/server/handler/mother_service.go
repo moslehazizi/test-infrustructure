@@ -6,11 +6,13 @@ import (
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
+	"control-panel-service/pkg/responsewriter"
 	"errors"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -39,45 +41,44 @@ func NewMotherServiceHandler(motherService MotherService) *MotherServiceHandler 
 //	@Failure		422		{object}	response.ErrorResponse
 //	@Failure		500		{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services [post]
-func (handler *MotherServiceHandler) Create() fiber.Handler {
-	return func(ctx *fiber.Ctx) error {
-		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "create-mother-service-handler")
-		defer span.End()
+func (handler *MotherServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
+	tracer := otel.Tracer("mother-service-handler")
+	ctx := r.Context()
+	traceCtx, span := tracer.Start(ctx, "create-mother-service-handler")
+	defer span.End()
 
-		requestID := logger.GetRequestID(ctx.Context())
-		span.SetAttributes(attribute.String("request_id", requestID))
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
-		req := new(request.MotherService)
+	req := new(request.MotherService)
 
-		if err := ctx.BodyParser(req); err != nil {
-			span.SetAttributes(attribute.String("error.type", "bad_request"))
-			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
-		}
-
-		span.SetAttributes(
-			attribute.String("service.name", req.Name),
-			attribute.Float64("service.exception_rate", float64(req.ExceptionRate)),
-			attribute.Float64("service.response_delay_rate", float64(req.ResponseDelayRate)),
-		)
-
-		reqService := req.ToMotherServiceEntity()
-
-		err := handler.motherService.Create(traceCtx, reqService)
-		if err != nil {
-			span.SetAttributes(
-				attribute.String("error.type", "create_error"),
-				attribute.String("error.message", err.Error()),
-			)
-			return pkg.ToHTTPError(err).AsFiber(ctx)
-		}
-
-		span.SetAttributes(attribute.String("status", "success"))
-
-		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
-			Message: pkg.CreateMotherServiceSuccessfully,
-		})
+	if err := ctx.BodyParser(req); err != nil {
+		span.SetAttributes(attribute.String("error.type", "bad_request"))
+		return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
 	}
+
+	span.SetAttributes(
+		attribute.String("service.name", req.Name),
+		attribute.Float64("service.exception_rate", float64(req.ExceptionRate)),
+		attribute.Float64("service.response_delay_rate", float64(req.ResponseDelayRate)),
+	)
+
+	reqService := req.ToMotherServiceEntity()
+
+	err := handler.motherService.Create(traceCtx, reqService)
+	if err != nil {
+		span.SetAttributes(
+			attribute.String("error.type", "create_error"),
+			attribute.String("error.message", err.Error()),
+		)
+		return pkg.ToHTTPError(err).AsFiber(ctx)
+	}
+
+	span.SetAttributes(attribute.String("status", "success"))
+
+	return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
+		Message: pkg.CreateMotherServiceSuccessfully,
+	})
 }
 
 // GetByID godoc
@@ -93,40 +94,39 @@ func (handler *MotherServiceHandler) Create() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services/{id} [get]
-func (handler *MotherServiceHandler) GetByID() fiber.Handler {
-	return func(ctx *fiber.Ctx) error {
-		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get-mother-service-by-id-handler")
-		defer span.End()
+func (handler *MotherServiceHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	tracer := otel.Tracer("mother-service-handler")
+	traceCtx, span := tracer.Start(ctx, "get-mother-service-by-id-handler")
+	defer span.End()
 
-		requestID := logger.GetRequestID(ctx.Context())
-		span.SetAttributes(attribute.String("request_id", requestID))
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
-		strID := strings.TrimSpace(ctx.Params("id"))
+	strID := strings.TrimSpace(chi.URLParam(r, "id"))
 
-		id, err := strconv.ParseUint(strID, 10, 64)
-		if err != nil {
-			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
-			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
-		}
-
-		span.SetAttributes(attribute.String("service.id", strconv.FormatUint(id, 10)))
-
-		svcResult, err := handler.motherService.GetByID(traceCtx, id)
-		if err != nil {
-			if errors.Is(err, pkg.ErrMotherServiceNotFound) {
-				return pkg.ToHTTPError(pkg.ErrMotherServiceNotFound).AsFiber(ctx)
-			}
-
-			return pkg.ToHTTPError(err).AsFiber(ctx)
-		}
-		var result response.MotherService
-		result.FromMotherServiceEntity(svcResult)
-
-		return ctx.Status(http.StatusOK).JSON(&response.MotherServiceResponseByID{
-			Data: result,
-		})
+	id, err := strconv.ParseUint(strID, 10, 64)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
+		h := pkg.ToHTTPError(pkg.ErrInvalidIDInParams)
+		responsewriter.WriteJSON(w, h.Status, h)
 	}
+
+	span.SetAttributes(attribute.String("service.id", strconv.FormatUint(id, 10)))
+
+	svcResult, err := handler.motherService.GetByID(traceCtx, id)
+	if err != nil {
+		if errors.Is(err, pkg.ErrMotherServiceNotFound) {
+			h := pkg.ToHTTPError(pkg.ErrMotherServiceNotFound)
+			responsewriter.WriteJSON(w, h.Status, h)
+		}
+		h := pkg.ToHTTPError(err)
+		responsewriter.WriteJSON(w, h.Status, h)
+	}
+	var result response.MotherService
+	result.FromMotherServiceEntity(svcResult)
+
+	responsewriter.WriteJSON(w, http.StatusOK, result)
 }
 
 // GetPaginated godoc
