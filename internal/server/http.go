@@ -196,13 +196,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	// TODO: Route or Group (Decision Needed)
 	app.Route("/api/v1", func(app chi.Router) {
-
-		app.Get("/hadis", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("Hello World!"))
-		})
-
 		// Mother service
-		// app.Post("/mother-services", motherHandler.Create())
+		app.Post("/mother-services", motherHandler.Create)
 		app.Get("/mother-services/:id", motherHandler.GetByID)
 		// app.Post("/mother-services/search", motherHandler.GetPaginated())
 		// app.Post("/mother-services/:id/delete", motherHandler.Delete())
@@ -233,7 +228,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	})
 
-	zap.L().Info("fiber server starting",
+	zap.L().Info("server starting",
 		zap.Int("port", cfg.Server.Port),
 	)
 
@@ -247,7 +242,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		// }
 
 		if err := srv.ListenAndServe(); err != nil {
-			errChan <- fmt.Errorf("fiber listen on %s failed: %w", addr, err)
+			errChan <- fmt.Errorf("server listen on %s failed: %w", addr, err)
 		}
 	}()
 
@@ -257,9 +252,9 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		zap.L().Info("shutting down server gracefully")
 		// Gracefully shutdown the server
 		if err := srv.Shutdown(ctx); err != nil {
-			zap.L().Error("fiber shutdown failed", zap.Error(err))
+			zap.L().Error("server shutdown failed", zap.Error(err))
 
-			return fmt.Errorf("fiber shutdown failed: %w", err)
+			return fmt.Errorf("server shutdown failed: %w", err)
 		}
 		zap.L().Info("server shut down successfully")
 
