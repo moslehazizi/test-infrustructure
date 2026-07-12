@@ -1,436 +1,434 @@
 package handler
 
-// import (
-// 	"control-panel-service/config"
-// 	"control-panel-service/internal/domain/entity"
-// 	"control-panel-service/internal/server/dto/request"
-// 	"control-panel-service/internal/server/dto/response"
-// 	"control-panel-service/internal/usecase/mocks"
-// 	"control-panel-service/pkg"
-// 	"encoding/json"
-// 	"errors"
-// 	"fmt"
-// 	"io"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"strings"
-// 	"testing"
-
-// 	"github.com/gofiber/fiber/v2"
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/mock"
-// )
-
-// func TestMotherServiceHandler_New(t *testing.T) {
-// 	mockSrv := new(mocks.MockMotherService)
-
-// 	handler := NewMotherServiceHandler(mockSrv)
-
-// 	assert.NotNil(t, handler)
-// }
-
-// func TestMotherServiceHandler_Create(t *testing.T) {
-// 	t.Run("success_case", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
+import (
+	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/server/dto/response"
+	"control-panel-service/internal/usecase/mocks"
+	"control-panel-service/pkg"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
 
-// 		handler := NewMotherServiceHandler(mockSvc)
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
+func TestMotherServiceHandler_New(t *testing.T) {
+	mockSrv := new(mocks.MockMotherService)
 
-// 		reqBody := `{
-//         "name": "my-service",
-//         "exception_rate": 10,
-//         "response_delay_rate": 20,
-//         "database_name": "service_db",
-//         "database_table_name": "data"
-//     }`
-
-// 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
-// 			return svc.Name == "my-service" &&
-// 				svc.ExceptionRate == 10 &&
-// 				svc.ResponseDelayRate == 20 &&
-// 				svc.DatabaseName == "service_db" &&
-// 				svc.DatabaseTableName == "data"
-// 		})).Return(nil)
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.SuccessResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, pkg.CreateMotherServiceSuccessfully, result.Message)
-// 		mockSvc.AssertExpectations(t)
-// 	})
-
-// 	t.Run("failed_case_invalid_request", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
-
-// 		reqBody := `sample`
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-// 		assert.Equal(t, pkg.InvalidReqBody, result.Error)
-// 	})
-
-// 	t.Run("failed_case_required_fields_in_request_body", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
-
-// 		reqBody := `{
-//         "response_delay_rate": 10,
-//         "database_name": "service_db",
-//         "database_table_name": "data",
-//     }`
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-// 		assert.Equal(t, pkg.InvalidReqBody, result.Error)
-// 	})
-
-// 	t.Run("success_case_with_nullable_values", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
-
-// 		reqBody := `{
-//         "name": "my-service",
-//         "exception_rate": 10,
-//         "response_delay_rate": 20,
-// 		"response_delay_duration": 1,
-// 		"random_response_delay_min": 2,
-// 		"random_response_delay_max": 3,
-//         "database_name": "service_db",
-//         "database_table_name": "data"
-//     }`
-
-// 		sampleOne := 1
-// 		sampleTwo := 2
-// 		sampleThree := 3
-
-// 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
-// 			return svc.Name == "my-service" &&
-// 				svc.ExceptionRate == 10 &&
-// 				svc.ResponseDelayRate == 20 &&
-// 				svc.ResponseDelayDuration != nil && *svc.ResponseDelayDuration == sampleOne &&
-// 				svc.RandomResponseDelayMin != nil && *svc.RandomResponseDelayMin == sampleTwo &&
-// 				svc.RandomResponseDelayMax != nil && *svc.RandomResponseDelayMax == sampleThree &&
-// 				svc.DatabaseName == "service_db" &&
-// 				svc.DatabaseTableName == "data"
-// 		})).Return(nil)
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.SuccessResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, pkg.CreateMotherServiceSuccessfully, result.Message)
-// 		mockSvc.AssertExpectations(t)
-// 	})
-
-// 	t.Run("failed_case_duplication", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
-
-// 		reqBody := `{
-//         "name": "my-service",
-//         "exception_rate": 10,
-//         "response_delay_rate": 20,
-//         "database_name": "service_db",
-//         "database_table_name": "data"
-//     }`
-
-// 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
-// 			return svc.Name == "my-service" &&
-// 				svc.ExceptionRate == 10 &&
-// 				svc.ResponseDelayRate == 20 &&
-// 				svc.DatabaseName == "service_db" &&
-// 				svc.DatabaseTableName == "data"
-// 		})).Return(pkg.ErrMotherServiceAlreadyExist)
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusConflict, resp.StatusCode)
-// 		assert.Equal(t, pkg.MotherServiceAlreadyExist, result.Error)
-// 		mockSvc.AssertExpectations(t)
-// 	})
-
-// 	t.Run("failed_case_internal_error", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
-
-// 		reqBody := `{
-//         "name": "my-service",
-//         "exception_rate": 10,
-//         "response_delay_rate": 20,
-//         "database_name": "service_db",
-//         "database_table_name": "data"
-//     }`
-
-// 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
-// 			return svc.Name == "my-service" &&
-// 				svc.ExceptionRate == 10 &&
-// 				svc.ResponseDelayRate == 20 &&
-// 				svc.DatabaseName == "service_db" &&
-// 				svc.DatabaseTableName == "data"
-// 		})).Return(errors.New("internal error"))
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 		assert.Equal(t, pkg.InternalServerErrorMessage, result.Error)
-// 		mockSvc.AssertExpectations(t)
-// 	})
-
-// 	t.Run("failed_case_request_validation_error_delay_rate_is_negative", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
-
-// 		reqBody := `{
-//         "name": "my-service",
-//         "exception_rate": 10,
-//         "response_delay_rate": 20,
-//         "database_name": "service_db",
-//         "database_table_name": "data"
-//     }`
-
-// 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
-// 			return svc.Name == "my-service" &&
-// 				svc.ExceptionRate == 10 &&
-// 				svc.ResponseDelayRate == 20 &&
-// 				svc.DatabaseName == "service_db" &&
-// 				svc.DatabaseTableName == "data"
-// 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidResponseDelayRate))
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-// 		assert.Equal(t, pkg.InvalidResponseDelayRate, result.Error)
-// 		mockSvc.AssertExpectations(t)
-// 	})
-// 	t.Run("failed_case_request_validation_error_exception_rate_is_negative", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
-
-// 		reqBody := `{
-//         "name": "my-service",
-//         "exception_rate": 10,
-//         "response_delay_rate": 20,
-//         "database_name": "service_db",
-//         "database_table_name": "data"
-//     }`
-
-// 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
-// 			return svc.Name == "my-service" &&
-// 				svc.ExceptionRate == 10 &&
-// 				svc.ResponseDelayRate == 20 &&
-// 				svc.DatabaseName == "service_db" &&
-// 				svc.DatabaseTableName == "data"
-// 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidExceptionRate))
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-// 		assert.Equal(t, pkg.InvalidExceptionRate, result.Error)
-// 		mockSvc.AssertExpectations(t)
-// 	})
-
-// 	t.Run("failed_case_request_validation_error_fixed_delay_is_set_but_rate_is_0", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
-
-// 		reqBody := `{
-//         "name": "my-service",
-//         "exception_rate": 10,
-//         "response_delay_rate": 20,
-//         "database_name": "service_db",
-//         "database_table_name": "data"
-//     }`
-
-// 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
-// 			return svc.Name == "my-service" &&
-// 				svc.ExceptionRate == 10 &&
-// 				svc.ResponseDelayRate == 20 &&
-// 				svc.DatabaseName == "service_db" &&
-// 				svc.DatabaseTableName == "data"
-// 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidDelayConfiguration))
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-// 		assert.Equal(t, pkg.InvalidDelayConfiguration, result.Error)
-// 		mockSvc.AssertExpectations(t)
-// 	})
-// 	t.Run("failed_case_request_validation_error_min_is_greater_than_max", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services", handler.Create())
-
-// 		reqBody := `{
-//         "name": "my-service",
-//         "exception_rate": 10,
-//         "response_delay_rate": 20,
-//         "database_name": "service_db",
-//         "database_table_name": "data"
-//     }`
-
-// 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
-// 			return svc.Name == "my-service" &&
-// 				svc.ExceptionRate == 10 &&
-// 				svc.ResponseDelayRate == 20 &&
-// 				svc.DatabaseName == "service_db" &&
-// 				svc.DatabaseTableName == "data"
-// 		})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidRandomDelayRange))
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-// 		assert.Equal(t, pkg.InvalidRandomDelayRange, result.Error)
-// 		mockSvc.AssertExpectations(t)
-// 	})
-// }
+	handler := NewMotherServiceHandler(mockSrv)
+
+	assert.NotNil(t, handler)
+}
+
+func TestMotherServiceHandler_Create(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+
+		handler := NewMotherServiceHandler(mockSvc)
+
+		r := chi.NewRouter()
+		r.Post("/mother-services", handler.Create)
+
+		r.Post("/mother-services", handler.Create)
+
+		reqBody := `{
+        "name": "my-service",
+        "exception_rate": 10,
+        "response_delay_rate": 20,
+        "database_name": "service_db",
+        "database_table_name": "data"
+    }`
+
+		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+			return svc.Name == "my-service" &&
+				svc.ExceptionRate == 10 &&
+				svc.ResponseDelayRate == 20 &&
+				svc.DatabaseName == "service_db" &&
+				svc.DatabaseTableName == "data"
+		})).Return(nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+
+		r.ServeHTTP(rec, req)
+
+		var result response.SuccessResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, pkg.CreateMotherServiceSuccessfully, result.Message)
+
+		mockSvc.AssertExpectations(t)
+	})
+
+	// t.Run("failed_case_invalid_request", func(t *testing.T) {
+	// 	mockSvc := new(mocks.MockMotherService)
+
+	// 	handler := NewMotherServiceHandler(mockSvc)
+
+	// 	app := fiber.New(fiber.Config{})
+	// 	app.Post("/mother-services", handler.Create())
+
+	// 	reqBody := `sample`
+
+	// 	req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+	// 	req.Header.Set("Content-Type", "application/json")
+
+	// 	resp, _ := app.Test(req)
+	// 	defer resp.Body.Close()
+
+	// 	var result response.ErrorResponse
+	// 	bts, err := io.ReadAll(resp.Body)
+	// 	assert.Nil(t, err)
+
+	// 	err = json.Unmarshal(bts, &result)
+	// 	assert.Nil(t, err)
+
+	// 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	// 	assert.Equal(t, pkg.InvalidReqBody, result.Error)
+	// })
+
+	// t.Run("failed_case_required_fields_in_request_body", func(t *testing.T) {
+	// 	mockSvc := new(mocks.MockMotherService)
+
+	// 	handler := NewMotherServiceHandler(mockSvc)
+
+	// 	app := fiber.New(fiber.Config{})
+	// 	app.Post("/mother-services", handler.Create())
+
+	// 	reqBody := `{
+	//     "response_delay_rate": 10,
+	//     "database_name": "service_db",
+	//     "database_table_name": "data",
+	// }`
+	// 	req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+	// 	req.Header.Set("Content-Type", "application/json")
+
+	// 	resp, _ := app.Test(req)
+	// 	defer resp.Body.Close()
+
+	// 	var result response.ErrorResponse
+	// 	bts, err := io.ReadAll(resp.Body)
+	// 	assert.Nil(t, err)
+
+	// 	err = json.Unmarshal(bts, &result)
+	// 	assert.Nil(t, err)
+
+	// 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	// 	assert.Equal(t, pkg.InvalidReqBody, result.Error)
+	// })
+
+	// t.Run("success_case_with_nullable_values", func(t *testing.T) {
+	// 	mockSvc := new(mocks.MockMotherService)
+
+	// 	handler := NewMotherServiceHandler(mockSvc)
+
+	// 	app := fiber.New(fiber.Config{})
+	// 	app.Post("/mother-services", handler.Create())
+
+	// 	reqBody := `{
+	//     "name": "my-service",
+	//     "exception_rate": 10,
+	//     "response_delay_rate": 20,
+	// 	"response_delay_duration": 1,
+	// 	"random_response_delay_min": 2,
+	// 	"random_response_delay_max": 3,
+	//     "database_name": "service_db",
+	//     "database_table_name": "data"
+	// }`
+
+	// 	sampleOne := 1
+	// 	sampleTwo := 2
+	// 	sampleThree := 3
+
+	// 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+	// 		return svc.Name == "my-service" &&
+	// 			svc.ExceptionRate == 10 &&
+	// 			svc.ResponseDelayRate == 20 &&
+	// 			svc.ResponseDelayDuration != nil && *svc.ResponseDelayDuration == sampleOne &&
+	// 			svc.RandomResponseDelayMin != nil && *svc.RandomResponseDelayMin == sampleTwo &&
+	// 			svc.RandomResponseDelayMax != nil && *svc.RandomResponseDelayMax == sampleThree &&
+	// 			svc.DatabaseName == "service_db" &&
+	// 			svc.DatabaseTableName == "data"
+	// 	})).Return(nil)
+
+	// 	req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+	// 	req.Header.Set("Content-Type", "application/json")
+
+	// 	resp, _ := app.Test(req)
+	// 	defer resp.Body.Close()
+
+	// 	var result response.SuccessResponse
+	// 	bts, err := io.ReadAll(resp.Body)
+	// 	assert.Nil(t, err)
+
+	// 	err = json.Unmarshal(bts, &result)
+	// 	assert.Nil(t, err)
+
+	// 	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	// 	assert.Equal(t, pkg.CreateMotherServiceSuccessfully, result.Message)
+	// 	mockSvc.AssertExpectations(t)
+	// })
+
+	// t.Run("failed_case_duplication", func(t *testing.T) {
+	// 	mockSvc := new(mocks.MockMotherService)
+
+	// 	handler := NewMotherServiceHandler(mockSvc)
+
+	// 	app := fiber.New(fiber.Config{})
+	// 	app.Post("/mother-services", handler.Create())
+
+	// 	reqBody := `{
+	//     "name": "my-service",
+	//     "exception_rate": 10,
+	//     "response_delay_rate": 20,
+	//     "database_name": "service_db",
+	//     "database_table_name": "data"
+	// }`
+
+	// 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+	// 		return svc.Name == "my-service" &&
+	// 			svc.ExceptionRate == 10 &&
+	// 			svc.ResponseDelayRate == 20 &&
+	// 			svc.DatabaseName == "service_db" &&
+	// 			svc.DatabaseTableName == "data"
+	// 	})).Return(pkg.ErrMotherServiceAlreadyExist)
+
+	// 	req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+	// 	req.Header.Set("Content-Type", "application/json")
+
+	// 	resp, _ := app.Test(req)
+	// 	defer resp.Body.Close()
+
+	// 	var result response.ErrorResponse
+	// 	bts, err := io.ReadAll(resp.Body)
+	// 	assert.Nil(t, err)
+
+	// 	err = json.Unmarshal(bts, &result)
+	// 	assert.Nil(t, err)
+
+	// 	assert.Equal(t, http.StatusConflict, resp.StatusCode)
+	// 	assert.Equal(t, pkg.MotherServiceAlreadyExist, result.Error)
+	// 	mockSvc.AssertExpectations(t)
+	// })
+
+	// t.Run("failed_case_internal_error", func(t *testing.T) {
+	// 	mockSvc := new(mocks.MockMotherService)
+
+	// 	handler := NewMotherServiceHandler(mockSvc)
+
+	// 	app := fiber.New(fiber.Config{})
+	// 	app.Post("/mother-services", handler.Create())
+
+	// 	reqBody := `{
+	//     "name": "my-service",
+	//     "exception_rate": 10,
+	//     "response_delay_rate": 20,
+	//     "database_name": "service_db",
+	//     "database_table_name": "data"
+	// }`
+
+	// 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+	// 		return svc.Name == "my-service" &&
+	// 			svc.ExceptionRate == 10 &&
+	// 			svc.ResponseDelayRate == 20 &&
+	// 			svc.DatabaseName == "service_db" &&
+	// 			svc.DatabaseTableName == "data"
+	// 	})).Return(errors.New("internal error"))
+
+	// 	req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+	// 	req.Header.Set("Content-Type", "application/json")
+
+	// 	resp, _ := app.Test(req)
+	// 	defer resp.Body.Close()
+
+	// 	var result response.ErrorResponse
+	// 	bts, err := io.ReadAll(resp.Body)
+	// 	assert.Nil(t, err)
+
+	// 	err = json.Unmarshal(bts, &result)
+	// 	assert.Nil(t, err)
+
+	// 	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	// 	assert.Equal(t, pkg.InternalServerErrorMessage, result.Error)
+	// 	mockSvc.AssertExpectations(t)
+	// })
+
+	// t.Run("failed_case_request_validation_error_delay_rate_is_negative", func(t *testing.T) {
+	// 	mockSvc := new(mocks.MockMotherService)
+
+	// 	handler := NewMotherServiceHandler(mockSvc)
+
+	// 	app := fiber.New(fiber.Config{})
+	// 	app.Post("/mother-services", handler.Create())
+
+	// 	reqBody := `{
+	//     "name": "my-service",
+	//     "exception_rate": 10,
+	//     "response_delay_rate": 20,
+	//     "database_name": "service_db",
+	//     "database_table_name": "data"
+	// }`
+
+	// 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+	// 		return svc.Name == "my-service" &&
+	// 			svc.ExceptionRate == 10 &&
+	// 			svc.ResponseDelayRate == 20 &&
+	// 			svc.DatabaseName == "service_db" &&
+	// 			svc.DatabaseTableName == "data"
+	// 	})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidResponseDelayRate))
+
+	// 	req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+	// 	req.Header.Set("Content-Type", "application/json")
+
+	// 	resp, _ := app.Test(req)
+	// 	defer resp.Body.Close()
+
+	// 	var result response.ErrorResponse
+	// 	bts, err := io.ReadAll(resp.Body)
+	// 	assert.Nil(t, err)
+
+	// 	err = json.Unmarshal(bts, &result)
+	// 	assert.Nil(t, err)
+
+	// 	assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+	// 	assert.Equal(t, pkg.InvalidResponseDelayRate, result.Error)
+	// 	mockSvc.AssertExpectations(t)
+	// })
+
+	// t.Run("failed_case_request_validation_error_exception_rate_is_negative", func(t *testing.T) {
+	// 	mockSvc := new(mocks.MockMotherService)
+
+	// 	handler := NewMotherServiceHandler(mockSvc)
+
+	// 	app := fiber.New(fiber.Config{})
+	// 	app.Post("/mother-services", handler.Create())
+
+	// 	reqBody := `{
+	//     "name": "my-service",
+	//     "exception_rate": 10,
+	//     "response_delay_rate": 20,
+	//     "database_name": "service_db",
+	//     "database_table_name": "data"
+	// }`
+
+	// 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+	// 		return svc.Name == "my-service" &&
+	// 			svc.ExceptionRate == 10 &&
+	// 			svc.ResponseDelayRate == 20 &&
+	// 			svc.DatabaseName == "service_db" &&
+	// 			svc.DatabaseTableName == "data"
+	// 	})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidExceptionRate))
+
+	// 	req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+	// 	req.Header.Set("Content-Type", "application/json")
+
+	// 	resp, _ := app.Test(req)
+	// 	defer resp.Body.Close()
+
+	// 	var result response.ErrorResponse
+	// 	bts, err := io.ReadAll(resp.Body)
+	// 	assert.Nil(t, err)
+
+	// 	err = json.Unmarshal(bts, &result)
+	// 	assert.Nil(t, err)
+
+	// 	assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+	// 	assert.Equal(t, pkg.InvalidExceptionRate, result.Error)
+	// 	mockSvc.AssertExpectations(t)
+	// })
+
+	// t.Run("failed_case_request_validation_error_fixed_delay_is_set_but_rate_is_0", func(t *testing.T) {
+	// 	mockSvc := new(mocks.MockMotherService)
+
+	// 	handler := NewMotherServiceHandler(mockSvc)
+
+	// 	app := fiber.New(fiber.Config{})
+	// 	app.Post("/mother-services", handler.Create())
+
+	// 	reqBody := `{
+	//     "name": "my-service",
+	//     "exception_rate": 10,
+	//     "response_delay_rate": 20,
+	//     "database_name": "service_db",
+	//     "database_table_name": "data"
+	// }`
+
+	// 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+	// 		return svc.Name == "my-service" &&
+	// 			svc.ExceptionRate == 10 &&
+	// 			svc.ResponseDelayRate == 20 &&
+	// 			svc.DatabaseName == "service_db" &&
+	// 			svc.DatabaseTableName == "data"
+	// 	})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidDelayConfiguration))
+
+	// 	req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+	// 	req.Header.Set("Content-Type", "application/json")
+
+	// 	resp, _ := app.Test(req)
+	// 	defer resp.Body.Close()
+
+	// 	var result response.ErrorResponse
+	// 	bts, err := io.ReadAll(resp.Body)
+	// 	assert.Nil(t, err)
+
+	// 	err = json.Unmarshal(bts, &result)
+	// 	assert.Nil(t, err)
+
+	// 	assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+	// 	assert.Equal(t, pkg.InvalidDelayConfiguration, result.Error)
+	// 	mockSvc.AssertExpectations(t)
+	// })
+
+	// t.Run("failed_case_request_validation_error_min_is_greater_than_max", func(t *testing.T) {
+	// 	mockSvc := new(mocks.MockMotherService)
+
+	// 	handler := NewMotherServiceHandler(mockSvc)
+
+	// 	app := fiber.New(fiber.Config{})
+	// 	app.Post("/mother-services", handler.Create())
+
+	// 	reqBody := `{
+	//     "name": "my-service",
+	//     "exception_rate": 10,
+	//     "response_delay_rate": 20,
+	//     "database_name": "service_db",
+	//     "database_table_name": "data"
+	// }`
+
+	// 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(svc *entity.MotherService) bool {
+	// 		return svc.Name == "my-service" &&
+	// 			svc.ExceptionRate == 10 &&
+	// 			svc.ResponseDelayRate == 20 &&
+	// 			svc.DatabaseName == "service_db" &&
+	// 			svc.DatabaseTableName == "data"
+	// 	})).Return(fmt.Errorf("failed to validate request: %w", pkg.ErrInvalidRandomDelayRange))
+
+	// 	req := httptest.NewRequest(http.MethodPost, "/mother-services", strings.NewReader(reqBody))
+	// 	req.Header.Set("Content-Type", "application/json")
+
+	// 	resp, _ := app.Test(req)
+	// 	defer resp.Body.Close()
+
+	// 	var result response.ErrorResponse
+	// 	bts, err := io.ReadAll(resp.Body)
+	// 	assert.Nil(t, err)
+
+	// 	err = json.Unmarshal(bts, &result)
+	// 	assert.Nil(t, err)
+
+	// 	assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+	// 	assert.Equal(t, pkg.InvalidRandomDelayRange, result.Error)
+	// 	mockSvc.AssertExpectations(t)
+	// })
+}
 
 // func TestMotherServiceHandler_GetByID(t *testing.T) {
 // 	t.Run("success_case", func(t *testing.T) {
