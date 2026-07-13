@@ -2,6 +2,7 @@ package handler
 
 import (
 	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/internal/usecase/mocks"
 	"control-panel-service/pkg"
@@ -572,368 +573,319 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 	})
 }
 
-// func TestMotherServiceHandler_GetPaginated(t *testing.T) {
-// 	t.Run("success_case", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/search", handler.GetPaginated())
-
-// 		sampleString := "sample"
-// 		sampleNum := 1
-// 		sampleReq := request.PaginationRequest{
-// 			Page:    1,
-// 			PerPage: 2,
-// 		}
-// 		sampleSvcReq := entity.PaginationRequest{
-// 			Page:    sampleReq.Page,
-// 			PerPage: sampleReq.PerPage,
-// 		}
-// 		count := int64(2)
-// 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
-// 		expectedMotherServices := []*entity.MotherService{
-// 			{
-// 				ID:                       uint64(5),
-// 				Name:                     "mother1",
-// 				Status:                   entity.MotherServiceStatusRunning,
-// 				DatabaseName:             "db1",
-// 				DatabaseTableName:        "factorial",
-// 				ServiceDeploymentAddress: &sampleString,
-// 				ResponseDelayDuration:    &sampleNum,
-// 				RandomResponseDelayMin:   &sampleNum,
-// 				RandomResponseDelayMax:   &sampleNum,
-// 			},
-// 			{
-// 				ID:                       uint64(4),
-// 				Name:                     "mother2",
-// 				Status:                   entity.MotherServiceStatusRunning,
-// 				DatabaseName:             "db1",
-// 				DatabaseTableName:        "factorial",
-// 				ServiceDeploymentAddress: &sampleString,
-// 				ResponseDelayDuration:    &sampleNum,
-// 				RandomResponseDelayMin:   &sampleNum,
-// 				RandomResponseDelayMax:   &sampleNum,
-// 			},
-// 		}
-
-// 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, count, nil)
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		var result response.PaginatedMotherServices
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, result.Total, count)
-// 		assert.Equal(t, result.Data[0].Name, expectedMotherServices[0].Name)
-// 		assert.Equal(t, result.Data[1].Name, expectedMotherServices[1].Name)
-// 		mockSvc.AssertExpectations(t)
-// 	})
-
-// 	t.Run("success_case_with_nil_values", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-
-// 		handler := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/search", handler.GetPaginated())
-
-// 		sampleReq := request.PaginationRequest{
-// 			Page:    1,
-// 			PerPage: 2,
-// 		}
-// 		sampleSvcReq := entity.PaginationRequest{
-// 			Page:    sampleReq.Page,
-// 			PerPage: sampleReq.PerPage,
-// 		}
-// 		count := int64(2)
-// 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
-// 		expectedMotherServices := []*entity.MotherService{
-// 			{
-// 				ID:                uint64(5),
-// 				Name:              "mother1",
-// 				Status:            entity.MotherServiceStatusRunning,
-// 				DatabaseName:      "db1",
-// 				DatabaseTableName: "factorial",
-// 			},
-// 			{
-// 				ID:                uint64(4),
-// 				Name:              "mother2",
-// 				Status:            entity.MotherServiceStatusRunning,
-// 				DatabaseName:      "db1",
-// 				DatabaseTableName: "factorial",
-// 			},
-// 		}
+func TestMotherServiceHandler_GetPaginated(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+
+		handler := NewMotherServiceHandler(mockSvc)
+
+		r := chi.NewRouter()
+		r.Post("/mother-services/search", handler.GetPaginated)
+
+		sampleString := "sample"
+		sampleNum := 1
+		sampleReq := request.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		sampleSvcReq := entity.PaginationRequest{
+			Page:    sampleReq.Page,
+			PerPage: sampleReq.PerPage,
+		}
+		count := int64(2)
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
+		expectedMotherServices := []*entity.MotherService{
+			{
+				ID:                       uint64(5),
+				Name:                     "mother1",
+				Status:                   entity.MotherServiceStatusRunning,
+				DatabaseName:             "db1",
+				DatabaseTableName:        "factorial",
+				ServiceDeploymentAddress: &sampleString,
+				ResponseDelayDuration:    &sampleNum,
+				RandomResponseDelayMin:   &sampleNum,
+				RandomResponseDelayMax:   &sampleNum,
+			},
+			{
+				ID:                       uint64(4),
+				Name:                     "mother2",
+				Status:                   entity.MotherServiceStatusRunning,
+				DatabaseName:             "db1",
+				DatabaseTableName:        "factorial",
+				ServiceDeploymentAddress: &sampleString,
+				ResponseDelayDuration:    &sampleNum,
+				RandomResponseDelayMin:   &sampleNum,
+				RandomResponseDelayMax:   &sampleNum,
+			},
+		}
+
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, count, nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		var result response.PaginatedMotherServices
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, result.Total, count)
+		assert.Equal(t, result.Data[0].Name, expectedMotherServices[0].Name)
+		assert.Equal(t, result.Data[1].Name, expectedMotherServices[1].Name)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("success_case_with_nil_values", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+
+		handler := NewMotherServiceHandler(mockSvc)
+
+		r := chi.NewRouter()
+		r.Post("/mother-services/search", handler.GetPaginated)
+
+		sampleReq := request.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		sampleSvcReq := entity.PaginationRequest{
+			Page:    sampleReq.Page,
+			PerPage: sampleReq.PerPage,
+		}
+		count := int64(2)
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
+		expectedMotherServices := []*entity.MotherService{
+			{
+				ID:                uint64(5),
+				Name:              "mother1",
+				Status:            entity.MotherServiceStatusRunning,
+				DatabaseName:      "db1",
+				DatabaseTableName: "factorial",
+			},
+			{
+				ID:                uint64(4),
+				Name:              "mother2",
+				Status:            entity.MotherServiceStatusRunning,
+				DatabaseName:      "db1",
+				DatabaseTableName: "factorial",
+			},
+		}
+
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, count, nil)
 
-// 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(expectedMotherServices, count, nil)
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
 
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		var result response.PaginatedMotherServices
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		var result response.PaginatedMotherServices
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, result.Data[0].Name, expectedMotherServices[0].Name)
+		assert.Equal(t, result.Total, count)
+		assert.Equal(t, result.Data[1].Name, expectedMotherServices[1].Name)
+		mockSvc.AssertExpectations(t)
+	})
 
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
+	t.Run("failed_case_invalid_request", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
 
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, result.Data[0].Name, expectedMotherServices[0].Name)
-// 		assert.Equal(t, result.Total, count)
-// 		assert.Equal(t, result.Data[1].Name, expectedMotherServices[1].Name)
-// 		mockSvc.AssertExpectations(t)
-// 	})
+		handler := NewMotherServiceHandler(mockSvc)
 
-// 	t.Run("failed_case_invalid_request", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
+		r := chi.NewRouter()
+		r.Post("/mother-services/search", handler.GetPaginated)
 
-// 		handler := NewMotherServiceHandler(mockSvc)
+		reqBody := `{"page": ewy,"per_page": erw}`
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/search", handler.GetPaginated())
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
 
-// 		reqBody := `{"page": ewy,"per_page": erw}`
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
 
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+	t.Run("failed_case_invalid_request_negative_page_or_per_page", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
 
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
+		handler := NewMotherServiceHandler(mockSvc)
 
-// 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-// 	})
+		r := chi.NewRouter()
+		r.Post("/mother-services/search", handler.GetPaginated)
 
-// 	t.Run("failed_case_invalid_request_negative_page_or_per_page", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
+		reqBody := `{"page": -1,"per_page": 3}`
 
-// 		handler := NewMotherServiceHandler(mockSvc)
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/search", handler.GetPaginated())
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		reqBody := `{"page": -1,"per_page": 3}`
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+	t.Run("failed_case_internal_server_error", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
 
-// 		var result response.ErrorResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		handler := NewMotherServiceHandler(mockSvc)
 
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
+		r := chi.NewRouter()
+		r.Post("/mother-services/search", handler.GetPaginated)
 
-// 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-// 	})
+		sampleReq := request.PaginationRequest{
+			Page:    1,
+			PerPage: 2,
+		}
+		sampleSvcReq := entity.PaginationRequest{
+			Page:    sampleReq.Page,
+			PerPage: sampleReq.PerPage,
+		}
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
 
-// 	t.Run("failed_case_internal_server_error", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(nil, int64(0), errors.New("error happened"))
 
-// 		handler := NewMotherServiceHandler(mockSvc)
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/search", handler.GetPaginated())
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		sampleReq := request.PaginationRequest{
-// 			Page:    1,
-// 			PerPage: 2,
-// 		}
-// 		sampleSvcReq := entity.PaginationRequest{
-// 			Page:    sampleReq.Page,
-// 			PerPage: sampleReq.PerPage,
-// 		}
-// 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return(nil, int64(0), errors.New("error happened"))
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		mockSvc.AssertExpectations(t)
+	})
 
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
+	t.Run("success_case_empty_result", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		handler := NewMotherServiceHandler(mockSvc)
 
-// 		var result response.ErrorResponse
+		r := chi.NewRouter()
+		r.Post("/mother-services/search", handler.GetPaginated)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		sampleReq := request.PaginationRequest{
+			Page:    0,
+			PerPage: 0,
+		}
+		sampleSvcReq := entity.PaginationRequest{
+			Page:    sampleReq.Page,
+			PerPage: sampleReq.PerPage,
+		}
+		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
 
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
+		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return([]*entity.MotherService{}, int64(0), nil)
 
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 		mockSvc.AssertExpectations(t)
-// 	})
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
+		req.Header.Set("Content-Type", "application/json")
 
-// 	t.Run("success_case_empty_result", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		handler := NewMotherServiceHandler(mockSvc)
+		var result response.PaginatedMotherServices
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/search", handler.GetPaginated())
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, result.Total, int64(0))
+		assert.Equal(t, result.Data, []response.MotherService(nil))
+		mockSvc.AssertExpectations(t)
+	})
+}
 
-// 		sampleReq := request.PaginationRequest{
-// 			Page:    0,
-// 			PerPage: 0,
-// 		}
-// 		sampleSvcReq := entity.PaginationRequest{
-// 			Page:    sampleReq.Page,
-// 			PerPage: sampleReq.PerPage,
-// 		}
-// 		reqBody := fmt.Sprintf(`{"page": %d,"per_page": %d}`, sampleReq.Page, sampleReq.PerPage)
+func TestMotherServiceHandler_Delete(t *testing.T) {
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
 
-// 		mockSvc.On("GetPaginated", mock.Anything, sampleSvcReq).Return([]*entity.MotherService{}, int64(0), nil)
+		h := NewMotherServiceHandler(mockSvc)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/search", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
+		r := chi.NewRouter()
+		r.Post("/mother-services/{id}/delete", h.Delete)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1sdf/delete", nil)
 
-// 		var result response.PaginatedMotherServices
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, pkg.InvalidIDInParams, result.Error)
+	})
 
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, result.Total, int64(0))
-// 		assert.Equal(t, result.Data, []response.MotherService(nil))
-// 		mockSvc.AssertExpectations(t)
-// 	})
-// }
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		mockSvc.On("Delete", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewMotherServiceHandler(mockSvc)
 
-// func TestMotherServiceHandler_Delete(t *testing.T) {
-// 	_, err := config.LoadConfig()
-// 	assert.Nil(t, err)
+		r := chi.NewRouter()
+		r.Post("/mother-services/{id}/delete", h.Delete)
 
-// 	t.Run("error_missing_id_in_param", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/delete", nil)
 
-// 		h := NewMotherServiceHandler(mockSvc)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/:id/delete", h.Delete())
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
 
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/", nil)
+	t.Run("error_item_not_found", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		mockSvc.On("Delete", mock.Anything, uint64(1)).Return(pkg.ErrMotherServiceNotFound)
+		h := NewMotherServiceHandler(mockSvc)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		r := chi.NewRouter()
+		r.Post("/mother-services/{id}/delete", h.Delete)
 
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 	})
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/delete", nil)
 
-// 	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		h := NewMotherServiceHandler(mockSvc)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/:id/delete", h.Delete())
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, pkg.MotherServiceNotFound, result.Error)
+	})
 
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/1sdf/delete", nil)
+	t.Run("success_case", func(t *testing.T) {
+		mockSvc := new(mocks.MockMotherService)
+		mockSvc.On("Delete", mock.Anything, uint64(1)).Return(nil)
+		h := NewMotherServiceHandler(mockSvc)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		r := chi.NewRouter()
+		r.Post("/mother-services/{id}/delete", h.Delete)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/delete", nil)
 
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-// 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
-// 	})
+		var result response.SuccessResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-// 		mockSvc.On("Delete", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
-// 		h := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/:id/delete", h.Delete())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/delete", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 	})
-
-// 	t.Run("error_item_not_found", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-// 		mockSvc.On("Delete", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
-// 		h := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/:id/delete", h.Delete())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/delete", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
-// 	})
-
-// 	t.Run("success_case", func(t *testing.T) {
-// 		mockSvc := new(mocks.MockMotherService)
-// 		mockSvc.On("Delete", mock.Anything, uint64(1)).Return(nil)
-// 		h := NewMotherServiceHandler(mockSvc)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/mother-services/:id/delete", h.Delete())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/mother-services/1/delete", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		var response response.SuccessResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, response.Message, pkg.MotherServiceDelete)
-// 	})
-
-// }
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, pkg.MotherServiceDelete, result.Message)
+	})
+}
