@@ -1,188 +1,204 @@
 package handler
 
-// import (
-// 	"control-panel-service/internal/domain/entity"
-// 	"control-panel-service/internal/server/dto/response"
-// 	"control-panel-service/internal/usecase/mocks"
-// 	"encoding/json"
-// 	"errors"
-// 	"io"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"strings"
-// 	"testing"
+import (
+	"control-panel-service/internal/domain/entity"
+	"control-panel-service/internal/server/dto/response"
+	"control-panel-service/internal/usecase/mocks"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
 
-// 	"github.com/gofiber/fiber/v2"
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/mock"
-// 	"github.com/stretchr/testify/require"
-// )
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
 
-// func TestDatabaseMetadata_Initialization(t *testing.T) {
-// 	mockSrv := new(mocks.MockDatabaseMetadataUsecase)
+func TestDatabaseMetadata_Initialization(t *testing.T) {
+	mockSrv := new(mocks.MockDatabaseMetadataUsecase)
 
-// 	handler := NewDatabaseMetadataHandler(mockSrv)
+	handler := NewDatabaseMetadataHandler(mockSrv)
 
-// 	assert.NotNil(t, handler)
+	assert.NotNil(t, handler)
 
-// 	assert.NotNil(t, handler.databaseMetaDataService)
-// }
+	assert.NotNil(t, handler.databaseMetaDataService)
+}
 
-// func TestStorageHandler_GetDatabases(t *testing.T) {
-// 	t.Run("success_case", func(t *testing.T) {
-// 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
-// 		handler := NewDatabaseMetadataHandler(mockUC)
+func TestStorageHandler_GetDatabases(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
+		mockUC := new(mocks.MockDatabaseMetadataUsecase)
+		handler := NewDatabaseMetadataHandler(mockUC)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Get("/databases", handler.GetAll())
+		r := chi.NewRouter()
+		r.Get("/databases", handler.GetAll)
 
-// 		expectedDatabases := []string{"db1", "db2"}
-// 		mockUC.On("GetAll", mock.Anything).Return(expectedDatabases, nil)
+		expectedDatabases := []string{"db1", "db2"}
+		mockUC.On("GetAll", mock.Anything).Return(expectedDatabases, nil)
 
-// 		req := httptest.NewRequest(http.MethodGet, "/databases", nil)
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		req := httptest.NewRequest(http.MethodGet, "/databases", nil)
+		rec := httptest.NewRecorder()
 
-// 		var result response.DatabaseMetadataDatabasesResponse
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		r.ServeHTTP(rec, req)
 
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
+		assert.Equal(t, http.StatusOK, rec.Code)
 
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, expectedDatabases, result.Data)
+		var result response.DatabaseMetadataDatabasesResponse
+		err := json.NewDecoder(rec.Body).Decode(&result)
+		assert.NoError(t, err)
 
-// 		mockUC.AssertExpectations(t)
-// 	})
+		assert.Equal(t, expectedDatabases, result.Data)
 
-// 	t.Run("failure_case_usecase_error", func(t *testing.T) {
-// 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
-// 		handler := NewDatabaseMetadataHandler(mockUC)
+		mockUC.AssertExpectations(t)
+	})
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Get("/databases", handler.GetAll())
+	t.Run("failure_case_usecase_error", func(t *testing.T) {
+		mockUC := new(mocks.MockDatabaseMetadataUsecase)
+		handler := NewDatabaseMetadataHandler(mockUC)
 
-// 		mockUC.On("GetAll", mock.Anything).Return([]string{}, errors.New("db error"))
+		r := chi.NewRouter()
+		r.Get("/databases", handler.GetAll)
 
-// 		req := httptest.NewRequest(http.MethodGet, "/databases", nil)
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		mockUC.On("GetAll", mock.Anything).Return([]string{}, errors.New("db error"))
 
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 		mockUC.AssertExpectations(t)
-// 	})
-// }
+		req := httptest.NewRequest(http.MethodGet, "/databases", nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
-// 	t.Run("success_case", func(t *testing.T) {
-// 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
-// 		handler := NewDatabaseMetadataHandler(mockUC)
-// 		app := fiber.New()
-// 		app.Post("/databases/tables", handler.GetTablesByDBNamePost())
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		mockUC.AssertExpectations(t)
+	})
+}
 
-// 		reqBody := `{"database_name": "testdb"}`
-// 		expectedMotherTables := []string{"mother11", "mother2"}
-// 		expectedTestTables := []string{"test11", "test2"}
+func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
+	t.Run("success_case", func(t *testing.T) {
+		mockUC := new(mocks.MockDatabaseMetadataUsecase)
+		handler := NewDatabaseMetadataHandler(mockUC)
 
-// 		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").Return(&entity.TablesByType{
-// 			MotherTables: expectedMotherTables,
-// 			TestTables:   expectedTestTables,
-// 		}, nil)
+		r := chi.NewRouter()
+		r.Post("/databases/tables", handler.GetTablesByDBNamePost)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
+		reqBody := `{"database_name": "testdb"}`
 
-// 		resp, err := app.Test(req)
-// 		require.NoError(t, err)
-// 		defer resp.Body.Close()
+		expectedMotherTables := []string{"mother11", "mother2"}
+		expectedTestTables := []string{"test11", "test2"}
 
-// 		var result response.TablesByType
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").
+			Return(&entity.TablesByType{
+				MotherTables: expectedMotherTables,
+				TestTables:   expectedTestTables,
+			}, nil)
 
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, expectedMotherTables, result.MotherTables)
-// 		assert.Equal(t, expectedTestTables, result.TestTables)
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/databases/tables",
+			strings.NewReader(reqBody),
+		)
+		req.Header.Set("Content-Type", "application/json")
 
-// 		mockUC.AssertExpectations(t)
-// 	})
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 	t.Run("success_case_empty_result", func(t *testing.T) {
-// 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
-// 		handler := NewDatabaseMetadataHandler(mockUC)
-// 		app := fiber.New()
-// 		app.Post("/databases/tables", handler.GetTablesByDBNamePost())
+		assert.Equal(t, http.StatusOK, rec.Code)
 
-// 		reqBody := `{"database_name": "testdb"}`
-// 		expectedMotherTables := []string{}
-// 		expectedTestTables := []string{}
+		var result response.TablesByType
+		err := json.NewDecoder(rec.Body).Decode(&result)
+		assert.NoError(t, err)
 
-// 		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").Return(nil, nil)
+		assert.Equal(t, expectedMotherTables, result.MotherTables)
+		assert.Equal(t, expectedTestTables, result.TestTables)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader(reqBody))
-// 		req.Header.Set("Content-Type", "application/json")
+		mockUC.AssertExpectations(t)
+	})
 
-// 		resp, err := app.Test(req)
-// 		require.NoError(t, err)
-// 		defer resp.Body.Close()
+	t.Run("success_case_empty_result", func(t *testing.T) {
+		mockUC := new(mocks.MockDatabaseMetadataUsecase)
+		handler := NewDatabaseMetadataHandler(mockUC)
 
-// 		var result response.TablesByType
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		r := chi.NewRouter()
+		r.Post("/databases/tables", handler.GetTablesByDBNamePost)
 
-// 		err = json.Unmarshal(bts, &result)
-// 		assert.Nil(t, err)
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, expectedMotherTables, result.MotherTables)
-// 		assert.Equal(t, expectedTestTables, result.TestTables)
+		reqBody := `{"database_name": "testdb"}`
 
-// 		mockUC.AssertExpectations(t)
-// 	})
+		expectedMotherTables := []string{}
+		expectedTestTables := []string{}
 
-// 	t.Run("failure_case_bad_request_body", func(t *testing.T) {
-// 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
-// 		handler := NewDatabaseMetadataHandler(mockUC)
-// 		app := fiber.New()
-// 		app.Post("/databases/tables", handler.GetTablesByDBNamePost())
+		mockUC.
+			On("GetTablesByDBName", mock.Anything, "testdb").
+			Return(nil, nil)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader("invalid json"))
-// 		req.Header.Set("Content-Type", "application/json")
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/databases/tables",
+			strings.NewReader(reqBody),
+		)
+		req.Header.Set("Content-Type", "application/json")
 
-// 		resp, err := app.Test(req)
-// 		require.NoError(t, err)
-// 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-// 	})
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 	t.Run("failure_case_missing_database_name", func(t *testing.T) {
-// 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
-// 		handler := NewDatabaseMetadataHandler(mockUC)
-// 		app := fiber.New()
-// 		app.Post("/databases/tables", handler.GetTablesByDBNamePost())
+		assert.Equal(t, http.StatusOK, rec.Code)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader(`{"database_name": ""}`))
-// 		req.Header.Set("Content-Type", "application/json")
+		var result response.TablesByType
+		err := json.NewDecoder(rec.Body).Decode(&result)
+		require.NoError(t, err)
 
-// 		resp, err := app.Test(req)
-// 		require.NoError(t, err)
-// 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-// 	})
+		assert.Equal(t, expectedMotherTables, result.MotherTables)
+		assert.Equal(t, expectedTestTables, result.TestTables)
 
-// 	t.Run("failure_case_usecase_error", func(t *testing.T) {
-// 		mockUC := new(mocks.MockDatabaseMetadataUsecase)
-// 		handler := NewDatabaseMetadataHandler(mockUC)
-// 		app := fiber.New()
-// 		app.Post("/databases/tables", handler.GetTablesByDBNamePost())
+		mockUC.AssertExpectations(t)
+	})
 
-// 		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").Return(nil, errors.New("query failed"))
+	t.Run("failure_case_bad_request_body", func(t *testing.T) {
+		mockUC := new(mocks.MockDatabaseMetadataUsecase)
+		handler := NewDatabaseMetadataHandler(mockUC)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader(`{"database_name": "testdb"}`))
-// 		req.Header.Set("Content-Type", "application/json")
+		r := chi.NewRouter()
+		r.Post("/databases/tables", handler.GetTablesByDBNamePost)
 
-// 		resp, err := app.Test(req)
-// 		require.NoError(t, err)
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 	})
-// }
+		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader("invalid json"))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("failure_case_missing_database_name", func(t *testing.T) {
+		mockUC := new(mocks.MockDatabaseMetadataUsecase)
+		handler := NewDatabaseMetadataHandler(mockUC)
+		r := chi.NewRouter()
+		r.Post("/databases/tables", handler.GetTablesByDBNamePost)
+
+		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader(`{"database_name": ""}`))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("failure_case_usecase_error", func(t *testing.T) {
+		mockUC := new(mocks.MockDatabaseMetadataUsecase)
+		handler := NewDatabaseMetadataHandler(mockUC)
+		r := chi.NewRouter()
+		r.Post("/databases/tables", handler.GetTablesByDBNamePost)
+
+		mockUC.On("GetTablesByDBName", mock.Anything, "testdb").Return(nil, errors.New("query failed"))
+
+		req := httptest.NewRequest(http.MethodPost, "/databases/tables", strings.NewReader(`{"database_name": "testdb"}`))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
+}
