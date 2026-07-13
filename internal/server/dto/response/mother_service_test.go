@@ -44,20 +44,22 @@ func TestFromMotherServiceEntity(t *testing.T) {
 		result := &MotherServiceResponseByID{}
 		result.FromMotherServiceEntity(entityMother)
 
-		expected := &MotherService{
-			ID:                       1,
-			CreatedAt:                now,
-			UpdatedAt:                now,
-			Name:                     "Service A",
-			ExceptionRate:            1,
-			ResponseDelayRate:        1,
-			ResponseDelayDuration:    &duration,
-			RandomResponseDelayMin:   &minDelay,
-			RandomResponseDelayMax:   &maxDelay,
-			Status:                   "ACTIVE",
-			ServiceDeploymentAddress: new("127.0.0.1:8080"),
-			DatabaseName:             "db_main",
-			DatabaseTableName:        "table_a",
+		expected := &MotherServiceResponseByID{
+			Data: MotherService{
+				ID:                       1,
+				CreatedAt:                now,
+				UpdatedAt:                now,
+				Name:                     "Service A",
+				ExceptionRate:            1,
+				ResponseDelayRate:        1,
+				ResponseDelayDuration:    &duration,
+				RandomResponseDelayMin:   &minDelay,
+				RandomResponseDelayMax:   &maxDelay,
+				Status:                   "ACTIVE",
+				ServiceDeploymentAddress: new("127.0.0.1:8080"),
+				DatabaseName:             "db_main",
+				DatabaseTableName:        "table_a",
+			},
 		}
 
 		if !reflect.DeepEqual(result, expected) {
@@ -77,12 +79,14 @@ func TestFromMotherServiceEntity(t *testing.T) {
 		result := &MotherServiceResponseByID{}
 		result.FromMotherServiceEntity(entityMother)
 
-		expected := &MotherService{
-			ID:                     2,
-			Name:                   "Service B",
-			ResponseDelayDuration:  nil,
-			RandomResponseDelayMin: nil,
-			RandomResponseDelayMax: nil,
+		expected := &MotherServiceResponseByID{
+			Data: MotherService{
+				ID:                     2,
+				Name:                   "Service B",
+				ResponseDelayDuration:  nil,
+				RandomResponseDelayMin: nil,
+				RandomResponseDelayMax: nil,
+			},
 		}
 
 		if !reflect.DeepEqual(result, expected) {
