@@ -125,9 +125,17 @@ func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
 		expectedMotherTables := []string{}
 		expectedTestTables := []string{}
 
+		// mockUC.
+		// 	On("GetTablesByDBName", mock.Anything, "testdb").
+		// 	Return([]string{}, []string{}, nil)
+		// Return(nil, nil)
+
 		mockUC.
 			On("GetTablesByDBName", mock.Anything, "testdb").
-			Return(nil, nil)
+			Return(&entity.TablesByType{
+				MotherTables: []string{},
+				TestTables:   []string{},
+			}, nil)
 
 		req := httptest.NewRequest(
 			http.MethodPost,
@@ -137,9 +145,10 @@ func TestStorageHandler_GetTablesByDBNamePost(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 
 		rec := httptest.NewRecorder()
+
 		r.ServeHTTP(rec, req)
 
-		assert.Equal(t, http.StatusOK, rec.Code)
+		require.Equal(t, http.StatusOK, rec.Code)
 
 		var result response.TablesByType
 		err := json.NewDecoder(rec.Body).Decode(&result)
