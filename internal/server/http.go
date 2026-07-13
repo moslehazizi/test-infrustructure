@@ -189,8 +189,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	// testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
 	// testScenarioOperationHandler := handler.NewTestScenarioOperationHandler(testScenarioOperationUsecase)
-	// databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db, cfg))
-	// databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
+	databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db, cfg))
+	databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
 
 	// apiV1 := app.Group("/api/v1")
 
@@ -220,8 +220,8 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		// app.Post("/test-scenarios/:id/delete", testScenarioOperationHandler.Delete())
 
 		// database-metadata
-		// app.Get("/databases", databaseMetadataHandler.GetAll())
-		// app.Post("/databases/tables", databaseMetadataHandler.GetTablesByDBNamePost())
+		app.Get("/databases", databaseMetadataHandler.GetAll)
+		app.Post("/databases/tables", databaseMetadataHandler.GetTablesByDBNamePost)
 
 		// swagger endpoint
 		// app.Get("/docs/*", swaggerHandler)
