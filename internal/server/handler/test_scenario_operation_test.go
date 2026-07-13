@@ -1,561 +1,416 @@
 package handler
 
-// import (
-// 	"control-panel-service/config"
-// 	"control-panel-service/internal/server/dto/response"
-// 	"control-panel-service/internal/usecase/mocks"
-// 	"control-panel-service/pkg"
-// 	"encoding/json"
-// 	"errors"
-// 	"io"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"testing"
+import (
+	"control-panel-service/internal/server/dto/response"
+	"control-panel-service/internal/usecase/mocks"
+	"control-panel-service/pkg"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
-// 	"github.com/gofiber/fiber/v2"
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/mock"
-// )
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
 
-// func TestTestScenario_Start(t *testing.T) {
-// 	_, err := config.LoadConfig()
-// 	assert.Nil(t, err)
+func TestTestScenarioOperation_Start(t *testing.T) {
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 	t.Run("error_missing_id_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		h := NewTestScenarioOperationHandler(srv)
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/start", h.Start)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/start", h.Start())
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/start", nil)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 	})
-// 	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, pkg.InvalidIDInParams, result.Error)
+	})
 
-// 		h := NewTestScenarioOperationHandler(srv)
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Start", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/start", h.Start())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/start", h.Start)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/start", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
 
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+	t.Run("error_item_not_found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Start", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-// 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
-// 	})
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/start", h.Start)
 
-// 	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Start", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
-// 		h := NewTestScenarioOperationHandler(srv)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/start", h.Start())
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, pkg.TestScenarioNotFound, result.Error)
+	})
 
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 	})
-// 	t.Run("error_item_not_found", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Start", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
-// 		h := NewTestScenarioOperationHandler(srv)
+	t.Run("success_case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Start", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/start", h.Start())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/start", h.Start)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		var result response.SuccessResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, pkg.TestScenarioStarted, result.Message)
+	})
+}
 
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
-// 	})
+func TestTestScenarioOperation_Pause(t *testing.T) {
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 	t.Run("success_case", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Start", mock.Anything, uint64(1)).Return(nil)
-// 		h := NewTestScenarioOperationHandler(srv)
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/pause", h.Pause)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/start", h.Start())
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/pause", nil)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/start", nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, pkg.InvalidIDInParams, result.Error)
+	})
 
-// 		var response response.SuccessResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Pause", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, response.Message, pkg.TestScenarioStarted)
-// 	})
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/pause", h.Pause)
 
-// }
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/pause", nil)
 
-// func TestTestScenario_Pause(t *testing.T) {
-// 	_, err := config.LoadConfig()
-// 	assert.Nil(t, err)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 	t.Run("error_missing_id_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		h := NewTestScenarioOperationHandler(srv)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/pause", h.Pause())
+	t.Run("error_item_not_found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Pause", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/pause", h.Pause)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/pause", nil)
 
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 	})
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		h := NewTestScenarioOperationHandler(srv)
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, pkg.TestScenarioNotFound, result.Error)
+	})
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/pause", h.Pause())
+	t.Run("success_case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Pause", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/pause", nil)
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/pause", h.Pause)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/pause", nil)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+		var result response.SuccessResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-// 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
-// 	})
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, pkg.TestScenarioPaused, result.Message)
+	})
+}
 
-// 	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Pause", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
-// 		h := NewTestScenarioOperationHandler(srv)
+func TestTestScenarioOperation_Resume(t *testing.T) {
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/pause", h.Pause())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/resume", h.Resume)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/pause", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/resume", nil)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 	})
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 	t.Run("error_item_not_found", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Pause", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
-// 		h := NewTestScenarioOperationHandler(srv)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, pkg.InvalidIDInParams, result.Error)
+	})
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/pause", h.Pause())
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Resume", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/pause", nil)
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/resume", h.Resume)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/resume", nil)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
 
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
-// 	})
+	t.Run("error_item_not_found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Resume", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 	t.Run("success_case", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Pause", mock.Anything, uint64(1)).Return(nil)
-// 		h := NewTestScenarioOperationHandler(srv)
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/resume", h.Resume)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/pause", h.Pause())
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/resume", nil)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/pause", nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, pkg.TestScenarioNotFound, result.Error)
+	})
 
-// 		var response response.SuccessResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+	t.Run("success_case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Resume", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, response.Message, pkg.TestScenarioPaused)
-// 	})
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/resume", h.Resume)
 
-// }
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/resume", nil)
 
-// func TestTestScenario_Resume(t *testing.T) {
-// 	_, err := config.LoadConfig()
-// 	assert.Nil(t, err)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 	t.Run("error_missing_id_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		h := NewTestScenarioOperationHandler(srv)
+		var result response.SuccessResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/resume", h.Resume())
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, pkg.TestScenarioResumed, result.Message)
+	})
+}
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
+func TestTestScenarioOperation_Stop(t *testing.T) {
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/stop", h.Stop)
 
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 	})
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/stop", nil)
 
-// 	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		h := NewTestScenarioOperationHandler(srv)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/resume", h.Resume())
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, pkg.InvalidIDInParams, result.Error)
+	})
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/resume", nil)
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Stop", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/stop", h.Stop)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
 
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-// 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
-// 	})
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
 
-// 	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Resume", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
-// 		h := NewTestScenarioOperationHandler(srv)
+	t.Run("error_item_not_found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Stop", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/resume", h.Resume())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/stop", h.Stop)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/resume", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 	})
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 	t.Run("error_item_not_found", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Resume", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
-// 		h := NewTestScenarioOperationHandler(srv)
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, pkg.TestScenarioNotFound, result.Error)
+	})
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/resume", h.Resume())
+	t.Run("success_case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Stop", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/resume", nil)
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/stop", h.Stop)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+		var result response.SuccessResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
-// 	})
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, pkg.TestScenarioStop, result.Message)
+	})
+}
 
-// 	t.Run("success_case", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Resume", mock.Anything, uint64(1)).Return(nil)
-// 		h := NewTestScenarioOperationHandler(srv)
+func TestTestScenarioOperation_Delete(t *testing.T) {
+	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/resume", h.Resume())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/delete", h.Delete)
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/resume", nil)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1sdf/delete", nil)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		var response response.SuccessResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, pkg.InvalidIDInParams, result.Error)
+	})
 
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, response.Message, pkg.TestScenarioResumed)
-// 	})
+	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Delete", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
+		h := NewTestScenarioOperationHandler(srv)
 
-// }
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/delete", h.Delete)
 
-// func TestTestScenario_Stop(t *testing.T) {
-// 	_, err := config.LoadConfig()
-// 	assert.Nil(t, err)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/delete", nil)
 
-// 	t.Run("error_missing_id_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		h := NewTestScenarioOperationHandler(srv)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/stop", h.Stop())
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
+	t.Run("error_item_not_found", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Delete", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/delete", h.Delete)
 
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 	})
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/delete", nil)
 
-// 	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		h := NewTestScenarioOperationHandler(srv)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/stop", h.Stop())
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, pkg.TestScenarioNotFound, result.Error)
+	})
 
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/invalid/stop", nil)
+	t.Run("success_case", func(t *testing.T) {
+		srv := new(mocks.MockTestScenario)
+		srv.On("Delete", mock.Anything, uint64(1)).Return(nil)
+		h := NewTestScenarioOperationHandler(srv)
 
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/{id}/delete", h.Delete)
 
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
+		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/delete", nil)
 
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-// 		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-// 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
-// 	})
+		var result response.SuccessResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-// 	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Stop", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
-// 		h := NewTestScenarioOperationHandler(srv)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/stop", h.Stop())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 	})
-
-// 	t.Run("error_item_not_found", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Stop", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
-// 		h := NewTestScenarioOperationHandler(srv)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/stop", h.Stop())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
-// 	})
-
-// 	t.Run("success_case", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Stop", mock.Anything, uint64(1)).Return(nil)
-// 		h := NewTestScenarioOperationHandler(srv)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/stop", h.Stop())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/stop", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		var response response.SuccessResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, response.Message, pkg.TestScenarioStop)
-// 	})
-
-// }
-
-// func TestTestScenario_Delete(t *testing.T) {
-// 	_, err := config.LoadConfig()
-// 	assert.Nil(t, err)
-
-// 	t.Run("error_missing_id_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		h := NewTestScenarioOperationHandler(srv)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/delete", h.Delete())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 	})
-
-// 	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-
-// 		h := NewTestScenarioOperationHandler(srv)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/delete", h.Delete())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1sdf/delete", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-// 		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
-// 	})
-
-// 	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Delete", mock.Anything, uint64(1)).Return(errors.New("something went wrong"))
-// 		h := NewTestScenarioOperationHandler(srv)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/delete", h.Delete())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/delete", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-// 	})
-
-// 	t.Run("error_item_not_found", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Delete", mock.Anything, uint64(1)).Return(pkg.ErrTestScenarioNotFound)
-// 		h := NewTestScenarioOperationHandler(srv)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/delete", h.Delete())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/delete", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		var response response.ErrorResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// 		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
-// 	})
-
-// 	t.Run("success_case", func(t *testing.T) {
-// 		srv := new(mocks.MockTestScenario)
-// 		srv.On("Delete", mock.Anything, uint64(1)).Return(nil)
-// 		h := NewTestScenarioOperationHandler(srv)
-
-// 		app := fiber.New(fiber.Config{})
-// 		app.Post("/test-scenarios/:id/delete", h.Delete())
-
-// 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/1/delete", nil)
-
-// 		resp, _ := app.Test(req)
-// 		defer resp.Body.Close()
-
-// 		bts, err := io.ReadAll(resp.Body)
-// 		assert.Nil(t, err)
-
-// 		var response response.SuccessResponse
-// 		err = json.Unmarshal(bts, &response)
-// 		assert.Nil(t, err)
-
-// 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-// 		assert.Equal(t, response.Message, pkg.TestScenarioDelete)
-// 	})
-
-// }
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, pkg.TestScenarioDelete, result.Message)
+	})
+}
