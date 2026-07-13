@@ -437,9 +437,6 @@ func TestMotherServiceHandler_GetByID(t *testing.T) {
 		rec := httptest.NewRecorder()
 		r.ServeHTTP(rec, req)
 
-		fmt.Printf("status = %d\n", rec.Code)
-		fmt.Printf("body = %q\n", rec.Body.String())
-
 		var response response.MotherServiceResponseByID
 
 		err := json.Unmarshal(rec.Body.Bytes(), &response)
