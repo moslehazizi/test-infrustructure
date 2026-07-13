@@ -8,66 +8,17 @@ import (
 	"control-panel-service/internal/repository/postgres"
 	"control-panel-service/internal/server/handler"
 	"control-panel-service/internal/usecase"
-	"control-panel-service/pkg/telemetry"
 	"fmt"
 	"net/http"
-	"strconv"
-	"time"
 
 	pslq "control-panel-service/pkg/database/postgres"
 	kuber "control-panel-service/pkg/kubernetes"
 
-	"github.com/gofiber/fiber/v2"
-
-	// "github.com/gofiber/fiber/v2/middleware/cors"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )
-
-func MetricsMiddleware() fiber.Handler {
-	meter := telemetry.GetMeter()
-
-	requestCounter, _ := meter.Int64Counter("http.requests.total")
-	requestDuration, _ := meter.Int64Histogram("http.request.duration_ms")
-	requestSize, _ := meter.Int64Histogram("http.request.size_bytes")
-	responseSize, _ := meter.Int64Histogram("http.response.size_bytes")
-
-	return func(c *fiber.Ctx) error {
-		start := time.Now()
-
-		requestSizeBytes := int64(len(c.Request().Header.String()) + len(c.Body()))
-		attrs := attribute.NewSet(
-			attribute.String("method", c.Method()),
-			attribute.String("route", c.Route().Path),
-		)
-		requestSize.Record(c.Context(), requestSizeBytes, metric.WithAttributeSet(attrs))
-
-		err := c.Next()
-
-		duration := time.Since(start)
-		durationMs := duration.Milliseconds()
-
-		statusCode := c.Response().StatusCode()
-		attrs = attribute.NewSet(
-			attribute.String("method", c.Method()),
-			attribute.String("route", c.Route().Path),
-			attribute.String("status_code", strconv.Itoa(statusCode)),
-		)
-
-		requestCounter.Add(c.Context(), 1, metric.WithAttributeSet(attrs))
-		requestDuration.Record(c.Context(), durationMs, metric.WithAttributeSet(attrs))
-
-		responseSizeBytes := int64(len(c.Response().Header.String()) + len(c.Response().Body()))
-		responseSize.Record(c.Context(), responseSizeBytes, metric.WithAttributeSet(attrs))
-
-		// nolint
-		return err
-	}
-}
 
 func Serve(ctx context.Context, cfg *config.Config) error {
 	// app := fiber.New(fiber.Config{
@@ -87,12 +38,18 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	}
 
 	// Global middlewares
-	// app.Use(cors.New())
-	app.Use(cors.Handler(cors.Options{}))
+	app.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"https://*", "http://*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Accept", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 
 	// nolint
 	// app.Use(MetricsMiddleware())
-	// TODO
 
 	// �🔒 Rate Limiter (GLOBAL)
 	// app.Use(limiter.New(limiter.Config{
@@ -107,7 +64,6 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	// 		})
 	// 	},
 	// }))
-	// TODO
 
 	docs.SwaggerInfo.Host = cfg.Server.SwaggerHost
 	docs.SwaggerInfo.Schemes = cfg.Server.SwaggerScheme
@@ -121,7 +77,6 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	// })
 	// Logging middleware should be early to capture all requests
 	// app.Use(middleware.LoggingMiddleware())
-	// TODO
 
 	eventProducer, err := provider.NewKafkaEventProducer(ctx, cfg)
 	if err != nil {
@@ -173,51 +128,48 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		cfg.Outbox.MaxAttempts,
 	)
 
-	// testScenarioUsecase := usecase.NewTestScenarioUsecase(
-	// 	testScenarioRepository,
-	// 	postgres.NewTestCategoryRepository(db),
-	// 	postgres.NewTestServiceConfigRepository(db),
-	// 	motherServiceRepository,
-	// 	postgres.NewTestServiceRepository(db),
-	// )
-	// testScenarioOperationUsecase := usecase.NewTestScenarioOperationUsecase(
-	// 	testScenarioRepository,
-	// 	stressTestExecutionManager,
-	// )
+	testScenarioUsecase := usecase.NewTestScenarioUsecase(
+		testScenarioRepository,
+		postgres.NewTestCategoryRepository(db),
+		postgres.NewTestServiceConfigRepository(db),
+		motherServiceRepository,
+		postgres.NewTestServiceRepository(db),
+	)
+	testScenarioOperationUsecase := usecase.NewTestScenarioOperationUsecase(
+		testScenarioRepository,
+		stressTestExecutionManager,
+	)
 	motherHandler := handler.NewMotherServiceHandler(motherService)
-	// testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
+	testCategoryHandler := handler.NewTestCategoryHandler(cfg, postgres.NewTestCategoryRepository(db))
 
-	// testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
-	// testScenarioOperationHandler := handler.NewTestScenarioOperationHandler(testScenarioOperationUsecase)
+	testScenarioHandler := handler.NewTestScenarioHandler(testScenarioUsecase)
+	testScenarioOperationHandler := handler.NewTestScenarioOperationHandler(testScenarioOperationUsecase)
 	databaseMetadataService := usecase.NewDatabaseMetadata(postgres.NewDatabaseMetadataRepository(db, cfg))
 	databaseMetadataHandler := handler.NewDatabaseMetadataHandler(databaseMetadataService)
 
-	// apiV1 := app.Group("/api/v1")
-
-	// TODO: Route or Group (Decision Needed)
 	app.Route("/api/v1", func(app chi.Router) {
 		// Mother service
 		app.Post("/mother-services", motherHandler.Create)
 		app.Get("/mother-services/{id}", motherHandler.GetByID)
-		// app.Post("/mother-services/search", motherHandler.GetPaginated())
-		// app.Post("/mother-services/:id/delete", motherHandler.Delete())
+		app.Post("/mother-services/search", motherHandler.GetPaginated)
+		app.Post("/mother-services/:id/delete", motherHandler.Delete)
 
 		// test category
-		// app.Get("/test-categories", testCategoryHandler.GetAll())
-		// app.Get("/test-categories/:id", testCategoryHandler.GetByID())
+		app.Get("/test-categories", testCategoryHandler.GetAll)
+		app.Get("/test-categories/:id", testCategoryHandler.GetByID)
 
 		// test scenario
-		// app.Post("/test-scenarios", testScenarioHandler.Create())
-		// app.Get("/test-scenarios/:id", testScenarioHandler.GetByID())
-		// app.Post("/test-scenarios/search", testScenarioHandler.GetPaginated())
-		// app.Post("/test-scenarios/update", testScenarioHandler.Update())
+		app.Post("/test-scenarios", testScenarioHandler.Create)
+		app.Get("/test-scenarios/:id", testScenarioHandler.GetByID)
+		app.Post("/test-scenarios/search", testScenarioHandler.GetPaginated)
+		app.Post("/test-scenarios/update", testScenarioHandler.Update)
 
 		// test scenario operationn-up
-		// app.Post("/test-scenarios/:id/start", testScenarioOperationHandler.Start())
-		// app.Post("/test-scenarios/:id/pause", testScenarioOperationHandler.Pause())
-		// app.Post("/test-scenarios/:id/resume", testScenarioOperationHandler.Resume())
-		// app.Post("/test-scenarios/:id/stop", testScenarioOperationHandler.Stop())
-		// app.Post("/test-scenarios/:id/delete", testScenarioOperationHandler.Delete())
+		app.Post("/test-scenarios/:id/start", testScenarioOperationHandler.Start)
+		app.Post("/test-scenarios/:id/pause", testScenarioOperationHandler.Pause)
+		app.Post("/test-scenarios/:id/resume", testScenarioOperationHandler.Resume)
+		app.Post("/test-scenarios/:id/stop", testScenarioOperationHandler.Stop)
+		app.Post("/test-scenarios/:id/delete", testScenarioOperationHandler.Delete)
 
 		// database-metadata
 		app.Get("/databases", databaseMetadataHandler.GetAll)
@@ -237,10 +189,6 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	// Start server in a goroutine
 	errChan := make(chan error, 1)
 	go func() {
-		// if err := http.ListenAndServe(addr, app); err != nil {
-		// 	errChan <- fmt.Errorf("fiber listen on %s failed: %w", addr, err)
-		// }
-
 		if err := srv.ListenAndServe(); err != nil {
 			errChan <- fmt.Errorf("server listen on %s failed: %w", addr, err)
 		}
