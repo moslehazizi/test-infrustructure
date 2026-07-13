@@ -198,7 +198,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	app.Route("/api/v1", func(app chi.Router) {
 		// Mother service
 		app.Post("/mother-services", motherHandler.Create)
-		app.Get("/mother-services/:id", motherHandler.GetByID)
+		app.Get("/mother-services/{id}", motherHandler.GetByID)
 		// app.Post("/mother-services/search", motherHandler.GetPaginated())
 		// app.Post("/mother-services/:id/delete", motherHandler.Delete())
 

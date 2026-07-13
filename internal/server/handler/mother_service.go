@@ -139,7 +139,7 @@ func (handler *MotherServiceHandler) GetByID(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var result response.MotherService
+	var result response.MotherServiceResponseByID
 	result.FromMotherServiceEntity(svcResult)
 
 	responseWriter.WriteJSON(w, http.StatusOK, result)

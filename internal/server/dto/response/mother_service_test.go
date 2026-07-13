@@ -18,7 +18,7 @@ func TestFromMotherServiceEntity(t *testing.T) {
 	t.Run("nil_input", func(t *testing.T) {
 		var entityMother *entity.MotherService
 
-		var result *MotherService
+		var result *MotherServiceResponseByID
 		result.FromMotherServiceEntity(entityMother)
 
 		assert.Nil(t, result)
@@ -41,7 +41,7 @@ func TestFromMotherServiceEntity(t *testing.T) {
 			DatabaseTableName:        "table_a",
 		}
 
-		result := &MotherService{}
+		result := &MotherServiceResponseByID{}
 		result.FromMotherServiceEntity(entityMother)
 
 		expected := &MotherService{
@@ -74,7 +74,7 @@ func TestFromMotherServiceEntity(t *testing.T) {
 			RandomResponseDelayMax: nil,
 		}
 
-		result := &MotherService{}
+		result := &MotherServiceResponseByID{}
 		result.FromMotherServiceEntity(entityMother)
 
 		expected := &MotherService{
