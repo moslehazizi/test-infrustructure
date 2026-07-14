@@ -5,6 +5,7 @@ go 1.26
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/amacneil/dbmate/v2 v2.31.0
+	github.com/go-chi/httprate v0.16.0
 	github.com/gofiber/fiber/v2 v2.52.11
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.8.0
@@ -13,6 +14,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.50
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
+	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.6
 	go.opentelemetry.io/otel v1.40.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.40.0
@@ -27,6 +29,12 @@ require (
 	k8s.io/api v0.35.1
 	k8s.io/apimachinery v0.35.1
 	k8s.io/client-go v0.35.1
+)
+
+require (
+	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
+	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
+	github.com/zeebo/xxh3 v1.1.0 // indirect
 )
 
 require (

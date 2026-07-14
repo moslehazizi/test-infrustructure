@@ -44,7 +44,7 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		mrw := &metricsResponseWriter{
+		metricRespWriter := &metricsResponseWriter{
 			ResponseWriter: w,
 			statusCode:     http.StatusOK,
 		}
@@ -61,7 +61,7 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 
 		requestSize.Record(r.Context(), requestSizeBytes, metric.WithAttributeSet(attrs))
 
-		next.ServeHTTP(mrw, r)
+		next.ServeHTTP(metricRespWriter, r)
 
 		durationMs := time.Since(start).Milliseconds()
 
@@ -75,11 +75,11 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 		attrs = attribute.NewSet(
 			attribute.String("method", r.Method),
 			attribute.String("route", route),
-			attribute.String("status_code", strconv.Itoa(mrw.statusCode)),
+			attribute.String("status_code", strconv.Itoa(metricRespWriter.statusCode)),
 		)
 
 		requestCounter.Add(r.Context(), 1, metric.WithAttributeSet(attrs))
 		requestDuration.Record(r.Context(), durationMs, metric.WithAttributeSet(attrs))
-		responseSize.Record(r.Context(), mrw.size, metric.WithAttributeSet(attrs))
+		responseSize.Record(r.Context(), metricRespWriter.size, metric.WithAttributeSet(attrs))
 	})
 }

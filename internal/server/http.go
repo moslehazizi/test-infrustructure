@@ -7,7 +7,9 @@ import (
 	"control-panel-service/internal/provider"
 	"control-panel-service/internal/repository/postgres"
 	"control-panel-service/internal/server/handler"
+	"control-panel-service/internal/server/middleware"
 	"control-panel-service/internal/usecase"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -18,6 +20,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	httpSwagger "github.com/swaggo/http-swagger"
+
+	"github.com/go-chi/httprate"
+
+	globalmiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 func Serve(ctx context.Context, cfg *config.Config) error {
@@ -29,7 +36,6 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 
 	app := chi.NewRouter()
 
-	// TODO
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
 		Handler:      app,
@@ -49,34 +55,30 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	}))
 
 	// nolint
-	// app.Use(MetricsMiddleware())
+	app.Use(middleware.MetricsMiddleware)
 
-	// �🔒 Rate Limiter (GLOBAL)
-	// app.Use(limiter.New(limiter.Config{
-	// 	Max:        cfg.Server.RateLimitMaxRequest,         // max requests
-	// 	Expiration: cfg.Server.RateLimitExpirationDuration, // per minute
-	// 	KeyGenerator: func(c *fiber.Ctx) string {
-	// 		return c.IP() // rate limit per IP
-	// 	},
-	// 	LimitReached: func(c *fiber.Ctx) error {
-	// 		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-	// 			"error": "Too many requests, please try again later",
-	// 		})
-	// 	},
-	// }))
+	app.Use(globalmiddleware.ClientIPFromRemoteAddr)
+
+	// Logging middleware should be early to capture all requests
+	app.Use(middleware.LoggingMiddleware())
+
+	app.Use(httprate.LimitBy(
+		cfg.Server.RateLimitMaxRequest,
+		cfg.Server.RateLimitExpirationDuration,
+		func(r *http.Request) (string, error) {
+			return httprate.CanonicalizeIP(globalmiddleware.GetClientIP(r.Context())), nil
+		},
+		httprate.WithLimitHandler(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusTooManyRequests)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "Too many requests, please try again later",
+			})
+		}),
+	))
 
 	docs.SwaggerInfo.Host = cfg.Server.SwaggerHost
 	docs.SwaggerInfo.Schemes = cfg.Server.SwaggerScheme
-
-	// swaggerHandler := fiberSwagger.New(fiberSwagger.Config{
-	// 	Title:                "Control Panel API",
-	// 	DeepLinking:          true,
-	// 	PersistAuthorization: true,
-	// 	DocExpansion:         "list",
-	// 	URL:                  cfg.Server.SwaggerDocJSON,
-	// })
-	// Logging middleware should be early to capture all requests
-	// app.Use(middleware.LoggingMiddleware())
 
 	eventProducer, err := provider.NewKafkaEventProducer(ctx, cfg)
 	if err != nil {
@@ -176,7 +178,12 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		app.Post("/databases/tables", databaseMetadataHandler.GetTablesByDBNamePost)
 
 		// swagger endpoint
-		// app.Get("/docs/*", swaggerHandler)
+		app.Get("/docs/*", httpSwagger.Handler(
+			httpSwagger.URL(cfg.Server.SwaggerDocJSON),
+			httpSwagger.DeepLinking(true),
+			httpSwagger.PersistAuthorization(true),
+			httpSwagger.DocExpansion("list"),
+		))
 
 	})
 
