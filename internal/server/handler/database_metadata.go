@@ -33,7 +33,7 @@ type DatabaseMetadataHandler struct {
 // //	@Produce		json
 // //	@Success		200	{object}	response.DatabaseMetadataDatabasesResponse
 // //	@Failure		500	{object}	response.ErrorResponse
-// //	@Router			/api/v1/databases [get]
+// //	@Router			/api/v1/databases [get].
 func (handler *DatabaseMetadataHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	tracer := otel.Tracer("database-metadata-handler")
 	traceCtx, span := tracer.Start(r.Context(), "get-databases-handler")
@@ -66,7 +66,7 @@ func (handler *DatabaseMetadataHandler) GetAll(w http.ResponseWriter, r *http.Re
 // //	@Success		200		{object}	response.TablesByType
 // //	@Failure		400		{object}	response.ErrorResponse
 // //	@Failure		500		{object}	response.ErrorResponse
-// //	@Router			/api/v1/databases/tables [post]
+// //	@Router			/api/v1/databases/tables [post].
 func (handler *DatabaseMetadataHandler) GetTablesByDBNamePost(w http.ResponseWriter, r *http.Request) {
 	tracer := otel.Tracer("database-metadata-handler")
 	traceCtx, span := tracer.Start(r.Context(), "get-tables-by-database-handler")
@@ -106,11 +106,11 @@ func (handler *DatabaseMetadataHandler) GetTablesByDBNamePost(w http.ResponseWri
 			MotherTables: []string{},
 			TestTables:   []string{},
 		})
+		return
 	}
 
 	responsewriter.WriteJSON(w, http.StatusOK, response.TablesByType{
 		MotherTables: result.MotherTables,
 		TestTables:   result.TestTables,
 	})
-
 }

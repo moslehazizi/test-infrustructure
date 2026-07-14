@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 type HTTPError struct {
@@ -25,9 +27,12 @@ func (e *HTTPError) WriteError(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(e.Status)
 
-	json.NewEncoder(w).Encode(map[string]string{
+	err := json.NewEncoder(w).Encode(map[string]string{
 		"error": e.Msg,
 	})
+	if err != nil {
+		zap.L().Error("failed to encode error response", zap.Error(err))
+	}
 }
 
 func ToHTTPError(err error) *HTTPError {
