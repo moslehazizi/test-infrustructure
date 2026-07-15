@@ -54,7 +54,9 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 
 	//nolint
 	go func() {
-		_ = scenarioExecutor.Run(execManagerCTX)
+		// We built a new context without cancel because we use 'chi' package in http server and when handler finished its context doesn't send cancellation signal.
+		withoutCancelCTX := context.WithoutCancel(execManagerCTX)
+		_ = scenarioExecutor.Run(withoutCancelCTX)
 		// delete scenario from memory
 		ex.scenarios.Delete(scenario.ID)
 	}()
