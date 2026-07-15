@@ -15,81 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/databases": {
-            "get": {
-                "description": "Get list of all non-template PostgreSQL databases",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "database-metadata"
-                ],
-                "summary": "Get all databases",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.DatabaseMetadataDatabasesResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/databases/tables": {
-            "post": {
-                "description": "Get list of tables inside a specific database",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "database-metadata"
-                ],
-                "summary": "Get tables by database name",
-                "parameters": [
-                    {
-                        "description": "Database name request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.GetTablesRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.TablesByType"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/mother-services": {
             "post": {
                 "description": "Create a new mother service",
@@ -849,10 +774,12 @@ const docTemplate = `{
                 "running",
                 "paused",
                 "stopped",
-                "deleted"
+                "deleted",
+                "failed"
             ],
             "x-enum-comments": {
                 "MotherServiceStatusDeleted": "stop and delete containers. can not start again.",
+                "MotherServiceStatusFailed": "provisioning permanently failed after retries",
                 "MotherServiceStatusPaused": "application level pause on sending request",
                 "MotherServiceStatusReady": "mother service just created",
                 "MotherServiceStatusRunning": "test is running on application level (sending level)",
@@ -863,14 +790,16 @@ const docTemplate = `{
                 "test is running on application level (sending level)",
                 "application level pause on sending request",
                 "stop container but can start scenario again.",
-                "stop and delete containers. can not start again."
+                "stop and delete containers. can not start again.",
+                "provisioning permanently failed after retries"
             ],
             "x-enum-varnames": [
                 "MotherServiceStatusReady",
                 "MotherServiceStatusRunning",
                 "MotherServiceStatusPaused",
                 "MotherServiceStatusStopped",
-                "MotherServiceStatusDeleted"
+                "MotherServiceStatusDeleted",
+                "MotherServiceStatusFailed"
             ]
         },
         "entity.ScenarioStatus": {
@@ -893,14 +822,6 @@ const docTemplate = `{
                 "ScenarioStatusDeleted",
                 "ScenarioStatusSucceed"
             ]
-        },
-        "request.GetTablesRequest": {
-            "type": "object",
-            "properties": {
-                "database_name": {
-                    "type": "string"
-                }
-            }
         },
         "request.MotherService": {
             "type": "object",
@@ -1073,17 +994,6 @@ const docTemplate = `{
                 }
             }
         },
-        "response.DatabaseMetadataDatabasesResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "response.MotherService": {
             "type": "object",
             "properties": {
@@ -1181,23 +1091,6 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "response.TablesByType": {
-            "type": "object",
-            "properties": {
-                "mother_tables": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "test_tables": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },

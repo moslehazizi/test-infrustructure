@@ -154,24 +154,24 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		app.Post("/mother-services", motherHandler.Create)
 		app.Get("/mother-services/{id}", motherHandler.GetByID)
 		app.Post("/mother-services/search", motherHandler.GetPaginated)
-		app.Post("/mother-services/:id/delete", motherHandler.Delete)
+		app.Post("/mother-services/{id}/delete", motherHandler.Delete)
 
 		// test category
 		app.Get("/test-categories", testCategoryHandler.GetAll)
-		app.Get("/test-categories/:id", testCategoryHandler.GetByID)
+		app.Get("/test-categories/{id}", testCategoryHandler.GetByID)
 
 		// test scenario
 		app.Post("/test-scenarios", testScenarioHandler.Create)
-		app.Get("/test-scenarios/:id", testScenarioHandler.GetByID)
+		app.Get("/test-scenarios/{id}", testScenarioHandler.GetByID)
 		app.Post("/test-scenarios/search", testScenarioHandler.GetPaginated)
 		app.Post("/test-scenarios/update", testScenarioHandler.Update)
 
 		// test scenario operationn-up
-		app.Post("/test-scenarios/:id/start", testScenarioOperationHandler.Start)
-		app.Post("/test-scenarios/:id/pause", testScenarioOperationHandler.Pause)
-		app.Post("/test-scenarios/:id/resume", testScenarioOperationHandler.Resume)
-		app.Post("/test-scenarios/:id/stop", testScenarioOperationHandler.Stop)
-		app.Post("/test-scenarios/:id/delete", testScenarioOperationHandler.Delete)
+		app.Post("/test-scenarios/{id}/start", testScenarioOperationHandler.Start)
+		app.Post("/test-scenarios/{id}/pause", testScenarioOperationHandler.Pause)
+		app.Post("/test-scenarios/{id}/resume", testScenarioOperationHandler.Resume)
+		app.Post("/test-scenarios/{id}/stop", testScenarioOperationHandler.Stop)
+		app.Post("/test-scenarios/{id}/delete", testScenarioOperationHandler.Delete)
 
 		// database-metadata
 		app.Get("/databases", databaseMetadataHandler.GetAll)

@@ -11,9 +11,11 @@ definitions:
     - paused
     - stopped
     - deleted
+    - failed
     type: string
     x-enum-comments:
       MotherServiceStatusDeleted: stop and delete containers. can not start again.
+      MotherServiceStatusFailed: provisioning permanently failed after retries
       MotherServiceStatusPaused: application level pause on sending request
       MotherServiceStatusReady: mother service just created
       MotherServiceStatusRunning: test is running on application level (sending level)
@@ -24,12 +26,14 @@ definitions:
     - application level pause on sending request
     - stop container but can start scenario again.
     - stop and delete containers. can not start again.
+    - provisioning permanently failed after retries
     x-enum-varnames:
     - MotherServiceStatusReady
     - MotherServiceStatusRunning
     - MotherServiceStatusPaused
     - MotherServiceStatusStopped
     - MotherServiceStatusDeleted
+    - MotherServiceStatusFailed
   entity.ScenarioStatus:
     enum:
     - ready
@@ -48,11 +52,6 @@ definitions:
     - ScenarioStatusStopped
     - ScenarioStatusDeleted
     - ScenarioStatusSucceed
-  request.GetTablesRequest:
-    properties:
-      database_name:
-        type: string
-    type: object
   request.MotherService:
     properties:
       database_name:
@@ -165,13 +164,6 @@ definitions:
       zero_value_rate:
         type: integer
     type: object
-  response.DatabaseMetadataDatabasesResponse:
-    properties:
-      data:
-        items:
-          type: string
-        type: array
-    type: object
   response.MotherService:
     properties:
       created_at:
@@ -236,17 +228,6 @@ definitions:
     properties:
       message:
         type: string
-    type: object
-  response.TablesByType:
-    properties:
-      mother_tables:
-        items:
-          type: string
-        type: array
-      test_tables:
-        items:
-          type: string
-        type: array
     type: object
   response.TestCategory:
     properties:
@@ -353,55 +334,6 @@ definitions:
 info:
   contact: {}
 paths:
-  /api/v1/databases:
-    get:
-      consumes:
-      - application/json
-      description: Get list of all non-template PostgreSQL databases
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.DatabaseMetadataDatabasesResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
-      summary: Get all databases
-      tags:
-      - database-metadata
-  /api/v1/databases/tables:
-    post:
-      consumes:
-      - application/json
-      description: Get list of tables inside a specific database
-      parameters:
-      - description: Database name request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/request.GetTablesRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.TablesByType'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/control-panel-service_internal_server_dto_response.ErrorResponse'
-      summary: Get tables by database name
-      tags:
-      - database-metadata
   /api/v1/mother-services:
     post:
       consumes:
