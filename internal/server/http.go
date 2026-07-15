@@ -51,7 +51,7 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		AllowedHeaders:   []string{"Accept", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		MaxAge:           cfg.Server.MaxAgePreflight, // Maximum value not ignored by any of major browsers
 	}))
 
 	// nolint
@@ -71,9 +71,12 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 		httprate.WithLimitHandler(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusTooManyRequests)
-			json.NewEncoder(w).Encode(map[string]string{
+			err := json.NewEncoder(w).Encode(map[string]string{
 				"error": "Too many requests, please try again later",
 			})
+			if err != nil {
+				zap.L().Error("failed to encode too many requests response", zap.Error(err))
+			}
 		}),
 	))
 
@@ -184,7 +187,6 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 			httpSwagger.PersistAuthorization(true),
 			httpSwagger.DocExpansion("list"),
 		))
-
 	})
 
 	zap.L().Info("server starting",

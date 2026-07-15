@@ -89,7 +89,7 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 
 	agents := testScenario.GetAgents()
 
-	//We add health check agent so that if user immediately click on pause right after run first wait to all agents be ready.
+	// We add health check agent so that if user immediately click on pause right after run first wait to all agents be ready.
 	awaitAllHealthy(agents)
 
 	for _, agent := range agents {
@@ -248,4 +248,5 @@ func awaitAllHealthy(agents []interfaces.TestAgentController) {
 		time.Sleep(healthyCheckSleep)
 	}
 }
+
 //#endregion HelperFunctions

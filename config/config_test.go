@@ -40,6 +40,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedRateLimitMaxRequest := int(50_000)
 		expectedRateLimitExpirationDuration := time.Minute
 		expectedShutdownTimeout := 30 * time.Second
+		expectedMaxAgeForPreflight := 300
 
 		os.Setenv("HTTP_PORT", strconv.Itoa(expectedPort))
 		os.Setenv("HTTP_POST_BODY_LIMIT", strconv.Itoa(expectedPostBodyLimit))
@@ -51,6 +52,7 @@ func TestLoadConfig(t *testing.T) {
 		os.Setenv("SWAGGER_HOST", expectedHost)
 		os.Setenv("SWAGGER_SCHEME", "http,https")
 		os.Setenv("SWAGGER_DOC_JSON", "doc.json")
+		os.Setenv("MAX_AGE_PREFLIGHT", strconv.Itoa(expectedMaxAgeForPreflight))
 
 		cfg, err := LoadConfig()
 
@@ -65,6 +67,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Server.SwaggerDocJSON, expectedSwaggerDocJSON)
 		assert.Equal(t, cfg.Server.RateLimitExpirationDuration, expectedRateLimitExpirationDuration)
 		assert.Equal(t, cfg.Server.ShutdownTimeout, expectedShutdownTimeout)
+		assert.Equal(t, cfg.Server.MaxAgePreflight, expectedMaxAgeForPreflight)
 	})
 
 	t.Run("success_fetch_kafka_config", func(t *testing.T) {
@@ -191,7 +194,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Logger.Format, expectedLogFormat)
 		assert.Equal(t, cfg.Logger.Output, expectedLogOutput)
 	})
-	t.Run("success_fetch_kubernets_config", func(t *testing.T) {
+	t.Run("success_fetch_kubernetes_config", func(t *testing.T) {
 		expectedKubernetesNameSpace := "control-panel-service"
 		expectedKubernetesContainerRegistryUrl := "chalenge.azurecr.io/"
 		expectedKubernetesImagePullPolicy := "Always"
@@ -326,6 +329,7 @@ func TestLoadConfig(t *testing.T) {
 		expectedDefaultKafkaAttemptsSleepTime := 100 * time.Millisecond
 		expectedDefaultKafkaMotherServicePort := 9092
 		expectedDefaultKafkaTestServicePort := 9092
+		expectedDefaultMaxAgePreflight := 300
 
 		// Unset Kafka environment variables to test defaults
 		os.Unsetenv("KAFKA_DIALER_TIMEOUT")
@@ -372,6 +376,8 @@ func TestLoadConfig(t *testing.T) {
 		os.Unsetenv("TEST_SERVICE_KAFKA_LIVE_FEED_TOPIC")
 		os.Unsetenv("MOTHER_SERVICE_KAFKA_PORT")
 		os.Unsetenv("TEST_SERVICE_KAFKA_PORT")
+		// Unset http server cors options
+		os.Unsetenv("MAX_AGE_PREFLIGHT")
 
 		cfg, err := LoadConfig()
 		assert.NoError(t, err)
@@ -386,6 +392,7 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, cfg.Server.RateLimitMaxRequest, expectedDefaultRateLimitMaxRequest)
 		assert.Equal(t, cfg.Server.RateLimitExpirationDuration, expectedDefaultRateLimitExpirationDuration)
 		assert.Equal(t, cfg.Server.ShutdownTimeout, expectedDefaultShutdownTimeout)
+		assert.Equal(t, cfg.Server.MaxAgePreflight, expectedDefaultMaxAgePreflight)
 		assert.Equal(t, cfg.Kafka.DialerTimeout, expectedDefaultKafkaDialerTimeout)
 		assert.Equal(t, cfg.Kafka.MaxBytes, expectedDefaultKafkaMaxBytes)
 		assert.Equal(t, cfg.Kafka.BatchTimeout, expectedDefaultKafkaBatchTimeout)
