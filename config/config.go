@@ -52,6 +52,7 @@ type Server struct {
 	RateLimitMaxRequest         int           `envconfig:"HTTP_RATE_LIMIT_MAX_REQUEST" default:"50000"`
 	RateLimitExpirationDuration time.Duration `envconfig:"HTTP_RATE_LIMIT_EXPIRATION_DURATION" default:"1m"`
 	ShutdownTimeout             time.Duration `envconfig:"HTTP_SHUTDOWN_TIMEOUT" default:"30s"`
+	MaxAgePreflight             int           `envconfig:"MAX_AGE_PREFLIGHT" default:"300"`
 }
 
 type Kafka struct {

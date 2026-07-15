@@ -5,6 +5,8 @@ import (
 	"control-panel-service/internal/domain/entity"
 )
 
+// TODO: Break down to smaller interfaces
+// nolint
 type TestScenarioRepository interface {
 	Create(ctx context.Context, testSci *entity.TestScenario) (uint64, error)
 	GetByID(ctx context.Context, id uint64) (*entity.TestScenario, error)
