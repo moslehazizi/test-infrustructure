@@ -6,12 +6,14 @@ import (
 	"control-panel-service/internal/server/dto/response"
 	"control-panel-service/pkg"
 	"control-panel-service/pkg/logger"
+	responseWriter "control-panel-service/pkg/responsewriter"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -39,45 +41,52 @@ func NewMotherServiceHandler(motherService MotherService) *MotherServiceHandler 
 //	@Failure		422		{object}	response.ErrorResponse
 //	@Failure		500		{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services [post]
-func (handler *MotherServiceHandler) Create() fiber.Handler {
-	return func(ctx *fiber.Ctx) error {
-		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "create-mother-service-handler")
-		defer span.End()
+func (handler *MotherServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
+	tracer := otel.Tracer("mother-service-handler")
+	ctx := r.Context()
+	traceCtx, span := tracer.Start(ctx, "create-mother-service-handler")
+	defer span.End()
 
-		requestID := logger.GetRequestID(ctx.Context())
-		span.SetAttributes(attribute.String("request_id", requestID))
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
-		req := new(request.MotherService)
+	req := new(request.MotherService)
 
-		if err := ctx.BodyParser(req); err != nil {
-			span.SetAttributes(attribute.String("error.type", "bad_request"))
-			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
-		}
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		span.SetAttributes(attribute.String("error.type", "bad_request"))
 
+		httpError := pkg.ToHTTPError(pkg.ErrBadRequest)
+		httpError.WriteError(w)
+
+		return
+	}
+
+	span.SetAttributes(
+		attribute.String("service.name", req.Name),
+		attribute.Float64("service.exception_rate", float64(req.ExceptionRate)),
+		attribute.Float64("service.response_delay_rate", float64(req.ResponseDelayRate)),
+	)
+
+	reqService := req.ToMotherServiceEntity()
+
+	err := handler.motherService.Create(traceCtx, reqService)
+	if err != nil {
 		span.SetAttributes(
-			attribute.String("service.name", req.Name),
-			attribute.Float64("service.exception_rate", float64(req.ExceptionRate)),
-			attribute.Float64("service.response_delay_rate", float64(req.ResponseDelayRate)),
+			attribute.String("error.type", "create_error"),
+			attribute.String("error.message", err.Error()),
 		)
 
-		reqService := req.ToMotherServiceEntity()
+		httpError := pkg.ToHTTPError(err)
+		httpError.WriteError(w)
 
-		err := handler.motherService.Create(traceCtx, reqService)
-		if err != nil {
-			span.SetAttributes(
-				attribute.String("error.type", "create_error"),
-				attribute.String("error.message", err.Error()),
-			)
-			return pkg.ToHTTPError(err).AsFiber(ctx)
-		}
-
-		span.SetAttributes(attribute.String("status", "success"))
-
-		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
-			Message: pkg.CreateMotherServiceSuccessfully,
-		})
+		return
 	}
+
+	span.SetAttributes(attribute.String("status", "success"))
+
+	responseWriter.WriteJSON(w, http.StatusOK, response.SuccessResponse{
+		Message: pkg.CreateMotherServiceSuccessfully,
+	})
 }
 
 // GetByID godoc
@@ -93,40 +102,48 @@ func (handler *MotherServiceHandler) Create() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services/{id} [get]
-func (handler *MotherServiceHandler) GetByID() fiber.Handler {
-	return func(ctx *fiber.Ctx) error {
-		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get-mother-service-by-id-handler")
-		defer span.End()
+func (handler *MotherServiceHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	tracer := otel.Tracer("mother-service-handler")
+	traceCtx, span := tracer.Start(ctx, "get-mother-service-by-id-handler")
+	defer span.End()
 
-		requestID := logger.GetRequestID(ctx.Context())
-		span.SetAttributes(attribute.String("request_id", requestID))
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
-		strID := strings.TrimSpace(ctx.Params("id"))
+	strID := strings.TrimSpace(chi.URLParam(r, "id"))
 
-		id, err := strconv.ParseUint(strID, 10, 64)
-		if err != nil {
-			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
-			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
-		}
+	id, err := strconv.ParseUint(strID, 10, 64)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
 
-		span.SetAttributes(attribute.String("service.id", strconv.FormatUint(id, 10)))
+		httpError := pkg.ToHTTPError(pkg.ErrInvalidIDInParams)
 
-		svcResult, err := handler.motherService.GetByID(traceCtx, id)
-		if err != nil {
-			if errors.Is(err, pkg.ErrMotherServiceNotFound) {
-				return pkg.ToHTTPError(pkg.ErrMotherServiceNotFound).AsFiber(ctx)
-			}
+		httpError.WriteError(w)
 
-			return pkg.ToHTTPError(err).AsFiber(ctx)
-		}
-		var result response.MotherService
-		result.FromMotherServiceEntity(svcResult)
-
-		return ctx.Status(http.StatusOK).JSON(&response.MotherServiceResponseByID{
-			Data: result,
-		})
+		return
 	}
+
+	span.SetAttributes(attribute.String("service.id", strconv.FormatUint(id, 10)))
+
+	svcResult, err := handler.motherService.GetByID(traceCtx, id)
+	if err != nil {
+		if errors.Is(err, pkg.ErrMotherServiceNotFound) {
+			httpError := pkg.ToHTTPError(pkg.ErrMotherServiceNotFound)
+			httpError.WriteError(w)
+
+			return
+		}
+		httpError := pkg.ToHTTPError(err)
+		httpError.WriteError(w)
+
+		return
+	}
+
+	var result response.MotherServiceResponseByID
+	result.FromMotherServiceEntity(svcResult)
+
+	responseWriter.WriteJSON(w, http.StatusOK, result)
 }
 
 // GetPaginated godoc
@@ -141,58 +158,72 @@ func (handler *MotherServiceHandler) GetByID() fiber.Handler {
 //	@Failure		400		{object}	response.ErrorResponse
 //	@Failure		500		{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services/search [post]
-func (handler *MotherServiceHandler) GetPaginated() fiber.Handler {
-	return func(ctx *fiber.Ctx) error {
-		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "get-paginated-mother-services-handler")
-		defer span.End()
+func (handler *MotherServiceHandler) GetPaginated(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	tracer := otel.Tracer("mother-service-handler")
+	traceCtx, span := tracer.Start(ctx, "get-paginated-mother-services-handler")
+	defer span.End()
 
-		requestID := logger.GetRequestID(ctx.Context())
-		span.SetAttributes(attribute.String("request_id", requestID))
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
-		req := new(request.PaginationRequest)
+	req := new(request.PaginationRequest)
 
-		if err := ctx.BodyParser(req); err != nil {
-			span.SetAttributes(attribute.String("error.type", "bad_request"))
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		span.SetAttributes(attribute.String("error.type", "bad_request"))
 
-			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
-		}
+		httpError := pkg.ToHTTPError(pkg.ErrBadRequest)
+		httpError.WriteError(w)
 
-		if req.Page < 0 || req.PerPage < 0 {
-			span.SetAttributes(attribute.String("error.type", "invalid_pagination"))
-
-			return pkg.ToHTTPError(pkg.ErrBadRequest).AsFiber(ctx)
-		}
-
-		span.SetAttributes(attribute.String("pagination.page", strconv.Itoa(req.Page)), attribute.String("pagination.per_page", strconv.Itoa(req.PerPage)))
-
-		reqSvc := entity.PaginationRequest{
-			Page:    req.Page,
-			PerPage: req.PerPage,
-		}
-
-		svcResults, count, err := handler.motherService.GetPaginated(traceCtx, reqSvc)
-		if err != nil {
-			span.SetAttributes(attribute.String("error.type", "get_paginated_error"), attribute.String("error.message", err.Error()))
-
-			return pkg.ToHTTPError(err).AsFiber(ctx)
-		}
-
-		var responses []response.MotherService
-		for _, svcResult := range svcResults {
-			var result response.MotherService
-			result.FromMotherServiceEntity(svcResult)
-
-			responses = append(responses, result)
-		}
-
-		return ctx.Status(http.StatusOK).JSON(&response.PaginatedMotherServices{
-			Data:    responses,
-			Page:    req.Page,
-			PerPage: req.PerPage,
-			Total:   count,
-		})
+		return
 	}
+
+	if req.Page < 0 || req.PerPage < 0 {
+		span.SetAttributes(attribute.String("error.type", "invalid_pagination"))
+
+		httpError := pkg.ToHTTPError(pkg.ErrBadRequest)
+		httpError.WriteError(w)
+
+		return
+	}
+
+	span.SetAttributes(
+		attribute.String("pagination.page", strconv.Itoa(req.Page)),
+		attribute.String("pagination.per_page", strconv.Itoa(req.PerPage)),
+	)
+
+	reqSvc := entity.PaginationRequest{
+		Page:    req.Page,
+		PerPage: req.PerPage,
+	}
+
+	svcResults, count, err := handler.motherService.GetPaginated(traceCtx, reqSvc)
+	if err != nil {
+		span.SetAttributes(
+			attribute.String("error.type", "get_paginated_error"),
+			attribute.String("error.message", err.Error()),
+		)
+
+		httpError := pkg.ToHTTPError(err)
+		httpError.WriteError(w)
+
+		return
+	}
+
+	var responses []response.MotherService
+	for _, svcResult := range svcResults {
+		var result response.MotherServiceResponseByID
+		result.FromMotherServiceEntity(svcResult)
+
+		responses = append(responses, result.Data)
+	}
+
+	responseWriter.WriteJSON(w, http.StatusOK, response.PaginatedMotherServices{
+		Data:    responses,
+		Page:    req.Page,
+		PerPage: req.PerPage,
+		Total:   count,
+	})
 }
 
 // Delete godoc
@@ -208,37 +239,43 @@ func (handler *MotherServiceHandler) GetPaginated() fiber.Handler {
 //	@Failure		404	{object}	response.ErrorResponse
 //	@Failure		500	{object}	response.ErrorResponse
 //	@Router			/api/v1/mother-services/{id}/delete [post]
-func (handler *MotherServiceHandler) Delete() fiber.Handler {
-	return func(ctx *fiber.Ctx) error {
-		tracer := otel.Tracer("mother-service-handler")
-		traceCtx, span := tracer.Start(ctx.Context(), "delete-mother-service-handler")
-		defer span.End()
+func (handler *MotherServiceHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	tracer := otel.Tracer("mother-service-handler")
+	traceCtx, span := tracer.Start(ctx, "delete-mother-service-handler")
+	defer span.End()
 
-		requestID := logger.GetRequestID(ctx.Context())
-		span.SetAttributes(attribute.String("request_id", requestID))
+	requestID := logger.GetRequestID(ctx)
+	span.SetAttributes(attribute.String("request_id", requestID))
 
-		idParam := ctx.Params("id")
-		if idParam == "" {
-			span.SetAttributes(attribute.String("error.type", "missing_id"))
-			return pkg.ToHTTPError(pkg.ErrPageNotFound).AsFiber(ctx)
-		}
+	strID := strings.TrimSpace(chi.URLParam(r, "id"))
 
-		id, err := strconv.ParseUint(idParam, 10, 64)
-		if err != nil {
-			span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
-			return pkg.ToHTTPError(pkg.ErrInvalidIDInParams).AsFiber(ctx)
-		}
+	id, err := strconv.ParseUint(strID, 10, 64)
+	if err != nil {
+		span.SetAttributes(attribute.String("error.type", "invalid_id_in_params"))
 
-		span.SetAttributes(attribute.String("mother_service.id", strconv.FormatUint(id, 10)))
+		httpError := pkg.ToHTTPError(pkg.ErrInvalidIDInParams)
+		httpError.WriteError(w)
 
-		err = handler.motherService.Delete(traceCtx, id)
-		if err != nil {
-			span.SetAttributes(attribute.String("error.type", "delete_error"), attribute.String("error.message", err.Error()))
-			return pkg.ToHTTPError(err).AsFiber(ctx)
-		}
-
-		return ctx.Status(http.StatusOK).JSON(&response.SuccessResponse{
-			Message: pkg.MotherServiceDelete,
-		})
+		return
 	}
+
+	span.SetAttributes(attribute.String("mother_service.id", strconv.FormatUint(id, 10)))
+
+	err = handler.motherService.Delete(traceCtx, id)
+	if err != nil {
+		span.SetAttributes(
+			attribute.String("error.type", "delete_error"),
+			attribute.String("error.message", err.Error()),
+		)
+
+		httpError := pkg.ToHTTPError(err)
+		httpError.WriteError(w)
+
+		return
+	}
+
+	responseWriter.WriteJSON(w, http.StatusOK, response.SuccessResponse{
+		Message: pkg.MotherServiceDelete,
+	})
 }

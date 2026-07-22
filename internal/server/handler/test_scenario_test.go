@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"control-panel-service/config"
 	"control-panel-service/internal/domain/entity"
 	"control-panel-service/internal/server/dto/request"
 	"control-panel-service/internal/server/dto/response"
@@ -10,25 +9,23 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-func TestTestServiceConfigHandler_New(t *testing.T) {
+func TestTestScenarioHandler_New(t *testing.T) {
 	mockSrv := new(mocks.MockTestScenario)
 
 	handler := NewTestScenarioHandler(mockSrv)
 
 	assert.NotNil(t, handler)
-
 	assert.NotNil(t, handler.testScenario)
 }
 
@@ -37,8 +34,8 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios", handler.Create())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios", handler.Create)
 
 		reqBody := `{
 			"name": "load1",
@@ -65,7 +62,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 40,
 				"string_value_rate": 10,
 				"long_string_value_rate": 10,
-				"null_value_rate": 10 , 
+				"null_value_rate": 10 ,
 		        "database_name": "test_service_db",
         		"database_table_name": "test_service_table"
 			}
@@ -113,26 +110,24 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.SuccessResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
+
 	t.Run("success_case_random_test_number", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios", handler.Create())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios", handler.Create)
 
 		reqBody := `{
 			"name": "load1",
@@ -159,7 +154,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0, 
+				"null_value_rate": 0,
 				"database_name": "test_service_db",
         		"database_table_name": "test_service_table"
 			}
@@ -200,26 +195,24 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.SuccessResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
+
 	t.Run("success_case_random_request_delay", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios", handler.Create())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios", handler.Create)
 
 		reqBody := `{
 			"name": "load1",
@@ -286,26 +279,24 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.SuccessResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
+
 	t.Run("success_case_request_delay_and_fixed_number_set", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios", handler.Create())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios", handler.Create)
 
 		reqBody := `{
 			"name": "load1",
@@ -369,26 +360,24 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.SuccessResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
-	t.Run("success_case_don't_fill_null_fields_in_test_scenario", func(t *testing.T) {
+
+	t.Run("success_case_dont_fill_null_fields_in_test_scenario", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios", handler.Create())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios", handler.Create)
 
 		reqBody := `{
 			"name": "load1",
@@ -450,51 +439,47 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.SuccessResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, pkg.CreateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
+
 	t.Run("failed_case_body_parser_bad_request", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios", handler.Create())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios", handler.Create)
 
 		reqBody := ``
 
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.ErrorResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		assert.Equal(t, pkg.InvalidReqBody, result.Error)
 	})
+
 	t.Run("failed_case_test_category_not_found", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios", handler.Create())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios", handler.Create)
 
 		reqBody := `{
 			"name": "load1",
@@ -521,7 +506,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0, 
+				"null_value_rate": 0,
 				"database_name": "test_service_db",
         		"database_table_name": "test_service_table"
 			}
@@ -558,26 +543,24 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.ErrorResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		assert.Equal(t, http.StatusNotFound, rec.Code)
 		assert.Equal(t, pkg.TestCategoryNotFound, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
+
 	t.Run("failed_case_failed_to_get_test_category", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios", handler.Create())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios", handler.Create)
 
 		reqBody := `{
 			"name": "load1",
@@ -604,7 +587,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0, 
+				"null_value_rate": 0,
 				"database_name": "test_service_db",
         		"database_table_name": "test_service_table"
 			}
@@ -641,26 +624,24 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.ErrorResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-		assert.Equal(t, result.Error, pkg.InternalServerErrorMessage)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		assert.Equal(t, pkg.InternalServerErrorMessage, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
+
 	t.Run("failed_case_validation_error_handler", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios", handler.Create())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios", handler.Create)
 
 		reqBody := `{
 			"name": "load1",
@@ -687,7 +668,7 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 				"zero_value_rate": 0,
 				"string_value_rate": 0,
 				"long_string_value_rate": 0,
-				"null_value_rate": 0, 
+				"null_value_rate": 0,
 				"database_name": "test_service_db",
         		"database_table_name": "test_service_table"
 			}
@@ -724,18 +705,15 @@ func TestTestScenarioHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.ErrorResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-		assert.Equal(t, result.Error, pkg.MaxTestServiceCountLessThanOne)
+		assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+		assert.Equal(t, pkg.MaxTestServiceCountLessThanOne, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
 }
@@ -745,8 +723,8 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/search", handler.GetPaginated())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/search", handler.GetPaginated)
 
 		payload := entity.TestScenarioPaginationRequest{
 			Page:    1,
@@ -868,26 +846,26 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var got response.PaginatedTestScenario
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
-		json.Unmarshal(bts, &got)
+		err := json.Unmarshal(rec.Body.Bytes(), &got)
+		assert.NoError(t, err)
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, expected.Page, got.Page)
 		assert.Equal(t, got.Total, count)
 		assert.Len(t, got.Data, 2)
 		assert.Equal(t, expected, got)
 	})
+
 	t.Run("success_case_with_deleted_mother-service", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/search", handler.GetPaginated())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/search", handler.GetPaginated)
 
 		payload := entity.TestScenarioPaginationRequest{
 			Page:    1,
@@ -1079,51 +1057,49 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var got response.PaginatedTestScenario
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
-		json.Unmarshal(bts, &got)
+		err := json.Unmarshal(rec.Body.Bytes(), &got)
+		assert.NoError(t, err)
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, expected.Page, got.Page)
 		assert.Equal(t, countTotal, got.Total)
 		assert.Len(t, got.Data, 2)
 		assert.Equal(t, expected, got)
 	})
+
 	t.Run("error_invalid_request_body", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/search", handler.GetPaginated())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/search", handler.GetPaginated)
 
 		reqBody := "invalid body"
 
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.ErrorResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		assert.Equal(t, result.Error, pkg.InvalidReqBody)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, pkg.InvalidReqBody, result.Error)
 	})
+
 	t.Run("error_from_service_layer", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/search", handler.GetPaginated())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/search", handler.GetPaginated)
 
 		payload := entity.TestScenarioPaginationRequest{
 			Page:    1,
@@ -1137,100 +1113,86 @@ func TestTestScenarioHandler_GetPaginated(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/search", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-		var got response.PaginatedTestScenario
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
-		json.Unmarshal(bts, &got.Data)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		assert.Equal(t, pkg.InternalServerErrorMessage, result.Error)
+		mockSvc.AssertExpectations(t)
 	})
 }
 
-func TestTestScenario_GetByID(t *testing.T) {
-	_, err := config.LoadConfig()
-	assert.Nil(t, err)
-
-	t.Run("error_missing_id_in_param", func(t *testing.T) {
+func TestTestScenarioHandler_GetByID(t *testing.T) {
+	t.Run("failed_case_invalid_id", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		h := NewTestScenarioHandler(srv)
 
-		app := fiber.New(fiber.Config{})
-		app.Get("/test-scenarios", h.GetByID())
-
-		req := httptest.NewRequest(http.MethodGet, "/test-scenarios", nil)
-
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
-
-		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-	})
-	t.Run("error_invalid_id_data_in_param", func(t *testing.T) {
-		srv := new(mocks.MockTestScenario)
-
-		h := NewTestScenarioHandler(srv)
-
-		app := fiber.New(fiber.Config{})
-		app.Get("/test-scenarios/:id", h.GetByID())
+		r := chi.NewRouter()
+		r.Get("/test-scenarios/{id}", h.GetByID)
 
 		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/invalid", nil)
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		var response response.ErrorResponse
-		err = json.Unmarshal(bts, &response)
-		assert.Nil(t, err)
-
-		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-		assert.Equal(t, response.Error, pkg.InvalidIDInParams)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, pkg.InvalidIDInParams, result.Error)
 	})
 
-	t.Run("error_on_getting_data_from_service_layer", func(t *testing.T) {
+	t.Run("failed_case_internal_server_error", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		var want *entity.TestScenario
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, errors.New("something went wrong"))
 		h := NewTestScenarioHandler(srv)
 
-		app := fiber.New(fiber.Config{})
-		app.Get("/test-scenarios/:id", h.GetByID())
+		r := chi.NewRouter()
+		r.Get("/test-scenarios/{id}", h.GetByID)
 
 		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/1", nil)
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		assert.Equal(t, pkg.InternalServerErrorMessage, result.Error)
+		srv.AssertExpectations(t)
 	})
-	t.Run("error_item_not_found", func(t *testing.T) {
+
+	t.Run("failed_case_not_found", func(t *testing.T) {
 		srv := new(mocks.MockTestScenario)
 		var want *entity.TestScenario
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(want, pkg.ErrTestScenarioNotFound)
 		h := NewTestScenarioHandler(srv)
 
-		app := fiber.New(fiber.Config{})
-		app.Get("/test-scenarios/:id", h.GetByID())
+		r := chi.NewRouter()
+		r.Get("/test-scenarios/{id}", h.GetByID)
 
 		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/1", nil)
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		var result response.ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		var response response.ErrorResponse
-		err = json.Unmarshal(bts, &response)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-		assert.Equal(t, response.Error, pkg.TestScenarioNotFound)
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		assert.Equal(t, pkg.TestScenarioNotFound, result.Error)
+		srv.AssertExpectations(t)
 	})
+
 	t.Run("success_case", func(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := int64(100)
@@ -1308,17 +1270,15 @@ func TestTestScenario_GetByID(t *testing.T) {
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
 		h := NewTestScenarioHandler(srv)
 
-		app := fiber.New(fiber.Config{})
-		app.Get("/test-scenarios/:id", h.GetByID())
+		r := chi.NewRouter()
+		r.Get("/test-scenarios/{id}", h.GetByID)
 
 		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/1", nil)
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		bts, _ := io.ReadAll(resp.Body)
+		assert.Equal(t, http.StatusOK, rec.Code)
 
 		expected := response.TestScenario{
 			ID:                  1,
@@ -1386,10 +1346,11 @@ func TestTestScenario_GetByID(t *testing.T) {
 		}
 
 		var got response.TestScenarioResponseByID
-		err = json.Unmarshal(bts, &got)
+		err := json.Unmarshal(rec.Body.Bytes(), &got)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, got.Data)
 	})
+
 	t.Run("success_case_category_and_mother_service_are_null", func(t *testing.T) {
 		someTime := time.Date(2026, 01, 13, 11, 00, 00, 0, time.UTC)
 		cnt := int64(100)
@@ -1415,17 +1376,15 @@ func TestTestScenario_GetByID(t *testing.T) {
 		srv.On("GetByID", mock.Anything, uint64(1)).Return(item, nil)
 		h := NewTestScenarioHandler(srv)
 
-		app := fiber.New(fiber.Config{})
-		app.Get("/test-scenarios/:id", h.GetByID())
+		r := chi.NewRouter()
+		r.Get("/test-scenarios/{id}", h.GetByID)
 
 		req := httptest.NewRequest(http.MethodGet, "/test-scenarios/1", nil)
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		bts, _ := io.ReadAll(resp.Body)
+		assert.Equal(t, http.StatusOK, rec.Code)
 
 		expected := response.TestScenario{
 			ID:                  1,
@@ -1444,7 +1403,7 @@ func TestTestScenario_GetByID(t *testing.T) {
 		}
 
 		var got response.TestScenarioResponseByID
-		err = json.Unmarshal(bts, &got)
+		err := json.Unmarshal(rec.Body.Bytes(), &got)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, got.Data)
 	})
@@ -1455,8 +1414,8 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/update", handler.Update())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/update", handler.Update)
 
 		reqBody := `{
 			"name": "load1",
@@ -1482,7 +1441,7 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 				"zero_value_rate": 40,
 				"string_value_rate": 10,
 				"long_string_value_rate": 10,
-				"null_value_rate": 10 , 
+				"null_value_rate": 10 ,
 		        "database_name": "test_service_db",
         		"database_table_name": "test_service_table",
 				"increase_fixed_input": 0,
@@ -1492,22 +1451,25 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 
 		sampleUin64 := uint64(1)
 		sampleInt := 1
+		sampleInt64 := int64(1)
+		min := 10
+		max := 20
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
 		sampleTestScenarioUpdateRequest := &request.TestScenarioUpdateRequest{
 			Name:                "load1",
 			MotherServiceID:     sampleUin64,
-			MaxTestServiceCount: new(int64(1)),
+			MaxTestServiceCount: &sampleInt64,
 			NumSteps:            2,
 			IncreaseAgentNumber: 0,
 			ExecNumMultiAgent:   1,
 			Config: &request.TestServiceConfigRequest{
 				MaxRequests:            sampleInt,
 				MaxDuration:            1,
-				RandomRequestDelayMin:  new(10),
-				RandomRequestDelayMax:  new(20),
-				RandomTestNumberMin:    new(10),
-				RandomTestNumberMax:    new(20),
+				RandomRequestDelayMin:  &min,
+				RandomRequestDelayMax:  &max,
+				RandomTestNumberMin:    &min,
+				RandomTestNumberMax:    &max,
 				BadValueRate:           50,
 				NegativeValueRate:      10,
 				RealValueRate:          20,
@@ -1527,26 +1489,24 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/update", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.SuccessResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, pkg.UpdateTestScenarioSuccessfully, result.Message)
 		mockSvc.AssertExpectations(t)
 	})
+
 	t.Run("failed_case", func(t *testing.T) {
 		mockSvc := new(mocks.MockTestScenario)
 		handler := NewTestScenarioHandler(mockSvc)
 
-		app := fiber.New(fiber.Config{})
-		app.Post("/test-scenarios/update", handler.Update())
+		r := chi.NewRouter()
+		r.Post("/test-scenarios/update", handler.Update)
 
 		reqBody := `{
 			"name": "load1",
@@ -1572,7 +1532,7 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 				"zero_value_rate": 40,
 				"string_value_rate": 10,
 				"long_string_value_rate": 10,
-				"null_value_rate": 10 , 
+				"null_value_rate": 10 ,
 		        "database_name": "test_service_db",
         		"database_table_name": "test_service_table",
 				"increase_fixed_input": 0,
@@ -1582,22 +1542,25 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 
 		sampleUin64 := uint64(1)
 		sampleInt := 1
+		sampleInt64 := int64(1)
+		min := 10
+		max := 20
 		databaseName := "test_service_db"
 		databaseTableName := "test_service_table"
 		sampleTestScenarioUpdateRequest := &request.TestScenarioUpdateRequest{
 			Name:                "load1",
 			MotherServiceID:     sampleUin64,
-			MaxTestServiceCount: new(int64(1)),
+			MaxTestServiceCount: &sampleInt64,
 			NumSteps:            2,
 			IncreaseAgentNumber: 0,
 			ExecNumMultiAgent:   1,
 			Config: &request.TestServiceConfigRequest{
 				MaxRequests:            sampleInt,
 				MaxDuration:            1,
-				RandomRequestDelayMin:  new(10),
-				RandomRequestDelayMax:  new(20),
-				RandomTestNumberMin:    new(10),
-				RandomTestNumberMax:    new(20),
+				RandomRequestDelayMin:  &min,
+				RandomRequestDelayMax:  &max,
+				RandomTestNumberMin:    &min,
+				RandomTestNumberMax:    &max,
 				BadValueRate:           50,
 				NegativeValueRate:      10,
 				RealValueRate:          20,
@@ -1617,18 +1580,15 @@ func TestTestScenariosHandler_Update(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/test-scenarios/update", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
 
 		var result response.ErrorResponse
-		bts, err := io.ReadAll(resp.Body)
-		assert.Nil(t, err)
+		err := json.Unmarshal(rec.Body.Bytes(), &result)
+		assert.NoError(t, err)
 
-		err = json.Unmarshal(bts, &result)
-		assert.Nil(t, err)
-
-		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-		assert.Equal(t, result.Error, pkg.InternalServerErrorMessage)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		assert.Equal(t, pkg.InternalServerErrorMessage, result.Error)
 		mockSvc.AssertExpectations(t)
 	})
 }

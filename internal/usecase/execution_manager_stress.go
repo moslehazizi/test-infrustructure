@@ -54,7 +54,9 @@ func (ex *StressTestExecutionManager) RunScenario(ctx context.Context, scenario 
 
 	//nolint
 	go func() {
-		_ = scenarioExecutor.Run(execManagerCTX)
+		// We built a new context without cancel because we use 'chi' package in http server and when handler finished its context doesn't send cancellation signal.
+		withoutCancelCTX := context.WithoutCancel(execManagerCTX)
+		_ = scenarioExecutor.Run(withoutCancelCTX)
 		// delete scenario from memory
 		ex.scenarios.Delete(scenario.ID)
 	}()
@@ -89,7 +91,7 @@ func (ex *StressTestExecutionManager) PauseScenario(ctx context.Context, scenari
 
 	agents := testScenario.GetAgents()
 
-	//We add health check agent so that if user immediately click on pause right after run first wait to all agents be ready.
+	// We add health check agent so that if user immediately click on pause right after run first wait to all agents be ready.
 	awaitAllHealthy(agents)
 
 	for _, agent := range agents {
@@ -248,4 +250,5 @@ func awaitAllHealthy(agents []interfaces.TestAgentController) {
 		time.Sleep(healthyCheckSleep)
 	}
 }
+
 //#endregion HelperFunctions

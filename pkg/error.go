@@ -1,26 +1,38 @@
 package pkg
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 type HTTPError struct {
-	status int
-	msg    string
+	Status int
+	Msg    string
 }
 
-func (e *HTTPError) AsFiber(ctx *fiber.Ctx) error {
-	if err := ctx.Status(e.status).JSON(&fiber.Map{
-		"error": e.msg,
-	}); err != nil {
-		return fmt.Errorf("failed to write JSON response: %w", err)
-	}
+// func (e *HTTPError) AsFiber(ctx *fiber.Ctx) error {
+// 	if err := ctx.Status(e.Status).JSON(&fiber.Map{
+// 		"error": e.Msg,
+// 	}); err != nil {
+// 		return fmt.Errorf("failed to write JSON response: %w", err)
+// 	}
 
-	return nil
+// 	return nil
+// }
+
+func (e *HTTPError) WriteError(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(e.Status)
+
+	err := json.NewEncoder(w).Encode(map[string]string{
+		"error": e.Msg,
+	})
+	if err != nil {
+		zap.L().Error("failed to encode error response", zap.Error(err))
+	}
 }
 
 func ToHTTPError(err error) *HTTPError {
@@ -42,7 +54,7 @@ func ToHTTPError(err error) *HTTPError {
 
 				continue
 			}
-			if finalErr.status > herr.status {
+			if finalErr.Status > herr.Status {
 				finalErr = herr
 			}
 		}

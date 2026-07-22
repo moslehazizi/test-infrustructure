@@ -2,11 +2,10 @@ package middleware
 
 import (
 	"control-panel-service/pkg/logger"
-	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -16,65 +15,61 @@ const (
 	httpStatusClientError = http.StatusBadRequest          // 400
 )
 
-// LoggingMiddleware creates a middleware that logs HTTP requests and responses.
-// It generates a request ID, adds it to context, and logs structured information.
-func LoggingMiddleware() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		start := time.Now()
+// LoggingMiddleware logs HTTP requests/responses with a request ID.
+func LoggingMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+			// Generate request ID if not present in headers
+			requestID := r.Header.Get("X-Request-ID")
+			if requestID == "" {
+				requestID = uuid.New().String()
+			}
+			w.Header().Set("X-Request-ID", requestID)
 
-		// Generate request ID if not present in headers
-		requestID := c.Get("X-Request-ID")
-		if requestID == "" {
-			requestID = uuid.New().String()
-			c.Set("X-Request-ID", requestID)
-		}
+			// Add request ID to context for handlers and downstream services
+			ctx := logger.WithRequestID(r.Context(), requestID)
+			r = r.WithContext(ctx)
 
-		// Add request ID to context for use in handlers and downstream services
-		ctx := logger.WithRequestID(c.Context(), requestID)
-		c.SetUserContext(ctx)
+			// Extract request information
+			method := r.Method
+			path := r.URL.Path
+			originalURL := r.RequestURI
+			clientIP := middleware.GetClientIP(ctx) // set by ClientIPFromRemoteAddr earlier
+			userAgent := r.UserAgent()
 
-		// Extract request information
-		method := c.Method()
-		path := c.Path()
-		originalPath := c.OriginalURL()
-		clientIP := c.IP()
-		userAgent := c.Get("User-Agent")
+			zap.L().Info("incoming HTTP request",
+				zap.String(logger.FieldRequestID, requestID),
+				zap.String(logger.FieldMethod, method),
+				zap.String(logger.FieldPath, path),
+				zap.String("original_path", originalURL),
+				zap.String(logger.FieldClientIP, clientIP),
+				zap.String("user_agent", userAgent),
+			)
 
-		// Log incoming request
-		zap.L().Info("incoming HTTP request",
-			zap.String(logger.FieldRequestID, requestID),
-			zap.String(logger.FieldMethod, method),
-			zap.String(logger.FieldPath, path),
-			zap.String("original_path", originalPath),
-			zap.String(logger.FieldClientIP, clientIP),
-			zap.String("user_agent", userAgent),
-		)
+			// Wrap the ResponseWriter so we can observe status + size
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
-		// Process request
-		errNext := c.Next()
+			// Process request
+			next.ServeHTTP(ww, r)
 
-		// Calculate duration
-		duration := time.Since(start)
-		statusCode := c.Response().StatusCode()
-		responseSize := len(c.Response().Body())
+			duration := time.Since(start)
+			statusCode := ww.Status()
+			if statusCode == 0 {
+				statusCode = http.StatusOK // handler wrote nothing explicit
+			}
+			responseSize := ww.BytesWritten()
 
-		// Prepare log fields
-		fields := []zap.Field{
-			zap.String(logger.FieldRequestID, requestID),
-			zap.String(logger.FieldMethod, method),
-			zap.String(logger.FieldPath, path),
-			zap.Int(logger.FieldStatusCode, statusCode),
-			zap.Int64(logger.FieldDuration, duration.Milliseconds()),
-			zap.Int("response_size", responseSize),
-			zap.String(logger.FieldClientIP, clientIP),
-		}
+			fields := []zap.Field{
+				zap.String(logger.FieldRequestID, requestID),
+				zap.String(logger.FieldMethod, method),
+				zap.String(logger.FieldPath, path),
+				zap.Int(logger.FieldStatusCode, statusCode),
+				zap.Int64(logger.FieldDuration, duration.Milliseconds()),
+				zap.Int("response_size", responseSize),
+				zap.String(logger.FieldClientIP, clientIP),
+			}
 
-		// Add error if present
-		if errNext != nil {
-			fields = append(fields, zap.Error(errNext))
-			zap.L().Error("HTTP request completed with error", fields...)
-		} else {
-			// Log successful request at appropriate level based on status code
 			switch {
 			case statusCode >= httpStatusServerError:
 				zap.L().Error("HTTP request completed with server error", fields...)
@@ -83,12 +78,6 @@ func LoggingMiddleware() fiber.Handler {
 			default:
 				zap.L().Info("HTTP request completed successfully", fields...)
 			}
-		}
-
-		if errNext != nil {
-			return fmt.Errorf("request processing failed: %w", errNext)
-		}
-
-		return nil
+		})
 	}
 }

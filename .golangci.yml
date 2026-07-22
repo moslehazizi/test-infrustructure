@@ -77,6 +77,7 @@ linters:
     - wastedassign
     - whitespace
     - zerologlint
+
   disable:
     - cyclop
     - depguard
@@ -113,6 +114,12 @@ linters:
       - .*_mock\.go
       - mock/.*\.go
       - mocks/.*\.go
+  settings:
+    goconst:
+      # Report only if a string appears at least 5 times.
+      # Default is 3.
+      min-occurrences: 10
+
 formatters:
   enable:
     # - gci
